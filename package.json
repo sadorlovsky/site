@@ -1,0 +1,13 @@
+{
+  "name": "orlovsky.rocks",
+  "scripts": {
+    "dev": "next",
+    "build": "next build && next export -o dist",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "3.0.1-beta.16",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1"
+  }
+}
