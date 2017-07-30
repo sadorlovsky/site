@@ -31,9 +31,17 @@ class Slider extends Component {
   }
 
   componentDidMount () {
-    setInterval(() => {
-      this.tick()
-    }, 5000)
+    if (window.Worker) {
+      const intervalWorker = new Worker('/static/intervalWorker.js')
+      intervalWorker.postMessage(null)
+      intervalWorker.onmessage = e => {
+        this.tick()
+      }
+    } else {
+      setInterval(() => {
+        this.tick()
+      }, 5000)
+    }
   }
 
   displayElement (element) {

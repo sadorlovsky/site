@@ -8,7 +8,6 @@ export default () => (
       <h1>Zach Orlovsky</h1>
       <nav>
         <Link href='/me'><a>me</a></Link>
-        <Link href='/blog'><a>blog</a></Link>
         <a href='https://twitter.com/sadorlovsky'>twitter</a>
         <a href='https://github.com/sadorlovsky'>code</a>
       </nav>

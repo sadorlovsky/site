@@ -2,7 +2,7 @@ import Link from 'next/link'
 import shuffle from 'array-shuffle'
 import differenceInYears from 'date-fns/difference_in_years'
 import Page from '../layouts/Page'
-import Slider from '../components/Slider'
+import ThingySlider from '../components/ThingySlider'
 
 export default () => (
   <Page>
@@ -15,19 +15,18 @@ export default () => (
       <div>{differenceInYears(new Date(), new Date(1994, 2, 26))} years old</div>
       <div>from Moscow, Russia</div>
       <div>can do <code>alert()</code> stuff</div>
-      <div className='thing'>
-        <Slider things={[
-          <div className='react'>
-            <img src='/static/react.svg' /> react lover
-          </div>,
+      <div style={{ maxHeight: '20px' }}>
+        <ThingySlider things={[
+          ['react lover', '/static/react.svg'],
           ...shuffle([
-            <div className='monads'>
-              know about monads <img src='/static/haskell.svg' />
-            </div>,
-            <div className='english'>
-              <img src='/static/sad-face.png' /> pretty shitty english
-            </div>
-          ])]} />
+            ['know about monads', '/static/haskell.svg'],
+            ['pretty shitty english', '/static/english.svg'],
+            ['sad boy', '/static/sad-face.png'],
+            ['happy  devices user'],
+            ['with a master\'s degree', '/static/master.svg']
+          ]),
+          ['how long are you sitting on this page? 😱']
+        ]} />
       </div>
     </div>
 
@@ -41,6 +40,7 @@ export default () => (
         user-select: none;
         height: 100vh;
         font-size: 18px;
+        cursor: default;
       }
 
       .container > div {
@@ -56,36 +56,6 @@ export default () => (
       .home-button > img {
         width: 35px;
       }
-
-      .react {
-        display: flex;
-        align-items: center;
-      }
-
-      .react > img {
-        width: 25px;
-        margin-right: 5px;
-      }
-
-      .monads {
-        display: flex;
-        align-items: center;
-      }
-
-      .monads > img {
-        width: 25px;
-      }
-
-      .english {
-        display: flex;
-        align-items: center;
-      }
-
-      .english > img {
-        margin-right: 5px;
-        width: 20px;
-      }
-}
     `}</style>
   </Page>
 )
