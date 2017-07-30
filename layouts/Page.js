@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import { version } from '../package'
+import { colors } from '../themes'
 
 if (global.document) {
   const info = [
@@ -9,7 +10,7 @@ if (global.document) {
   ]
 
   for (const message of info) {
-    console.log(`%c${message}`, 'color: #DCCDE8; font-size: 12px;');
+    console.log(`%c${message}`, `color: ${colors.other}; font-size: 12px;`);
   }
 }
 
@@ -27,8 +28,9 @@ export default ({ children }) => (
 
     <style jsx global>{`
         body {
-          background: #000;
-          color: #fff;
+          background: ${colors.background};
+          color: ${colors.text};
+          font-weight: 200;
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
             Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
             sans-serif;
@@ -39,13 +41,6 @@ export default ({ children }) => (
         html,
         body {
           height: 100%;
-        }
-
-        main {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
         }
       `}</style>
   </main>

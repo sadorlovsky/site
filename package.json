@@ -7,7 +7,10 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "3.0.1-beta.16",
+    "array-shuffle": "^1.0.1",
+    "classnames": "^2.2.5",
+    "date-fns": "^1.28.5",
+    "next": "3.0.1-beta.20",
     "react": "^15.6.1",
     "react-dom": "^15.6.1"
   }
