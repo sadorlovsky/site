@@ -2,6 +2,11 @@ import Head from 'next/head'
 import { version } from '../package'
 import { colors } from '../themes'
 
+const log = ({ message, color }) => {
+  // eslint-disable-next-line no-console
+  console.log(`%c${message}`, `color: ${color}; font-size: 12px;`)
+}
+
 if (global.document) {
   const info = [
     `Version: ${version}`,
@@ -10,7 +15,7 @@ if (global.document) {
   ]
 
   for (const message of info) {
-    console.log(`%c${message}`, `color: ${colors.other}; font-size: 12px;`);
+    log({ message, color: colors.other })
   }
 }
 

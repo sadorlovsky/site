@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "next",
     "build": "next build && next export -o dist",
-    "start": "next start"
+    "start": "next start",
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "array-shuffle": "^1.0.1",
@@ -13,5 +14,17 @@
     "next": "3.0.1-beta.20",
     "react": "^15.6.1",
     "react-dom": "^15.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.3.0",
+    "eslint-plugin-react": "^7.1.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^4.0.2"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }

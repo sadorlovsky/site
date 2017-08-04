@@ -34,7 +34,7 @@ class Slider extends Component {
     if (window.Worker) {
       const intervalWorker = new Worker('/static/intervalWorker.js')
       intervalWorker.postMessage(null)
-      intervalWorker.onmessage = e => {
+      intervalWorker.onmessage = () => {
         this.tick()
       }
     } else {
