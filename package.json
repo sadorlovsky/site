@@ -1,10 +1,13 @@
 {
   "name": "orlovsky.rocks",
   "version": "0.1.0",
+  "license": "MIT",
+  "repository": "sadorlovsky/orlovsky",
   "scripts": {
     "dev": "next",
     "build": "next build && next export -o dist",
     "start": "next start",
+    "lint": "eslint *.js",
     "precommit": "lint-staged"
   },
   "dependencies": {
@@ -17,6 +20,7 @@
   },
   "devDependencies": {
     "eslint": "^4.3.0",
+    "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-react": "^7.1.0",
     "husky": "^0.14.3",
     "lint-staged": "^4.0.2"

@@ -20,7 +20,7 @@ export default () => (
           ['react lover', '/static/react.svg'],
           ...shuffle([
             ['know about monads', '/static/haskell.svg'],
-            ['pretty shitty english', '/static/english.svg'],
+            ['write text on the page without google translate', '/static/english.svg'],
             ['sad boy', '/static/sad-face.png'],
             ['happy  devices user'],
             ['with a master\'s degree', '/static/master.svg']
