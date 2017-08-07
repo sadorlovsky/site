@@ -69,7 +69,7 @@ class Slider extends Component {
             to {
               opacity: 1;
             }
-}
+          }
         `}</style>
       </div>
     )

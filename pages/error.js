@@ -1,11 +1,15 @@
+import Link from 'next/link'
 import Page from '../layouts/Page'
 import { colors } from '../themes'
 
-export default () => (
+const Error = ({ statusCode }) => (
   <Page>
     <div>
-      <img src='/static/sad-face.png' />
-      <h1>404</h1>
+      <Link href='/'>
+        <a><img src='/static/sad-face.png' /></a>
+      </Link>
+      <h1>{statusCode}</h1>
+      {/* <h1>{errorCode}</h1> */}
 
       <style jsx>{`
         div {
@@ -32,3 +36,10 @@ export default () => (
     </div>
   </Page>
 )
+
+Error.getInitialProps = ({ res, jsonPageRes }) => {
+  const statusCode = res ? res.statusCode : (jsonPageRes ? jsonPageRes.status : null)
+  return { statusCode }
+}
+
+export default Error
