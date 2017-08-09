@@ -8,7 +8,7 @@ export default () => (
   <Page>
     <div className='home-button'>
       <Link href='/'>
-        <img src='/static/sad-face.png' />
+        <img src='/static/sad-face.svg' />
       </Link>
     </div>
     <div className='container'>
@@ -21,7 +21,7 @@ export default () => (
           ...shuffle([
             ['know about monads', '/static/haskell.svg'],
             ['write text on the page without google translate', '/static/english.svg'],
-            ['sad boy', '/static/sad-face.png'],
+            ['sad boy', '/static/sad-face.svg'],
             ['happy  devices user'],
             ['with a master\'s degree', '/static/master.svg']
           ]),

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="446px" height="446px" viewBox="0 0 446 446" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 42 (36781) - http://www.bohemiancoding.com/sketch -->
+    <title>Untitled</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M223.5,445 C334.75,445 446,345.383357 446,222.5 C446,99.6166432 346.383357,8.52651283e-14 223.5,8.52651283e-14 C100.616643,8.52651283e-14 1,99.6166432 1,222.5 C1,345.383357 112.25,445 223.5,445 Z" id="path-1"></path>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="445" height="445" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <use id="head" stroke="#000000" mask="url(#mask-2)" stroke-width="40" xlink:href="#path-1"></use>
+        <ellipse id="left-eye" fill="#000000" cx="149" cy="195" rx="27" ry="27"></ellipse>
+        <ellipse id="right-eye" fill="#000000" cx="297" cy="195" rx="27" ry="27"></ellipse>
+        <path d="M132,316 C132,316 146.655299,301.543148 167.25,291.4375 C187.844701,281.331852 208.219172,278 222.632276,278 C237.430868,278 263.529421,282.372141 281.734375,291.4375 C299.939329,300.502859 315.546875,316 315.546875,316" id="mouth" stroke="#000000" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"></path>
+    </g>
+</svg>
