@@ -1,16 +1,12 @@
-import Link from 'next/link'
 import shuffle from 'array-shuffle'
 import differenceInYears from 'date-fns/difference_in_years'
 import Page from '../layouts/Page'
 import ThingySlider from '../components/ThingySlider'
+import HomeButton from '../components/HomeButton'
 
 export default () => (
   <Page>
-    <div className='home-button'>
-      <Link href='/'>
-        <img src='/static/sad-face.svg' />
-      </Link>
-    </div>
+    <HomeButton />
     <div className='container'>
       <div>{differenceInYears(new Date(), new Date(1994, 2, 26))} years old</div>
       <div>from Moscow, Russia</div>
@@ -45,16 +41,6 @@ export default () => (
 
       .container > div {
         margin: 5px 0;
-      }
-
-      .home-button {
-        cursor: pointer;
-        padding: 15px;
-        position: absolute;
-      }
-
-      .home-button > img {
-        width: 35px;
       }
     `}</style>
   </Page>
