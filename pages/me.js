@@ -19,7 +19,7 @@ export default () => (
             ['write text on the page without google translate', '/static/english.svg'],
             ['sad boy', '/static/sad-face.svg'],
             ['happy  devices user'],
-            ['with a master\'s degree', '/static/master.svg']
+            ['Ph.D. student', '/static/master.svg']
           ]),
           ['how long are you sitting on this page? 😱']
         ]} />
