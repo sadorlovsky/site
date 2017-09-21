@@ -12,17 +12,13 @@ export default () => (
       <div>from Moscow, Russia</div>
       <div>can do <code>alert()</code> stuff</div>
       <div style={{ maxHeight: '20px' }}>
-        <ThingySlider things={[
+        <ThingySlider things={shuffle([
           ['react lover', '/static/react.svg'],
-          ...shuffle([
-            ['know about monads', '/static/haskell.svg'],
-            ['write text on the page without google translate', '/static/english.svg'],
-            ['sad boy', '/static/sad-face.svg'],
-            ['happy  devices user'],
-            ['Ph.D. student', '/static/master.svg']
-          ]),
-          ['how long are you sitting on this page? 😱']
-        ]} />
+          ['know about monads', '/static/haskell.svg'],
+          ['sad boy', '/static/sad-face.svg'],
+          ['happy  devices user'],
+          ['Ph.D. student', '/static/master.svg']
+        ])} />
       </div>
     </div>
 
