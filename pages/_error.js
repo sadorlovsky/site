@@ -6,10 +6,11 @@ const Error = ({ statusCode }) => (
   <Page>
     <div>
       <Link href='/'>
-        <a><img src='/static/sad-face.png' /></a>
+        <a>
+          <img src='/static/sad-face.svg' />
+        </a>
       </Link>
-      <h1>{statusCode}</h1>
-      {/* <h1>{errorCode}</h1> */}
+      <h1>{statusCode}!</h1>
 
       <style jsx>{`
         div {

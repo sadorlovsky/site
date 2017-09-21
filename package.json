@@ -1,11 +1,11 @@
 {
   "name": "orlovsky.rocks",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "repository": "sadorlovsky/orlovsky",
   "scripts": {
     "dev": "next",
-    "build": "next build && next export -o dist",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint *.js",
     "precommit": "lint-staged"
