@@ -10,7 +10,7 @@ const Error = ({ statusCode }) => (
           <img src='/static/sad-face.svg' />
         </a>
       </Link>
-      <h1>{statusCode}!</h1>
+      <h1>{statusCode}</h1>
 
       <style jsx>{`
         div {
