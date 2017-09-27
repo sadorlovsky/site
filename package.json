@@ -15,9 +15,9 @@
     "array-shuffle": "^1.0.1",
     "classnames": "^2.2.5",
     "date-fns": "^1.28.5",
-    "next": "^3.0.6",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
+    "next": "https://github.com/kjs3/next.js.git#next-react-16",
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0",
     "react-ga": "^2.2.0"
   },
   "devDependencies": {
