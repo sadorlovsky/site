@@ -18,7 +18,9 @@
     "next": "^4.0.0-beta.3",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
-    "react-ga": "^2.2.0"
+    "react-ga": "^2.2.0",
+    "react-keyframes": "^0.2.3",
+    "react-no-ssr": "^1.1.0"
   },
   "devDependencies": {
     "eslint": "^4.5.0",
