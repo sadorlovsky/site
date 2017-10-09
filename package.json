@@ -15,7 +15,7 @@
     "array-shuffle": "^1.0.1",
     "classnames": "^2.2.5",
     "date-fns": "^1.28.5",
-    "next": "^4.0.0-beta.4",
+    "next": "^4.0.1",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",
     "react-ga": "^2.2.0",
