@@ -9,6 +9,7 @@ export default () => (
   <Page>
     <HomeButton />
     <div className='container'>
+      <div className='photo' />
       <div>{differenceInYears(new Date(), new Date(1994, 2, 26))} years old</div>
       <div>from Moscow, Russia</div>
       <div>can do <code>alert()</code> stuff</div>
@@ -66,6 +67,15 @@ export default () => (
       .thingy > img {
         height: 20px;
         margin-left: 5px;
+      }
+
+      .photo {
+        min-width: 130px;
+        min-height: 130px;
+        background-image: url(/static/photo.jpg);
+        background-size: cover;
+        border-radius: 50%;
+        filter: grayscale(100%);
       }
     `}</style>
   </Page>

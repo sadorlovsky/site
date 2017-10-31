@@ -40,6 +40,7 @@ export default class extends Component {
             content="width=device-width, initial-scale=1, user-scalable=no"
           />
           <link rel="icon" type="image/png" href="/static/favicon.png" />
+          <link rel="stylesheet" href="https://rsms.me/inter/inter-ui.css" />
           <title>Zach Orlovsky</title>
         </Head>
 
@@ -50,10 +51,11 @@ export default class extends Component {
               background: ${colors.background};
               color: ${colors.text};
               font-weight: 200;
-              font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-                Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
+              font-family: 'Inter UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
                 sans-serif;
               margin: 0;
+              font-feature-settings: 'calt', 'tnum', 'zero', 'ss01', 'case';
               -webkit-font-smoothing: antialiased;
             }
 
