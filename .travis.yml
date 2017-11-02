@@ -1,12 +1,15 @@
 sudo: required
 
+language: node_js
+
 services:
   - docker
 
-language: node_js
+before_install:
+  - docker build -t sadorlovsky/site .
 
-node_js:
-  - 'node'
+script:
+  - yarn test
 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
