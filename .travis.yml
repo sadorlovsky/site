@@ -1,3 +1,15 @@
+sudo: required
+
+services:
+  - docker
+
 language: node_js
+
 node_js:
   - 'node'
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push sadorlovsky/site;
+    fi

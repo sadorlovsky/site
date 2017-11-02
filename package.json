@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint *.js",
     "precommit": "lint-staged",
-    "test": "eslint *.js"
+    "test": "eslint *.js",
+    "analyze": "cross-env ANALYZE=1 next build"
   },
   "dependencies": {
     "array-shuffle": "^1.0.1",
@@ -24,11 +25,13 @@
     "react-no-ssr": "^1.1.0"
   },
   "devDependencies": {
+    "cross-env": "^5.1.1",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-react": "^7.3.0",
     "husky": "^0.14.3",
-    "lint-staged": "^4.0.4"
+    "lint-staged": "^4.0.4",
+    "webpack-bundle-analyzer": "^2.9.0"
   },
   "lint-staged": {
     "*.js": [
