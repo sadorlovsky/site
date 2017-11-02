@@ -4,7 +4,7 @@ import { Keyframes, Frame } from 'react-keyframes'
 import NoSSR from 'react-no-ssr'
 import Page from '../layouts/Page'
 import HomeButton from '../components/HomeButton'
-import fetch from 'isomorphic-fetch'
+import fetch from 'isomorphic-unfetch'
 
 const Me = ({ nodejsLatestVersion }) => (
   <Page>
