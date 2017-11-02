@@ -4,8 +4,9 @@ import { Keyframes, Frame } from 'react-keyframes'
 import NoSSR from 'react-no-ssr'
 import Page from '../layouts/Page'
 import HomeButton from '../components/HomeButton'
+import fetch from 'isomorphic-fetch'
 
-export default () => (
+const Me = ({ nodejsLatestVersion }) => (
   <Page>
     <HomeButton />
     <div className='container'>
@@ -31,6 +32,12 @@ export default () => (
               </div>,
               <div className='thingy' key='phd'>
                 Ph.D. student <img src='/static/master.svg' />
+              </div>,
+              <div className='thingy' key='nodejs'>
+                node {nodejsLatestVersion} <img src='/static/node.svg' className='gray' />
+              </div>,
+              <div className='thingy' key='birdperson'>
+                birdperson 🦅
               </div>
             ]).map(thingy => <Frame key={thingy} duration={5000}>{thingy}</Frame>)}
           </Keyframes>
@@ -75,8 +82,20 @@ export default () => (
         background-image: url(/static/photo.jpg);
         background-size: cover;
         border-radius: 50%;
+      }
+
+      .gray {
         filter: grayscale(100%);
       }
     `}</style>
   </Page>
 )
+
+Me.getInitialProps = async ({ req }) => {
+  const res = await fetch('https://nodejs.org/dist/index.json')
+  const [data] = await res.json()
+
+  return { nodejsLatestVersion: data.version }
+}
+
+export default Me

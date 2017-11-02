@@ -55,7 +55,7 @@ export default class extends Component {
                 Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
                 sans-serif;
               margin: 0;
-              font-feature-settings: 'calt', 'tnum', 'zero', 'ss01', 'case';
+              font-feature-settings: 'calt', 'tnum', 'ss01', 'case';
               -webkit-font-smoothing: antialiased;
             }
 

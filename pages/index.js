@@ -7,7 +7,7 @@ export default () => (
     <div>
       <h1>Zach Orlovsky</h1>
       <nav>
-        <Link href='/me'><a>me</a></Link>
+        <Link prefetch href='/me'><a>me</a></Link>
         <a href='https://twitter.com/sadorlovsky'>twitter</a>
         <a href='https://github.com/sadorlovsky'>code</a>
       </nav>
