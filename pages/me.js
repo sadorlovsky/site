@@ -1,10 +1,15 @@
 import shuffle from 'array-shuffle'
 import differenceInYears from 'date-fns/difference_in_years'
 import { Keyframes, Frame } from 'react-keyframes'
-import NoSSR from 'react-no-ssr'
-import Page from '../layouts/Page'
-import HomeButton from '../components/HomeButton'
 import fetch from 'isomorphic-unfetch'
+import Page from '../layouts/Page'
+import Icon from '../components/Icon'
+import HomeButton from '../components/HomeButton'
+import ReactIcon from '../static/react-icon.svg'
+import Haskell from '../static/haskell.svg'
+import SadFace from '../static/sad-face.svg'
+import PhD from '../static/master.svg'
+import Node from '../static/node.svg'
 
 const Me = ({ nodejsLatestVersion }) => (
   <Page>
@@ -14,35 +19,33 @@ const Me = ({ nodejsLatestVersion }) => (
       <div>{differenceInYears(new Date(), new Date(1994, 2, 26))} years old</div>
       <div>from Moscow, Russia</div>
       <div>can do <code>alert()</code> stuff</div>
-      <NoSSR>
-        <div>
-          <Keyframes loop className='thingy-container'>
-            {shuffle([
-              <div className='thingy' key='react'>
-                react lover <img src='/static/react.svg' />
-              </div>,
-              <div className='thingy' key='monads'>
-                know about monads <img src='/static/haskell.svg' />
-              </div>,
-              <div className='thingy' key='sad'>
-                sad boy <img src='/static/sad-face.svg' />
-              </div>,
-              <div className='thingy' key='apple'>
-                happy  devices user
-              </div>,
-              <div className='thingy' key='phd'>
-                Ph.D. student <img src='/static/master.svg' />
-              </div>,
-              <div className='thingy' key='nodejs'>
-                node {nodejsLatestVersion} <img src='/static/node.svg' className='gray' />
-              </div>,
-              <div className='thingy' key='birdperson'>
-                birdperson 🦅
-              </div>
-            ]).map(thingy => <Frame key={thingy} duration={5000}>{thingy}</Frame>)}
-          </Keyframes>
-        </div>
-      </NoSSR>
+      <div>
+        <Keyframes loop className='thingy-container'>
+          {shuffle([
+            <div className='thingy' key='react'>
+              react lover <Icon Svg={ReactIcon} />
+            </div>,
+            <div className='thingy' key='monads'>
+              know about monads <Icon Svg={Haskell} />
+            </div>,
+            <div className='thingy' key='sad'>
+              sad boy <Icon Svg={SadFace} />
+            </div>,
+            <div className='thingy' key='apple'>
+              happy  devices user
+            </div>,
+            <div className='thingy' key='phd'>
+              Ph.D. student <Icon Svg={PhD} />
+            </div>,
+            <div className='thingy' key='nodejs'>
+              node {nodejsLatestVersion} <Icon Svg={Node} />
+            </div>,
+            <div className='thingy' key='birdperson'>
+              birdperson 🦅
+            </div>
+          ]).map(thingy => <Frame key={thingy} duration={5000}>{thingy}</Frame>)}
+        </Keyframes>
+      </div>
     </div>
 
     <style jsx>{`
@@ -71,7 +74,8 @@ const Me = ({ nodejsLatestVersion }) => (
         align-items: center;
       }
 
-      .thingy > img {
+      .img {
+        width: 20px;
         height: 20px;
         margin-left: 5px;
       }
