@@ -14,12 +14,13 @@
   },
   "dependencies": {
     "array-shuffle": "^1.0.1",
+    "babel-plugin-inline-react-svg": "^0.5.2",
     "classnames": "^2.2.5",
     "date-fns": "^1.28.5",
     "isomorphic-unfetch": "^2.0.0",
-    "next": "^4.0.1",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "next": "^4.1.4",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
     "react-ga": "^2.2.0",
     "react-keyframes": "^0.2.3",
     "react-no-ssr": "^1.1.0"
@@ -30,7 +31,7 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-react": "^7.3.0",
     "husky": "^0.14.3",
-    "lint-staged": "^4.0.4",
+    "lint-staged": "^6.0.0",
     "webpack-bundle-analyzer": "^2.9.0"
   },
   "lint-staged": {
