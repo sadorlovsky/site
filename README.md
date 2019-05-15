@@ -1,4 +1,4 @@
-# [orlovsky.rocks](https://orlovsky.rocks)
+# [orlovsky.dev](https://orlovsky.dev)
 > my sad homepage :pensive:
 
 [![Build Status](https://img.shields.io/travis/sadorlovsky/orlovsky.svg?style=flat-square)](https://travis-ci.org/sadorlovsky/orlovsky)
@@ -12,4 +12,4 @@ $ docker run -p 3000:3000 -d sadorlovsky/site
 
 ## License
 
-MIT © [Zach Orlovsky](https://orlovsky.rocks)
+MIT © [Zach Orlovsky](https://orlovsky.dev)
