@@ -1,48 +1,32 @@
-import Link from 'next/link'
-import Page from '../layouts/Page'
-import { colors } from '../themes'
+import Head from 'next/head'
 
 export default () => (
-  <Page>
-    <div>
-      <h1>Zach Orlovsky</h1>
-      <nav>
-        <Link prefetch href='/me'><a>me</a></Link>
-        <a href='https://twitter.com/sadorlovsky'>twitter</a>
-        <a href='https://github.com/sadorlovsky'>code</a>
-      </nav>
-    </div>
+  <div>
+    <Head>
+      <title>Zach Orlovsky 😔</title>
+    </Head>
+    <h1>Zach Orlovsky</h1>
 
-    <style jsx>{`
-      div {
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        transition: all 0.5s cubic-bezier(0.445, 0.05, 0.55, 0.95);
-        user-select: none;
-      }
-
-      h1 {
+    <style jsx global>{`
+      html, body {
         margin: 0;
-        font-weight: 200;
-        cursor: default;
-        color: ${colors.text};
+        padding: 0;
       }
-
-      nav {
-        margin-top: 15px;
-      }
-
-      nav > a {
-        color: ${colors.nav};
-        text-decoration: none;
-      }
-
-      nav > a:not(:last-child) {
-        margin-right: 15px;
+      body {
+        padding: 20px;
+        background: #000;
       }
     `}</style>
-  </Page>
+    <style jsx>{`
+      h1 {
+        margin: 0;
+        font-weight: bold;
+        cursor: default;
+        color: pink;
+        font-family: sans-serif;
+        font-size: 100px;
+        margin-left: -10px;
+      }
+    `}</style>
+  </div>
 )
