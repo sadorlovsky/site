@@ -1,6 +1,6 @@
 {
   "name": "@sadorlovsky/site",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "license": "MIT",
   "repository": "sadorlovsky/site",
   "scripts": {
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "next": "^9.0.1",
+    "next-seo": "2.0.0-alpha.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-ga": "^2.4.1"
