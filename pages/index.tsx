@@ -49,7 +49,7 @@ const IndexPage = () => {
         <div>
           <h1 style={{
             transform: `perspective(1000px) rotateX(${getRotateX()}deg) rotateY(${getRotateY()}deg) scale3d(1, 1, 1)`,
-            background: getRotateX() === 0 ? 'none' : `linear-gradient(${getRotateX() + getRotateY()}deg, var(--foreground), rgba(210, 210, 212, 0.3)`
+            background: getRotateX() === 0 ? 'none' : `linear-gradient(${getRotateX() + getRotateY()}deg, var(--background), rgba(210, 210, 212, 0.3)`
           }}>
             Zach Orlovsky
           </h1>
