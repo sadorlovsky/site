@@ -59,7 +59,8 @@ export default () => (
         color: #fff;
         font-family: sans-serif;
       }
-    `}</style>
+    `}
+    </style>
     <style jsx>{`
       main {
         margin-top: 1em;
@@ -76,6 +77,7 @@ export default () => (
       .social > a:not(:last-child) {
         margin-right: 1em;
       }
-    `}</style>
+    `}
+    </style>
   </>
 )
