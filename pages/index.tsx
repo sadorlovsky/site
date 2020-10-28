@@ -1,15 +1,15 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, MouseEventHandler } from 'react'
 import Head from 'next/head'
 import { NextSeo } from 'next-seo'
 
 const IndexPage = () => {
   const [coords, setCoords] = useState<number[]>([0, 0])
 
-  const handleMouseMove: React.MouseEventHandler = event => {
+  const handleMouseMove: MouseEventHandler = event => {
     setCoords([event.pageX, event.pageY])
   }
 
-  const handleMouseLeave: React.MouseEventHandler = () => {
+  const handleMouseLeave: MouseEventHandler = () => {
     setCoords([0, 0])
   }
 
@@ -35,7 +35,7 @@ const IndexPage = () => {
     <>
       <NextSeo
         title='Zach Orlovsky'
-        description="Zach Orlovsky personal page"
+        description='Zach Orlovsky personal page'
       />
 
       <Head>
@@ -50,7 +50,8 @@ const IndexPage = () => {
           <h1 style={{
             transform: `perspective(1000px) rotateX(${getRotateX()}deg) rotateY(${getRotateY()}deg) scale3d(1, 1, 1)`,
             background: getRotateX() === 0 ? 'none' : `linear-gradient(${getRotateX() + getRotateY()}deg, var(--background), rgba(210, 210, 212, 0.3)`
-          }}>
+          }}
+          >
             Zach Orlovsky
           </h1>
         </div>

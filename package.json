@@ -1,12 +1,14 @@
 {
+  "private": true,
   "name": "@sadorlovsky/site",
-  "version": "0.10.10",
+  "version": "0.10.11",
   "license": "MIT",
   "repository": "sadorlovsky/site",
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "standardx **/*.ts **/*.tsx"
   },
   "dependencies": {
     "next": "10.0.0",
@@ -16,20 +18,39 @@
     "react-dom": "17.0.0"
   },
   "devDependencies": {
-    "@types/node": "14.11.10",
-    "@types/react": "16.9.53",
+    "@types/node": "14.14.5",
+    "@types/react": "16.9.54",
+    "@typescript-eslint/eslint-plugin": "4.6.0",
+    "@typescript-eslint/parser": "4.6.0",
     "husky": "4.3.0",
-    "lint-staged": "10.4.2",
-    "standard": "14.3.4",
+    "lint-staged": "10.5.0",
+    "standardx": "6.0.0",
     "typescript": "4.0.3"
+  },
+  "eslintConfig": {
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "rules": {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "error",
+      "no-useless-constructor": "off",
+      "@typescript-eslint/no-useless-constructor": "error"
+    }
+  },
+  "standardx": {
+    "parser": "@typescript-eslint/parser",
+    "plugins": [ "@typescript-eslint/eslint-plugin" ]
   },
   "husky": {
     "hooks": {
-      "pre-commit": "standard",
-      "pre-push": "standard"
+      "pre-commit": "lint-staged",
+      "pre-push": "standardx"
     }
   },
   "lint-staged": {
-    "*.js": "standard"
+    "*.{ts,tsx}": "standardx --fix"
   }
 }
