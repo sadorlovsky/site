@@ -4,7 +4,7 @@ import './styles.css'
 
 const App = ({ Component, pageProps }: AppProps) => {
   return (
-    <ThemeProvider defaultTheme="system">
+    <ThemeProvider defaultTheme='system'>
       <Component {...pageProps} />
     </ThemeProvider>
   )
