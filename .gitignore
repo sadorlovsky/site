@@ -12,6 +12,10 @@
 /.next
 /out
 
+# pwa
+/public/sw.js
+/public/workbox-*.js
+
 # misc
 .DS_Store
 .env
