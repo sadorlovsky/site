@@ -1,9 +1,35 @@
-:root { font-family: 'Inter', sans-serif; }
-@supports (font-variation-settings: normal) {
-  :root { font-family: 'Inter var', sans-serif; }
+:root {
+  font-family: "Inter", sans-serif;
+  color-scheme: light dark;
+
+  --light-bg: #f8f8ff;
+  --dark-bg: #191919;
 }
 
-html, body {
-	padding: 0;
-	margin: 0;
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: "Inter var", sans-serif;
+  }
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background-color: light-dark(var(--light-bg), var(--dark-bg));
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: var(--light-bg);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--dark-bg);
+  }
 }
