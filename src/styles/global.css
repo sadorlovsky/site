@@ -1,5 +1,16 @@
+/* @font-face {
+  font-family: 'Firacode';
+  src: url(/fonts/FiraCode-Regular.ttf);
+}
+
+@font-face {
+  font-family: 'Firacode Var';
+  src: url(/fonts/FiraCode-Variable.ttf);
+} */
+
 :root {
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1, 'ss03' 1;
   color-scheme: light dark;
 
   --light-bg: #f8f8ff;
@@ -8,7 +19,7 @@
 
 @supports (font-variation-settings: normal) {
   :root {
-    font-family: "Inter var", sans-serif;
+    font-family: InterVariable, sans-serif;
   }
 }
 

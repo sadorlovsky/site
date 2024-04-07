@@ -1,17 +1,7 @@
 ---
-import "../styles/global.css";
+import PageLayout from '../layouts/PageLayout.astro';
 ---
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Zach</title>
-    <meta name="title" content="Zach" />
-    <meta name="description" content="Zach" />
-  </head>
-  <body>
+<PageLayout title="Zach">
     <main>
       <div class="profile-picture">
         <div class="shape"></div>
@@ -406,8 +396,7 @@ import "../styles/global.css";
         </svg>
       </div>
     </main>
-  </body>
-</html>
+  </PageLayout>
 
 <style>
   main {
@@ -436,9 +425,11 @@ import "../styles/global.css";
       rgb(237, 98, 146) 25%,
       rgb(237, 87, 96) 87.5%
     );
+    background-size: 200% 200%;
     animation:
-      morph 8s ease-in-out infinite both alternate,
-      spin 12s ease-in-out infinite alternate;
+      morph 8s cubic-bezier(0.68, -0.6, 0.32, 1.6) infinite both alternate,
+      spin 12s ease-in-out infinite alternate,
+      gradient 7s ease-in-out infinite;
     z-index: 0;
   }
 
@@ -459,6 +450,18 @@ import "../styles/global.css";
   @keyframes spin {
     to {
       transform: rotate(1turn);
+    }
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 7% 0%;
+    }
+    50% {
+      background-position: 94% 100%;
+    }
+    100% {
+      background-position: 7% 0%;
     }
   }
 </style>
