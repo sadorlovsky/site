@@ -1,12 +1,12 @@
-/* @font-face {
+@font-face {
   font-family: 'Firacode';
   src: url(/fonts/FiraCode-Regular.ttf);
 }
 
 @font-face {
-  font-family: 'Firacode Var';
+  font-family: 'FiracodeVariable';
   src: url(/fonts/FiraCode-Variable.ttf);
-} */
+}
 
 :root {
   font-family: Inter, sans-serif;
@@ -21,6 +21,10 @@
   :root {
     font-family: InterVariable, sans-serif;
   }
+
+  pre, code {
+    font-family: "FiracodeVariable", monospace;
+  }
 }
 
 html,
@@ -33,6 +37,10 @@ body {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
 }
 
+pre, code {
+  font-family: "Firacode", monospace;
+}
+
 @media (prefers-color-scheme: light) {
   body {
     background-color: var(--light-bg);
@@ -43,4 +51,10 @@ body {
   body {
     background-color: var(--dark-bg);
   }
+}
+
+pre {
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 6px;
 }
