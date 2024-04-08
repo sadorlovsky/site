@@ -1,0 +1,112 @@
+---
+import { Icon } from "astro-icon/components";
+
+const footerItems = [
+  {
+    text: "Zach",
+    color: "#E19898",
+  },
+  {
+    text: "Software Developer",
+    color: "#3F1D38",
+  },
+  {
+    text: "X5 Group",
+    color: "#4D3C77",
+  },
+  // {
+  //   text: "See [ blog :: photos :: travel ]",
+  //   color: "#A2678A",
+  // },
+];
+---
+
+<footer>
+  <section class="left">
+    {
+      footerItems.map((item, index) => {
+        const firstBlock = index === 0;
+        const lastBlock = footerItems.length === index + 1;
+        const blockStyle = `background-color: ${item.color}; margin-left: ${index === 0 ? 0 : "-10px"}; padding-right: 15px; padding-left: ${firstBlock ? "5px" : "15px"}; font-weight: ${firstBlock ? 600: 400}`;
+        const dividerStyle = `margin-left: ${lastBlock ? "-10px" : "-15px"}; background-color: ${item.color}`;
+        return (
+          <>
+            <div class="block" style={blockStyle}>
+              {item.text}
+            </div>
+            {!lastBlock && <div class="divider" style={dividerStyle} />}
+          </>
+        );
+      })
+    }
+  </section>
+  <section class="right">
+    <div class="block contacts" style="padding: 0 10px">Contacts <Icon name="user" /></div>
+  </section>
+</footer>
+
+<style>
+  footer {
+    font-family: "FiracodeVariable", monospace;
+    box-sizing: border-box;
+    background-color: #222;
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    height: 30px;
+    display: flex;
+    justify-content: space-between;
+    color: #fff;
+  }
+
+  @media (prefers-color-scheme: light) {
+    footer {
+      background-color: #ebedf0;
+    }
+  }
+
+  .left {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    background-color: #76abae;
+  }
+
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .block {
+    font-weight: 400;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .divider {
+    box-sizing: border-box;
+    display: block;
+    width: 20px;
+    height: 100%;
+    z-index: 2;
+    clip-path: polygon(50% 0%, 100% 0%, 50% 100%, 0% 100%);
+  }
+
+  [data-icon="user"] {
+    font-size: 1.5rem;
+  }
+
+  .contacts {
+    display: flex;
+    gap: 5px;
+  }
+</style>
+
+<script></script>
