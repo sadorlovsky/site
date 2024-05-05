@@ -1,0 +1,45 @@
+---
+import "flag-icons/css/flag-icons.min.css";
+import { trips } from "@lib/travel";
+---
+
+<div>
+  {
+    trips.map((trip) => {
+      return (
+        <div class="trip">
+          <div class="date">{trip.date}</div>
+          <div class="destination">
+            {trip.destination.map((destination) => (
+              <>
+                <div class="city">
+                  <span
+                    class:list={["flag", "fi", `fi-${destination.country[0]}`]}
+                  />
+                  {destination.city}
+                </div>
+              </>
+            ))}
+          </div>
+        </div>
+      );
+    })
+  }
+</div>
+
+<style>
+  .trip {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    padding: 0.5rem;
+  }
+
+  .flag {
+    margin-right: 4px;
+  }
+
+  .city {
+    display: inline-flex;
+    padding: 0.25rem;
+  }
+</style>

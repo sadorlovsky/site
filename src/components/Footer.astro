@@ -1,33 +1,47 @@
 ---
-import { Icon } from "astro-icon/components";
+const { pathname } = Astro.url;
 
-const footerItems = [
-  {
-    text: "Zach",
-    color: "#E19898",
-  },
-  {
-    text: "Software Developer",
-    color: "#3F1D38",
-  },
-  {
-    text: "X5 Group",
-    color: "#4D3C77",
-  },
-  // {
-  //   text: "See [ blog :: photos :: travel ]",
-  //   color: "#A2678A",
-  // },
-];
+// const footerItems = [
+//   {
+//     text: pathname === "/" ? `~/Zach` : `~/Zach${pathname}`,
+//     // color: "#E19898",
+//     color: "#fc60a8",
+//   },
+//   // {
+//   //   text: "Software Developer",
+//   //   // color: "#3F1D38",
+//   //   color: '#7a28cb',
+//   // },
+//   // {
+//   //   text: "X5 Group",
+//   //   // color: "#4D3C77",
+//   //   color: '#494368',
+//   // },
+//   // {
+//   //   text: "See [ blog :: photos :: travel ]",
+//   //   color: "#A2678A",
+//   // },
+// ];
 ---
 
 <footer>
   <section class="left">
-    {
+    <div class="block path-block">
+      {pathname === "/" && <>~/Zach</>}
+      {
+        pathname !== "/" && (
+          <>
+            <a href="/">~/Zach</a>
+            {pathname}
+          </>
+        )
+      }
+    </div>
+    <!-- {
       footerItems.map((item, index) => {
         const firstBlock = index === 0;
         const lastBlock = footerItems.length === index + 1;
-        const blockStyle = `background-color: ${item.color}; margin-left: ${index === 0 ? 0 : "-10px"}; padding-right: 15px; padding-left: ${firstBlock ? "5px" : "15px"}; font-weight: ${firstBlock ? 600: 400}`;
+        const blockStyle = `background-color: ${item.color}; margin-left: ${index === 0 ? 0 : "-10px"}; padding-right: 15px; padding-left: ${firstBlock ? "10px" : "15px"}; font-weight: ${firstBlock ? 600 : 400}`;
         const dividerStyle = `margin-left: ${lastBlock ? "-10px" : "-15px"}; background-color: ${item.color}`;
         return (
           <>
@@ -38,11 +52,13 @@ const footerItems = [
           </>
         );
       })
-    }
+    } -->
   </section>
-  <section class="right">
-    <div class="block contacts" style="padding: 0 10px">Contacts <Icon name="user" /></div>
-  </section>
+  <!-- <section class="right">
+    <div class="block contacts" style="padding: 0 10px">
+      Contacts <Icon name="user" />
+    </div>
+  </section> -->
 </footer>
 
 <style>
@@ -62,6 +78,7 @@ const footerItems = [
   @media (prefers-color-scheme: light) {
     footer {
       background-color: #ebedf0;
+      /* background-color: #ceec97; */
     }
   }
 
@@ -74,7 +91,8 @@ const footerItems = [
   .right {
     display: flex;
     align-items: center;
-    background-color: #76abae;
+    /* background-color: #76abae; */
+    background-color: #f4b393;
   }
 
   .icon {
@@ -88,6 +106,21 @@ const footerItems = [
     display: flex;
     align-items: center;
     height: 100%;
+  }
+
+  .path-block {
+    padding: 0 10px;
+    background-color: #fc60a8;
+    font-weight: 600;
+  }
+
+  .path-block > a {
+    color: unset;
+    text-decoration: unset;
+  }
+
+  .path-block > a:hover {
+    text-decoration: underline;
   }
 
   .divider {
@@ -108,5 +141,3 @@ const footerItems = [
     gap: 5px;
   }
 </style>
-
-<script></script>
