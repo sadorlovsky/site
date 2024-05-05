@@ -35,6 +35,8 @@ body {
 
 body {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 pre, code {
