@@ -23,11 +23,13 @@ const fillCountriesLayer = {
   "source-layer": "countries",
 };
 
+let zoom = document.body.clientWidth <= 480 ? 1 : 2;
+
 const map = new Map({
   container: "map",
   style: "/maptiles.json",
   center: [43, 55],
-  zoom: 2,
+  zoom,
   attributionControl: false,
 });
 
@@ -56,6 +58,14 @@ window
     map.removeLayer("background");
     map.addLayer(getBackgroundLayer() as any, "coastline");
   });
+
+window.addEventListener("resize", () => {
+  if (document.body.clientWidth <= 480) {
+    map.setZoom(1);
+  } else {
+    map.setZoom(2);
+  }
+});
 
 const crimeaFillLayer = {
   id: "crimea-fill",
@@ -118,7 +128,9 @@ map.on("mouseleave", "countries-fill", () => {
 
 map.on("sourcedata", (event) => {
   if (event.sourceId === "maplibre" && event.isSourceLoaded) {
-    const placeholder = document.querySelector("#placeholder") as HTMLDivElement;
+    const placeholder = document.querySelector(
+      "#placeholder"
+    ) as HTMLDivElement;
     placeholder.style.opacity = "0";
   }
 });
