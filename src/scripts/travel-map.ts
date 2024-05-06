@@ -115,3 +115,10 @@ map.on("mouseleave", "countries-fill", () => {
   }
   hoveredFeature = undefined;
 });
+
+map.on("sourcedata", (event) => {
+  if (event.sourceId === "maplibre" && event.isSourceLoaded) {
+    const placeholder = document.querySelector("#placeholder") as HTMLDivElement;
+    placeholder.style.opacity = "0";
+  }
+});

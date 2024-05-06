@@ -1,4 +1,6 @@
-<div id="map" class="map"></div>
+<div id="map" class="map">
+  <div id="placeholder" class="placeholder" />
+</div>
 
 <style>
   .map {
@@ -6,6 +8,25 @@
     height: 500px;
     border-radius: 5px;
     overflow: hidden;
+    position: relative;
+  }
+
+  .placeholder {
+    background-color: #222222;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    opacity: 1;
+    transition: opacity 0.5s ease-in;
+    pointer-events: none;
+  }
+
+  @media (prefers-color-scheme: light) {
+    .placeholder {
+      background-color: #ebedf0;
+    }
   }
 </style>
 
