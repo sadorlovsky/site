@@ -34,6 +34,13 @@ const total = 249;
     margin-bottom: 20px;
   }
 
+  @media (max-width: 480px) {
+    .stats {
+      grid-auto-flow: unset;
+      grid-template-columns: 1fr;
+    }
+  }
+
   .card {
     background-color: #222222;
     padding: 1em;
