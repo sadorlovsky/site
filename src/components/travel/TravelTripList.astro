@@ -39,7 +39,9 @@ import { trips } from "@lib/travel";
   }
 
   .city {
-    display: inline-flex;
+    display: inline-grid;
+    grid-auto-flow: column;
+    align-items: baseline;
     padding: 0.25rem;
   }
 </style>

@@ -1,6 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
-import { countries } from "@lib/travel";
+import { countries, cities } from "@lib/travel";
 
 const total = 249;
 ---
@@ -13,7 +13,7 @@ const total = 249;
   </div>
   <div class="card">
     <h3>Cities</h3>
-    <div>70</div>
+    <div>{cities.size}</div>
   </div>
   <div class="card">
     <h3>Continents</h3>
@@ -32,13 +32,6 @@ const total = 249;
     gap: 20px;
     margin-top: 20px;
     margin-bottom: 20px;
-  }
-
-  @media (max-width: 480px) {
-    .stats {
-      grid-auto-flow: unset;
-      grid-template-columns: 1fr;
-    }
   }
 
   .card {
@@ -79,5 +72,20 @@ const total = 249;
 
   .info-icon {
     color: #666;
+  }
+
+  @media (max-width: 480px) {
+    .stats {
+      grid-auto-flow: unset;
+      grid-template-columns: 1fr;
+      gap: 0;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .card {
+      border-radius: 0;
+      padding: 1em;
+    }
   }
 </style>
