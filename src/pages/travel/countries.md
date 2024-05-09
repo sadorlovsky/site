@@ -261,11 +261,12 @@ title: "List of countries and territories"
 241. Puerto Rico
 242. U.S. Virgin Islands
 
-## Other <!--- 7 -->
-243. Northern Cyprus
-244. Pridnestrovian Moldovan Republic (Transnistria)
-245. Republic of Abkhazia
-246. Republic of China (Taiwan)
-247. Republic of Kosovo
-248. Republic of South Ossetia (State of Alania)
-249. Sahrawi Arab Democratic Republic (Western Sahara)
+## Other <!--- 8 -->
+243. Republic of Abkhazia
+244. Republic of China (Taiwan)
+245. Republic of Kosovo
+246. Turkish Republic of Northern Cyprus
+247. Pridnestrovian Moldovan Republic (Transnistria)
+248. Sahrawi Arab Democratic Republic (Western Sahara)
+249. Republic of Somaliland
+250. Republic of South Ossetia (State of Alania)

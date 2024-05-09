@@ -1,5 +1,10 @@
 import { expect, test } from "vitest";
-import { getCities, getCountires, getCompletedTrips } from "./index";
+import {
+  getCities,
+  getCountires,
+  getCountryListSize,
+  getCompletedTrips,
+} from "./index";
 
 const mockedTripsData = [
   {
@@ -89,4 +94,21 @@ test("gets cities", () => {
   expect(getCities(mockedTripsData)).toEqual(
     new Set(["City 4", "City 5", "City 6", "City 3", "City 1", "City 2"])
   );
+});
+
+test("gets country list size from markdown string", () => {
+  const markdownContent = `
+  # Title 1
+  ## Title 2
+  1. Country
+  2. Country
+  3. Country
+  ## Title 2
+  4. Country
+  5. Country
+  # Title 1
+  6. Country
+
+  `;
+  expect(getCountryListSize(markdownContent)).toBe(6);
 });
