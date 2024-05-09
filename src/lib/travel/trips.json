@@ -374,6 +374,15 @@
     ]
   },
   {
+    "date": "Jun, 2019",
+    "destination": [
+      {
+        "city": "Vladimir",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
     "date": "May, 2019",
     "destination": [
       {

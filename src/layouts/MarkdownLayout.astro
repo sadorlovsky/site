@@ -15,12 +15,14 @@ const { frontmatter } = Astro.props;
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   </head>
   <body>
-    <slot />
+    <main class="md">
+      <slot />
+    </main>
   </body>
 </html>
 
 <style>
-  body {
+  .md {
     padding: 1em;
   }
 </style>
