@@ -1,5 +1,5 @@
 ---
-const { pathname } = Astro.url;
+const pathname = Astro.url.pathname.replace(/\/+$/, '');
 
 // const footerItems = [
 //   {
