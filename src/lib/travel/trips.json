@@ -3,7 +3,59 @@
     "date": "TBA",
     "destination": [
       {
-        "city": "Cairo, Giza, Alexandria",
+        "city": "London",
+        "country": ["gb", "gbr"]
+      },
+      {
+        "city": "Edinburgh",
+        "country": ["gb", "gbr"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Samarkand",
+        "country": ["uz", "uzb"]
+      },
+      {
+        "city": "Bukhara",
+        "country": ["uz", "uzb"]
+      },
+      {
+        "city": "Fergana",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Bishkek",
+        "country": ["kg", "kgz"]
+      },
+      {
+        "city": "Dushanbe",
+        "country": ["tj", "tjk"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Longyearbyen, Pyramiden, Ny-Ålesund",
+        "country": ["sj", "sjm"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Cairo, Giza, Alexandria, El Gouna",
         "country": ["eg", "egy"]
       }
     ]
@@ -69,6 +121,10 @@
       {
         "city": "Hong Kong",
         "country": ["hk", "hkg"]
+      },
+      {
+        "city": "Macau",
+        "country": ["mo", "mac"]
       },
       {
         "city": "Taipei",

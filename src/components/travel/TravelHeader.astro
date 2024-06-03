@@ -1,0 +1,46 @@
+---
+import { Icon } from "astro-icon/components";
+---
+
+<div class="heading">
+  <h1 class="title">Zach's travels</h1>
+  <a class="photos-link" href="https://instagram.com/sadorlovsky">
+    <Icon name="instagram" width={24} height={24} title="Check out my travel photos" />
+    <span class="only-wide">Check out my travel photos</span>
+  </a>
+</div>
+
+<style>
+  .heading {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+  .photos-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    text-decoration: none;
+    color: unset;
+  }
+
+  .title {
+    flex-grow: 2;
+  }
+
+  .picture {
+    width: 24px;
+  }
+
+  @media (max-width: 580px) {
+    .only-wide {
+      display: none;
+    }
+  }
+</style>
