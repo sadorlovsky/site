@@ -72,7 +72,7 @@ const crimeaFillLayer = {
   type: "fill",
   source: "crimea",
   paint: {
-    "fill-color": "#D6C7FF",
+    "fill-color": "#B1BBF9",
   },
 };
 
