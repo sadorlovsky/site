@@ -3,11 +3,25 @@
     "date": "TBA",
     "destination": [
       {
-        "city": "London",
-        "country": ["gb", "gbr"]
-      },
+        "city": "Dubai",
+        "country": ["ae", "are"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
       {
-        "city": "Edinburgh",
+        "city": "Tokyo, Kyoto, Osaka, Hiroshima, Itsukushima, Sapporo",
+        "country": ["jp", "jpn"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "London, Edinburgh",
         "country": ["gb", "gbr"]
       }
     ]
@@ -16,15 +30,7 @@
     "date": "TBA",
     "destination": [
       {
-        "city": "Samarkand",
-        "country": ["uz", "uzb"]
-      },
-      {
-        "city": "Bukhara",
-        "country": ["uz", "uzb"]
-      },
-      {
-        "city": "Fergana",
+        "city": "Samarkand, Bukhara, Fergana",
         "country": ["uz", "uzb"]
       }
     ]
