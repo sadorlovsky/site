@@ -18,11 +18,15 @@
     ]
   },
   {
-    "date": "TBA",
+    "date": "Oct, 2024",
     "destination": [
       {
-        "city": "London, Edinburgh",
-        "country": ["gb", "gbr"]
+        "city": "London, Bath, York, Liverpool",
+        "country": ["gb-eng", "gbr"]
+      },
+      {
+        "city": "Edinburgh",
+        "country": ["gb-sct", "gbr"]
       }
     ]
   },
@@ -152,6 +156,15 @@
       {
         "city": "Colombo",
         "country": ["lk", "lka"]
+      }
+    ]
+  },
+  {
+    "date": "Jul, 2024",
+    "destination": [
+      {
+        "city": "Tashkent",
+        "country": ["uz", "uzb"]
       }
     ]
   },
