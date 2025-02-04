@@ -12,7 +12,4 @@ export default defineConfig({
       theme: "catppuccin-macchiato",
     },
   },
-  experimental: {
-    contentLayer: true,
-  },
 });
