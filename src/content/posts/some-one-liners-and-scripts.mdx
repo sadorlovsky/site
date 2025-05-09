@@ -18,7 +18,7 @@ gsed -i.bak -E 's/(<PATTERN_TO_MATCH>)/\U\1/g' /path/to/file
 
 ```bash
 # Example: Convert all lowercase "example" words to uppercase
-   gsed -i.bak -E 's/(example)/\U\1/g' /path/to/file
+gsed -i.bak -E 's/(example)/\U\1/g' /path/to/file
 ```
 
 Default `sed` installed in macOS doesn't support `\U` so `gsed` used here. It can be installed via brew
@@ -54,9 +54,9 @@ brew install git-filter-repo
 **⚠️ Warning: This rewrites repository history, so use with caution on shared repositories!**
 
 > ### 💡 Pro Tip
-> 
+>
 > If you frequently work across different GitHub accounts or organizations, consider setting repository-specific Git configs to prevent this issue:
-> 
+>
 > ```bash
 > # Set local repo-specific author details
 > git config user.name "Work Username"
