@@ -1,0 +1,46 @@
+---
+title: 'Some one-liners and other useful script'
+pubDate: 2025-05-09
+author: 'Zach Orlovsky'
+tags: []
+---
+
+# {frontmatter.title}
+
+## Find substring in file and make it uppercased
+
+Finds mathed substring captured to a group and makes it upercased with `\U` before that group `\1`.
+
+```bash
+gsed -i.bak -E 's/<REGEX>/\U\1/g' /path/to/file
+```
+
+Default `sed` installed in macOS doesn't support `\U` so `gsed` used here. It can be installed via brew
+
+```bash
+brew install gnu-sed
+```
+
+## Change Git commit author information
+
+This command uses `git-filter-repo` to change the author and committer information for all commits not made by a specific author. It's useful when you need to update authorship information throughout a repository's history.
+
+```bash
+git filter-repo --force --commit-callback '
+if commit.author_name != b"<OLD_AUTHOR_NAME>":
+    new_name = b"<NEW_AUTHOR_NAME>"
+    new_email = b"<NEW_AUTHOR_EMAIL>"
+    commit.author_name = b"<NEW_AUTHOR_NAME>"
+    commit.author_email = b"<NEW_AUTHOR_EMAIL>"
+    commit.committer_name = b"<NEW_AUTHOR_NAME>"
+    commit.committer_email = b"<NEW_AUTHOR_EMAIL>"
+'
+```
+
+To use this, you'll need to install `git-filter-repo` first:
+
+```bash
+brew install git-filter-repo
+```
+
+Note: This rewrites repository history, so use with caution on shared repositories!
