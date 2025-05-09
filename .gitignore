@@ -17,4 +17,8 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
+# Vercel-specific files
+.vercel/
+
+# Astro-specific files
 .astro/

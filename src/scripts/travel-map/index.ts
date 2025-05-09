@@ -4,7 +4,6 @@ import {
   crimeaFillLayer,
   getBackgroundLayer,
 } from "./layers";
-// import { markers } from "./markers";
 
 let zoom = document.body.clientWidth <= 480 ? 1 : 2;
 
@@ -29,23 +28,11 @@ window
     map.addLayer(getBackgroundLayer(colorScheme) as any, "coastline");
   });
 
-window.addEventListener("resize", () => {
-  if (document.body.clientWidth <= 480) {
-    map.setZoom(1);
-  } else {
-    map.setZoom(2);
-  }
-});
-
 map.on("load", () => {
   map.addLayer(getBackgroundLayer(colorScheme) as any, "coastline");
   map.addLayer(countriesFillLayer as any, "countries-boundary");
   map.addLayer(crimeaFillLayer as any);
 });
-
-// for (const marker of markers) {
-//   marker.addTo(map);
-// }
 
 map.on("sourcedata", (event) => {
   if (event.sourceId === "maplibre" && event.isSourceLoaded) {

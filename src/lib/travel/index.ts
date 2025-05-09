@@ -5,7 +5,7 @@ export function getCountires(data: typeof tripsData) {
   return new Set(
     data
       .flatMap((trip) => trip.destination)
-      .map((dest) => dest.country[1].toUpperCase())
+      .map((dest) => dest.country[1].toUpperCase()),
   );
 }
 
@@ -15,7 +15,7 @@ export function getCities(data: typeof tripsData) {
       .flatMap((trip) => trip.destination)
       .map((dest) => dest.city)
       .flatMap((cities) => cities.split(","))
-      .map((city) => city.trim())
+      .map((city) => city.trim()),
   );
 }
 
