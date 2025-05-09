@@ -15,7 +15,11 @@ const allPosts = await getCollection("posts");
           <a href={`/blog/${post.slug}`}>
             <h2>{post.data.title}</h2>
           </a>
-          <span>Published on {post.data.pubDate.toLocaleDateString()}</span>
+          <span>Published on {new Date(post.data.pubDate).toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          })}</span>
         </section>
         <div class="divider" />
       ))
