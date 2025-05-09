@@ -1,6 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import PageLayout from '../../layouts/PageLayout.astro';
+import PageLayout from "../../layouts/PageLayout.astro";
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection("posts");
@@ -13,10 +13,9 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 ---
+
 <PageLayout title={entry.data.title}>
-  <nav>
-    <a href="/blog">back to all posts</a>
-  </nav>
+  <nav></nav>
   <article>
     <Content />
   </article>
@@ -30,9 +29,5 @@ const { Content } = await entry.render();
     max-width: 800px;
     font-size: 1.125rem;
     line-height: 1.75;
-
-    p, ol, li {
-      color: rgb(191, 193, 201);
-    }
   }
 </style>
