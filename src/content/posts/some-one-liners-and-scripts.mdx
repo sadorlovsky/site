@@ -1,5 +1,5 @@
 ---
-title: 'Some one-liners and other useful script'
+title: 'Some one-liners and other useful scripts'
 pubDate: 2025-05-09
 description: A collection of useful one-liners and scripts for those times when you need a quick solution without having to Google or memorize complex commands
 author: 'Zach Orlovsky'
@@ -10,10 +10,15 @@ tags: []
 
 ## Find substring in file and make it uppercased
 
-Finds mathed substring captured to a group and makes it upercased with `\U` before that group `\1`.
+Finds matched substring captured to a group and makes it upercased with `\U` before that group `\1`.
 
 ```bash
-gsed -i.bak -E 's/<REGEX>/\U\1/g' /path/to/file
+gsed -i.bak -E 's/(<PATTERN_TO_MATCH>)/\U\1/g' /path/to/file
+```
+
+```bash
+# Example: Convert all lowercase "example" words to uppercase
+   gsed -i.bak -E 's/(example)/\U\1/g' /path/to/file
 ```
 
 Default `sed` installed in macOS doesn't support `\U` so `gsed` used here. It can be installed via brew
@@ -24,7 +29,9 @@ brew install gnu-sed
 
 ## Change Git commit author information
 
-This command uses `git-filter-repo` to change the author and committer information for all commits not made by a specific author. It's useful when you need to update authorship information throughout a repository's history.
+This command uses `git-filter-repo` to change the author and committer information for all commits not made by a specific author.
+
+It's particularly useful when you've accidentally committed and pushed using your global Git config with one set of author details, but the repository needed a different local Git config with project-specific author settings.
 
 ```bash
 git filter-repo --force --commit-callback '
@@ -44,4 +51,18 @@ To use this, you'll need to install `git-filter-repo` first:
 brew install git-filter-repo
 ```
 
-Note: This rewrites repository history, so use with caution on shared repositories!
+**⚠️ Warning: This rewrites repository history, so use with caution on shared repositories!**
+
+> ### 💡 Pro Tip
+> 
+> If you frequently work across different GitHub accounts or organizations, consider setting repository-specific Git configs to prevent this issue:
+> 
+> ```bash
+> # Set local repo-specific author details
+> git config user.name "Work Username"
+> git config user.email "work-email@company.com"
+>
+> # Check your current git config
+> git config user.name
+> git config user.email
+> ```
