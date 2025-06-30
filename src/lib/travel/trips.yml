@@ -1,0 +1,416 @@
+trips:
+  - date: TBA
+    description: Dubai trip
+    places:
+      - city: Dubai
+        country: ae
+  - date: TBA
+    description: Japan multi-city tour
+    places:
+      - city: Tokyo
+        country: jp
+      - city: Kyoto
+        country: jp
+      - city: Osaka
+        country: jp
+      - city: Hiroshima
+        country: jp
+      - city: Itsukushima
+        country: jp
+      - city: Sapporo
+        country: jp
+  - date: Oct, 2024
+    description: UK trip
+    places:
+      - city: London
+        country: gb-eng
+      - city: Bath
+        country: gb-eng
+      - city: York
+        country: gb-eng
+      - city: Liverpool
+        country: gb-eng
+      - city: Edinburgh
+        country: gb-sct
+  - date: TBA
+    description: Uzbekistan historical cities
+    places:
+      - city: Samarkand
+        country: uz
+      - city: Bukhara
+        country: uz
+      - city: Fergana
+        country: uz
+  - date: TBA
+    description: Central Asia adventure
+    places:
+      - city: Bishkek
+        country: kg
+      - city: Dushanbe
+        country: tj
+  - date: TBA
+    description: Svalbard Arctic expedition
+    places:
+      - city: Longyearbyen
+        country: sj
+      - city: Pyramiden
+        country: sj
+      - city: Ny-Ålesund
+        country: sj
+  - date: TBA
+    description: Egypt exploration
+    places:
+      - city: Cairo
+        country: eg
+      - city: Giza
+        country: eg
+      - city: Alexandria
+        country: eg
+      - city: El Gouna
+        country: eg
+  - date: TBA
+    description: Morocco adventure
+    places:
+      - city: Casablanca
+        country: ma
+      - city: Marrakech
+        country: ma
+      - city: Rabat
+        country: ma
+      - city: Fez
+        country: ma
+      - city: Zaida
+        country: ma
+      - city: Tangier
+        country: ma
+  - date: TBA
+    description: Nordic countries tour
+    places:
+      - city: Copenhagen
+        country: dk
+      - city: Malmö
+        country: se
+      - city: Göteborg
+        country: se
+      - city: Oslo
+        country: no
+      - city: Reykjavik
+        country: is
+  - date: TBA
+    description: Balkans tour
+    places:
+      - city: Belgrade
+        country: rs
+      - city: Novi Sad
+        country: rs
+      - city: Sarajevo
+        country: ba
+      - city: Podgorica
+        country: me
+      - city: Budva
+        country: me
+      - city: Bar
+        country: me
+      - city: Tiranë
+        country: al
+  - date: TBA
+    description: East Asia tour
+    places:
+      - city: Kuala Lumpur
+        country: my
+      - city: Hong Kong
+        country: hk
+      - city: Macau
+        country: mo
+      - city: Taipei
+        country: tw
+      - city: Seoul
+        country: kr
+  - date: TBA
+    description: India and Sri Lanka
+    places:
+      - city: Delhi
+        country: in
+      - city: Jaipur
+        country: in
+      - city: Agra
+        country: in
+      - city: Mumbai
+        country: in
+      - city: Bengaluru
+        country: in
+      - city: Goa
+        country: in
+      - city: Colombo
+        country: lk
+  - date: Jul, 2024
+    description: Tashkent visit
+    places:
+      - city: Tashkent
+        country: uz
+  - date: May, 2024
+    description: Istanbul trip
+    places:
+      - city: Istanbul
+        country: tr
+  - date: Apr - May, 2024
+    description: Abu Dhabi
+    places:
+      - city: Abu Dhabi
+        country: ae
+  - date: Feb, 2024
+    description: Tashkent visit
+    places:
+      - city: Tashkent
+        country: uz
+  - date: Dec, 2023
+    description: Tashkent visit
+    places:
+      - city: Tashkent
+        country: uz
+  - date: Oct, 2023
+    description: Tashkent visit
+    places:
+      - city: Tashkent
+        country: uz
+  - date: Sep, 2023
+    description: Tashkent visit
+    places:
+      - city: Tashkent
+        country: uz
+  - date: Jul, 2023
+    description: Aktau trip
+    places:
+      - city: Aktau
+        country: kz
+  - date: Apr, 2023
+    description: Istanbul trip
+    places:
+      - city: Istanbul
+        country: tr
+  - date: Jan, 2023
+    description: Italy and Vatican
+    places:
+      - city: Florence
+        country: it
+      - city: Pisa
+        country: it
+      - city: La Spezia
+        country: it
+      - city: Manarola
+        country: it
+      - city: Riomaggiore
+        country: it
+      - city: Rome
+        country: it
+      - city: Naples
+        country: it
+      - city: Vatican City
+        country: va
+  - date: Oct - Dec, 2022
+    description: Western Europe tour
+    places:
+      - city: Barcelona
+        country: es
+      - city: Madrid
+        country: es
+      - city: Toledo
+        country: es
+      - city: Bilbao
+        country: es
+      - city: Paris
+        country: fr
+      - city: Lisbon
+        country: pt
+      - city: Sintra
+        country: pt
+      - city: Costa da Caparica
+        country: pt
+      - city: Almada
+        country: pt
+      - city: Vienna
+        country: at
+      - city: Hallstatt
+        country: at
+      - city: Bratislava
+        country: sk
+      - city: Bergamo
+        country: it
+      - city: Milan
+        country: it
+      - city: Venice
+        country: it
+  - date: Oct, 2022
+    description: Almaty trip
+    places:
+      - city: Almaty
+        country: kz
+  - date: May - Jun, 2022
+    description: Astana visit
+    places:
+      - city: Astana
+        country: kz
+  - date: Feb, 2022
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: Dec, 2021
+    description: Moldova and Russia
+    places:
+      - city: Chișinău
+        country: md
+      - city: Saint Petersburg
+        country: ru
+  - date: Nov, 2021
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: Oct, 2021
+    description: Budapest trip
+    places:
+      - city: Budapest
+        country: hu
+  - date: Sep - Oct, 2021
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: Aug, 2021
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: Jun, 2021
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: May, 2021
+    description: Russia tour
+    places:
+      - city: Yaroslavl
+        country: ru
+      - city: Rostov
+        country: ru
+      - city: Rybinsk
+        country: ru
+      - city: Anapa
+        country: ru
+  - date: Mar, 2021
+    description: Istanbul trip
+    places:
+      - city: Istanbul
+        country: tr
+  - date: Dec, 2020
+    description: Russia tour
+    places:
+      - city: Saint Petersburg
+        country: ru
+      - city: Vyborg
+        country: ru
+      - city: Kaliningrad
+        country: ru
+      - city: Svetlogorsk
+        country: ru
+      - city: Zelenogradsk
+        country: ru
+      - city: Sochi
+        country: ru
+  - date: Sep, 2020
+    description: Krasnodar visit
+    places:
+      - city: Krasnodar
+        country: ru
+  - date: Aug, 2020
+    description: Sochi trip
+    places:
+      - city: Sochi
+        country: ru
+  - date: Jan, 2020
+    description: Kazan visit
+    places:
+      - city: Kazan
+        country: ru
+  - date: Oct - Nov, 2019
+    description: Berlin trip
+    places:
+      - city: Berlin
+        country: de
+  - date: Aug - Sep, 2019
+    description: Sochi trip
+    places:
+      - city: Sochi
+        country: ru
+  - date: Jul, 2019
+    description: Prague visit
+    places:
+      - city: Prague
+        country: cz
+  - date: Jun, 2019
+    description: Vladimir visit
+    places:
+      - city: Vladimir
+        country: ru
+  - date: May, 2019
+    description: Baltic and Nordic tour
+    places:
+      - city: Minsk
+        country: by
+      - city: Riga
+        country: lv
+      - city: Jūrmala
+        country: lv
+      - city: Stockholm
+        country: se
+  - date: Feb, 2019
+    description: Warsaw visit
+    places:
+      - city: Warsaw
+        country: pl
+  - date: Jan, 2019
+    description: Nordic Baltic tour
+    places:
+      - city: Helsinki
+        country: fi
+      - city: Tallin
+        country: ee
+  - date: Dec, 2018
+    description: Baltic capitals
+    places:
+      - city: Riga
+        country: lv
+      - city: Vilnus
+        country: lt
+  - date: Aug, 2018
+    description: Netherlands and Belgium
+    places:
+      - city: Amsterdam
+        country: nl
+      - city: Brussels
+        country: be
+      - city: Bruges
+        country: be
+      - city: Antwerp
+        country: be
+  - date: Jul, 2017
+    description: Murmansk trip
+    places:
+      - city: Murmansk
+        country: ru
+  - date: Jun, 2016
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: Dec, 2013
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru
+  - date: Aug, 2012
+    description: Saint Petersburg visit
+    places:
+      - city: Saint Petersburg
+        country: ru

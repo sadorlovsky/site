@@ -1,5 +1,17 @@
+<link
+  href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"
+  rel="stylesheet"
+/>
+
 <div id="map" class="map" data-testid="map">
-  <div id="placeholder" class="placeholder" />
+  <div id="placeholder" class="placeholder"></div>
+  <div class="cities-toggle">
+    <label class="toggle-label">
+      <input type="checkbox" id="citiesToggle" class="toggle-input" />
+      <span class="toggle-slider"></span>
+      <span class="toggle-text">Cities</span>
+    </label>
+  </div>
 </div>
 
 <style>
@@ -8,11 +20,18 @@
     border-radius: 5px;
     overflow: hidden;
     position: relative;
+    /* iOS Safari fixes */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    width: 100%;
   }
 
   @media (max-width: 480px) {
     .map {
       height: 300px;
+      /* iOS Safari mobile fixes */
+      min-height: 300px;
+      -webkit-overflow-scrolling: touch;
     }
   }
 
@@ -33,11 +52,184 @@
       background-color: #ebedf0;
     }
   }
+
+  .cities-toggle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    color: white;
+    user-select: none;
+  }
+
+  @media (prefers-color-scheme: light) {
+    .toggle-label {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: black;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .toggle-input {
+    display: none;
+  }
+
+  .toggle-slider {
+    position: relative;
+    width: 32px;
+    height: 18px;
+    background: #666;
+    border-radius: 9px;
+    transition: background 0.3s ease;
+  }
+
+  .toggle-slider::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+  }
+
+  .toggle-input:checked + .toggle-slider {
+    background: #00d4ff;
+  }
+
+  .toggle-input:checked + .toggle-slider::before {
+    transform: translateX(14px);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .toggle-slider {
+      background: #ccc;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .cities-toggle {
+      top: 5px;
+      right: 5px;
+    }
+
+    .toggle-label {
+      padding: 6px 10px;
+    }
+
+    .toggle-slider {
+      width: 28px;
+      height: 16px;
+    }
+
+    .toggle-slider::before {
+      width: 12px;
+      height: 12px;
+    }
+
+    .toggle-input:checked + .toggle-slider::before {
+      transform: translateX(12px);
+    }
+  }
 </style>
 
 <style is:global>
   .maplibregl-marker > svg g[fill="#3FB1CE"] {
     fill: red;
+  }
+
+  .city-marker {
+    cursor: pointer;
+  }
+
+  .city-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+  }
+
+  @media (max-width: 480px) {
+    .city-dot {
+      width: 10px;
+      height: 10px;
+      border: 3px solid rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  .city-marker.visited .city-dot {
+    background-color: #00d4ff;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+  }
+
+  .city-marker:hover .city-dot {
+    transform: scale(1.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+  }
+
+  .city-marker.visited:hover .city-dot {
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
+  }
+
+  .city-label-overlay {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 16px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translateX(-50%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .city-label-overlay {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: black;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .city-label-overlay {
+      padding: 3px 6px;
+    }
+  }
+
+  /* iOS Safari specific fixes */
+  @supports (-webkit-appearance: none) {
+    .map {
+      /* Force hardware acceleration */
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      /* Prevent iOS Safari rendering issues */
+      -webkit-perspective: 1000;
+      perspective: 1000;
+    }
   }
 </style>
 

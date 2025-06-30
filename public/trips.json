@@ -1,0 +1,561 @@
+[
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Dubai",
+        "country": ["ae", "are"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Tokyo, Kyoto, Osaka, Hiroshima, Itsukushima, Sapporo",
+        "country": ["jp", "jpn"]
+      }
+    ]
+  },
+  {
+    "date": "Oct, 2024",
+    "destination": [
+      {
+        "city": "London, Bath, York, Liverpool",
+        "country": ["gb-eng", "gbr"]
+      },
+      {
+        "city": "Edinburgh",
+        "country": ["gb-sct", "gbr"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Samarkand, Bukhara, Fergana",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Bishkek",
+        "country": ["kg", "kgz"]
+      },
+      {
+        "city": "Dushanbe",
+        "country": ["tj", "tjk"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Longyearbyen, Pyramiden, Ny-Ålesund",
+        "country": ["sj", "sjm"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Cairo, Giza, Alexandria, El Gouna",
+        "country": ["eg", "egy"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Casablanca, Marrakech, Rabat, Fez, Zaida, Tangier",
+        "country": ["ma", "mar"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Copenhagen",
+        "country": ["dk", "dnk"]
+      },
+      {
+        "city": "Malmö, Göteborg",
+        "country": ["se", "swe"]
+      },
+      {
+        "city": "Oslo",
+        "country": ["no", "nor"]
+      },
+      {
+        "city": "Reykjavik",
+        "country": ["is", "isl"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Belgrade, Novi Sad",
+        "country": ["rs", "srb"]
+      },
+      {
+        "city": "Sarajevo",
+        "country": ["ba", "bih"]
+      },
+      {
+        "city": "Podgorica, Budva, Bar",
+        "country": ["me", "mne"]
+      },
+      {
+        "city": "Tiranë",
+        "country": ["al", "alb"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Kuala Lumpur",
+        "country": ["my", "mys"]
+      },
+      {
+        "city": "Hong Kong",
+        "country": ["hk", "hkg"]
+      },
+      {
+        "city": "Macau",
+        "country": ["mo", "mac"]
+      },
+      {
+        "city": "Taipei",
+        "country": ["tw", "twn"]
+      },
+      {
+        "city": "Seoul",
+        "country": ["kr", "kor"]
+      }
+    ]
+  },
+  {
+    "date": "TBA",
+    "destination": [
+      {
+        "city": "Dehli, Jaipur, Agra, Mumbai, Bengaluru, Goa",
+        "country": ["in", "ind"]
+      },
+      {
+        "city": "Colombo",
+        "country": ["lk", "lka"]
+      }
+    ]
+  },
+  {
+    "date": "Jul, 2024",
+    "destination": [
+      {
+        "city": "Tashkent",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "May, 2024",
+    "destination": [
+      {
+        "city": "Istanbul",
+        "country": ["tr", "tur"]
+      }
+    ]
+  },
+  {
+    "date": "Apr - May, 2024",
+    "destination": [
+      {
+        "city": "Abu Dhabi",
+        "country": ["ae", "are"]
+      }
+    ]
+  },
+  {
+    "date": "Feb, 2024",
+    "destination": [
+      {
+        "city": "Tashkent",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "Dec, 2023",
+    "destination": [
+      {
+        "city": "Tashkent",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "Oct, 2023",
+    "destination": [
+      {
+        "city": "Tashkent",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "Sep, 2023",
+    "destination": [
+      {
+        "city": "Tashkent",
+        "country": ["uz", "uzb"]
+      }
+    ]
+  },
+  {
+    "date": "Jul, 2023",
+    "destination": [
+      {
+        "city": "Aktau",
+        "country": ["kz", "kaz"]
+      }
+    ]
+  },
+  {
+    "date": "Apr, 2023",
+    "destination": [
+      {
+        "city": "Istanbul",
+        "country": ["tr", "tur"]
+      }
+    ]
+  },
+  {
+    "date": "Jan, 2023",
+    "destination": [
+      {
+        "city": "Florence, Pisa, La Spezia, Manarola, Riomaggiore, Rome, Naples",
+        "country": ["it", "ita"]
+      },
+      {
+        "city": "Vatican City",
+        "country": ["va", "vat"]
+      }
+    ]
+  },
+  {
+    "date": "Oct - Dec, 2022",
+    "destination": [
+      {
+        "country": ["es", "esp"],
+        "city": "Barcelona, Madrid, Toledo, Bilbao"
+      },
+      {
+        "country": ["fr", "fra"],
+        "city": "Paris"
+      },
+      {
+        "country": ["pt", "prt"],
+        "city": "Lisbon, Sintra, Costa da Caparica, Almada"
+      },
+      {
+        "country": ["at", "aut"],
+        "city": "Vienna, Hallstatt"
+      },
+      {
+        "country": ["sk", "svk"],
+        "city": "Bratislava"
+      },
+      {
+        "country": ["it", "ita"],
+        "city": "Bergamo, Milan, Venice"
+      }
+    ]
+  },
+  {
+    "date": "Oct, 2022",
+    "destination": [
+      {
+        "city": "Almaty",
+        "country": ["kz", "kaz"]
+      }
+    ]
+  },
+  {
+    "date": "May - Jun, 2022",
+    "destination": [
+      {
+        "city": "Astana",
+        "country": ["kz", "kaz"]
+      }
+    ]
+  },
+  {
+    "date": "Feb, 2022",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Dec, 2021",
+    "destination": [
+      {
+        "city": "Chișinău",
+        "country": ["md", "mda"]
+      },
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Nov, 2021",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Oct, 2021",
+    "destination": [
+      {
+        "city": "Budapest",
+        "country": ["hu", "hun"]
+      }
+    ]
+  },
+  {
+    "date": "Sep - Oct, 2021",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Aug, 2021",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Jun, 2021",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "May, 2021",
+    "destination": [
+      {
+        "city": "Yaroslavl, Rostov, Rybinsk, Anapa",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Mar, 2021",
+    "destination": [
+      {
+        "city": "Istanbul",
+        "country": ["tr", "tur"]
+      }
+    ]
+  },
+  {
+    "date": "Dec, 2020",
+    "destination": [
+      {
+        "city": "Saint Petersburg, Vyborg, Kaliningrad, Svetlogorsk, Zelenogradsk, Sochi",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Sep, 2020",
+    "destination": [
+      {
+        "city": "Krasnodar",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Aug, 2020",
+    "destination": [
+      {
+        "city": "Sochi",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Jan, 2020",
+    "destination": [
+      {
+        "city": "Kazan",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Oct - Nov, 2019",
+    "destination": [
+      {
+        "city": "Berlin",
+        "country": ["de", "deu"]
+      }
+    ]
+  },
+  {
+    "date": "Aug - Sep, 2019",
+    "destination": [
+      {
+        "city": "Sochi",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Jul, 2019",
+    "destination": [
+      {
+        "city": "Prague",
+        "country": ["cz", "cze"]
+      }
+    ]
+  },
+  {
+    "date": "Jun, 2019",
+    "destination": [
+      {
+        "city": "Vladimir",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "May, 2019",
+    "destination": [
+      {
+        "city": "Minsk",
+        "country": ["by", "blr"]
+      },
+      {
+        "city": "Riga, Jūrmala",
+        "country": ["lv", "lva"]
+      },
+      {
+        "city": "Stockholm",
+        "country": ["se", "swe"]
+      }
+    ]
+  },
+  {
+    "date": "Feb, 2019",
+    "destination": [
+      {
+        "city": "Warsaw",
+        "country": ["pl", "pol"]
+      }
+    ]
+  },
+  {
+    "date": "Jan, 2019",
+    "destination": [
+      {
+        "city": "Helsinki",
+        "country": ["fi", "fin"]
+      },
+      {
+        "city": "Tallin",
+        "country": ["ee", "est"]
+      }
+    ]
+  },
+  {
+    "date": "Dec, 2018",
+    "destination": [
+      {
+        "city": "Riga",
+        "country": ["lv", "lva"]
+      },
+      {
+        "city": "Vilnus",
+        "country": ["lt", "ltu"]
+      }
+    ]
+  },
+  {
+    "date": "Aug, 2018",
+    "destination": [
+      {
+        "city": "Amsterdam",
+        "country": ["nl", "nld"]
+      },
+      {
+        "city": "Brussels, Bruges, Antwerp",
+        "country": ["be", "bel"]
+      }
+    ]
+  },
+  {
+    "date": "Jul, 2017",
+    "destination": [
+      {
+        "city": "Murmansk",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Jun, 2016",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Dec, 2013",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  },
+  {
+    "date": "Aug, 2012",
+    "destination": [
+      {
+        "city": "Saint Petersburg",
+        "country": ["ru", "rus"]
+      }
+    ]
+  }
+]

@@ -1,0 +1,1248 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [55.2708, 25.2048]
+      },
+      "properties": {
+        "name": "Dubai",
+        "country": "ae"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [139.6917, 35.6895]
+      },
+      "properties": {
+        "name": "Tokyo",
+        "country": "jp"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [135.7681, 35.0116]
+      },
+      "properties": {
+        "name": "Kyoto",
+        "country": "jp"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [135.5023, 34.6937]
+      },
+      "properties": {
+        "name": "Osaka",
+        "country": "jp"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [132.4596, 34.3853]
+      },
+      "properties": {
+        "name": "Hiroshima",
+        "country": "jp"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [132.3200, 34.2958]
+      },
+      "properties": {
+        "name": "Itsukushima",
+        "country": "jp"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [141.3469, 43.0642]
+      },
+      "properties": {
+        "name": "Sapporo",
+        "country": "jp"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-0.1278, 51.5074]
+      },
+      "properties": {
+        "name": "London",
+        "country": "gb-eng"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-2.3601, 51.3758]
+      },
+      "properties": {
+        "name": "Bath",
+        "country": "gb-eng"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-1.0803, 53.9590]
+      },
+      "properties": {
+        "name": "York",
+        "country": "gb-eng"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-2.9916, 53.4084]
+      },
+      "properties": {
+        "name": "Liverpool",
+        "country": "gb-eng"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-3.1883, 55.9533]
+      },
+      "properties": {
+        "name": "Edinburgh",
+        "country": "gb-sct"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [66.9597, 39.6270]
+      },
+      "properties": {
+        "name": "Samarkand",
+        "country": "uz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [64.4286, 39.7740]
+      },
+      "properties": {
+        "name": "Bukhara",
+        "country": "uz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [71.7864, 40.3775]
+      },
+      "properties": {
+        "name": "Fergana",
+        "country": "uz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [74.5698, 42.8746]
+      },
+      "properties": {
+        "name": "Bishkek",
+        "country": "kg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [68.7864, 38.5598]
+      },
+      "properties": {
+        "name": "Dushanbe",
+        "country": "tj"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [15.6267, 78.2232]
+      },
+      "properties": {
+        "name": "Longyearbyen",
+        "country": "sj"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [16.3358, 78.6555]
+      },
+      "properties": {
+        "name": "Pyramiden",
+        "country": "sj"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.9221, 78.9249]
+      },
+      "properties": {
+        "name": "Ny-Ålesund",
+        "country": "sj"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [31.2357, 30.0444]
+      },
+      "properties": {
+        "name": "Cairo",
+        "country": "eg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [31.2061, 29.9948]
+      },
+      "properties": {
+        "name": "Giza",
+        "country": "eg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [29.9187, 31.2001]
+      },
+      "properties": {
+        "name": "Alexandria",
+        "country": "eg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [33.6805, 27.3965]
+      },
+      "properties": {
+        "name": "El Gouna",
+        "country": "eg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-7.5898, 33.5731]
+      },
+      "properties": {
+        "name": "Casablanca",
+        "country": "ma"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-7.9811, 31.6295]
+      },
+      "properties": {
+        "name": "Marrakech",
+        "country": "ma"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-6.8498, 34.0181]
+      },
+      "properties": {
+        "name": "Rabat",
+        "country": "ma"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-5.0003, 34.0333]
+      },
+      "properties": {
+        "name": "Fez",
+        "country": "ma"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-4.9097, 32.8939]
+      },
+      "properties": {
+        "name": "Zaida",
+        "country": "ma"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-5.8333, 35.7595]
+      },
+      "properties": {
+        "name": "Tangier",
+        "country": "ma"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.5683, 55.6761]
+      },
+      "properties": {
+        "name": "Copenhagen",
+        "country": "dk"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.0038, 55.6050]
+      },
+      "properties": {
+        "name": "Malmö",
+        "country": "se"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.9746, 57.7089]
+      },
+      "properties": {
+        "name": "Göteborg",
+        "country": "se"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.7522, 59.9139]
+      },
+      "properties": {
+        "name": "Oslo",
+        "country": "no"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-21.8174, 64.1466]
+      },
+      "properties": {
+        "name": "Reykjavik",
+        "country": "is"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20.4489, 44.7866]
+      },
+      "properties": {
+        "name": "Belgrade",
+        "country": "rs"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [19.8335, 45.2671]
+      },
+      "properties": {
+        "name": "Novi Sad",
+        "country": "rs"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [18.4131, 43.8486]
+      },
+      "properties": {
+        "name": "Sarajevo",
+        "country": "ba"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [19.2636, 42.4304]
+      },
+      "properties": {
+        "name": "Podgorica",
+        "country": "me"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [18.8400, 42.2864]
+      },
+      "properties": {
+        "name": "Budva",
+        "country": "me"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [19.0894, 42.0954]
+      },
+      "properties": {
+        "name": "Bar",
+        "country": "me"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [19.8189, 41.3275]
+      },
+      "properties": {
+        "name": "Tiranë",
+        "country": "al"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [101.6869, 3.1390]
+      },
+      "properties": {
+        "name": "Kuala Lumpur",
+        "country": "my"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [114.1694, 22.3193]
+      },
+      "properties": {
+        "name": "Hong Kong",
+        "country": "hk"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [113.5439, 22.1987]
+      },
+      "properties": {
+        "name": "Macau",
+        "country": "mo"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [121.5654, 25.0330]
+      },
+      "properties": {
+        "name": "Taipei",
+        "country": "tw"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [126.9780, 37.5665]
+      },
+      "properties": {
+        "name": "Seoul",
+        "country": "kr"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.1025, 28.7041]
+      },
+      "properties": {
+        "name": "Delhi",
+        "country": "in"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [75.7873, 26.9124]
+      },
+      "properties": {
+        "name": "Jaipur",
+        "country": "in"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [78.0081, 27.1767]
+      },
+      "properties": {
+        "name": "Agra",
+        "country": "in"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [72.8777, 19.0760]
+      },
+      "properties": {
+        "name": "Mumbai",
+        "country": "in"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.5946, 12.9716]
+      },
+      "properties": {
+        "name": "Bengaluru",
+        "country": "in"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [74.1240, 15.2993]
+      },
+      "properties": {
+        "name": "Goa",
+        "country": "in"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [79.8612, 6.9271]
+      },
+      "properties": {
+        "name": "Colombo",
+        "country": "lk"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [69.2401, 41.2995]
+      },
+      "properties": {
+        "name": "Tashkent",
+        "country": "uz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [28.9784, 41.0082]
+      },
+      "properties": {
+        "name": "Istanbul",
+        "country": "tr"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [54.3773, 24.2992]
+      },
+      "properties": {
+        "name": "Abu Dhabi",
+        "country": "ae"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [51.2068, 43.6486]
+      },
+      "properties": {
+        "name": "Aktau",
+        "country": "kz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [11.2558, 43.7696]
+      },
+      "properties": {
+        "name": "Florence",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.4017, 43.7228]
+      },
+      "properties": {
+        "name": "Pisa",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [9.8218, 44.1024]
+      },
+      "properties": {
+        "name": "La Spezia",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [9.7298, 44.1063]
+      },
+      "properties": {
+        "name": "Manarola",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [9.7390, 44.0998]
+      },
+      "properties": {
+        "name": "Riomaggiore",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.4964, 41.9028]
+      },
+      "properties": {
+        "name": "Rome",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [14.2681, 40.8518]
+      },
+      "properties": {
+        "name": "Naples",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.4534, 41.9029]
+      },
+      "properties": {
+        "name": "Vatican City",
+        "country": "va"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [2.1734, 41.3851]
+      },
+      "properties": {
+        "name": "Barcelona",
+        "country": "es"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-3.7038, 40.4168]
+      },
+      "properties": {
+        "name": "Madrid",
+        "country": "es"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-4.0244, 39.8628]
+      },
+      "properties": {
+        "name": "Toledo",
+        "country": "es"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-2.9253, 43.2627]
+      },
+      "properties": {
+        "name": "Bilbao",
+        "country": "es"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [2.3522, 48.8566]
+      },
+      "properties": {
+        "name": "Paris",
+        "country": "fr"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-9.1393, 38.7223]
+      },
+      "properties": {
+        "name": "Lisbon",
+        "country": "pt"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-9.3914, 38.8029]
+      },
+      "properties": {
+        "name": "Sintra",
+        "country": "pt"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-9.2394, 38.6600]
+      },
+      "properties": {
+        "name": "Costa da Caparica",
+        "country": "pt"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-9.1567, 38.6794]
+      },
+      "properties": {
+        "name": "Almada",
+        "country": "pt"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [16.3738, 48.2082]
+      },
+      "properties": {
+        "name": "Vienna",
+        "country": "at"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.6494, 47.5622]
+      },
+      "properties": {
+        "name": "Hallstatt",
+        "country": "at"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [17.1077, 48.1486]
+      },
+      "properties": {
+        "name": "Bratislava",
+        "country": "sk"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [9.6700, 45.6983]
+      },
+      "properties": {
+        "name": "Bergamo",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [9.1900, 45.4642]
+      },
+      "properties": {
+        "name": "Milan",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [12.3155, 45.4408]
+      },
+      "properties": {
+        "name": "Venice",
+        "country": "it"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [76.8512, 43.2220]
+      },
+      "properties": {
+        "name": "Almaty",
+        "country": "kz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [71.4704, 51.1605]
+      },
+      "properties": {
+        "name": "Astana",
+        "country": "kz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [30.3351, 59.9311]
+      },
+      "properties": {
+        "name": "Saint Petersburg",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [28.8575, 47.0105]
+      },
+      "properties": {
+        "name": "Chișinău",
+        "country": "md"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [19.0402, 47.4979]
+      },
+      "properties": {
+        "name": "Budapest",
+        "country": "hu"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [39.8439, 57.6261]
+      },
+      "properties": {
+        "name": "Yaroslavl",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [39.4158, 57.1865]
+      },
+      "properties": {
+        "name": "Rostov",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [38.8436, 58.0483]
+      },
+      "properties": {
+        "name": "Rybinsk",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [37.3217, 44.8951]
+      },
+      "properties": {
+        "name": "Anapa",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [28.7439, 60.7118]
+      },
+      "properties": {
+        "name": "Vyborg",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20.4522, 54.7104]
+      },
+      "properties": {
+        "name": "Kaliningrad",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20.1530, 54.9423]
+      },
+      "properties": {
+        "name": "Svetlogorsk",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [20.4788, 54.9590]
+      },
+      "properties": {
+        "name": "Zelenogradsk",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [39.7303, 43.6028]
+      },
+      "properties": {
+        "name": "Sochi",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [38.9769, 45.0355]
+      },
+      "properties": {
+        "name": "Krasnodar",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [49.1063, 55.8304]
+      },
+      "properties": {
+        "name": "Kazan",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.4050, 52.5200]
+      },
+      "properties": {
+        "name": "Berlin",
+        "country": "de"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [14.4378, 50.0755]
+      },
+      "properties": {
+        "name": "Prague",
+        "country": "cz"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [40.3964, 56.1366]
+      },
+      "properties": {
+        "name": "Vladimir",
+        "country": "ru"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [27.5615, 53.9006]
+      },
+      "properties": {
+        "name": "Minsk",
+        "country": "by"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.1052, 56.9496]
+      },
+      "properties": {
+        "name": "Riga",
+        "country": "lv"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [23.6084, 57.1536]
+      },
+      "properties": {
+        "name": "Jūrmala",
+        "country": "lv"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [18.0686, 59.3293]
+      },
+      "properties": {
+        "name": "Stockholm",
+        "country": "se"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [21.0122, 52.2297]
+      },
+      "properties": {
+        "name": "Warsaw",
+        "country": "pl"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.9384, 60.1699]
+      },
+      "properties": {
+        "name": "Helsinki",
+        "country": "fi"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [24.7536, 59.4370]
+      },
+      "properties": {
+        "name": "Tallin",
+        "country": "ee"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [25.2797, 54.6872]
+      },
+      "properties": {
+        "name": "Vilnus",
+        "country": "lt"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.9041, 52.3676]
+      },
+      "properties": {
+        "name": "Amsterdam",
+        "country": "nl"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.3517, 50.8503]
+      },
+      "properties": {
+        "name": "Brussels",
+        "country": "be"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [3.2247, 51.2093]
+      },
+      "properties": {
+        "name": "Bruges",
+        "country": "be"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.4024, 51.2194]
+      },
+      "properties": {
+        "name": "Antwerp",
+        "country": "be"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [33.0138, 68.9792]
+      },
+      "properties": {
+        "name": "Murmansk",
+        "country": "ru"
+      }
+    }
+  ]
+}
