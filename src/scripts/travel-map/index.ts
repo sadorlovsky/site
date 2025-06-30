@@ -32,6 +32,12 @@ if (!map) {
   throw new Error("Failed to initialize map");
 }
 
+// Track visible labels and their coordinates for mobile interaction
+let visibleLabels = new globalThis.Map<HTMLElement, [number, number]>();
+
+// Flag to prevent map click interference with marker clicks
+let preventMapClick = false;
+
 let colorScheme: "dark" | "light" =
   window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
@@ -183,7 +189,7 @@ async function loadCities() {
       // Store reference to label with coordinates
       cityLabels.push({ element: labelElement, coordinates });
 
-      // Add hover events to show/hide label
+      // Add hover events to show/hide label (desktop)
       markerElement.addEventListener("mouseenter", () => {
         showCityLabel(labelElement, coordinates);
       });
@@ -191,6 +197,38 @@ async function loadCities() {
       markerElement.addEventListener("mouseleave", () => {
         hideCityLabel(labelElement);
       });
+
+      // Add touch/click handlers for mobile
+      const handleMarkerInteraction = (e: Event) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        preventMapClick = true;
+
+        // Check if this label is already visible
+        if (visibleLabels.has(labelElement)) {
+          hideCityLabel(labelElement);
+        } else {
+          // Hide all other labels first (single label at a time)
+          visibleLabels.forEach(
+            (coords: [number, number], label: HTMLElement) => {
+              hideCityLabel(label);
+            },
+          );
+          showCityLabel(labelElement, coordinates);
+        }
+
+        // Reset flag after event processing
+        setTimeout(() => {
+          preventMapClick = false;
+        }, 50);
+      };
+
+      // Add both touch and click events for better mobile support
+      markerElement.addEventListener("touchstart", handleMarkerInteraction, {
+        passive: false,
+      });
+      markerElement.addEventListener("click", handleMarkerInteraction);
 
       // Create marker but don't add to map yet (hidden by default)
       const marker = new Marker({ element: markerElement }).setLngLat(
@@ -204,6 +242,26 @@ async function loadCities() {
     cityLabels.forEach(({ element }) => {
       mapContainer?.appendChild(element);
     });
+
+    // Add map click handler to hide labels when clicking elsewhere
+    if (map) {
+      map.on("click", () => {
+        // Don't hide labels if a marker interaction just occurred
+        if (preventMapClick) {
+          return;
+        }
+
+        // Hide all visible labels
+        visibleLabels.forEach(
+          (coords: [number, number], label: HTMLElement) => {
+            hideCityLabel(label);
+          },
+        );
+      });
+
+      // Add map move handler to update label positions
+      map.on("move", updateVisibleLabels);
+    }
 
     // Set up toggle functionality
     setupCitiesToggle(cityMarkers, cityLabels);
@@ -244,17 +302,38 @@ function showCityLabel(
   const mapContainer = document.getElementById("map");
   if (!mapContainer) return;
 
-  // Convert geographic coordinates to screen coordinates
-  const screenCoords = map.project(coordinates);
-  const mapRect = mapContainer.getBoundingClientRect();
+  // Add to visible labels tracking
+  visibleLabels.set(labelElement, coordinates);
 
-  labelElement.style.left = `${screenCoords.x}px`;
-  labelElement.style.top = `${screenCoords.y - 35}px`;
+  // Convert geographic coordinates to screen coordinates
+  updateLabelPosition(labelElement, coordinates);
   labelElement.style.display = "block";
 }
 
 function hideCityLabel(labelElement: HTMLElement) {
   labelElement.style.display = "none";
+  // Remove from visible labels tracking
+  visibleLabels.delete(labelElement);
+}
+
+// Update a single label position
+function updateLabelPosition(
+  labelElement: HTMLElement,
+  coordinates: [number, number],
+) {
+  if (!map) return;
+  const screenCoords = map.project(coordinates);
+  labelElement.style.left = `${screenCoords.x}px`;
+  labelElement.style.top = `${screenCoords.y - 35}px`;
+}
+
+// Update all visible labels during map movement
+function updateVisibleLabels() {
+  visibleLabels.forEach(
+    (coordinates: [number, number], labelElement: HTMLElement) => {
+      updateLabelPosition(labelElement, coordinates);
+    },
+  );
 }
 
 function setupCitiesToggle(
