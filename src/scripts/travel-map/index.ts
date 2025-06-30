@@ -4,15 +4,47 @@ import {
   crimeaFillLayer,
   getBackgroundLayer,
 } from "./layers";
+import type {
+  Trip,
+  TripDestination,
+  CityFeature,
+  CitiesGeoJSON,
+  CityLabelData,
+  ColorScheme,
+  MapConfig,
+  MarkerInteractionHandler,
+  MapInitOptions,
+} from "./types";
+import { DataLoadError } from "./types";
+
+// Centralized configuration constants
+const CONFIG: MapConfig = {
+  MOBILE_BREAKPOINT: 480,
+  ZOOM_LEVELS: { mobile: 1, desktop: 2 },
+  TIMEOUTS: {
+    MAP_RESIZE: 100,
+    MAP_RESIZE_ADDITIONAL: 500,
+    PREVENT_CLICK: 50,
+    ERROR_DISPLAY: 5000,
+    IOS_ORIENTATION_CHANGE: 200,
+    IOS_VISIBILITY_CHANGE: 100,
+    IOS_PAGE_SHOW: 100,
+  },
+  LABEL_OFFSET: 35,
+  STORAGE_KEY: "travel-map-cities-visible",
+};
 
 // Wait for DOM to be fully ready
 function initializeMap() {
-  let zoom = document.body.clientWidth <= 480 ? 1 : 2;
+  let zoom =
+    document.body.clientWidth <= CONFIG.MOBILE_BREAKPOINT
+      ? CONFIG.ZOOM_LEVELS.mobile
+      : CONFIG.ZOOM_LEVELS.desktop;
 
   const mapContainer = document.getElementById("map");
   if (!mapContainer) {
     console.error("Map container not found, retrying...");
-    setTimeout(initializeMap, 100);
+    setTimeout(initializeMap, CONFIG.TIMEOUTS.MAP_RESIZE);
     return;
   }
 
@@ -38,7 +70,7 @@ let visibleLabels = new globalThis.Map<HTMLElement, [number, number]>();
 // Flag to prevent map click interference with marker clicks
 let preventMapClick = false;
 
-let colorScheme: "dark" | "light" =
+let colorScheme: ColorScheme =
   window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
@@ -59,18 +91,18 @@ map.on("load", async () => {
   // iOS Safari fix: Force resize after layers are added
   setTimeout(() => {
     map.resize();
-  }, 100);
+  }, CONFIG.TIMEOUTS.MAP_RESIZE);
 
   // Additional delay for iOS Safari
   setTimeout(() => {
     map.resize();
-  }, 500);
+  }, CONFIG.TIMEOUTS.MAP_RESIZE_ADDITIONAL);
 
   // Load and display cities
   await loadCities();
 });
 
-async function loadCities() {
+async function loadCities(): Promise<void> {
   try {
     // Show loading state
     console.log("Loading cities and trips data...");
@@ -82,13 +114,14 @@ async function loadCities() {
     ]);
 
     if (!citiesResponse.ok || !tripsResponse.ok) {
-      throw new Error(
+      throw new DataLoadError(
         `HTTP error! Cities: ${citiesResponse.status}, Trips: ${tripsResponse.status}`,
+        citiesResponse.status || tripsResponse.status,
       );
     }
 
-    const citiesData = await citiesResponse.json();
-    const tripsData = await tripsResponse.json();
+    const citiesData: CitiesGeoJSON = await citiesResponse.json();
+    const tripsData: Trip[] = await tripsResponse.json();
 
     if (!citiesData?.features || !Array.isArray(citiesData.features)) {
       throw new Error("Invalid GeoJSON format");
@@ -100,9 +133,9 @@ async function loadCities() {
 
     // Get visited cities from trips data (where date !== "TBA")
     const visitedCityNames = new Set<string>();
-    tripsData.forEach((trip: any) => {
+    tripsData.forEach((trip: Trip) => {
       if (trip.date !== "TBA") {
-        trip.destination?.forEach((dest: any) => {
+        trip.destination?.forEach((dest: TripDestination) => {
           // Split city names that contain commas
           const cities = dest.city.split(",").map((c: string) => c.trim());
           cities.forEach((cityName: string) => {
@@ -127,13 +160,10 @@ async function loadCities() {
     });
 
     let visitedCount = 0;
-    const cityLabels: Array<{
-      element: HTMLElement;
-      coordinates: [number, number];
-    }> = [];
-    const cityMarkers: Array<any> = [];
+    const cityLabels: CityLabelData[] = [];
+    const cityMarkers: Marker[] = [];
 
-    citiesData.features.forEach((city: any) => {
+    citiesData.features.forEach((city: CityFeature) => {
       if (!city.geometry?.coordinates || !city.properties) {
         console.warn("Skipping invalid city data:", city);
         return;
@@ -199,7 +229,7 @@ async function loadCities() {
       });
 
       // Add touch/click handlers for mobile
-      const handleMarkerInteraction = (e: Event) => {
+      const handleMarkerInteraction: MarkerInteractionHandler = (e: Event) => {
         e.stopPropagation();
         e.preventDefault();
 
@@ -221,7 +251,7 @@ async function loadCities() {
         // Reset flag after event processing
         setTimeout(() => {
           preventMapClick = false;
-        }, 50);
+        }, CONFIG.TIMEOUTS.PREVENT_CLICK);
       };
 
       // Add both touch and click events for better mobile support
@@ -288,10 +318,10 @@ async function loadCities() {
     errorDiv.textContent = "Failed to load travel cities data";
     document.getElementById("map")?.appendChild(errorDiv);
 
-    // Remove error message after 5 seconds
+    // Remove error message after configured time
     setTimeout(() => {
       errorDiv.remove();
-    }, 5000);
+    }, CONFIG.TIMEOUTS.ERROR_DISPLAY);
   }
 }
 
@@ -324,7 +354,7 @@ function updateLabelPosition(
   if (!map) return;
   const screenCoords = map.project(coordinates);
   labelElement.style.left = `${screenCoords.x}px`;
-  labelElement.style.top = `${screenCoords.y - 35}px`;
+  labelElement.style.top = `${screenCoords.y - CONFIG.LABEL_OFFSET}px`;
 }
 
 // Update all visible labels during map movement
@@ -336,24 +366,19 @@ function updateVisibleLabels() {
   );
 }
 
-function setupCitiesToggle(
-  markers: Array<any>,
-  labels: Array<{ element: HTMLElement; coordinates: [number, number] }>,
-) {
+function setupCitiesToggle(markers: Marker[], labels: CityLabelData[]): void {
   const toggle = document.getElementById("citiesToggle") as HTMLInputElement;
   if (!toggle) return;
 
-  const STORAGE_KEY = "travel-map-cities-visible";
-
   // Get initial state from localStorage (default to false)
-  const savedState = localStorage.getItem(STORAGE_KEY);
+  const savedState = localStorage.getItem(CONFIG.STORAGE_KEY);
   const initialState = savedState === "true";
   toggle.checked = initialState;
 
   // Apply initial state
   if (initialState) {
     // Show markers
-    markers.forEach((marker) => marker.addTo(map));
+    markers.forEach((marker) => map && marker.addTo(map));
   } else {
     // Hide markers and labels
     markers.forEach((marker) => marker.remove());
@@ -364,11 +389,11 @@ function setupCitiesToggle(
 
   toggle.addEventListener("change", () => {
     // Save state to localStorage
-    localStorage.setItem(STORAGE_KEY, toggle.checked.toString());
+    localStorage.setItem(CONFIG.STORAGE_KEY, toggle.checked.toString());
 
     if (toggle.checked) {
       // Show markers
-      markers.forEach((marker) => marker.addTo(map));
+      markers.forEach((marker) => map && marker.addTo(map));
     } else {
       // Hide markers and labels
       markers.forEach((marker) => marker.remove());
@@ -389,7 +414,7 @@ map.on("sourcedata", (event) => {
     // iOS Safari fix: Additional resize after tiles load
     setTimeout(() => {
       map.resize();
-    }, 50);
+    }, CONFIG.TIMEOUTS.MAP_RESIZE);
   }
 });
 
@@ -399,7 +424,7 @@ if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
   window.addEventListener("orientationchange", () => {
     setTimeout(() => {
       map.resize();
-    }, 200);
+    }, CONFIG.TIMEOUTS.IOS_ORIENTATION_CHANGE);
   });
 
   // Fix for iOS Safari page visibility changes
@@ -407,7 +432,7 @@ if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
     if (!document.hidden) {
       setTimeout(() => {
         map.resize();
-      }, 100);
+      }, CONFIG.TIMEOUTS.IOS_VISIBILITY_CHANGE);
     }
   });
 
@@ -415,6 +440,6 @@ if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
   window.addEventListener("pageshow", () => {
     setTimeout(() => {
       map.resize();
-    }, 100);
+    }, CONFIG.TIMEOUTS.IOS_PAGE_SHOW);
   });
 }

@@ -1,7 +1,8 @@
 import { countries } from "@lib/travel";
+import type { FillLayer, BackgroundLayer, ColorScheme } from "./types";
 
 /** fill visited and unvisited countries */
-export const countriesFillLayer = {
+export const countriesFillLayer: FillLayer = {
   id: "countries-fill",
   type: "fill",
   paint: {
@@ -23,7 +24,7 @@ export const countriesFillLayer = {
 };
 
 /** fill crimea as unvisited */
-export const crimeaFillLayer = {
+export const crimeaFillLayer: FillLayer = {
   id: "crimea-fill",
   type: "fill",
   source: "crimea",
@@ -33,7 +34,9 @@ export const crimeaFillLayer = {
 };
 
 /** fill background */
-export const getBackgroundLayer = (colorScheme: "dark" | "light") => {
+export const getBackgroundLayer = (
+  colorScheme: ColorScheme,
+): BackgroundLayer => {
   return {
     id: "background",
     type: "background",
