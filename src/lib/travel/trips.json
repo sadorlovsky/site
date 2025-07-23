@@ -3,17 +3,20 @@
     "date": "TBA",
     "destination": [
       {
-        "city": "Dubai",
-        "country": ["ae", "are"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
+        "city": "Barcelona",
+        "country": ["es", "esp"]
+      },
       {
-        "city": "Tokyo, Kyoto, Osaka, Hiroshima, Itsukushima, Sapporo",
-        "country": ["jp", "jpn"]
+        "city": "Saint-Louis, Huningue",
+        "country": ["fr", "fra"]
+      },
+      {
+        "city": "Weil am Rhein",
+        "country": ["de", "deu"]
+      },
+      {
+        "city": "Basel",
+        "country": ["ch", "che"]
       }
     ]
   },
@@ -27,135 +30,6 @@
       {
         "city": "Edinburgh",
         "country": ["gb-sct", "gbr"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Samarkand, Bukhara, Fergana",
-        "country": ["uz", "uzb"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Bishkek",
-        "country": ["kg", "kgz"]
-      },
-      {
-        "city": "Dushanbe",
-        "country": ["tj", "tjk"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Longyearbyen, Pyramiden, Ny-Ålesund",
-        "country": ["sj", "sjm"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Cairo, Giza, Alexandria, El Gouna",
-        "country": ["eg", "egy"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Casablanca, Marrakech, Rabat, Fez, Zaida, Tangier",
-        "country": ["ma", "mar"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Copenhagen",
-        "country": ["dk", "dnk"]
-      },
-      {
-        "city": "Malmö, Göteborg",
-        "country": ["se", "swe"]
-      },
-      {
-        "city": "Oslo",
-        "country": ["no", "nor"]
-      },
-      {
-        "city": "Reykjavik",
-        "country": ["is", "isl"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Belgrade, Novi Sad",
-        "country": ["rs", "srb"]
-      },
-      {
-        "city": "Sarajevo",
-        "country": ["ba", "bih"]
-      },
-      {
-        "city": "Podgorica, Budva, Bar",
-        "country": ["me", "mne"]
-      },
-      {
-        "city": "Tiranë",
-        "country": ["al", "alb"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Kuala Lumpur",
-        "country": ["my", "mys"]
-      },
-      {
-        "city": "Hong Kong",
-        "country": ["hk", "hkg"]
-      },
-      {
-        "city": "Macau",
-        "country": ["mo", "mac"]
-      },
-      {
-        "city": "Taipei",
-        "country": ["tw", "twn"]
-      },
-      {
-        "city": "Seoul",
-        "country": ["kr", "kor"]
-      }
-    ]
-  },
-  {
-    "date": "TBA",
-    "destination": [
-      {
-        "city": "Dehli, Jaipur, Agra, Mumbai, Bengaluru, Goa",
-        "country": ["in", "ind"]
-      },
-      {
-        "city": "Colombo",
-        "country": ["lk", "lka"]
       }
     ]
   },

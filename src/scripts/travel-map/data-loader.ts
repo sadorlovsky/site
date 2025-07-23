@@ -22,8 +22,6 @@ export class DataLoader {
    */
   async loadData(): Promise<LoadedData> {
     try {
-      console.log("Loading cities and trips data...");
-
       // Load both datasets in parallel
       const [citiesResponse, tripsResponse] = await Promise.all([
         fetch(this.citiesUrl),
@@ -55,10 +53,6 @@ export class DataLoader {
         totalTrips: tripsData.length,
         visitedCitiesCount: visitedCities.length,
       };
-
-      console.log(
-        `Loaded ${result.visitedCitiesCount} visited cities from ${result.totalTrips} trips`,
-      );
 
       return result;
     } catch (error) {
@@ -126,7 +120,6 @@ export class DataLoader {
           cities.forEach((cityName: string) => {
             const normalizedName = this.normalizeCityName(cityName);
             visitedCityNames.add(normalizedName);
-            console.log(`Added visited city: "${normalizedName}"`);
 
             // Add common name variations
             this.addCityVariations(normalizedName, visitedCityNames);
@@ -173,7 +166,6 @@ export class DataLoader {
   ): CityFeature[] {
     return cities.filter((city: CityFeature) => {
       if (!city.geometry?.coordinates || !city.properties?.name) {
-        console.warn("Skipping invalid city data:", city);
         return false;
       }
 
@@ -181,11 +173,8 @@ export class DataLoader {
       const isVisited = this.isCityVisited(cityName, visitedCityNames);
 
       if (!isVisited) {
-        console.log(`City not visited, skipping: "${cityName}"`);
         return false;
       }
-
-      console.log(`Including visited city: "${cityName}"`);
       return true;
     });
   }

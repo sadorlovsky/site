@@ -2,11 +2,13 @@ import tripsData from "./trips.json";
 import * as countryList from "../../pages/travel/countries.md";
 
 export function getCountires(data: typeof tripsData) {
-  return new Set(
-    data
-      .flatMap((trip) => trip.destination)
-      .map((dest) => dest.country[1].toUpperCase()),
-  );
+  // Extract all country codes from trips
+  const visitedCodes = data
+    .flatMap((trip) => trip.destination)
+    .map((dest) => dest.country[1].toUpperCase());
+
+  // Create a set of visited alpha-3 codes
+  return new Set(visitedCodes);
 }
 
 export function getCities(data: typeof tripsData) {
