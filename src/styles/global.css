@@ -1,16 +1,19 @@
 @font-face {
-  font-family: 'Firacode';
+  font-family: "Firacode";
   src: url(/fonts/FiraCode-Regular.ttf);
 }
 
 @font-face {
-  font-family: 'FiracodeVariable';
+  font-family: "FiracodeVariable";
   src: url(/fonts/FiraCode-Variable.ttf);
 }
 
 :root {
   font-family: Inter, sans-serif;
-  font-feature-settings: 'liga' 1, 'calt' 1, 'ss03' 1;
+  font-feature-settings:
+    "liga" 1,
+    "calt" 1,
+    "ss03" 1;
   color-scheme: light dark;
 
   --light-bg: #f8f8ff;
@@ -22,7 +25,8 @@
     font-family: InterVariable, sans-serif;
   }
 
-  pre, code {
+  pre,
+  code {
     font-family: "FiracodeVariable", monospace;
   }
 }
@@ -39,7 +43,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-pre, code {
+pre,
+code {
   font-family: "Firacode", monospace;
 }
 

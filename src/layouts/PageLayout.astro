@@ -11,13 +11,16 @@ const { title } = Astro.props;
     <title>{title}</title>
     <meta name="title" content="Zach" />
     <meta name="description" content="Zach" />
-    <link rel="icon" href="/favicon.svg">
-    <link rel=”mask-icon” href=”/favicon.svg” color=”#000000">
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#000000" />
     <link rel="preconnect" href="https://rsms.me/" />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
   </head>
   <body>
     <slot />
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "3af10005546641a0882b81846b2f6d3b"}'></script>
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "3af10005546641a0882b81846b2f6d3b"}'></script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
 import { trips } from "@lib/travel";
-import styles from './TravelTripList.module.css';
+import styles from "./TravelTripList.module.css";
 
 const getCountryFlag = (code: string) => {
   const parts = code.split("-");
@@ -9,12 +9,12 @@ const getCountryFlag = (code: string) => {
     return {
       isMultiple: true,
       firstPart: parts[0],
-      fullCode: code
+      fullCode: code,
     };
   }
   return {
     isMultiple: false,
-    code: code
+    code: code,
   };
 };
 ---
