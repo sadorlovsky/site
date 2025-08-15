@@ -9,7 +9,8 @@
       },
       "properties": {
         "name": "London",
-        "country": "gb-eng"
+        "country": "England, UK",
+        "code": "gb-eng"
       }
     },
     {
@@ -20,7 +21,8 @@
       },
       "properties": {
         "name": "Bath",
-        "country": "gb-eng"
+        "country": "England, UK",
+        "code": "gb-eng"
       }
     },
     {
@@ -31,7 +33,8 @@
       },
       "properties": {
         "name": "York",
-        "country": "gb-eng"
+        "country": "England, UK",
+        "code": "gb-eng"
       }
     },
     {
@@ -42,7 +45,8 @@
       },
       "properties": {
         "name": "Liverpool",
-        "country": "gb-eng"
+        "country": "England, UK",
+        "code": "gb-eng"
       }
     },
     {
@@ -53,7 +57,8 @@
       },
       "properties": {
         "name": "Edinburgh",
-        "country": "gb-sct"
+        "country": "Scotland, UK",
+        "code": "gb-sct"
       }
     },
     {
@@ -64,7 +69,8 @@
       },
       "properties": {
         "name": "Tashkent",
-        "country": "uz"
+        "country": "Uzbekistan",
+        "code": "uz"
       }
     },
     {
@@ -75,7 +81,8 @@
       },
       "properties": {
         "name": "Istanbul",
-        "country": "tr"
+        "country": "Turkey",
+        "code": "tr"
       }
     },
     {
@@ -86,7 +93,8 @@
       },
       "properties": {
         "name": "Abu Dhabi",
-        "country": "ae"
+        "country": "UAE",
+        "code": "ae"
       }
     },
     {
@@ -97,7 +105,8 @@
       },
       "properties": {
         "name": "Aktau",
-        "country": "kz"
+        "country": "Kazakhstan",
+        "code": "kz"
       }
     },
     {
@@ -108,7 +117,8 @@
       },
       "properties": {
         "name": "Florence",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -119,7 +129,8 @@
       },
       "properties": {
         "name": "Pisa",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -130,7 +141,8 @@
       },
       "properties": {
         "name": "La Spezia",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -141,7 +153,8 @@
       },
       "properties": {
         "name": "Manarola",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -152,7 +165,8 @@
       },
       "properties": {
         "name": "Riomaggiore",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -163,7 +177,8 @@
       },
       "properties": {
         "name": "Rome",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -174,7 +189,8 @@
       },
       "properties": {
         "name": "Naples",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -185,7 +201,8 @@
       },
       "properties": {
         "name": "Vatican City",
-        "country": "va"
+        "country": "Vatican City",
+        "code": "va"
       }
     },
     {
@@ -196,7 +213,8 @@
       },
       "properties": {
         "name": "Barcelona",
-        "country": "es"
+        "country": "Spain",
+        "code": "es"
       }
     },
     {
@@ -207,7 +225,8 @@
       },
       "properties": {
         "name": "Madrid",
-        "country": "es"
+        "country": "Spain",
+        "code": "es"
       }
     },
     {
@@ -218,7 +237,8 @@
       },
       "properties": {
         "name": "Toledo",
-        "country": "es"
+        "country": "Spain",
+        "code": "es"
       }
     },
     {
@@ -229,7 +249,8 @@
       },
       "properties": {
         "name": "Bilbao",
-        "country": "es"
+        "country": "Spain",
+        "code": "es"
       }
     },
     {
@@ -240,7 +261,8 @@
       },
       "properties": {
         "name": "Paris",
-        "country": "fr"
+        "country": "France",
+        "code": "fr"
       }
     },
     {
@@ -251,7 +273,8 @@
       },
       "properties": {
         "name": "Lisbon",
-        "country": "pt"
+        "country": "Portugal",
+        "code": "pt"
       }
     },
     {
@@ -262,7 +285,8 @@
       },
       "properties": {
         "name": "Sintra",
-        "country": "pt"
+        "country": "Portugal",
+        "code": "pt"
       }
     },
     {
@@ -273,7 +297,8 @@
       },
       "properties": {
         "name": "Costa da Caparica",
-        "country": "pt"
+        "country": "Portugal",
+        "code": "pt"
       }
     },
     {
@@ -284,7 +309,8 @@
       },
       "properties": {
         "name": "Almada",
-        "country": "pt"
+        "country": "Portugal",
+        "code": "pt"
       }
     },
     {
@@ -295,7 +321,8 @@
       },
       "properties": {
         "name": "Vienna",
-        "country": "at"
+        "country": "Austria",
+        "code": "at"
       }
     },
     {
@@ -306,7 +333,8 @@
       },
       "properties": {
         "name": "Hallstatt",
-        "country": "at"
+        "country": "Austria",
+        "code": "at"
       }
     },
     {
@@ -317,7 +345,8 @@
       },
       "properties": {
         "name": "Bratislava",
-        "country": "sk"
+        "country": "Slovakia",
+        "code": "sk"
       }
     },
     {
@@ -328,7 +357,8 @@
       },
       "properties": {
         "name": "Bergamo",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -339,7 +369,8 @@
       },
       "properties": {
         "name": "Milan",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -350,7 +381,8 @@
       },
       "properties": {
         "name": "Venice",
-        "country": "it"
+        "country": "Italy",
+        "code": "it"
       }
     },
     {
@@ -361,7 +393,8 @@
       },
       "properties": {
         "name": "Almaty",
-        "country": "kz"
+        "country": "Kazakhstan",
+        "code": "kz"
       }
     },
     {
@@ -372,7 +405,8 @@
       },
       "properties": {
         "name": "Astana",
-        "country": "kz"
+        "country": "Kazakhstan",
+        "code": "kz"
       }
     },
     {
@@ -383,7 +417,8 @@
       },
       "properties": {
         "name": "Saint Petersburg",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -394,7 +429,8 @@
       },
       "properties": {
         "name": "Chișinău",
-        "country": "md"
+        "country": "Moldova",
+        "code": "md"
       }
     },
     {
@@ -405,7 +441,8 @@
       },
       "properties": {
         "name": "Budapest",
-        "country": "hu"
+        "country": "Hungary",
+        "code": "hu"
       }
     },
     {
@@ -416,7 +453,8 @@
       },
       "properties": {
         "name": "Yaroslavl",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -427,7 +465,8 @@
       },
       "properties": {
         "name": "Rostov",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -438,7 +477,8 @@
       },
       "properties": {
         "name": "Rybinsk",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -449,7 +489,8 @@
       },
       "properties": {
         "name": "Anapa",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -460,7 +501,8 @@
       },
       "properties": {
         "name": "Vyborg",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -471,7 +513,8 @@
       },
       "properties": {
         "name": "Kaliningrad",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -482,7 +525,8 @@
       },
       "properties": {
         "name": "Svetlogorsk",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -493,7 +537,8 @@
       },
       "properties": {
         "name": "Zelenogradsk",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -504,7 +549,8 @@
       },
       "properties": {
         "name": "Sochi",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -515,7 +561,8 @@
       },
       "properties": {
         "name": "Krasnodar",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -526,7 +573,8 @@
       },
       "properties": {
         "name": "Kazan",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -537,7 +585,8 @@
       },
       "properties": {
         "name": "Berlin",
-        "country": "de"
+        "country": "Germany",
+        "code": "de"
       }
     },
     {
@@ -548,7 +597,8 @@
       },
       "properties": {
         "name": "Prague",
-        "country": "cz"
+        "country": "Czech Republic",
+        "code": "cz"
       }
     },
     {
@@ -559,7 +609,8 @@
       },
       "properties": {
         "name": "Vladimir",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -570,7 +621,8 @@
       },
       "properties": {
         "name": "Minsk",
-        "country": "by"
+        "country": "Belarus",
+        "code": "by"
       }
     },
     {
@@ -581,7 +633,8 @@
       },
       "properties": {
         "name": "Riga",
-        "country": "lv"
+        "country": "Latvia",
+        "code": "lv"
       }
     },
     {
@@ -592,7 +645,8 @@
       },
       "properties": {
         "name": "Jūrmala",
-        "country": "lv"
+        "country": "Latvia",
+        "code": "lv"
       }
     },
     {
@@ -603,7 +657,8 @@
       },
       "properties": {
         "name": "Stockholm",
-        "country": "se"
+        "country": "Sweden",
+        "code": "se"
       }
     },
     {
@@ -614,7 +669,8 @@
       },
       "properties": {
         "name": "Warsaw",
-        "country": "pl"
+        "country": "Poland",
+        "code": "pl"
       }
     },
     {
@@ -625,7 +681,8 @@
       },
       "properties": {
         "name": "Helsinki",
-        "country": "fi"
+        "country": "Finland",
+        "code": "fi"
       }
     },
     {
@@ -636,7 +693,8 @@
       },
       "properties": {
         "name": "Tallin",
-        "country": "ee"
+        "country": "Estonia",
+        "code": "ee"
       }
     },
     {
@@ -647,7 +705,8 @@
       },
       "properties": {
         "name": "Vilnus",
-        "country": "lt"
+        "country": "Lithuania",
+        "code": "lt"
       }
     },
     {
@@ -658,7 +717,8 @@
       },
       "properties": {
         "name": "Amsterdam",
-        "country": "nl"
+        "country": "Netherlands",
+        "code": "nl"
       }
     },
     {
@@ -669,7 +729,8 @@
       },
       "properties": {
         "name": "Brussels",
-        "country": "be"
+        "country": "Belgium",
+        "code": "be"
       }
     },
     {
@@ -680,7 +741,8 @@
       },
       "properties": {
         "name": "Bruges",
-        "country": "be"
+        "country": "Belgium",
+        "code": "be"
       }
     },
     {
@@ -691,7 +753,8 @@
       },
       "properties": {
         "name": "Antwerp",
-        "country": "be"
+        "country": "Belgium",
+        "code": "be"
       }
     },
     {
@@ -702,7 +765,8 @@
       },
       "properties": {
         "name": "Murmansk",
-        "country": "ru"
+        "country": "Russia",
+        "code": "ru"
       }
     },
     {
@@ -713,7 +777,20 @@
       },
       "properties": {
         "name": "Saint-Louis",
-        "country": "fr"
+        "country": "France",
+        "code": "fr"
+      }
+    },
+        {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [7.58145095100192, 47.593745481307096]
+      },
+      "properties": {
+        "name": "Huningue",
+        "country": "France",
+        "code": "fr"
       }
     },
     {
@@ -724,7 +801,8 @@
       },
       "properties": {
         "name": "Weil am Rhein",
-        "country": "de"
+        "country": "Germany",
+        "code": "de"
       }
     },
     {
@@ -735,7 +813,8 @@
       },
       "properties": {
         "name": "Basel",
-        "country": "ch"
+        "country": "Switzerland",
+        "code": "ch"
       }
     }
   ]

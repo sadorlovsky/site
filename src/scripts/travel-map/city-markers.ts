@@ -92,7 +92,7 @@ export class CityMarkerManager {
     // Create label element
     const labelElement = document.createElement("div");
     labelElement.className = "city-label-overlay";
-    labelElement.textContent = city.properties.name;
+    labelElement.textContent = `${city.properties.name}, ${city.properties.country}`;
     labelElement.style.display = "none";
 
     // Add interaction handlers

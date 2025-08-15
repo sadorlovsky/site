@@ -12,6 +12,8 @@ export interface Trip {
 // GeoJSON structure
 export interface CityProperties {
   name: string;
+  country: string;
+  code: string;
 }
 
 export interface CityGeometry {

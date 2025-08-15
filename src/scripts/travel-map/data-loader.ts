@@ -95,7 +95,9 @@ export class DataLoader {
       const firstFeature = citiesData.features[0];
       if (
         !firstFeature.geometry?.coordinates ||
-        !firstFeature.properties?.name
+        !firstFeature.properties?.name ||
+        !firstFeature.properties?.country ||
+        !firstFeature.properties?.code
       ) {
         throw new DataLoadError(
           "Invalid GeoJSON feature structure: missing geometry or properties",
