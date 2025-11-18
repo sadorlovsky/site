@@ -8,40 +8,162 @@ const allPosts = await getCollection("posts");
 
 <PageLayout title="Zach writes">
   <main>
-    <h1>Zach's blog</h1>
-    {
-      allPosts.toReversed().map((post) => (
-        <section>
-          <a href={`/blog/${post.slug}`}>
-            <h2>{post.data.title}</h2>
-          </a>
-          <span>Published on {new Date(post.data.pubDate).toLocaleDateString('en-US', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}</span>
-        </section>
-        <div class="divider" />
-      ))
-    }
+    <header class="page-header">
+      <h1>Zach's blog</h1>
+      <p class="subtitle">Thoughts, ideas, and occasional musings</p>
+    </header>
+
+    <div class="posts-list">
+      {
+        allPosts.toReversed().map((post, index) => (
+          <>
+            <article class="post-preview">
+              <a href={`/blog/${post.slug}`} class="post-link">
+                <h2 class="post-title">{post.data.title}</h2>
+              </a>
+              <div class="post-meta">
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {new Date(post.data.pubDate).toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </time>
+              </div>
+              {post.data.description && (
+                <p class="post-description">{post.data.description}</p>
+              )}
+            </article>
+            {index < allPosts.length - 1 && <hr class="post-divider" />}
+          </>
+        ))
+      }
+    </div>
   </main>
   <Footer />
 </PageLayout>
 
 <style>
   main {
-    padding: 25px;
+    padding: 40px 25px;
     margin: 0 auto;
-    max-width: 800px;
-    font-size: 1.125rem;
-    line-height: 1.75;
+    max-width: 720px;
   }
 
-  .divider {
+  .page-header {
+    margin-bottom: 3rem;
+    text-align: center;
+  }
+
+  .page-header h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: light-dark(#666, #999);
+    font-size: 1.125rem;
+    margin: 0;
+  }
+
+  .posts-list {
+    margin-top: 2rem;
+  }
+
+  .post-preview {
+    padding: 1.5rem 0;
+    transition: transform 0.2s ease;
+  }
+
+  .post-preview:hover {
+    transform: translateX(4px);
+  }
+
+  .post-link {
+    text-decoration: none;
+    color: inherit;
     display: block;
-    width: 100%;
+  }
+
+  .post-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: light-dark(#111, #fafafa);
+    line-height: 1.3;
+    transition: color 0.2s ease;
+  }
+
+  .post-link:hover .post-title {
+    color: light-dark(#0066cc, #66b3ff);
+  }
+
+  .post-meta {
+    font-size: 0.875rem;
+    color: light-dark(#666, #999);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+  }
+
+  .post-meta time {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .post-meta time::before {
+    content: "📅";
+    margin-right: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .post-description {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: light-dark(#444, #bbb);
+  }
+
+  .post-divider {
+    margin: 0;
+    border: none;
     height: 1px;
-    background-color: #2a2438;
-    margin: 20px 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      light-dark(#e0e0e0, #333) 20%,
+      light-dark(#e0e0e0, #333) 80%,
+      transparent
+    );
+  }
+
+  @media (max-width: 768px) {
+    main {
+      padding: 30px 20px;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .post-title {
+      font-size: 1.25rem;
+    }
+
+    .post-preview {
+      padding: 1.25rem 0;
+    }
+
+    .post-preview:hover {
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-preview {
+      transition: none;
+    }
+
+    .post-preview:hover {
+      transform: none;
+    }
   }
 </style>

@@ -65,3 +65,335 @@ pre {
   box-sizing: border-box;
   border-radius: 6px;
 }
+
+/* Typography - Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: light-dark(#111, #fafafa);
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  margin-top: 3rem;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+h4 {
+  font-size: clamp(1.125rem, 2.5vw, 1.375rem);
+  margin-top: 2rem;
+  margin-bottom: 0.875rem;
+  font-weight: 600;
+}
+
+h5 {
+  font-size: clamp(1rem, 2vw, 1.125rem);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+h6 {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  margin-top: 1.5rem;
+  margin-bottom: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+/* Remove top margin when heading is first child */
+h1:first-child,
+h2:first-child,
+h3:first-child,
+h4:first-child,
+h5:first-child,
+h6:first-child {
+  margin-top: 0;
+}
+
+/* Adjust spacing between consecutive headings */
+h1 + h2,
+h2 + h3,
+h3 + h4,
+h4 + h5,
+h5 + h6 {
+  margin-top: 1rem;
+}
+
+/* Ensure proper spacing after headings before content */
+h1 + p,
+h2 + p,
+h3 + p,
+h4 + p,
+h5 + p,
+h6 + p {
+  margin-top: 0;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  h1 {
+    margin-bottom: 1.25rem;
+  }
+
+  h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    margin-top: 2rem;
+    margin-bottom: 0.875rem;
+  }
+
+  h4,
+  h5,
+  h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Typography - Body Text */
+p {
+  font-size: 1rem;
+  line-height: 1.75;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: light-dark(#333, #e0e0e0);
+}
+
+/* Links */
+a {
+  color: light-dark(#0066cc, #66b3ff);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+
+a:hover {
+  color: light-dark(#0052a3, #4da3ff);
+  text-decoration-color: currentColor;
+}
+
+a:visited {
+  color: light-dark(#551a8b, #b19cd9);
+}
+
+/* Lists */
+ul,
+ol {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  line-height: 1.75;
+}
+
+ul ul,
+ul ol,
+ol ul,
+ol ol {
+  margin-bottom: 0;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  color: light-dark(#333, #e0e0e0);
+}
+
+li:last-child {
+  margin-bottom: 0;
+}
+
+/* List item markers */
+ul > li::marker {
+  color: light-dark(#666, #999);
+}
+
+ol > li::marker {
+  color: light-dark(#666, #999);
+  font-weight: 600;
+}
+
+/* Blockquotes */
+blockquote {
+  margin: 2rem 0;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid light-dark(#ddd, #444);
+  background-color: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.02));
+  font-style: italic;
+}
+
+blockquote p {
+  margin-bottom: 0;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code */
+code {
+  padding: 0.125rem 0.375rem;
+  background-color: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+  border-radius: 4px;
+  font-size: 0.875em;
+  color: light-dark(#d14, #ff6b6b);
+}
+
+/* Code blocks */
+pre code {
+  padding: 0;
+  background-color: transparent;
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+/* Strong and emphasis */
+strong,
+b {
+  font-weight: 600;
+  color: light-dark(#111, #fafafa);
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+/* Small text */
+small {
+  font-size: 0.875rem;
+  color: light-dark(#666, #999);
+}
+
+/* Horizontal rules */
+hr {
+  margin: 3rem 0;
+  border: none;
+  border-top: 1px solid light-dark(#e0e0e0, #333);
+}
+
+/* Definition lists */
+dl {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+dt {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: light-dark(#111, #fafafa);
+}
+
+dd {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: light-dark(#333, #e0e0e0);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid light-dark(#e0e0e0, #333);
+}
+
+th {
+  font-weight: 600;
+  color: light-dark(#111, #fafafa);
+  border-bottom: 2px solid light-dark(#333, #666);
+}
+
+/* Abbreviations */
+abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+/* Mark/highlight */
+mark {
+  background-color: light-dark(#ffeb3b, #ffd700);
+  color: light-dark(#000, #000);
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+}
+
+/* Sup and sub */
+sup,
+sub {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+/* Selection */
+::selection {
+  background-color: light-dark(
+    rgba(0, 102, 204, 0.2),
+    rgba(102, 179, 255, 0.3)
+  );
+  color: inherit;
+}
+
+/* Responsive typography adjustments */
+@media (max-width: 768px) {
+  p {
+    font-size: 0.9375rem;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.25rem;
+  }
+
+  blockquote {
+    margin: 1.5rem 0;
+    padding: 0.75rem 1rem;
+  }
+}

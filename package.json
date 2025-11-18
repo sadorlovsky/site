@@ -14,12 +14,12 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.3",
-    "@astrojs/react": "^4.3.0",
-    "@astrojs/vercel": "^8.2.5",
+    "@astrojs/mdx": "^4.3.5",
+    "@astrojs/react": "^4.3.1",
+    "@astrojs/vercel": "^8.2.7",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
-    "astro": "^5.13.0",
+    "astro": "^5.13.7",
     "astro-expressive-code": "^0.40.1",
     "astro-icon": "^1.1.5",
     "flag-icons": "^7.3.2",

@@ -1,0 +1,543 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+
+type WishlistItem = {
+  id: number;
+  title: string;
+  price: string;
+  imageUrl: string;
+  description?: string;
+  url?: string;
+  priority?: "high" | "medium" | "low";
+  received?: boolean;
+};
+
+// Mock wishlist data - in a real app this would come from a database
+const wishlistItemsRaw: WishlistItem[] = [
+  {
+    id: 1,
+    title: "The Florida Project Limited Edition 4K UHD",
+    price: "$52",
+    imageUrl: "/second-sight-florida-project.webp",
+  },
+  {
+    id: 2,
+    title: "Tangerine Limited Edition Blu-ray",
+    price: "$29",
+    imageUrl: "/second-sight-tangerine.webp",
+  },
+  {
+    id: 5,
+    title: "NOMAD Apple Watch Titanium Band",
+    description: "Titanium Band for Apple Watch Ultra",
+    price: "$199",
+    imageUrl: "/apple-watch-band.webp",
+  },
+  {
+    id: 6,
+    title: "Astro Bot Vinyl",
+    price: "$39",
+    imageUrl: "/astrobot-vinyl.webp",
+    url: "https://www.fangamer.com/collections/astro-bot/products/astro-bot-2024-vinyl",
+  },
+  {
+    id: 7,
+    title: "Celestial Skies Desk Mat",
+    price: "$28",
+    imageUrl: "/celeste-deskmat.webp",
+    url: "https://www.fangamer.com/collections/celeste/products/celeste-desk-mat-skies",
+    received: true,
+  },
+  {
+    id: 8,
+    title: "TPOB XO Clipper (Slime Edition)",
+    price: "£129.99",
+    imageUrl: "/tpob-xo-clipper.webp",
+    url: "https://thepissedoffbarber.com/collections/clippers-2/products/xo-clipper-slime",
+  },
+  {
+    id: 9,
+    title: "TPOB Skull Foil Shaver (Slime Edition)",
+    price: "£59.99",
+    imageUrl: "/tpob-skull-foil-shaver.webp",
+    url: "https://thepissedoffbarber.com/collections/foil-shavers/products/tpob-slime-skull-foil-shaver",
+  },
+];
+
+// Sort items: non-received first, received last
+const wishlistItems = wishlistItemsRaw.sort((a, b) => {
+  if (a.received && !b.received) return 1;
+  if (!a.received && b.received) return -1;
+  return 0;
+});
+---
+
+<PageLayout title="Wishlist - Zach">
+  <main>
+    <div class="container">
+      <header class="header">
+        <h1>My Wishlist</h1>
+        <p class="subtitle">Things I'd love to have</p>
+      </header>
+
+      <div class="wishlist-grid" id="wishlist-grid">
+        {
+          wishlistItems.map((item) => (
+            <article
+              class={`wishlist-item ${item.received ? "item-received" : ""}`}
+              data-item-id={item.id}
+            >
+              <div class="item-image">
+                <img src={item.imageUrl} alt={item.title} loading="lazy" />
+                {item.received && (
+                  <div class="received-badge">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.5 4L6 11.5L2.5 8"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    Received
+                  </div>
+                )}
+                {!item.received && item.priority && (
+                  <div class={`priority-badge priority-${item.priority}`}>
+                    {item.priority}
+                  </div>
+                )}
+              </div>
+              <div class="item-content">
+                <h3 class="item-title">{item.title}</h3>
+                <p class="item-description">{item.description}</p>
+                <div class="item-footer">
+                  <span class="item-price">{item.price}</span>
+                  <button
+                    class="reserve-btn"
+                    data-item-id={item.id}
+                    data-item-title={item.title}
+                    disabled={item.received}
+                  >
+                    {item.received ? "Received" : "Reserve"}
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <div
+        class="reserved-section"
+        id="reserved-section"
+        style="display: none;"
+      >
+        <h2>Reserved Items</h2>
+        <div class="reserved-list" id="reserved-list">
+          <!-- Reserved items will be added here dynamically -->
+        </div>
+      </div>
+    </div>
+  </main>
+</PageLayout>
+
+<style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .header h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    color: light-dark(#666, #999);
+    margin: 0;
+  }
+
+  .wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .wishlist-item {
+    background: light-dark(#fff, #2a2a2a);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    border: 1px solid light-dark(#e5e7eb, #374151);
+  }
+
+  .wishlist-item:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+      0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  .wishlist-item.item-received {
+    opacity: 0.6;
+    position: relative;
+  }
+
+  .wishlist-item.item-received::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(16, 185, 129, 0.1) 0%,
+      rgba(5, 150, 105, 0.1) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .wishlist-item.item-received:hover {
+    transform: none;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .item-image {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+  }
+
+  .item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .wishlist-item:hover .item-image img {
+    transform: scale(1.05);
+  }
+
+  .priority-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    backdrop-filter: blur(10px);
+  }
+
+  .received-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.95);
+    color: white;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 2;
+  }
+
+  .received-badge svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .priority-high {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+  }
+
+  .priority-medium {
+    background: rgba(245, 158, 11, 0.9);
+    color: white;
+  }
+
+  .priority-low {
+    background: rgba(34, 197, 94, 0.9);
+    color: white;
+  }
+
+  .item-content {
+    padding: 1.5rem;
+  }
+
+  .item-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: light-dark(#111, #f9f9f9);
+  }
+
+  .item-description {
+    color: light-dark(#666, #999);
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+  }
+
+  .item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .item-price {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: light-dark(#111, #f9f9f9);
+  }
+
+  .reserve-btn {
+    background: transparent;
+    color: light-dark(#667eea, #8b9aff);
+    border: 2px solid light-dark(#667eea, #8b9aff);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+  }
+
+  .reserve-btn:hover {
+    background: light-dark(#667eea, #8b9aff);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .reserve-btn:active {
+    transform: translateY(0);
+  }
+
+  .reserve-btn.reserved {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    cursor: default;
+  }
+
+  .reserve-btn.reserved:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .reserve-btn:disabled {
+    background: light-dark(#10b981, #059669);
+    color: white;
+    border-color: light-dark(#10b981, #059669);
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
+  .reserve-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .reserved-section {
+    border-top: 2px solid light-dark(#e5e7eb, #374151);
+    padding-top: 2rem;
+  }
+
+  .reserved-section h2 {
+    margin-bottom: 1.5rem;
+    color: light-dark(#111, #f9f9f9);
+  }
+
+  .reserved-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .reserved-item {
+    background: light-dark(#f8fafc, #1f2937);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid light-dark(#e5e7eb, #374151);
+  }
+
+  .reserved-item-title {
+    font-weight: 600;
+    color: light-dark(#111, #f9f9f9);
+    margin: 0;
+  }
+
+  .unreserve-btn {
+    background: transparent;
+    color: light-dark(#ef4444, #f87171);
+    border: 1px solid light-dark(#ef4444, #f87171);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .unreserve-btn:hover {
+    background: light-dark(#ef4444, #f87171);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+
+    .wishlist-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .item-footer {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .reserve-btn {
+      width: 100%;
+      justify-self: stretch;
+    }
+  }
+</style>
+
+<script>
+  // Extend Window interface for unreserveItem
+  declare global {
+    interface Window {
+      unreserveItem: (itemId: string) => void;
+    }
+  }
+
+  // In-memory storage for reserved items
+  let reservedItems = new Set<string>();
+
+  function initializeWishlist() {
+    const reserveButtons =
+      document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
+    const reservedSection = document.getElementById("reserved-section");
+    const reservedList = document.getElementById("reserved-list");
+
+    if (!reservedSection || !reservedList) {
+      return;
+    }
+
+    reserveButtons.forEach((button) => {
+      button.addEventListener("click", function (this: HTMLButtonElement) {
+        const itemId = this.dataset.itemId;
+        const itemTitle = this.dataset.itemTitle;
+
+        if (!itemId || !itemTitle) {
+          return;
+        }
+
+        if (!reservedItems.has(itemId)) {
+          // Reserve the item
+          reservedItems.add(itemId);
+          this.textContent = "Reserved";
+          this.classList.add("reserved");
+          this.disabled = true;
+
+          // Add to reserved list
+          addToReservedList(itemId, itemTitle);
+
+          // Show reserved section if hidden
+          if (reservedSection.style.display === "none") {
+            reservedSection.style.display = "block";
+          }
+        }
+      });
+    });
+
+    function addToReservedList(itemId: string, itemTitle: string) {
+      if (!reservedList) {
+        return;
+      }
+
+      const reservedItem = document.createElement("div");
+      reservedItem.className = "reserved-item";
+      reservedItem.dataset.itemId = itemId;
+
+      reservedItem.innerHTML = `
+        <h4 class="reserved-item-title">${itemTitle}</h4>
+        <button class="unreserve-btn" onclick="unreserveItem('${itemId}')">
+          Unreserve
+        </button>
+      `;
+
+      reservedList.appendChild(reservedItem);
+    }
+
+    // Make unreserveItem function globally available
+    window.unreserveItem = function (itemId: string) {
+      if (!reservedSection) {
+        return;
+      }
+
+      // Remove from reserved items
+      reservedItems.delete(itemId);
+
+      // Remove from reserved list
+      const reservedItem = document.querySelector(
+        `.reserved-item[data-item-id="${itemId}"]`,
+      );
+      if (reservedItem) {
+        reservedItem.remove();
+      }
+
+      // Update the original button
+      const originalButton = document.querySelector<HTMLButtonElement>(
+        `.reserve-btn[data-item-id="${itemId}"]`,
+      );
+      if (originalButton) {
+        originalButton.textContent = "Reserve";
+        originalButton.classList.remove("reserved");
+        originalButton.disabled = false;
+      }
+
+      // Hide reserved section if no items left
+      if (reservedItems.size === 0) {
+        reservedSection.style.display = "none";
+      }
+    };
+  }
+
+  // Initialize when the page loads
+  document.addEventListener("DOMContentLoaded", initializeWishlist);
+</script>
