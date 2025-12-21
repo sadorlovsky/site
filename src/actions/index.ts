@@ -6,8 +6,9 @@ export const server = {
   reserve: defineAction({
     input: z.object({
       itemId: z.number(),
+      visitorId: z.string(),
     }),
-    handler: async ({ itemId }) => {
+    handler: async ({ itemId, visitorId }) => {
       // Check if item exists
       const item = await db
         .select()
@@ -53,7 +54,7 @@ export const server = {
       await db.insert(Reservation).values({
         id: nextId,
         itemId,
-        reservedBy: "anonymous",
+        reservedBy: visitorId,
         reservedAt: new Date(),
       });
 
@@ -64,8 +65,9 @@ export const server = {
   unreserve: defineAction({
     input: z.object({
       itemId: z.number(),
+      visitorId: z.string(),
     }),
-    handler: async ({ itemId }) => {
+    handler: async ({ itemId, visitorId }) => {
       // Check if reservation exists
       const existingReservation = await db
         .select()
@@ -76,6 +78,14 @@ export const server = {
         throw new ActionError({
           code: "NOT_FOUND",
           message: "Reservation not found",
+        });
+      }
+
+      // Check if this visitor made the reservation
+      if (existingReservation[0].reservedBy !== visitorId) {
+        throw new ActionError({
+          code: "FORBIDDEN",
+          message: "You can only cancel your own reservations",
         });
       }
 

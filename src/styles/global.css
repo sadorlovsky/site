@@ -195,8 +195,8 @@ a {
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
   transition:
-    color 0.2s ease,
-    text-decoration-color 0.2s ease;
+    color 0.1s ease,
+    text-decoration-color 0.1s ease;
 }
 
 a:hover {
