@@ -1,71 +1,42 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
+import { db, WishlistItem, Reservation, eq } from "astro:db";
 
-type WishlistItem = {
+// Opt out of prerendering - this page needs SSR for dynamic reservations
+export const prerender = false;
+
+type WishlistItemWithReservation = {
   id: number;
   title: string;
   price: string;
   imageUrl: string;
-  description?: string;
-  url?: string;
-  priority?: "high" | "medium" | "low";
-  received?: boolean;
+  description: string | null;
+  url: string | null;
+  priority: string | null;
+  received: boolean;
+  isReserved: boolean;
+  reservedBy: string | null;
 };
 
-// Mock wishlist data - in a real app this would come from a database
-const wishlistItemsRaw: WishlistItem[] = [
-  {
-    id: 1,
-    title: "The Florida Project Limited Edition 4K UHD",
-    price: "$52",
-    imageUrl: "/second-sight-florida-project.webp",
-  },
-  {
-    id: 2,
-    title: "Tangerine Limited Edition Blu-ray",
-    price: "$29",
-    imageUrl: "/second-sight-tangerine.webp",
-  },
-  {
-    id: 5,
-    title: "NOMAD Apple Watch Titanium Band",
-    description: "Titanium Band for Apple Watch Ultra",
-    price: "$199",
-    imageUrl: "/apple-watch-band.webp",
-  },
-  {
-    id: 6,
-    title: "Astro Bot Vinyl",
-    price: "$39",
-    imageUrl: "/astrobot-vinyl.webp",
-    url: "https://www.fangamer.com/collections/astro-bot/products/astro-bot-2024-vinyl",
-  },
-  {
-    id: 7,
-    title: "Celestial Skies Desk Mat",
-    price: "$28",
-    imageUrl: "/celeste-deskmat.webp",
-    url: "https://www.fangamer.com/collections/celeste/products/celeste-desk-mat-skies",
-    received: true,
-  },
-  {
-    id: 8,
-    title: "TPOB XO Clipper (Slime Edition)",
-    price: "£129.99",
-    imageUrl: "/tpob-xo-clipper.webp",
-    url: "https://thepissedoffbarber.com/collections/clippers-2/products/xo-clipper-slime",
-  },
-  {
-    id: 9,
-    title: "TPOB Skull Foil Shaver (Slime Edition)",
-    price: "£59.99",
-    imageUrl: "/tpob-skull-foil-shaver.webp",
-    url: "https://thepissedoffbarber.com/collections/foil-shavers/products/tpob-slime-skull-foil-shaver",
-  },
-];
+// Fetch wishlist items from database
+const wishlistItemsRaw = await db.select().from(WishlistItem);
+
+// Fetch all reservations
+const reservations = await db.select().from(Reservation);
+
+// Combine items with their reservation status
+const wishlistItemsWithReservations: WishlistItemWithReservation[] =
+  wishlistItemsRaw.map((item) => {
+    const reservation = reservations.find((r) => r.itemId === item.id);
+    return {
+      ...item,
+      isReserved: !!reservation,
+      reservedBy: reservation?.reservedBy ?? null,
+    };
+  });
 
 // Sort items: non-received first, received last
-const wishlistItems = wishlistItemsRaw.sort((a, b) => {
+const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
   if (a.received && !b.received) return 1;
   if (!a.received && b.received) return -1;
   return 0;
@@ -124,26 +95,19 @@ const wishlistItems = wishlistItemsRaw.sort((a, b) => {
                     class="reserve-btn"
                     data-item-id={item.id}
                     data-item-title={item.title}
-                    disabled={item.received}
+                    disabled={item.received || item.isReserved}
                   >
-                    {item.received ? "Received" : "Reserve"}
+                    {item.received
+                      ? "Received"
+                      : item.isReserved
+                        ? "Reserved"
+                        : "Reserve"}
                   </button>
                 </div>
               </div>
             </article>
           ))
         }
-      </div>
-
-      <div
-        class="reserved-section"
-        id="reserved-section"
-        style="display: none;"
-      >
-        <h2>Reserved Items</h2>
-        <div class="reserved-list" id="reserved-list">
-          <!-- Reserved items will be added here dynamically -->
-        </div>
       </div>
     </div>
   </main>
@@ -367,53 +331,6 @@ const wishlistItems = wishlistItemsRaw.sort((a, b) => {
     box-shadow: none;
   }
 
-  .reserved-section {
-    border-top: 2px solid light-dark(#e5e7eb, #374151);
-    padding-top: 2rem;
-  }
-
-  .reserved-section h2 {
-    margin-bottom: 1.5rem;
-    color: light-dark(#111, #f9f9f9);
-  }
-
-  .reserved-list {
-    display: grid;
-    gap: 1rem;
-  }
-
-  .reserved-item {
-    background: light-dark(#f8fafc, #1f2937);
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid light-dark(#e5e7eb, #374151);
-  }
-
-  .reserved-item-title {
-    font-weight: 600;
-    color: light-dark(#111, #f9f9f9);
-    margin: 0;
-  }
-
-  .unreserve-btn {
-    background: transparent;
-    color: light-dark(#ef4444, #f87171);
-    border: 1px solid light-dark(#ef4444, #f87171);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .unreserve-btn:hover {
-    background: light-dark(#ef4444, #f87171);
-    color: white;
-  }
-
   @media (max-width: 768px) {
     .container {
       padding: 1rem;
@@ -438,104 +355,48 @@ const wishlistItems = wishlistItemsRaw.sort((a, b) => {
 </style>
 
 <script>
-  // Extend Window interface for unreserveItem
-  declare global {
-    interface Window {
-      unreserveItem: (itemId: string) => void;
-    }
-  }
-
-  // In-memory storage for reserved items
-  let reservedItems = new Set<string>();
+  import { actions } from "astro:actions";
 
   function initializeWishlist() {
     const reserveButtons =
       document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
-    const reservedSection = document.getElementById("reserved-section");
-    const reservedList = document.getElementById("reserved-list");
-
-    if (!reservedSection || !reservedList) {
-      return;
-    }
 
     reserveButtons.forEach((button) => {
-      button.addEventListener("click", function (this: HTMLButtonElement) {
-        const itemId = this.dataset.itemId;
-        const itemTitle = this.dataset.itemTitle;
+      // Skip already disabled buttons (received or reserved items)
+      if (button.disabled) {
+        return;
+      }
 
-        if (!itemId || !itemTitle) {
-          return;
-        }
+      button.addEventListener(
+        "click",
+        async function (this: HTMLButtonElement) {
+          const itemId = this.dataset.itemId;
 
-        if (!reservedItems.has(itemId)) {
-          // Reserve the item
-          reservedItems.add(itemId);
-          this.textContent = "Reserved";
-          this.classList.add("reserved");
-          this.disabled = true;
-
-          // Add to reserved list
-          addToReservedList(itemId, itemTitle);
-
-          // Show reserved section if hidden
-          if (reservedSection.style.display === "none") {
-            reservedSection.style.display = "block";
+          if (!itemId) {
+            return;
           }
-        }
-      });
+
+          // Disable button and show loading state
+          this.disabled = true;
+          const originalText = this.textContent;
+          this.textContent = "Reserving...";
+
+          const { data, error } = await actions.reserve({
+            itemId: parseInt(itemId),
+          });
+
+          if (data?.success) {
+            // Success - update button state
+            this.textContent = "Reserved";
+          } else {
+            // Error - show message and restore button
+            alert(error?.message || "Failed to reserve item");
+            this.disabled = false;
+            this.textContent = originalText;
+          }
+        },
+      );
     });
-
-    function addToReservedList(itemId: string, itemTitle: string) {
-      if (!reservedList) {
-        return;
-      }
-
-      const reservedItem = document.createElement("div");
-      reservedItem.className = "reserved-item";
-      reservedItem.dataset.itemId = itemId;
-
-      reservedItem.innerHTML = `
-        <h4 class="reserved-item-title">${itemTitle}</h4>
-        <button class="unreserve-btn" onclick="unreserveItem('${itemId}')">
-          Unreserve
-        </button>
-      `;
-
-      reservedList.appendChild(reservedItem);
-    }
-
-    // Make unreserveItem function globally available
-    window.unreserveItem = function (itemId: string) {
-      if (!reservedSection) {
-        return;
-      }
-
-      // Remove from reserved items
-      reservedItems.delete(itemId);
-
-      // Remove from reserved list
-      const reservedItem = document.querySelector(
-        `.reserved-item[data-item-id="${itemId}"]`,
-      );
-      if (reservedItem) {
-        reservedItem.remove();
-      }
-
-      // Update the original button
-      const originalButton = document.querySelector<HTMLButtonElement>(
-        `.reserve-btn[data-item-id="${itemId}"]`,
-      );
-      if (originalButton) {
-        originalButton.textContent = "Reserve";
-        originalButton.classList.remove("reserved");
-        originalButton.disabled = false;
-      }
-
-      // Hide reserved section if no items left
-      if (reservedItems.size === 0) {
-        reservedSection.style.display = "none";
-      }
-    };
   }
 
   // Initialize when the page loads
