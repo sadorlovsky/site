@@ -1210,9 +1210,9 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
       const match = price.match(/₽(\d+)/);
       if (!match) return price;
       const num = parseInt(match[1], 10);
-      // Format with space as thousands separator
+      // Format with space as thousands separator, symbol after number
       const formatted = num.toLocaleString("ru-RU");
-      return `₽${formatted}`;
+      return `${formatted}₽`;
     }
 
     function updatePricesForLanguage(lang: "en" | "ru") {
