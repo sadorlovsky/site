@@ -1082,66 +1082,80 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
           ) as HTMLElement;
 
           if (isCurrentlyReserved && isOwn) {
-            // Cancel reservation
-            this.disabled = true;
-            const originalText = this.textContent;
-            this.textContent =
-              currentLang === "ru" ? "Отменяем..." : "Canceling...";
+            // Cancel reservation - optimistic UI
+            const previousState = {
+              reservedBy: this.dataset.reservedBy,
+              textContent: this.textContent,
+              hasClass: this.classList.contains("own-reservation"),
+              badgeHidden: itemBadge?.hidden,
+            };
 
-            const { data, error } = await actions.unreserve({
+            // Optimistically update UI
+            this.dataset.reservedBy = "";
+            this.textContent =
+              (currentLang === "ru"
+                ? this.dataset.ruReserve
+                : this.dataset.enReserve) ?? null;
+            this.classList.remove("own-reservation");
+            if (itemBadge) itemBadge.hidden = true;
+
+            // Make API call in background
+            const { error } = await actions.unreserve({
               itemId: parseInt(itemId),
               visitorId,
             });
 
-            if (data?.success) {
-              this.dataset.reservedBy = "";
-              this.textContent =
-                (currentLang === "ru"
-                  ? this.dataset.ruReserve
-                  : this.dataset.enReserve) ?? null;
-              this.classList.remove("own-reservation");
-              if (itemBadge) itemBadge.hidden = true;
-              this.disabled = false;
-            } else {
-              alert(error?.message || "Failed to cancel reservation");
-              this.textContent = originalText ?? null;
-              this.disabled = false;
+            // Rollback on error
+            if (error) {
+              this.dataset.reservedBy = previousState.reservedBy;
+              this.textContent = previousState.textContent;
+              if (previousState.hasClass) this.classList.add("own-reservation");
+              if (itemBadge)
+                itemBadge.hidden = previousState.badgeHidden ?? false;
+              alert(error.message || "Failed to cancel reservation");
             }
           } else if (!isCurrentlyReserved) {
-            // Make reservation
-            this.disabled = true;
-            const originalText = this.textContent;
-            this.textContent =
-              currentLang === "ru" ? "Резервируем..." : "Reserving...";
+            // Make reservation - optimistic UI
+            const previousState = {
+              reservedBy: this.dataset.reservedBy,
+              textContent: this.textContent,
+              hasClass: this.classList.contains("own-reservation"),
+              badgeHidden: itemBadge?.hidden,
+            };
 
-            const { data, error } = await actions.reserve({
+            // Optimistically update UI
+            this.dataset.reservedBy = visitorId;
+            this.textContent =
+              (currentLang === "ru"
+                ? this.dataset.ruCancel
+                : this.dataset.enCancel) ?? null;
+            this.classList.add("own-reservation");
+            if (itemBadge) {
+              itemBadge.hidden = false;
+              const badgeSpan = itemBadge.querySelector("span");
+              if (badgeSpan) {
+                badgeSpan.textContent =
+                  (currentLang === "ru"
+                    ? itemBadge.dataset.ru
+                    : itemBadge.dataset.en) ?? null;
+              }
+            }
+
+            // Make API call in background
+            const { error } = await actions.reserve({
               itemId: parseInt(itemId),
               visitorId,
             });
 
-            if (data?.success) {
-              this.dataset.reservedBy = visitorId;
-              this.textContent =
-                (currentLang === "ru"
-                  ? this.dataset.ruCancel
-                  : this.dataset.enCancel) ?? null;
-              this.classList.add("own-reservation");
-              if (itemBadge) {
-                itemBadge.hidden = false;
-                // Update badge text for current language
-                const badgeSpan = itemBadge.querySelector("span");
-                if (badgeSpan) {
-                  badgeSpan.textContent =
-                    (currentLang === "ru"
-                      ? itemBadge.dataset.ru
-                      : itemBadge.dataset.en) ?? null;
-                }
-              }
-              this.disabled = false;
-            } else {
-              alert(error?.message || "Failed to reserve item");
-              this.textContent = originalText ?? null;
-              this.disabled = false;
+            // Rollback on error
+            if (error) {
+              this.dataset.reservedBy = previousState.reservedBy;
+              this.textContent = previousState.textContent;
+              if (!previousState.hasClass)
+                this.classList.remove("own-reservation");
+              if (itemBadge)
+                itemBadge.hidden = previousState.badgeHidden ?? true;
+              alert(error.message || "Failed to reserve item");
             }
           }
         });
@@ -1210,9 +1224,11 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
       const match = price.match(/₽(\d+)/);
       if (!match) return price;
       const num = parseInt(match[1], 10);
+      // Round to nearest 10
+      const rounded = Math.round(num / 10) * 10;
       // Format with space as thousands separator, symbol after number
-      const formatted = num.toLocaleString("ru-RU");
-      return `${formatted}₽`;
+      const formatted = rounded.toLocaleString("ru-RU");
+      return `${formatted} ₽`;
     }
 
     function updatePricesForLanguage(lang: "en" | "ru") {
