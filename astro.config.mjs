@@ -9,6 +9,12 @@ import db from "@astrojs/db";
 export default defineConfig({
   output: "static",
   adapter: vercel(),
+  image: {
+    domains: [
+      "pub-4b913e87f0c44d508111225ea44c624f.r2.dev", // R2 dev
+      // TODO: добавить production домен
+    ],
+  },
   integrations: [icon(), mdx(), react(), db()],
   markdown: {
     shikiConfig: {

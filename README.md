@@ -3,74 +3,79 @@
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://orlovsky.dev)
 [![Built with Astro](https://img.shields.io/badge/Built%20with-Astro-FF5D01?logo=astro)](https://astro.build)
 
-This is the source code for [orlovsky.dev](https://orlovsky.dev), a personal website built with [Astro](https://astro.build).
+## Quick Start
 
-## 📚 Features
-
-- Modern, responsive design
-- MDX-powered content
-- Interactive map using MapLibre GL
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Bun](https://bun.sh/) (JavaScript runtime & toolkit)
-
-### Installation
-
-1. Clone the repository
-```
-git clone https://github.com/sadorlovsky/site.git
-cd site
-```
-
-2. Install dependencies
-```
+```bash
 bun install
-```
-
-3. Start the development server
-```
 bun dev
+# Open http://localhost:4321
 ```
 
-4. Open [http://localhost:4321](http://localhost:4321) in your browser
+## Commands
 
-## 🧞 Commands
+| Command       | Action                                      |
+|:--------------|:--------------------------------------------|
+| `bun dev`     | Start dev server at `localhost:4321`        |
+| `bun build`   | Build production site to `./dist/`          |
+| `bun preview` | Preview production build locally            |
 
-All commands are run from the root of the project, from a terminal:
+## Wishlist
 
-| Command           | Action                                      |
-|:------------------|:--------------------------------------------|
-| `bun install`     | Installs dependencies                       |
-| `bun dev`         | Starts local dev server at `localhost:4321` |
-| `bun build`       | Build your production site to `./dist/`     |
-| `bun preview`     | Preview your build locally                  |
-| `bun test`        | Run tests with Vitest                       |
+Страница `/wishlist` использует Astro DB + Turso для хранения данных.
 
-## 📦 Project Structure
+### Локальная разработка
 
+Просто `bun dev` — Astro автоматически создаст локальную SQLite БД и заполнит из `db/seed.ts`.
+
+### Production (Turso)
+
+```bash
+# Установить CLI
+brew install tursodatabase/tap/turso
+
+# Создать БД
+turso auth login
+turso db create wishlist-db
+
+# Получить credentials
+turso db show wishlist-db --url
+turso db tokens create wishlist-db
 ```
-site/
-├── public/           # Static assets
-├── src/
-│   ├── components/   # UI components
-│   ├── content/      # Content collections (blog posts, etc.)
-│   ├── icons/        # Icon components
-│   ├── layouts/      # Page layouts
-│   ├── lib/          # Utility functions and shared code
-│   ├── pages/        # Page components
-│   ├── scripts/      # Client-side scripts
-│   └── styles/       # CSS stylesheets
-├── astro.config.mjs  # Astro configuration
-└── tsconfig.json     # TypeScript configuration
+
+Добавить в Vercel Environment Variables:
+- `ASTRO_DB_REMOTE_URL` = `libsql://wishlist-db-....turso.io`
+- `ASTRO_DB_APP_TOKEN` = `eyJhbGc...`
+
+Применить схему:
+```bash
+npx astro db push --remote
 ```
 
-## 🔄 Deployment
+### Управление данными
 
-This site is automatically deployed to [Vercel](https://vercel.com) when changes are pushed to the main branch.
+```bash
+turso db shell wishlist-db
+```
 
-## 📄 License
+```sql
+-- Добавить товар
+INSERT INTO WishlistItem (id, title, price, imageUrl, received)
+VALUES (10, 'New Item', '$99', 'https://...r2.dev/wishlist/item.webp', 0);
+
+-- Отметить как полученный
+UPDATE WishlistItem SET received = 1 WHERE id = 7;
+
+-- Удалить резервирование
+DELETE FROM Reservation WHERE itemId = 5;
+```
+
+### Изображения (Cloudflare R2)
+
+Изображения хранятся в R2. Загрузка:
+```bash
+wrangler r2 object put bucket-name/wishlist/image.webp --file=./image.webp
+```
+
+## License
 
 MIT

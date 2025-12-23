@@ -3,12 +3,6 @@ import PageLayout from "@layouts/PageLayout.astro";
 import { Image } from "astro:assets";
 import { db, WishlistItem, Reservation, eq } from "astro:db";
 
-// Import all wishlist images dynamically
-const images = import.meta.glob<{ default: ImageMetadata }>(
-  "/src/assets/wishlist/*.{jpeg,jpg,png,gif,webp,avif}",
-  { eager: true },
-);
-
 // Opt out of prerendering - this page needs SSR for dynamic reservations
 export const prerender = false;
 
@@ -74,15 +68,6 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
   const bPriority = b.priority ? (priorityOrder[b.priority] ?? 3) : 3;
   return aPriority - bPriority;
 });
-
-// Helper function to get image from dynamic imports
-function getImage(imageUrl: string): ImageMetadata | null {
-  // Convert "/filename.ext" to "/src/assets/wishlist/filename.ext"
-  const filename = imageUrl.replace(/^\//, "");
-  const imagePath = `/src/assets/wishlist/${filename}`;
-  const imageModule = images[imagePath];
-  return imageModule?.default ?? null;
-}
 ---
 
 <PageLayout title="Wishlist - Zach">
@@ -191,16 +176,14 @@ function getImage(imageUrl: string): ImageMetadata | null {
               data-category={item.category}
             >
               <div class="item-image">
-                {getImage(item.imageUrl) ? (
-                  <Image
-                    src={getImage(item.imageUrl)!}
-                    alt={item.title}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <img src={item.imageUrl} alt={item.title} loading="lazy" />
-                )}
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  width={400}
+                  height={300}
+                  loading="lazy"
+                  decoding="async"
+                />
                 {item.received && (
                   <div
                     class="received-badge"
