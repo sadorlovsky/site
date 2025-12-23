@@ -1,18 +1,49 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import { Image } from "astro:assets";
-import { db, WishlistItem, Reservation, eq } from "astro:db";
+import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
 
 // Opt out of prerendering - this page needs SSR for dynamic reservations
 export const prerender = false;
+
+type Currency = "USD" | "EUR" | "GBP" | "AUD";
+
+type ParsedPrice = {
+  amount: number; // In cents
+  currency: Currency;
+};
+
+// Parse price string like "$64", "£25", "€300", "AU$140"
+function parsePrice(price: string): ParsedPrice | null {
+  const trimmed = price.trim();
+
+  if (trimmed.startsWith("AU$")) {
+    const amount = parseInt(trimmed.slice(3).replace(/,/g, ""), 10);
+    return isNaN(amount) ? null : { amount: amount * 100, currency: "AUD" };
+  }
+  if (trimmed.startsWith("$")) {
+    const amount = parseInt(trimmed.slice(1).replace(/,/g, ""), 10);
+    return isNaN(amount) ? null : { amount: amount * 100, currency: "USD" };
+  }
+  if (trimmed.startsWith("£")) {
+    const amount = parseInt(trimmed.slice(1).replace(/,/g, ""), 10);
+    return isNaN(amount) ? null : { amount: amount * 100, currency: "GBP" };
+  }
+  if (trimmed.startsWith("€")) {
+    const amount = parseInt(trimmed.slice(1).replace(/,/g, ""), 10);
+    return isNaN(amount) ? null : { amount: amount * 100, currency: "EUR" };
+  }
+
+  return null;
+}
 
 type WishlistItemWithReservation = {
   id: number;
   title: string;
   titleRu: string | null;
   price: string;
-  priceUsd: number | null;
-  priceRub: number | null;
+  priceUsd: number | null; // Computed from price field
+  priceRub: number | null; // Computed from priceUsd * exchange rate
   imageUrl: string;
   description: string | null;
   descriptionRu: string | null;
@@ -40,12 +71,50 @@ const wishlistItemsRaw = await db.select().from(WishlistItem);
 // Fetch all reservations
 const reservations = await db.select().from(Reservation);
 
-// Combine items with their reservation status
+// Fetch all exchange rates
+const exchangeRatesRaw = await db.select().from(ExchangeRate);
+
+// Build exchange rate lookup: currency -> rate to RUB
+const toRubRates: Record<Currency, number> = {
+  USD: 100,
+  EUR: 110,
+  GBP: 130,
+  AUD: 65,
+};
+
+// Override defaults with DB values
+for (const rate of exchangeRatesRaw) {
+  if (rate.toCurrency === "RUB" && rate.fromCurrency in toRubRates) {
+    toRubRates[rate.fromCurrency as Currency] = rate.rate;
+  }
+}
+
+// Compute priceUsd from original price
+function computePriceUsd(price: string): number | null {
+  const parsed = parsePrice(price);
+  if (!parsed) return null;
+
+  if (parsed.currency === "USD") {
+    return parsed.amount;
+  }
+
+  // Convert to USD: amount_in_currency * (rate_to_rub / usd_to_rub_rate)
+  const rateToRub = toRubRates[parsed.currency];
+  const usdToRub = toRubRates.USD;
+  return Math.round((parsed.amount * rateToRub) / usdToRub);
+}
+
+// Combine items with their reservation status and computed prices
 const wishlistItemsWithReservations: WishlistItemWithReservation[] =
   wishlistItemsRaw.map((item) => {
     const reservation = reservations.find((r) => r.itemId === item.id);
+    const priceUsd = computePriceUsd(item.price);
+    const priceRub = priceUsd ? priceUsd * toRubRates.USD : null;
+
     return {
       ...item,
+      priceUsd,
+      priceRub,
       isReserved: !!reservation,
       reservedBy: reservation?.reservedBy ?? null,
     };
@@ -72,36 +141,29 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
 
 <PageLayout title="Wishlist - Zach">
   <script is:inline>
-    (function () {
-      var LANG_KEY = "wishlist-lang";
-      var lang = localStorage.getItem(LANG_KEY);
+    (() => {
+      const LANG_KEY = "wishlist-lang";
+      let lang = localStorage.getItem(LANG_KEY);
 
       // If no saved language, detect from browser
       if (!lang) {
-        var browserLangs = navigator.languages || [navigator.language];
-        for (var i = 0; i < browserLangs.length; i++) {
-          if (browserLangs[i].toLowerCase().startsWith("ru")) {
-            lang = "ru";
-            localStorage.setItem(LANG_KEY, "ru");
-            break;
-          }
-        }
-        // Default to English if no Russian detected
-        if (!lang) {
-          lang = "en";
-          localStorage.setItem(LANG_KEY, "en");
-        }
+        const browserLangs = navigator.languages || [navigator.language];
+        const isRussian = browserLangs.some((l) =>
+          l.toLowerCase().startsWith("ru"),
+        );
+        lang = isRussian ? "ru" : "en";
+        localStorage.setItem(LANG_KEY, lang);
       }
 
       if (lang === "ru") {
         document.documentElement.classList.add("lang-ru");
       }
 
-      // Generate visitorId if not exists (fallback for non-secure contexts like http://192.168.x.x)
+      // Generate visitorId if not exists
       if (!localStorage.getItem("wishlist-visitor-id")) {
-        var id = crypto.randomUUID
-          ? crypto.randomUUID()
-          : Date.now().toString(36) + Math.random().toString(36).substr(2);
+        const id =
+          crypto.randomUUID?.() ??
+          Date.now().toString(36) + Math.random().toString(36).slice(2);
         localStorage.setItem("wishlist-visitor-id", id);
       }
     })();
@@ -176,6 +238,7 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
               data-category={item.category}
             >
               <div class="item-image">
+                <div class="skeleton" />
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
@@ -183,6 +246,7 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
                   height={300}
                   loading="lazy"
                   decoding="async"
+                  onload="this.parentElement.classList.add('loaded')"
                 />
                 {item.received && (
                   <div
@@ -553,11 +617,48 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
       background: light-dark(#f0f0f0, #1a1a1a);
     }
 
+    .skeleton {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        light-dark(#e0e0e0, #2a2a2a) 0%,
+        light-dark(#f0f0f0, #3a3a3a) 50%,
+        light-dark(#e0e0e0, #2a2a2a) 100%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite ease-in-out;
+      z-index: 1;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .item-image.loaded .skeleton {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
     .item-image img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+    }
+
+    .item-image.loaded img {
+      opacity: 1;
+      transition:
+        opacity 0.3s ease,
+        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .wishlist-item:hover .item-image img {
@@ -940,9 +1041,9 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
           if (isOwnReservation) {
             // Own reservation - show Cancel and badge
             button.textContent =
-              currentLang === "ru"
+              (currentLang === "ru"
                 ? button.dataset.ruCancel
-                : button.dataset.enCancel;
+                : button.dataset.enCancel) ?? null;
             button.classList.add("own-reservation");
             if (badge) {
               badge.hidden = false;
@@ -950,15 +1051,17 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
               const span = badge.querySelector("span");
               if (span) {
                 span.textContent =
-                  currentLang === "ru" ? badge.dataset.ru : badge.dataset.en;
+                  (currentLang === "ru"
+                    ? badge.dataset.ru
+                    : badge.dataset.en) ?? null;
               }
             }
           } else {
             // Someone else's reservation - show Reserved (disabled)
             button.textContent =
-              currentLang === "ru"
+              (currentLang === "ru"
                 ? button.dataset.ruReserved
-                : button.dataset.enReserved;
+                : button.dataset.enReserved) ?? null;
             button.classList.add("reserved-other");
             button.disabled = true;
           }
@@ -993,15 +1096,15 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
             if (data?.success) {
               this.dataset.reservedBy = "";
               this.textContent =
-                currentLang === "ru"
+                (currentLang === "ru"
                   ? this.dataset.ruReserve
-                  : this.dataset.enReserve;
+                  : this.dataset.enReserve) ?? null;
               this.classList.remove("own-reservation");
               if (itemBadge) itemBadge.hidden = true;
               this.disabled = false;
             } else {
               alert(error?.message || "Failed to cancel reservation");
-              this.textContent = originalText;
+              this.textContent = originalText ?? null;
               this.disabled = false;
             }
           } else if (!isCurrentlyReserved) {
@@ -1019,9 +1122,9 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
             if (data?.success) {
               this.dataset.reservedBy = visitorId;
               this.textContent =
-                currentLang === "ru"
+                (currentLang === "ru"
                   ? this.dataset.ruCancel
-                  : this.dataset.enCancel;
+                  : this.dataset.enCancel) ?? null;
               this.classList.add("own-reservation");
               if (itemBadge) {
                 itemBadge.hidden = false;
@@ -1029,15 +1132,15 @@ const wishlistItems = wishlistItemsWithReservations.sort((a, b) => {
                 const badgeSpan = itemBadge.querySelector("span");
                 if (badgeSpan) {
                   badgeSpan.textContent =
-                    currentLang === "ru"
+                    (currentLang === "ru"
                       ? itemBadge.dataset.ru
-                      : itemBadge.dataset.en;
+                      : itemBadge.dataset.en) ?? null;
                 }
               }
               this.disabled = false;
             } else {
               alert(error?.message || "Failed to reserve item");
-              this.textContent = originalText;
+              this.textContent = originalText ?? null;
               this.disabled = false;
             }
           }
