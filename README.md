@@ -51,6 +51,24 @@ turso db tokens create wishlist-db
 npx astro db push --remote
 ```
 
+Применить схему с breaking changes (удалит все данные):
+```bash
+npx astro db push --remote --force-reset
+```
+
+Загрузить данные из seed:
+```bash
+npx astro db execute db/seed.ts --remote
+```
+
+Переименование таблицы (с сохранением данных):
+1. Добавить `deprecated: true` в старую таблицу в `db/config.ts`
+2. Создать новую таблицу с новым именем
+3. `npx astro db push --remote`
+4. Обновить код, мигрировать данные
+5. Удалить старую таблицу из конфига
+6. `npx astro db push --remote`
+
 ### Управление данными
 
 ```bash
