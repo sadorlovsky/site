@@ -1,4 +1,4 @@
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import icon from "astro-icon";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -19,6 +19,11 @@ export default defineConfig({
   markdown: {
     shikiConfig: {
       theme: "catppuccin-macchiato",
+    },
+  },
+  env: {
+    schema: {
+      CDN_DEV_URL: envField.string({ context: "server", access: "secret" }),
     },
   },
 });
