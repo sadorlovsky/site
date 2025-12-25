@@ -110,10 +110,12 @@ export function parsePrice(price: string): ParsedPrice | null {
 export async function getWishlistItems(
   category?: string,
 ): Promise<WishlistItemWithReservation[]> {
-  // Fetch all data from database
-  const wishlistItemsRaw = await db.select().from(WishlistItem);
-  const reservations = await db.select().from(Reservation);
-  const exchangeRatesRaw = await db.select().from(ExchangeRate);
+  // Fetch all data from database in parallel
+  const [wishlistItemsRaw, reservations, exchangeRatesRaw] = await Promise.all([
+    db.select().from(WishlistItem),
+    db.select().from(Reservation),
+    db.select().from(ExchangeRate),
+  ]);
 
   // Build exchange rate lookup: currency -> rate to RUB
   const toRubRates: Record<Currency, number> = {

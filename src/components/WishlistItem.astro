@@ -1,5 +1,4 @@
 ---
-import { Image } from "astro:assets";
 import type { WishlistItemWithReservation } from "@lib/wishlist";
 
 interface Props {
@@ -16,14 +15,14 @@ const { item } = Astro.props;
 >
   <div class="item-image">
     <div class="skeleton"></div>
-    <Image
+    <img
+      class="wishlist-img"
       src={item.imageUrl}
       alt={item.title}
-      width={400}
-      height={300}
+      width="400"
+      height="300"
       loading="lazy"
       decoding="async"
-      onload="this.parentElement.classList.add('loaded')"
     />
     {
       item.received && (
@@ -136,3 +135,26 @@ const { item } = Astro.props;
     </div>
   </div>
 </article>
+
+<script>
+  function initImageLoading() {
+    document
+      .querySelectorAll<HTMLImageElement>(".wishlist-img")
+      .forEach((img) => {
+        if (img.complete) {
+          img.parentElement?.classList.add("loaded");
+        } else {
+          img.addEventListener(
+            "load",
+            () => {
+              img.parentElement?.classList.add("loaded");
+            },
+            { once: true },
+          );
+        }
+      });
+  }
+
+  initImageLoading();
+  document.addEventListener("astro:page-load", initImageLoading);
+</script>
