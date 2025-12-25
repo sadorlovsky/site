@@ -1,0 +1,10 @@
+---
+import WishlistPage from "@components/WishlistPage.astro";
+import { getWishlistItems, categories } from "@lib/wishlist";
+
+export const prerender = false;
+
+const items = await getWishlistItems();
+---
+
+<WishlistPage items={items} categories={categories} currentCategory="all" />

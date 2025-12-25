@@ -1,0 +1,26 @@
+---
+import WishlistPage from "@components/WishlistPage.astro";
+import { getWishlistItems, categories, isValidCategory } from "@lib/wishlist";
+
+export const prerender = false;
+
+const { category } = Astro.params;
+
+// Redirect /wishlist/all to /wishlist
+if (category === "all") {
+  return Astro.redirect("/wishlist", 301);
+}
+
+// Return 404 for invalid categories
+if (!isValidCategory(category)) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+
+const items = await getWishlistItems(category);
+---
+
+<WishlistPage
+  items={items}
+  categories={categories}
+  currentCategory={category}
+/>

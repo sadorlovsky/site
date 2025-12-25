@@ -1,0 +1,51 @@
+---
+import type { Category } from "@lib/wishlist";
+
+interface Props {
+  categories: Category[];
+  currentCategory: string;
+}
+
+const { categories, currentCategory } = Astro.props;
+---
+
+<div class="filters">
+  <div class="filter-categories">
+    {
+      categories.map((cat) => (
+        <a
+          href={cat.href}
+          class={`filter-btn ${cat.id === currentCategory ? "active" : ""}`}
+          data-category={cat.id}
+          data-en={cat.label}
+          data-ru={cat.labelRu}
+        >
+          {cat.label}
+        </a>
+      ))
+    }
+  </div>
+  <div class="filter-lang">
+    <div>
+      <svg
+        class="lang-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M2 12h20"></path>
+        <path
+          d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+        ></path>
+      </svg>
+    </div>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="ru">RU</button>
+  </div>
+</div>
