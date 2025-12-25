@@ -25,26 +25,28 @@ const { item } = Astro.props;
       decoding="async"
       onload="this.parentElement.classList.add('loaded')"
     />
-    {item.received && (
-      <div class="received-badge" data-en="Received" data-ru="Получено">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M13.5 4L6 11.5L2.5 8"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-        <span>Received</span>
-      </div>
-    )}
+    {
+      item.received && (
+        <div class="received-badge" data-en="Received" data-ru="Получено">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M13.5 4L6 11.5L2.5 8"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>Received</span>
+        </div>
+      )
+    }
     <div
       class="own-reservation-badge"
       data-en="Reserved by you"
@@ -63,8 +65,7 @@ const { item } = Astro.props;
           stroke="currentColor"
           stroke-width="2"
           stroke-linecap="round"
-          stroke-linejoin="round"
-        />
+          stroke-linejoin="round"></path>
       </svg>
       <span>Reserved by you</span>
     </div>
@@ -77,31 +78,39 @@ const { item } = Astro.props;
     >
       {item.title}
     </h3>
-    {item.url && (
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="item-url"
-      >
-        {item.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
-      </a>
-    )}
-    {(item.description || item.descriptionRu) && (
-      <p
-        class="item-description"
-        data-en={item.description || ""}
-        data-ru={item.descriptionRu || item.description || ""}
-      >
-        {item.description}
-      </p>
-    )}
+    {
+      item.url && (
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="item-url"
+        >
+          {item.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
+        </a>
+      )
+    }
+    {
+      (item.description || item.descriptionRu) && (
+        <p
+          class="item-description"
+          data-en={item.description || ""}
+          data-ru={item.descriptionRu || item.description || ""}
+        >
+          {item.description}
+        </p>
+      )
+    }
     <div class="item-footer">
       <span
         class="item-price"
         data-price-original={item.price}
-        data-price-usd={item.priceUsd ? `$${(item.priceUsd / 100).toFixed(0)}` : null}
-        data-price-rub={item.priceRub ? `₽${(item.priceRub / 100).toFixed(0)}` : null}
+        data-price-usd={item.priceUsd
+          ? `$${(item.priceUsd / 100).toFixed(0)}`
+          : null}
+        data-price-rub={item.priceRub
+          ? `₽${(item.priceRub / 100).toFixed(0)}`
+          : null}
         data-original-is-usd={item.price.startsWith("$") ? "true" : null}
       >
         {item.price}

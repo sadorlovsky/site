@@ -13,6 +13,8 @@ const WishlistItem = defineTable({
     category: column.text({ default: "other" }),
     priority: column.text({ optional: true, enum: ["high", "medium", "low"] }),
     received: column.boolean({ default: false }),
+    createdAt: column.date({ default: new Date() }),
+    weight: column.number({ default: 0 }),
   },
 });
 

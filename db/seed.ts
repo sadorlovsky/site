@@ -124,6 +124,7 @@ export default async function seed() {
       category: "home",
       priority: "high",
       received: false,
+      weight: 3,
     },
     {
       id: 9,
@@ -137,6 +138,7 @@ export default async function seed() {
       category: "home",
       priority: "high",
       received: false,
+      weight: 2,
     },
     {
       id: 10,
@@ -325,7 +327,7 @@ export default async function seed() {
       description: "The fancy toothbrush",
       descriptionRu: "Модная зубная щётка",
       category: "home",
-      priority: "high",
+      priority: "medium",
       received: false,
     },
     {
@@ -380,7 +382,7 @@ export default async function seed() {
       description: "Water flossing. For teeth that deserve better",
       descriptionRu: "Ирригатор. Для зубов, которые заслуживают лучшего",
       category: "home",
-      priority: "high",
+      priority: "medium",
       received: false,
     },
     {
@@ -466,7 +468,7 @@ export default async function seed() {
       description: "Classic skate silhouette. Steve Caballero's legacy",
       descriptionRu: "Классический скейт-силуэт. Наследие Стива Кабальеро",
       category: "clothing",
-      priority: "high",
+      priority: "medium",
       received: false,
     },
     {
@@ -482,6 +484,7 @@ export default async function seed() {
       category: "home",
       priority: "high",
       received: false,
+      weight: 1,
     },
     {
       id: 34,
@@ -514,9 +517,9 @@ export default async function seed() {
     },
     {
       id: 36,
-      title: "Adidas Oversized Tee",
-      titleRu: "Оверсайз футболка Adidas",
-      price: "$24",
+      title: "Adidas Oversized Tee (2 pcs)",
+      titleRu: "Оверсайз футболка Adidas (2 шт)",
+      price: "$48",
       imageUrl: img("adidas-oversized-tee.avif"),
       url: "https://www.adidas.com/us/trefoil-essentials-oversized-tee/JD0349.html",
       //TODO: rewrite
@@ -640,8 +643,9 @@ export default async function seed() {
       descriptionRu:
         "Хорроркор-супергруппа RZA. Второй альбом на белом виниле 180г",
       category: "vinyl",
-      priority: "medium",
+      priority: "low",
       received: false,
+      weight: 1,
     },
     {
       id: 45,
@@ -680,7 +684,7 @@ export default async function seed() {
       description: "Another pair of hiking boots",
       descriptionRu: "Ещё одни треккинговые ботинки",
       category: "clothing",
-      priority: "medium",
+      priority: "high",
       received: false,
     },
     {
@@ -715,6 +719,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      weight: 1,
     },
     {
       id: 50,
@@ -729,6 +734,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      weight: 3,
     },
     {
       id: 51,
@@ -744,6 +750,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      weight: 2,
     },
     {
       id: 52,
@@ -757,6 +764,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      weight: 3,
     },
     {
       id: 53,
@@ -783,6 +791,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      weight: 2,
     },
     {
       id: 55,
@@ -809,6 +818,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      weight: 4,
     },
     {
       id: 57,
@@ -861,6 +871,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      weight: -2,
     },
     {
       id: 61,
@@ -872,8 +883,9 @@ export default async function seed() {
       description: "Finnish salty liquorice, disgusting",
       descriptionRu: "Финская солёная лакрица, отвратительно",
       category: "sweets",
-      priority: "high",
+      priority: "low",
       received: false,
+      weight: -1,
     },
     {
       id: 62,
@@ -917,6 +929,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      weight: 1,
     },
   ]);
 }

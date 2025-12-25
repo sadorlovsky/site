@@ -22,6 +22,8 @@ export type WishlistItemWithReservation = {
   category: string;
   priority: string | null;
   received: boolean;
+  createdAt: Date;
+  weight: number;
   isReserved: boolean;
   reservedBy: string | null;
 };
@@ -36,21 +38,40 @@ export type Category = {
 // Categories configuration
 export const categories: Category[] = [
   { id: "all", label: "All", labelRu: "Все", href: "/wishlist" },
-  { id: "clothing", label: "Clothing", labelRu: "Одежда", href: "/wishlist/clothing" },
+  {
+    id: "clothing",
+    label: "Clothing",
+    labelRu: "Одежда",
+    href: "/wishlist/clothing",
+  },
   { id: "home", label: "Home", labelRu: "Дом", href: "/wishlist/home" },
-  { id: "sweets", label: "Sweets", labelRu: "Сладости", href: "/wishlist/sweets" },
+  {
+    id: "sweets",
+    label: "Sweets",
+    labelRu: "Сладости",
+    href: "/wishlist/sweets",
+  },
   { id: "vinyl", label: "Vinyl", labelRu: "Винил", href: "/wishlist/vinyl" },
-  { id: "blu-ray", label: "Blu-ray", labelRu: "Blu-ray", href: "/wishlist/blu-ray" },
+  {
+    id: "blu-ray",
+    label: "Blu-ray",
+    labelRu: "Blu-ray",
+    href: "/wishlist/blu-ray",
+  },
   { id: "books", label: "Books", labelRu: "Книги", href: "/wishlist/books" },
   { id: "merch", label: "Merch", labelRu: "Мерч", href: "/wishlist/merch" },
   { id: "other", label: "Other", labelRu: "Другое", href: "/wishlist/other" },
 ];
 
 // Valid category IDs (excluding "all")
-export const validCategoryIds = categories.map((c) => c.id).filter((id) => id !== "all");
+export const validCategoryIds = categories
+  .map((c) => c.id)
+  .filter((id) => id !== "all");
 
 // Check if a category is valid
-export function isValidCategory(category: string | undefined): category is string {
+export function isValidCategory(
+  category: string | undefined,
+): category is string {
   return typeof category === "string" && validCategoryIds.includes(category);
 }
 
@@ -87,7 +108,7 @@ export function parsePrice(price: string): ParsedPrice | null {
 
 // Fetch wishlist items with optional category filter
 export async function getWishlistItems(
-  category?: string
+  category?: string,
 ): Promise<WishlistItemWithReservation[]> {
   // Fetch all data from database
   const wishlistItemsRaw = await db.select().from(WishlistItem);
@@ -147,7 +168,7 @@ export async function getWishlistItems(
     });
   }
 
-  // Sort items: by priority (high → medium → low → none), then received last
+  // Sort items: priority → weight (higher first) → createdAt (newest first) → received last
   items.sort((a, b) => {
     // Received items always go to the end
     if (a.received && !b.received) return 1;
@@ -156,7 +177,13 @@ export async function getWishlistItems(
     // Sort by priority (high first, no priority last)
     const aPriority = a.priority ? (priorityOrder[a.priority] ?? 3) : 3;
     const bPriority = b.priority ? (priorityOrder[b.priority] ?? 3) : 3;
-    return aPriority - bPriority;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+
+    // Within same priority, sort by weight (higher weight first)
+    if (a.weight !== b.weight) return b.weight - a.weight;
+
+    // Within same weight, sort by createdAt (newest first)
+    return b.createdAt.getTime() - a.createdAt.getTime();
   });
 
   return items;
