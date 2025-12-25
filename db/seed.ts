@@ -44,8 +44,11 @@ export default async function seed() {
       titleRu: "Проект Флорида 4K UHD, лимитированное издание",
       price: "$64",
       imageUrl: img("second-sight-florida-project.webp"),
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description:
+        "Sean Baker's pastel-colored poverty. Kids, motels, and broken dreams",
+      descriptionRu:
+        "Пастельная нищета Шона Бейкера. Дети, мотели и разбитые мечты",
       url: "https://www.ebay.com/itm/306576066529",
       category: "blu-ray",
       priority: "medium",
@@ -57,8 +60,11 @@ export default async function seed() {
       titleRu: "Мандарин на Blu-ray, лимитированное издание",
       price: "£25",
       imageUrl: img("second-sight-tangerine.webp"),
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description:
+        "Shot on iPhone 5s. Trans sex workers in LA on Christmas Eve",
+      descriptionRu:
+        "Снято на iPhone 5s. Транс-секс-работницы в ЛА в канун Рождества",
       url: "https://secondsightfilms.co.uk/products/tangerine-limited-edition-blu-ray-pre-order-available-december-19th",
       category: "blu-ray",
       priority: "medium",
@@ -84,7 +90,8 @@ export default async function seed() {
       price: "$39",
       imageUrl: img("astrobot-vinyl.webp"),
       url: "https://www.fangamer.com/collections/astro-bot/products/astro-bot-2024-vinyl",
-      description: "",
+      //TODO: rewrite
+      description: "Robo, robo, robo",
       descriptionRu: "Роботик, роботик, роботик",
       category: "vinyl",
       priority: "low",
@@ -95,7 +102,6 @@ export default async function seed() {
       title: "Celeste Desk Mat",
       titleRu: "Коврик для стола Celeste",
       price: "$28",
-
       imageUrl: img("celeste-deskmat.webp"),
       url: "https://www.fangamer.com/collections/celeste/products/celeste-desk-mat-skies",
       description: "Large desk mat with Celeste artwork",
@@ -109,7 +115,6 @@ export default async function seed() {
       title: "TPOB XO Clipper (Slime Edition)",
       titleRu: "Машинка для стрижки TPOB XO (Slime)",
       price: "$74",
-
       imageUrl: img("tpob-xo-clipper.webp"),
       url: "https://tpobusa.com/collections/clippers/products/xo-clipper-slime",
       description:
@@ -125,7 +130,6 @@ export default async function seed() {
       title: "TPOB Mini Skull (Blackout edition)",
       titleRu: "Электробритва TPOB Mini Skull (Blackout)",
       price: "$45",
-
       imageUrl: img("tpob-mini-skull.webp"),
       url: "https://tpobusa.com/collections/shavers/products/blackout-mini-skull",
       description: "Compact electric shaver for travel",
@@ -139,11 +143,13 @@ export default async function seed() {
       title: "Hollow Knight Gods & Nightmares Vinyl Soundtrack",
       titleRu: "Саундтрек Hollow Knight: Gods & Nightmares на виниле",
       price: "$29",
-
       imageUrl: img("hollowknight-vinyl.webp"),
       url: "https://www.fangamer.com/collections/vinyl-game-soundtracks/products/hollow-knight-gods-nightmares-vinyl-soundtrack",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description:
+        "Christopher Larkin's boss themes. For suffering enthusiasts",
+      descriptionRu:
+        "Темы боссов от Кристофера Ларкина. Для ценителей страданий",
       category: "vinyl",
       priority: "low",
       received: false,
@@ -155,11 +161,11 @@ export default async function seed() {
       titleRu:
         "Коллекционное издание Hollow Knight для Nintendo Switch + Журнал Охотника",
       price: "$107",
-
       imageUrl: img("hollowknight-collectors-edition.webp"),
       url: "https://www.fangamer.com/products/hollow-knight-game-collectors-edition-nintendo-switch",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Physical copy + lore journal. For the shelf and the soul",
+      descriptionRu: "Физическая копия + журнал с лором. Для полки и для души",
       category: "merch",
       priority: "low",
       received: false,
@@ -169,7 +175,6 @@ export default async function seed() {
       title: "Hollow Knight Blanket",
       titleRu: "Плед Hollow Knight",
       price: "$45",
-
       imageUrl: img("hollowknight-blanket.webp"),
       url: "https://www.fangamer.com/products/hollow-knight-blanket",
       description: "A blanket to wrap myself in instead of dealing with life",
@@ -184,9 +189,9 @@ export default async function seed() {
       title: "X Trilogy: Collector's Edition Box Set (4K UHD)",
       titleRu: "Трилогия X: Коллекционное издание (4K UHD)",
       price: "$100",
-
       imageUrl: img("a24-x-trilogy.webp"),
       url: "https://shop.a24films.com/products/x-trilogy-collectors-edition",
+      //TODO: rewrite
       description:
         "3-disc box set with X, Pearl, MaXXXine — packaging is indecently beautiful",
       descriptionRu:
@@ -200,11 +205,12 @@ export default async function seed() {
       title: "Possession 4K Limited Edition UHD Blu-ray",
       titleRu: "Одержимая 4K UHD, лимитированное издание",
       price: "$85",
-
       imageUrl: img("second-sight-possesion.webp"),
       url: "https://www.ebay.com/itm/326922568960",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description:
+        "Isabelle Adjani's legendary breakdown. A cult horror masterpiece",
+      descriptionRu: "Легендарный срыв Изабель Аджани. Культовый хоррор-шедевр",
       category: "blu-ray",
       priority: "medium",
       received: false,
@@ -230,11 +236,12 @@ export default async function seed() {
       title: "Tokyo Decadence Blu-ray",
       titleRu: "Токийский декаданс на Blu-ray",
       price: "$31",
-
       imageUrl: img("tokyo-decadence.webp"),
       url: "https://www.ebay.com/itm/375499327864",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Ryu Murakami's erotic drama. Tokyo's underground desires",
+      descriptionRu:
+        "Эротическая драма Рю Мураками. Тёмные желания токийского андеграунда",
       category: "blu-ray",
       priority: "low",
       received: false,
@@ -244,7 +251,6 @@ export default async function seed() {
       title: "555 Soundtrack Vinyl LP",
       titleRu: "Саундтрек 555 на виниле, очень редкий",
       price: "$57",
-
       imageUrl: img("555-vinyl.webp"),
       url: "https://www.ebay.com/itm/176437398555",
       description: "Limited to 50 copies. Unfortunately, I need this",
@@ -258,7 +264,6 @@ export default async function seed() {
       title: "Nekromantik Soundtrack Vinyl LP + EP",
       titleRu: "Саундтрек Некромантик на виниле, очень редкий",
       price: "€300",
-
       imageUrl: img("nekromantik-vinyl.webp"),
       url: "https://www.ebay.com/itm/134673382645",
       description:
@@ -274,11 +279,12 @@ export default async function seed() {
       title: "Nekromantik T-Shirt",
       titleRu: "Футболка Nekromantik",
       price: "$25",
-
       imageUrl: img("nekromantik-tshirt.webp"),
       url: "https://www.ebay.com/itm/135116828682",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "For those who get it. A great conversation stopper",
+      descriptionRu:
+        "Для тех, кто понимает. Отличный способ прекратить разговор",
       category: "merch,clothing",
       priority: "medium",
       received: false,
@@ -286,9 +292,8 @@ export default async function seed() {
     {
       id: 20,
       title: "Vans Sk8-Hi",
-      titleRu: "Vans Sk8-Hi",
+      titleRu: "Кеды Vans Sk8-Hi",
       price: "$145",
-
       imageUrl: img("vans-sk8hi.avif"),
       url: "https://www.vans.com/en-us/p/shoes/icons/sk8-hi-5325/sk8-hi-waterproof-insulated-shoe-VN000DAQBKA?size=8.5+Men+%3D+10.0+Women",
       description: "Waterproof and insulated — for winter",
@@ -302,7 +307,6 @@ export default async function seed() {
       title: "Jordan Club Hat",
       titleRu: "Кепка Jordan Club",
       price: "$25",
-
       imageUrl: img("jordan-club-hat.avif"),
       url: "https://www.nike.com/t/jordan-club-unstructured-curved-bill-hat-TR8rQt/HQ1963-010",
       description: "Simple black cap",
@@ -314,13 +318,12 @@ export default async function seed() {
     {
       id: 22,
       title: "Philips Sonicare 9900 Prestige",
-      titleRu: "Электрическая зубная щётка Philips Sonicare 9900 Prestige",
+      titleRu: "Электрическая зубная щётка Philips Sonicare",
       price: "$300",
-
       imageUrl: img("philips-sonicare-diamondclean.webp"),
       url: "https://a.co/d/49pcu6S",
-      description: "",
-      descriptionRu: "",
+      description: "The fancy toothbrush",
+      descriptionRu: "Модная зубная щётка",
       category: "home",
       priority: "high",
       received: false,
@@ -330,7 +333,6 @@ export default async function seed() {
       title: "Yung Lean — Warlord (White Vinyl LP)",
       titleRu: "Yung Lean — Warlord (белый винил, лимитированное издание)",
       price: "$70",
-
       imageUrl: img("yung-lean-warlord-vinyl.webp"),
       url: "https://www.discogs.com/sell/item/1950442079",
       description: "My favorite Yung Lean album. Pure 2016 nostalgia",
@@ -344,11 +346,10 @@ export default async function seed() {
       title: "Funko POP Twin Peaks Laura Palmer",
       titleRu: "Funko POP Twin Peaks (Лора Палмер)",
       price: "$120",
-
       imageUrl: img("funko-pop-laura-palmer.jpg"),
       url: "https://a.co/d/fqFZyLg",
       description: "Extremely rare. And yes, that’s the whole reason.",
-      descriptionRu: "Крайне редкая",
+      descriptionRu: "Крайне редкая, но в этом вся суть",
       category: "merch,other",
       priority: "medium",
       received: false,
@@ -359,11 +360,11 @@ export default async function seed() {
       titleRu:
         "Boy Harsher — Lesser Man EP (красный винил, лимитированное издание)",
       price: "€50",
-
       imageUrl: img("boy-harsher-lesser-man-vinyl.jpg"),
       url: "https://www.discogs.com/sell/item/2961810748",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Dark synth duo. Pain you can dance to",
+      descriptionRu: "Мрачный синт-дуэт. Боль, под которую можно танцевать",
       category: "vinyl",
       priority: "medium",
       received: false,
@@ -371,13 +372,13 @@ export default async function seed() {
     {
       id: 26,
       title: "Philips Sonicare Power Flosser 3000",
-      titleRu: "Ирригатор Philips Sonicare Power Flosser 3000",
+      titleRu: "Ирригатор Philips Sonicare",
       price: "$70",
-
       imageUrl: img("philips-sonicare-flosser.jpg"),
       url: "https://a.co/d/hrfsFUQ",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Water flossing. For teeth that deserve better",
+      descriptionRu: "Ирригатор. Для зубов, которые заслуживают лучшего",
       category: "home",
       priority: "high",
       received: false,
@@ -385,8 +386,8 @@ export default async function seed() {
     {
       id: 27,
       title: "Adidas Terrex Free Hiker 2.0 Low GORE-TEX",
+      titleRu: "Кроссовки Adidas Terrex",
       price: "$180",
-
       imageUrl: img("terrex-shoes.avif"),
       url: "https://www.adidas.com/us/terrex-free-hiker-2.0-low-gore-tex-hiking-shoes/IH0672.html?forceSelSize=9",
       description: "I need sneakers for city, hiking, and shitty weather",
@@ -401,7 +402,6 @@ export default async function seed() {
       title: "Adidas Beanie",
       titleRu: "Шапка Adidas",
       price: "$17",
-
       imageUrl: img("adidas-beanie.avif"),
       url: "https://www.adidas.com/us/unisex-trefoil-beanie/JL1081.html",
       description: "Basic beanie",
@@ -415,11 +415,12 @@ export default async function seed() {
       title: "RIPNDIP Boxers 3 Pack",
       titleRu: "Боксеры RIPNDIP 3 шт.",
       price: "$36",
-
       imageUrl: img("ripndip-boxers.webp"),
       url: "https://www.ripndipclothing.com/en-kz/collections/holiday-2025/products/smd-boxers-3-pack-multi",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description:
+        "Middle finger cat on underwear. Self-expression where it counts",
+      descriptionRu: "Кот с факом на трусах. Самовыражение там, где это важно",
       category: "clothing",
       priority: "medium",
       received: false,
@@ -429,11 +430,13 @@ export default async function seed() {
       title: "RIPNDIP Longsleeve",
       titleRu: "Лонгслив RIPNDIP",
       price: "$44",
-
       imageUrl: img("ripndip-long-sleave.webp"),
       url: "https://www.ripndipclothing.com/collections/holiday-2025/products/the-happiest-cat-ls-black",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description:
+        "Long sleeve with the infamous cat. For layering and attitude",
+      descriptionRu:
+        "Лонгслив с легендарным котом. Для многослойности и настроения",
       category: "clothing",
       priority: "medium",
       received: false,
@@ -443,11 +446,11 @@ export default async function seed() {
       title: "RIPNDIP Knit Sweater",
       titleRu: "Свитер RIPNDIP",
       price: "$80",
-
       imageUrl: img("ripndip-knit-sweater.webp"),
       url: "https://www.ripndipclothing.com/collections/holiday-2025/products/out-of-this-world-knit-sweater-black",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Cozy knit with RIPNDIP vibes. Warm and weird",
+      descriptionRu: "Уютный вязаный свитер в стиле RIPNDIP. Тёплый и странный",
       category: "clothing",
       priority: "medium",
       received: false,
@@ -455,12 +458,13 @@ export default async function seed() {
     {
       id: 32,
       title: "Vans Skate Half Cab",
+      titleRu: "Кеды Vans Skate Half Cab",
       price: "$85",
-
       imageUrl: img("vans-skate-half-cab.avif"),
       url: "https://www.vans.com/en-us/p/shoes/icons/half-cab-1992/skate-half-cab-shoe-VN0A5FCDY28?size=8.5+Men+=+10.0+Women",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Classic skate silhouette. Steve Caballero's legacy",
+      descriptionRu: "Классический скейт-силуэт. Наследие Стива Кабальеро",
       category: "clothing",
       priority: "high",
       received: false,
@@ -468,116 +472,128 @@ export default async function seed() {
     {
       id: 33,
       title: "Philips Norelco Head Shaver Pro 7000 Series",
-      titleRu: "",
+      titleRu: "Электробритва для головы Philips Norelco",
       price: "$85",
       imageUrl: img("philips-head-shaver.webp"),
       url: "https://www.usa.philips.com/c-p/HS7980_40/head-shaver-pro-7000-series-advanced-shaver-with-90-min-runt~",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "For the bald look. Quick and clean head shaving",
+      descriptionRu: "Для лысого образа. Быстрое и чистое бритьё головы",
       category: "home",
       priority: "high",
       received: false,
     },
     {
       id: 34,
-      title: "Cotton Classics 3-Pack Classic Fit Crewneck T-Shirt",
-      titleRu: "",
+      title: "Calvin Klein 3-Pack T-Shirt",
+      titleRu: "Набор футболок Calvin Klein 3 шт.",
       price: "$37",
       imageUrl: img("ck-3-pack-t-shirt.webp"),
       url: "https://www.calvinklein.us/en/underwear/men/undershirt-tank/cotton-classics-3-pack-classic-fit-crewneck-t-shirt/NB4051-UB1.html",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Basic white tees. The foundation of any wardrobe",
+      descriptionRu: "Базовые белые футболки. Основа любого гардероба",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 35,
-      title: "Tech Pique T-Shirt",
-      titleRu: "",
+      title: "Calvin Klein Tech Pique T-Shirt",
+      titleRu: "Футболка Calvin Klein",
       price: "$35",
       imageUrl: img("ck-tech-pique-t-shirt.webp"),
       url: "https://www.calvinklein.us/en/men/apparel/tops/tech-pique-t-shirt/4LD298G-UB1.html",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Technical fabric tee. Minimal and functional",
+      descriptionRu:
+        "Футболка из технологичной ткани. Минимализм и функциональность",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 36,
-      title: "Trefoil Essentials Oversized Tee",
-      titleRu: "",
+      title: "Adidas Oversized Tee",
+      titleRu: "Оверсайз футболка Adidas",
       price: "$24",
       imageUrl: img("adidas-oversized-tee.avif"),
       url: "https://www.adidas.com/us/trefoil-essentials-oversized-tee/JD0349.html",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Oversized fit with the classic trefoil. Comfy everyday tee",
+      descriptionRu:
+        "Оверсайз с классическим трилистником. Удобная повседневная футболка",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 37,
-      title: "Trefoil Essentials Pants",
-      titleRu: "",
+      title: "Adidas Pants",
+      titleRu: "Штаны Adidas",
       price: "$48",
       imageUrl: img("adidas-pants.avif"),
       url: "https://www.adidas.com/us/trefoil-essentials-pants/IY7361.html?forceSelSize=XS",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Relaxed joggers for home and errands",
+      descriptionRu: "Свободные джоггеры для дома и по делам",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 38,
-      title: "Essentials 3-Stripes Fleece Pants",
-      titleRu: "",
+      title: "Adidas Fleece Pants",
+      titleRu: "Флисовые штаны Adidas",
       price: "$50",
       imageUrl: img("adidas-3-stripes-pants.avif"),
       url: "https://www.adidas.com/us/essentials-3-stripes-fleece-pants/KE7273.html?forceSelSize=XS",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Fleece joggers with the iconic stripes. Warm and classic",
+      descriptionRu:
+        "Флисовые джоггеры с культовыми полосками. Тёплые и классические",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 39,
-      title: "SOFT LUX SWEATSHIRT",
-      titleRu: "",
+      title: "Adidas Sweatshirt",
+      titleRu: "Свитшот Adidas",
       price: "$50",
       imageUrl: img("adidas-sweatshirt.avif"),
       url: "https://www.adidas.com/us/soft-lux-sweatshirt/KF0485.html?pr=pdpctl_rr&slot=3&rec=ds&forceSelSize=S",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Premium soft fabric. For cozy days",
+      descriptionRu: "Премиальная мягкая ткань. Для уютных дней",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 40,
-      title: "Trefoil Essentials Hoodie",
-      titleRu: "",
+      title: "Adidas Hoodie",
+      titleRu: "Худи Adidas",
       price: "$36",
       imageUrl: img("adidas-hoodie.avif"),
       url: "https://www.adidas.com/us/trefoil-essentials-hoodie/IY4930.html",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Classic hoodie with trefoil logo. A staple",
+      descriptionRu: "Классическая худи с логотипом трилистника. Маст-хэв",
       category: "clothing",
       priority: "high",
       received: false,
     },
     {
       id: 41,
-      title: "ADIDAS CRAZY WARM FULLZIP HOODIE",
-      titleRu: "",
+      title: "Adidas Crazy Warm hoodie",
+      titleRu: "Тёплая худи на молнии Adidas",
       price: "$70",
       imageUrl: img("adidas-crazy-warm-hoodie.avif"),
       url: "https://www.adidas.com/us/adidas-crazy-warm-fullzip-hoodie/JZ9673.html",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "Extra warm full-zip hoodie. For cold days",
+      descriptionRu: "Очень тёплая худи на молнии. Для холодных дней",
       category: "clothing",
       priority: "high",
       received: false,
@@ -589,8 +605,8 @@ export default async function seed() {
       price: "€113",
       imageUrl: img("three-6-mafia-wtsc-vinyl.jpg"),
       url: "https://www.discogs.com/sell/item/3321466926",
-      description: "",
-      descriptionRu: "",
+      description: "Memphis legends. Sippin' on Some Syrup",
+      descriptionRu: "Легенды Мемфиса. Sippin' on Some Syrup",
       category: "vinyl",
       priority: "medium",
       received: false,
@@ -602,8 +618,9 @@ export default async function seed() {
       price: "£62",
       imageUrl: img("three-6-mafia-c2wd-vinyl.jpg"),
       url: "https://www.discogs.com/sell/item/2461938065",
-      description: "",
-      descriptionRu: "",
+      //TODO: rewrite
+      description: "The album that started it all. Dark Memphis rap",
+      descriptionRu: "Альбом, с которого всё началось. Тёмный мемфисский рэп",
       category: "vinyl",
       priority: "medium",
       received: false,
