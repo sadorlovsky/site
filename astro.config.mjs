@@ -4,14 +4,22 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
 import db from "@astrojs/db";
+import { loadEnv } from "vite";
+
+const { VERCEL_ISR_BYPASS_TOKEN } = loadEnv(
+  process.env.NODE_ENV,
+  process.cwd(),
+  "",
+);
 
 // https://astro.build/config
 export default defineConfig({
   output: "static",
   adapter: vercel({
     isr: {
-      // caches all pages on first request and saves for 1 hour
-      expiration: 60 * 60,
+      // caches all pages on first request and saves for 1 day
+      expiration: 60 * 60 * 24,
+      bypassToken: VERCEL_ISR_BYPASS_TOKEN,
     },
   }),
   image: {

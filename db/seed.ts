@@ -1,5 +1,11 @@
 import { db, WishlistItem, ExchangeRate } from "astro:db";
-import { CDN_DEV_URL } from "astro:env/server";
+import { loadEnv } from "vite";
+
+const { CDN_DEV_URL } = loadEnv(
+  process.env.NODE_ENV as string,
+  process.cwd(),
+  "",
+);
 
 const img = (name: string) => `${CDN_DEV_URL}/${name}`;
 
@@ -930,6 +936,32 @@ export default async function seed() {
       priority: "low",
       received: false,
       weight: 1,
+    },
+    {
+      id: 65,
+      title: "Krucifix Klan — Fuckin' Wit Dis Klan (Vinyl LP)",
+      titleRu: "",
+      price: "$58",
+      imageUrl: img("krucifix-klan-fwdk-vinyl.jpg"),
+      url: "https://www.discogs.com/sell/item/3742200592",
+      description: "",
+      descriptionRu: "",
+      category: "vinyl",
+      priority: "low",
+      received: false,
+    },
+    {
+      id: 66,
+      title: "Koopsta Knicca — Da Devil's Playground (Vinyl LP)",
+      titleRu: "",
+      price: "$65",
+      imageUrl: img("koopsta-knicca-ddp-vinyl.jpg"),
+      url: "https://www.discogs.com/sell/item/3964651738",
+      description: "",
+      descriptionRu: "",
+      category: "vinyl",
+      priority: "low",
+      received: false,
     },
   ]);
 }
