@@ -15,13 +15,7 @@ const { VERCEL_ISR_BYPASS_TOKEN } = loadEnv(
 // https://astro.build/config
 export default defineConfig({
   output: "static",
-  adapter: vercel({
-    isr: {
-      // caches all pages on first request and saves for 1 day
-      expiration: 60 * 60 * 24,
-      bypassToken: VERCEL_ISR_BYPASS_TOKEN,
-    },
-  }),
+  adapter: vercel(),
   image: {
     domains: [
       "pub-4b913e87f0c44d508111225ea44c624f.r2.dev", // R2 dev
