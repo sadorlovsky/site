@@ -37,44 +37,46 @@ const years = getSortedYears(tripsByYear);
             <div class={styles.trip}>
               <div class={styles.date}>{formatTripDate(trip)}</div>
               <div class={styles.destination}>
-                {trip.destinations.map((destination, index) => {
+                {trip.destinations.map((destination, destIndex) => {
                   const flagInfo = getCountryFlag(destination.country[0]);
-                  const citiesText = destination.cities.join(", ");
-                  return (
+                  return destination.cities.map((city, cityIndex) => (
                     <>
-                      {index > 0 && <span class={styles.separator}>→</span>}
+                      {destIndex > 0 && cityIndex === 0 && (
+                        <span class={styles.separator}>→</span>
+                      )}
                       <div class={styles.city}>
-                        {flagInfo.isRegional ? (
-                          <span class={styles.flagGroup}>
+                        {cityIndex === 0 &&
+                          (flagInfo.isRegional ? (
+                            <span class={styles.flagGroup}>
+                              <span
+                                class={[
+                                  styles.flag,
+                                  "fi",
+                                  `fi-${flagInfo.countryCode}`,
+                                ].join(" ")}
+                              />
+                              <span class={styles.flagDivider}>·</span>
+                              <span
+                                class={[
+                                  styles.flag,
+                                  "fi",
+                                  `fi-${flagInfo.regionCode}`,
+                                ].join(" ")}
+                              />
+                            </span>
+                          ) : (
                             <span
                               class={[
                                 styles.flag,
                                 "fi",
-                                `fi-${flagInfo.countryCode}`,
+                                `fi-${flagInfo.code}`,
                               ].join(" ")}
                             />
-                            <span class={styles.flagDivider}>·</span>
-                            <span
-                              class={[
-                                styles.flag,
-                                "fi",
-                                `fi-${flagInfo.regionCode}`,
-                              ].join(" ")}
-                            />
-                          </span>
-                        ) : (
-                          <span
-                            class={[
-                              styles.flag,
-                              "fi",
-                              `fi-${flagInfo.code}`,
-                            ].join(" ")}
-                          />
-                        )}
-                        {citiesText}
+                          ))}
+                        {`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
                       </div>
                     </>
-                  );
+                  ));
                 })}
               </div>
             </div>

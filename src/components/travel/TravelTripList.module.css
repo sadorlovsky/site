@@ -37,7 +37,7 @@
 .trip {
   display: grid;
   grid-template-columns: 80px 1fr;
-  align-items: center;
+  align-items: baseline;
   padding: 0.5rem;
   border-radius: 4px;
   transition: background-color 0.15s ease;
@@ -67,7 +67,6 @@
 
 .separator {
   color: #666;
-  margin: 0 0.25rem;
   font-size: 0.85rem;
 }
 
