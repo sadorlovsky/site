@@ -115,23 +115,24 @@ const { item } = Astro.props;
         {item.price}
       </span>
 
-      <button
-        class={`reserve-btn${item.received ? " received" : ""}`}
-        data-item-id={item.id}
-        data-item-title={item.title}
-        data-reserved-by={item.reservedBy}
-        data-en-reserve="Reserve"
-        data-ru-reserve="Зарезервировать"
-        data-en-reserved="Reserved"
-        data-ru-reserved="Зарезервировано"
-        data-en-cancel="Cancel"
-        data-ru-cancel="Отменить"
-        data-en-received="Received"
-        data-ru-received="Получено"
-        disabled={item.received}
-      >
-        {item.received ? "Received" : item.isReserved ? "Reserved" : "Reserve"}
-      </button>
+      {
+        !item.received && (
+          <button
+            class="reserve-btn"
+            data-item-id={item.id}
+            data-item-title={item.title}
+            data-reserved-by={item.reservedBy}
+            data-en-reserve="Reserve"
+            data-ru-reserve="Зарезервировать"
+            data-en-reserved="Reserved"
+            data-ru-reserved="Зарезервировано"
+            data-en-cancel="Cancel"
+            data-ru-cancel="Отменить"
+          >
+            {item.isReserved ? "Reserved" : "Reserve"}
+          </button>
+        )
+      }
     </div>
   </div>
 </article>
