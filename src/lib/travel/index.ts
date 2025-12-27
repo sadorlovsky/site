@@ -10,6 +10,7 @@ export interface Destination {
 export interface Trip {
   year: number;
   month: number;
+  endYear?: number | null;
   endMonth: number | null;
   destinations: Destination[];
 }
@@ -32,10 +33,13 @@ const MONTH_NAMES = [
 
 export function formatTripDate(trip: Trip): string {
   const startMonth = MONTH_NAMES[trip.month - 1];
+
+  // Trip spans multiple months (same year or across years)
   if (trip.endMonth && trip.endMonth !== trip.month) {
     const endMonth = MONTH_NAMES[trip.endMonth - 1];
     return `${startMonth} - ${endMonth}`;
   }
+
   return startMonth;
 }
 

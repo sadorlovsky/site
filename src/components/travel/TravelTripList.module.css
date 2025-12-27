@@ -37,7 +37,7 @@
 .trip {
   display: grid;
   grid-template-columns: 80px 1fr;
-  align-items: center;
+  align-items: baseline;
   padding: 0.5rem;
   border-radius: 4px;
   transition: background-color 0.15s ease;

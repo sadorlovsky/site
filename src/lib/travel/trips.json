@@ -77,29 +77,10 @@
     "destinations": [{ "country": ["tr", "tur"], "cities": ["Istanbul"] }]
   },
   {
-    "year": 2023,
-    "month": 1,
-    "endMonth": null,
-    "destinations": [
-      {
-        "country": ["it", "ita"],
-        "cities": [
-          "Florence",
-          "Pisa",
-          "La Spezia",
-          "Manarola",
-          "Riomaggiore",
-          "Rome",
-          "Naples"
-        ]
-      },
-      { "country": ["va", "vat"], "cities": ["Vatican City"] }
-    ]
-  },
-  {
     "year": 2022,
     "month": 10,
-    "endMonth": 12,
+    "endYear": 2023,
+    "endMonth": 1,
     "destinations": [
       {
         "country": ["es", "esp"],
@@ -112,7 +93,22 @@
       },
       { "country": ["at", "aut"], "cities": ["Vienna", "Hallstatt"] },
       { "country": ["sk", "svk"], "cities": ["Bratislava"] },
-      { "country": ["it", "ita"], "cities": ["Bergamo", "Milan", "Venice"] }
+      {
+        "country": ["it", "ita"],
+        "cities": [
+          "Bergamo",
+          "Milan",
+          "Venice",
+          "Florence",
+          "Pisa",
+          "La Spezia",
+          "Manarola",
+          "Riomaggiore",
+          "Rome",
+          "Naples"
+        ]
+      },
+      { "country": ["va", "vat"], "cities": ["Vatican City"] }
     ]
   },
   {
