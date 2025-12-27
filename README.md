@@ -1,7 +1,7 @@
 # orlovsky.dev
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://orlovsky.dev)
 [![Built with Astro](https://img.shields.io/badge/Built%20with-Astro-FF5D01?logo=astro)](https://astro.build)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://orlovsky.dev)
 
 ## Quick Start
 
