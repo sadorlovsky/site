@@ -87,6 +87,9 @@ export function getSortedYears(tripsByYear: Record<number, Trip[]>): number[] {
 }
 
 export const trips = tripsData as Trip[];
+export const tripsCount = trips.length;
 export const countries = getCountries(trips);
 export const cities = getCities(trips);
 export const countryListSize = getCountryListSize(countryList.rawContent());
+export const continentsVisited = 2;
+export const continentsTotal = 7;

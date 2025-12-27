@@ -12,13 +12,13 @@ const getCountryFlag = (code: string) => {
   const parts = code.split("-");
   if (parts.length > 1) {
     return {
-      isMultiple: true,
-      firstPart: parts[0],
-      fullCode: code,
+      isRegional: true,
+      countryCode: parts[0], // "gb"
+      regionCode: code, // "gb-eng"
     };
   }
   return {
-    isMultiple: false,
+    isRegional: false,
     code: code,
   };
 };
@@ -44,23 +44,24 @@ const years = getSortedYears(tripsByYear);
                     <>
                       {index > 0 && <span class={styles.separator}>→</span>}
                       <div class={styles.city}>
-                        {flagInfo.isMultiple ? (
-                          <div class={styles.multiple}>
-                            <div
+                        {flagInfo.isRegional ? (
+                          <span class={styles.flagGroup}>
+                            <span
                               class={[
                                 styles.flag,
                                 "fi",
-                                `fi-${flagInfo.firstPart}`,
+                                `fi-${flagInfo.countryCode}`,
                               ].join(" ")}
                             />
-                            <div
+                            <span class={styles.flagDivider}>·</span>
+                            <span
                               class={[
                                 styles.flag,
                                 "fi",
-                                `fi-${flagInfo.fullCode}`,
+                                `fi-${flagInfo.regionCode}`,
                               ].join(" ")}
                             />
-                          </div>
+                          </span>
                         ) : (
                           <span
                             class={[
