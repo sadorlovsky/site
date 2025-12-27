@@ -1,7 +1,7 @@
 import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
 
 // Types
-export type Currency = "USD" | "EUR" | "GBP" | "AUD";
+export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR";
 
 export type ParsedPrice = {
   amount: number; // In cents
@@ -82,25 +82,27 @@ const priorityOrder: Record<string, number> = {
   low: 2,
 };
 
+// Currency prefixes mapping
+const currencyPrefixes: { prefix: string; currency: Currency }[] = [
+  { prefix: "AU$", currency: "AUD" },
+  { prefix: "$", currency: "USD" },
+  { prefix: "£", currency: "GBP" },
+  { prefix: "€", currency: "EUR" },
+  { prefix: "₹", currency: "INR" },
+];
+
 // Parse price string like "$64", "£25", "€300", "AU$140"
 export function parsePrice(price: string): ParsedPrice | null {
   const trimmed = price.trim();
 
-  if (trimmed.startsWith("AU$")) {
-    const amount = parseInt(trimmed.slice(3).replace(/,/g, ""), 10);
-    return isNaN(amount) ? null : { amount: amount * 100, currency: "AUD" };
-  }
-  if (trimmed.startsWith("$")) {
-    const amount = parseInt(trimmed.slice(1).replace(/,/g, ""), 10);
-    return isNaN(amount) ? null : { amount: amount * 100, currency: "USD" };
-  }
-  if (trimmed.startsWith("£")) {
-    const amount = parseInt(trimmed.slice(1).replace(/,/g, ""), 10);
-    return isNaN(amount) ? null : { amount: amount * 100, currency: "GBP" };
-  }
-  if (trimmed.startsWith("€")) {
-    const amount = parseInt(trimmed.slice(1).replace(/,/g, ""), 10);
-    return isNaN(amount) ? null : { amount: amount * 100, currency: "EUR" };
+  for (const { prefix, currency } of currencyPrefixes) {
+    if (trimmed.startsWith(prefix)) {
+      const amount = parseInt(
+        trimmed.slice(prefix.length).replace(/,/g, ""),
+        10,
+      );
+      return isNaN(amount) ? null : { amount: amount * 100, currency };
+    }
   }
 
   return null;
@@ -117,25 +119,20 @@ export async function getWishlistItems(
     db.select().from(ExchangeRate),
   ]);
 
-  // Build exchange rate lookup: currency -> rate to RUB
-  const toRubRates: Record<Currency, number> = {
-    USD: 100,
-    EUR: 110,
-    GBP: 130,
-    AUD: 65,
-  };
-
-  // Override defaults with DB values
+  // Build exchange rate lookup from DB: currency -> rate to RUB
+  const toRubRates: Partial<Record<Currency, number>> = {};
   for (const rate of exchangeRatesRaw) {
-    if (rate.toCurrency === "RUB" && rate.fromCurrency in toRubRates) {
+    if (rate.toCurrency === "RUB") {
       toRubRates[rate.fromCurrency as Currency] = rate.rate;
     }
   }
 
+  const usdToRub = toRubRates.USD;
+
   // Compute priceUsd from original price
   function computePriceUsd(price: string): number | null {
     const parsed = parsePrice(price);
-    if (!parsed) return null;
+    if (!parsed || !usdToRub) return null;
 
     if (parsed.currency === "USD") {
       return parsed.amount;
@@ -143,7 +140,8 @@ export async function getWishlistItems(
 
     // Convert to USD: amount_in_currency * (rate_to_rub / usd_to_rub_rate)
     const rateToRub = toRubRates[parsed.currency];
-    const usdToRub = toRubRates.USD;
+    if (!rateToRub) return null;
+
     return Math.round((parsed.amount * rateToRub) / usdToRub);
   }
 
@@ -151,7 +149,7 @@ export async function getWishlistItems(
   let items: WishlistItemWithReservation[] = wishlistItemsRaw.map((item) => {
     const reservation = reservations.find((r) => r.itemId === item.id);
     const priceUsd = computePriceUsd(item.price);
-    const priceRub = priceUsd ? priceUsd * toRubRates.USD : null;
+    const priceRub = priceUsd && usdToRub ? priceUsd * usdToRub : null;
 
     return {
       ...item,

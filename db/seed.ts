@@ -41,6 +41,13 @@ export default async function seed() {
       rate: 56,
       updatedAt: new Date(),
     },
+    {
+      id: 5,
+      fromCurrency: "INR",
+      toCurrency: "RUB",
+      rate: 1,
+      updatedAt: new Date(),
+    },
   ]);
 
   await db.insert(WishlistItem).values([
