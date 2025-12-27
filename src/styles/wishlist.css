@@ -388,10 +388,11 @@ html.lang-ru .lang-btn[data-lang="ru"] {
 /* Price */
 .item-price {
   position: relative;
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
   font-weight: 700;
   color: light-dark(#111, #fafafa);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   cursor: default;
 }
 
