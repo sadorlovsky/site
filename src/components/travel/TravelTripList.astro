@@ -1,6 +1,11 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
-import { trips } from "@lib/travel";
+import {
+  trips,
+  groupTripsByYear,
+  getSortedYears,
+  formatTripDate,
+} from "@lib/travel";
 import styles from "./TravelTripList.module.css";
 
 const getCountryFlag = (code: string) => {
@@ -17,30 +22,64 @@ const getCountryFlag = (code: string) => {
     code: code,
   };
 };
+
+const tripsByYear = groupTripsByYear(trips);
+const years = getSortedYears(tripsByYear);
 ---
 
-<div>
-  {trips.map((trip) => (
-    <div class={styles.trip}>
-      <div class={styles.date}>{trip.date}</div>
-      <div class={styles.destination}>
-        {trip.destination.map((destination) => {
-          const flagInfo = getCountryFlag(destination.country[0]);
-          return (
-            <div class={styles.city}>
-              {flagInfo.isMultiple ? (
-                <div class={styles.multiple}>
-                  <div class={[styles.flag, "fi", `fi-${flagInfo.firstPart}`].join(' ')} />
-                  <div class={[styles.flag, "fi", `fi-${flagInfo.fullCode}`].join(' ')} />
-                </div>
-              ) : (
-                <span class={[styles.flag, "fi", `fi-${flagInfo.code}`].join(' ')} />
-              )}
-              {destination.city}
+<div class={styles.tripList}>
+  {
+    years.map((year) => (
+      <div class={styles.yearGroup}>
+        <div class={styles.yearHeader}>{year}</div>
+        <div class={styles.yearTrips}>
+          {tripsByYear[year].map((trip) => (
+            <div class={styles.trip}>
+              <div class={styles.date}>{formatTripDate(trip)}</div>
+              <div class={styles.destination}>
+                {trip.destinations.map((destination, index) => {
+                  const flagInfo = getCountryFlag(destination.country[0]);
+                  const citiesText = destination.cities.join(", ");
+                  return (
+                    <>
+                      {index > 0 && <span class={styles.separator}>→</span>}
+                      <div class={styles.city}>
+                        {flagInfo.isMultiple ? (
+                          <div class={styles.multiple}>
+                            <div
+                              class={[
+                                styles.flag,
+                                "fi",
+                                `fi-${flagInfo.firstPart}`,
+                              ].join(" ")}
+                            />
+                            <div
+                              class={[
+                                styles.flag,
+                                "fi",
+                                `fi-${flagInfo.fullCode}`,
+                              ].join(" ")}
+                            />
+                          </div>
+                        ) : (
+                          <span
+                            class={[
+                              styles.flag,
+                              "fi",
+                              `fi-${flagInfo.code}`,
+                            ].join(" ")}
+                          />
+                        )}
+                        {citiesText}
+                      </div>
+                    </>
+                  );
+                })}
+              </div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
-    </div>
-  ))}
+    ))
+  }
 </div>

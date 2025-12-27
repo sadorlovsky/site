@@ -1,20 +1,85 @@
+.tripList {
+  margin-top: 12px;
+}
+
+.yearGroup {
+  margin-bottom: 1.5rem;
+}
+
+.yearGroup:last-child {
+  margin-bottom: 0;
+}
+
+.yearHeader {
+  position: sticky;
+  top: 0;
+  background-color: var(--dark-bg, #191919);
+  font-weight: 600;
+  font-size: 1.25rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.5rem;
+  z-index: 10;
+}
+
+@media (prefers-color-scheme: light) {
+  .yearHeader {
+    background-color: var(--light-bg, #f8f8ff);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+}
+
+.yearTrips {
+  display: flex;
+  flex-direction: column;
+}
+
 .trip {
   display: grid;
-  grid-template-columns: 150px 1fr;
+  grid-template-columns: 80px 1fr;
   align-items: center;
   padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.trip:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+@media (prefers-color-scheme: light) {
+  .trip:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+}
+
+.date {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.destination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.separator {
+  color: #666;
+  margin: 0 0.25rem;
+  font-size: 0.85rem;
 }
 
 .flag {
   margin-right: 4px;
-  border-radius: 1px;
+  border-radius: 3px;
 }
 
 .city {
-  display: inline-grid;
-  grid-auto-flow: column;
-  align-items: baseline;
-  padding: 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0;
 }
 
 .multiple {
@@ -27,4 +92,19 @@
   position: absolute;
   top: -3px;
   left: 8px;
+}
+
+@media (max-width: 480px) {
+  .trip {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .date {
+    font-size: 0.85rem;
+  }
+
+  .yearHeader {
+    font-size: 1.1rem;
+  }
 }

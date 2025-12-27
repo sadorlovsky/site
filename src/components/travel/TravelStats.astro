@@ -8,22 +8,29 @@ const total = countryListSize;
 <div class="stats">
   <div class="card">
     <h3>Countries</h3>
-    <div class="with-info">{countries.size} / {total} <a href="/travel/countries"><Icon name="info" class="info-icon" /></a></div>
-    <div>{Math.floor(countries.size / total * 100)}%</div>
+    <div class="with-info">
+      <span class="value">{countries.size} / {total}</span>
+      <a href="/travel/countries"><Icon name="info" class="info-icon" /></a>
+    </div>
+    <div class="value">{Math.floor((countries.size / total) * 100)}%</div>
   </div>
   <div class="card">
     <h3>Cities</h3>
-    <div>{cities.size}</div>
+    <div class="value">{cities.size}</div>
   </div>
   <div class="card">
     <h3>Continents</h3>
-    <div>2 / 7</div>
+    <div class="value">2 / 7</div>
   </div>
-  <!-- <img src="/stamps.svg" class="stamps" /> -->
 </div>
 
 <style>
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     margin: auto;
   }
 
@@ -76,6 +83,11 @@ const total = countryListSize;
     color: #666;
   }
 
+  .value {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
   .stamps {
     display: none;
     height: 100%;
@@ -103,6 +115,5 @@ const total = countryListSize;
     .stamps {
       display: block;
     }
-
   }
 </style>
