@@ -479,6 +479,72 @@ html.lang-ru .lang-btn[data-lang="ru"] {
   transform: none;
 }
 
+/* Accessibility - Increased contrast */
+@media (prefers-contrast: more) {
+  /* Subtitle — darker */
+  .subtitle {
+    color: light-dark(#444, #ccc);
+  }
+
+  /* Filter buttons — stronger borders */
+  .filter-btn,
+  .filter-btn:visited {
+    color: light-dark(#333, #ddd);
+    border-color: light-dark(#999, #666);
+  }
+
+  .filter-btn:hover {
+    border-color: light-dark(#666, #999);
+  }
+
+  /* Language switcher */
+  .filter-lang {
+    border: 1px solid light-dark(#ccc, #555);
+  }
+
+  .lang-btn {
+    color: light-dark(#555, #bbb);
+  }
+
+  /* Card borders — visible */
+  .wishlist-item {
+    border: 2px solid light-dark(#ccc, #555);
+  }
+
+  .wishlist-item:hover {
+    border-color: light-dark(#999, #777);
+  }
+
+  /* Item URL — darker */
+  .item-url,
+  .item-url:visited {
+    color: light-dark(#555, #aaa);
+  }
+
+  /* Item description — darker */
+  .item-description {
+    color: light-dark(#444, #bbb);
+  }
+
+  /* Reserve button — border for visibility */
+  .reserve-btn {
+    border: 2px solid light-dark(#ccc, #555);
+  }
+
+  .reserve-btn:hover {
+    border-color: transparent;
+  }
+
+  .reserve-btn.own-reservation {
+    border-color: light-dark(#bbb, #666);
+  }
+
+  .reserve-btn.reserved-other,
+  .reserve-btn.received {
+    border-color: transparent;
+  }
+}
+
 /* Accessibility - Reduced transparency */
 @media (prefers-reduced-transparency: reduce) {
   /* Glass backgrounds → solid */
