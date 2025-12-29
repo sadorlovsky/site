@@ -136,7 +136,7 @@ html.lang-ready .wishlist-container {
   padding: 0.4rem 0.6rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: light-dark(#888, #777);
+  color: light-dark(#555, #aaa);
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -157,7 +157,7 @@ html.lang-ready .wishlist-container {
 
 /* When lang-ru class is on html, RU is active */
 html.lang-ru .lang-btn[data-lang="en"] {
-  color: light-dark(#888, #777);
+  color: light-dark(#555, #aaa);
   background: transparent;
   box-shadow: none;
 }
@@ -204,7 +204,24 @@ html.lang-ru .lang-btn[data-lang="ru"] {
 }
 
 .wishlist-item.item-received {
-  opacity: 0.6;
+  filter: grayscale(40%);
+}
+
+.wishlist-item.item-received .item-title {
+  color: light-dark(#555, #aaa);
+}
+
+.wishlist-item.item-received .item-url,
+.wishlist-item.item-received .item-url:visited {
+  color: light-dark(#555, #aaa);
+}
+
+.wishlist-item.item-received .item-description {
+  color: light-dark(#555, #bbb);
+}
+
+.wishlist-item.item-received .item-price {
+  color: light-dark(#555, #aaa);
 }
 
 .wishlist-item.item-received:hover {
@@ -357,7 +374,7 @@ html.lang-ru .lang-btn[data-lang="ru"] {
 .item-url:visited {
   display: block;
   font-size: 0.75rem;
-  color: light-dark(#888, #777);
+  color: light-dark(#555, #aaa);
   text-decoration: none;
   margin-bottom: 0.75rem;
   overflow: hidden;
@@ -372,7 +389,7 @@ html.lang-ru .lang-btn[data-lang="ru"] {
 
 .item-description {
   font-size: 0.85rem;
-  color: light-dark(#666, #999);
+  color: light-dark(#444, #bbb);
   margin: 0 0 1.25rem 0;
   line-height: 1.5;
 }

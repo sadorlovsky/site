@@ -12,7 +12,6 @@ const { item } = Astro.props;
   class={`wishlist-item ${item.received ? "item-received" : ""}`}
   data-item-id={item.id}
   data-category={item.category}
-  role="listitem"
   aria-label={item.title}
   data-aria-label-en={item.title}
   data-aria-label-ru={item.titleRu || item.title}
@@ -74,13 +73,13 @@ const { item } = Astro.props;
     </div>
   </div>
   <div class="item-content">
-    <h3
+    <h2
       class="item-title"
       data-en={item.title}
       data-ru={item.titleRu || item.title}
     >
       {item.title}
-    </h3>
+    </h2>
     {
       item.url && (
         <a
