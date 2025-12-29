@@ -397,3 +397,24 @@ sub {
     padding: 0.75rem 1rem;
   }
 }
+
+/* Accessibility - Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable transforms on interactive states and their descendants */
+  *:hover,
+  *:focus,
+  *:active,
+  *:hover *,
+  *:focus *,
+  *:active * {
+    transform: none !important;
+  }
+}
