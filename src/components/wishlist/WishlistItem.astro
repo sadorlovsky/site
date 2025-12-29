@@ -12,6 +12,10 @@ const { item } = Astro.props;
   class={`wishlist-item ${item.received ? "item-received" : ""}`}
   data-item-id={item.id}
   data-category={item.category}
+  role="listitem"
+  aria-label={item.title}
+  data-aria-label-en={item.title}
+  data-aria-label-ru={item.titleRu || item.title}
 >
   <div class="item-image">
     <div class="skeleton"></div>
@@ -84,6 +88,9 @@ const { item } = Astro.props;
           target="_blank"
           rel="noopener noreferrer"
           class="item-url"
+          aria-label={`Open ${item.title} on external site (opens in new tab)`}
+          data-aria-label-en={`Open ${item.title} on external site (opens in new tab)`}
+          data-aria-label-ru={`Открыть ${item.titleRu || item.title} на внешнем сайте (откроется в новой вкладке)`}
         >
           {item.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
         </a>
@@ -121,6 +128,7 @@ const { item } = Astro.props;
             class="reserve-btn"
             data-item-id={item.id}
             data-item-title={item.title}
+            data-item-title-ru={item.titleRu || item.title}
             data-reserved-by={item.reservedBy}
             data-en-reserve="Reserve"
             data-ru-reserve="Зарезервировать"
@@ -128,6 +136,17 @@ const { item } = Astro.props;
             data-ru-reserved="Зарезервировано"
             data-en-cancel="Cancel"
             data-ru-cancel="Отменить"
+            aria-label={
+              item.isReserved
+                ? `Cancel reservation for ${item.title}`
+                : `Reserve ${item.title}`
+            }
+            data-aria-label-en-reserve={`Reserve ${item.title}`}
+            data-aria-label-ru-reserve={`Зарезервировать ${item.titleRu || item.title}`}
+            data-aria-label-en-cancel={`Cancel reservation for ${item.title}`}
+            data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
+            data-aria-label-en-reserved={`Reserved: ${item.title}`}
+            data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
           >
             {item.isReserved ? "Reserved" : "Reserve"}
           </button>

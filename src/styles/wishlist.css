@@ -479,6 +479,20 @@ html.lang-ru .lang-btn[data-lang="ru"] {
   transform: none;
 }
 
+/* Accessibility - Focus styles */
+.filter-btn:focus-visible,
+.lang-btn:focus-visible,
+.reserve-btn:focus-visible,
+.item-url:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+.wishlist-item:focus-within {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
 /* Accessibility - Increased contrast */
 @media (prefers-contrast: more) {
   /* Subtitle — darker */

@@ -22,6 +22,15 @@ export function initializeWishlist() {
   // Apply language translations
   if (currentLang === "ru") {
     updateLanguage("ru");
+    updateAriaLabels("ru");
+
+    // Update aria-pressed for language buttons
+    document.querySelectorAll<HTMLButtonElement>(".lang-btn").forEach((btn) => {
+      btn.setAttribute(
+        "aria-pressed",
+        btn.dataset.lang === "ru" ? "true" : "false",
+      );
+    });
   }
 
   // Update prices based on language
@@ -35,7 +44,8 @@ export function initializeWishlist() {
 }
 
 function initializeReserveButtons() {
-  const reserveButtons = document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
+  const reserveButtons =
+    document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
   const visitorId = getVisitorId();
 
   reserveButtons.forEach((button) => {
@@ -50,14 +60,18 @@ function initializeReserveButtons() {
 
     // Get badge element (in the item-image section)
     const article = button.closest("article");
-    const badge = article?.querySelector(".own-reservation-badge") as HTMLElement;
+    const badge = article?.querySelector(
+      ".own-reservation-badge",
+    ) as HTMLElement;
 
     // Set initial button state
     if (isReserved) {
       if (isOwnReservation) {
         // Own reservation - show Cancel and badge
         button.textContent =
-          (currentLang === "ru" ? button.dataset.ruCancel : button.dataset.enCancel) ?? null;
+          (currentLang === "ru"
+            ? button.dataset.ruCancel
+            : button.dataset.enCancel) ?? null;
         button.classList.add("own-reservation");
         if (badge) {
           badge.hidden = false;
@@ -65,13 +79,16 @@ function initializeReserveButtons() {
           const span = badge.querySelector("span");
           if (span) {
             span.textContent =
-              (currentLang === "ru" ? badge.dataset.ru : badge.dataset.en) ?? null;
+              (currentLang === "ru" ? badge.dataset.ru : badge.dataset.en) ??
+              null;
           }
         }
       } else {
         // Someone else's reservation - show Reserved (disabled)
         button.textContent =
-          (currentLang === "ru" ? button.dataset.ruReserved : button.dataset.enReserved) ?? null;
+          (currentLang === "ru"
+            ? button.dataset.ruReserved
+            : button.dataset.enReserved) ?? null;
         button.classList.add("reserved-other");
         button.disabled = true;
       }
@@ -87,7 +104,9 @@ function initializeReserveButtons() {
 
       // Get badge for this item
       const itemArticle = this.closest("article");
-      const itemBadge = itemArticle?.querySelector(".own-reservation-badge") as HTMLElement;
+      const itemBadge = itemArticle?.querySelector(
+        ".own-reservation-badge",
+      ) as HTMLElement;
 
       if (isCurrentlyReserved && isOwn) {
         // Cancel reservation - optimistic UI
@@ -101,9 +120,17 @@ function initializeReserveButtons() {
         // Optimistically update UI
         this.dataset.reservedBy = "";
         this.textContent =
-          (currentLang === "ru" ? this.dataset.ruReserve : this.dataset.enReserve) ?? null;
+          (currentLang === "ru"
+            ? this.dataset.ruReserve
+            : this.dataset.enReserve) ?? null;
         this.classList.remove("own-reservation");
         if (itemBadge) itemBadge.hidden = true;
+        // Update aria-label
+        const reserveAriaLabel =
+          currentLang === "ru"
+            ? this.dataset.ariaLabelRuReserve
+            : this.dataset.ariaLabelEnReserve;
+        if (reserveAriaLabel) this.setAttribute("aria-label", reserveAriaLabel);
 
         // Make API call in background
         const { error } = await actions.unreserve({
@@ -131,16 +158,26 @@ function initializeReserveButtons() {
         // Optimistically update UI
         this.dataset.reservedBy = visitorId;
         this.textContent =
-          (currentLang === "ru" ? this.dataset.ruCancel : this.dataset.enCancel) ?? null;
+          (currentLang === "ru"
+            ? this.dataset.ruCancel
+            : this.dataset.enCancel) ?? null;
         this.classList.add("own-reservation");
         if (itemBadge) {
           itemBadge.hidden = false;
           const badgeSpan = itemBadge.querySelector("span");
           if (badgeSpan) {
             badgeSpan.textContent =
-              (currentLang === "ru" ? itemBadge.dataset.ru : itemBadge.dataset.en) ?? null;
+              (currentLang === "ru"
+                ? itemBadge.dataset.ru
+                : itemBadge.dataset.en) ?? null;
           }
         }
+        // Update aria-label
+        const cancelAriaLabel =
+          currentLang === "ru"
+            ? this.dataset.ariaLabelRuCancel
+            : this.dataset.ariaLabelEnCancel;
+        if (cancelAriaLabel) this.setAttribute("aria-label", cancelAriaLabel);
 
         // Make API call in background
         const { error } = await actions.reserve({
@@ -179,8 +216,19 @@ function initializeLanguageSwitcher() {
         document.documentElement.classList.remove("lang-ru");
       }
 
+      // Update aria-pressed on language buttons
+      langButtons.forEach((b) => {
+        b.setAttribute(
+          "aria-pressed",
+          b.dataset.lang === lang ? "true" : "false",
+        );
+      });
+
       // Update all translatable elements
       updateLanguage(lang);
+
+      // Update aria-labels
+      updateAriaLabels(lang);
 
       // Update prices for new language
       updatePricesForLanguage(lang);
@@ -230,7 +278,8 @@ function updatePricesForLanguage(lang: "en" | "ru") {
 
 function updateLanguage(lang: "en" | "ru") {
   // Update elements with data-en and data-ru attributes
-  const translatableElements = document.querySelectorAll<HTMLElement>("[data-en][data-ru]");
+  const translatableElements =
+    document.querySelectorAll<HTMLElement>("[data-en][data-ru]");
 
   translatableElements.forEach((el) => {
     const text = lang === "ru" ? el.dataset.ru : el.dataset.en;
@@ -239,7 +288,10 @@ function updateLanguage(lang: "en" | "ru") {
       const span = el.querySelector("span");
       if (span) {
         span.textContent = text;
-      } else if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+      } else if (
+        el.childNodes.length === 1 &&
+        el.childNodes[0].nodeType === Node.TEXT_NODE
+      ) {
         el.textContent = text;
       } else {
         el.textContent = text;
@@ -248,7 +300,8 @@ function updateLanguage(lang: "en" | "ru") {
   });
 
   // Update reserve buttons based on their state
-  const reserveButtons = document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
+  const reserveButtons =
+    document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
   const visitorId = getVisitorId();
 
   reserveButtons.forEach((btn) => {
@@ -271,14 +324,66 @@ function updateLanguage(lang: "en" | "ru") {
 
     if (isReceived) {
       btn.textContent =
-        (lang === "ru" ? btn.dataset.ruReceived : btn.dataset.enReceived) ?? null;
+        (lang === "ru" ? btn.dataset.ruReceived : btn.dataset.enReceived) ??
+        null;
     } else if (isReserved && isOwnReservation) {
-      btn.textContent = (lang === "ru" ? btn.dataset.ruCancel : btn.dataset.enCancel) ?? null;
+      btn.textContent =
+        (lang === "ru" ? btn.dataset.ruCancel : btn.dataset.enCancel) ?? null;
     } else if (isReserved && !isOwnReservation) {
       btn.textContent =
-        (lang === "ru" ? btn.dataset.ruReserved : btn.dataset.enReserved) ?? null;
+        (lang === "ru" ? btn.dataset.ruReserved : btn.dataset.enReserved) ??
+        null;
     } else {
-      btn.textContent = (lang === "ru" ? btn.dataset.ruReserve : btn.dataset.enReserve) ?? null;
+      btn.textContent =
+        (lang === "ru" ? btn.dataset.ruReserve : btn.dataset.enReserve) ?? null;
+    }
+  });
+}
+
+function updateAriaLabels(lang: "en" | "ru") {
+  // Update elements with data-aria-label-en and data-aria-label-ru
+  const elements = document.querySelectorAll<HTMLElement>(
+    "[data-aria-label-en][data-aria-label-ru]",
+  );
+  elements.forEach((el) => {
+    const label =
+      lang === "ru" ? el.dataset.ariaLabelRu : el.dataset.ariaLabelEn;
+    if (label) {
+      el.setAttribute("aria-label", label);
+    }
+  });
+
+  // Update reserve buttons aria-labels based on state
+  const reserveButtons =
+    document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
+  const visitorId = getVisitorId();
+
+  reserveButtons.forEach((btn) => {
+    const reservedBy = btn.dataset.reservedBy || "";
+    const isReserved = reservedBy.length > 0;
+    const isOwnReservation = isReserved && reservedBy === visitorId;
+
+    let ariaLabel: string | undefined;
+
+    if (isReserved && isOwnReservation) {
+      ariaLabel =
+        lang === "ru"
+          ? btn.dataset.ariaLabelRuCancel
+          : btn.dataset.ariaLabelEnCancel;
+    } else if (isReserved) {
+      ariaLabel =
+        lang === "ru"
+          ? btn.dataset.ariaLabelRuReserved
+          : btn.dataset.ariaLabelEnReserved;
+    } else {
+      ariaLabel =
+        lang === "ru"
+          ? btn.dataset.ariaLabelRuReserve
+          : btn.dataset.ariaLabelEnReserve;
+    }
+
+    if (ariaLabel) {
+      btn.setAttribute("aria-label", ariaLabel);
     }
   });
 }

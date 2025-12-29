@@ -10,7 +10,13 @@ const { categories, currentCategory } = Astro.props;
 ---
 
 <div class="filters">
-  <div class="filter-categories">
+  <nav
+    class="filter-categories"
+    role="navigation"
+    aria-label="Filter by category"
+    data-aria-label-en="Filter by category"
+    data-aria-label-ru="Фильтр по категории"
+  >
     {
       categories.map((cat) => (
         <a
@@ -19,33 +25,39 @@ const { categories, currentCategory } = Astro.props;
           data-category={cat.id}
           data-en={cat.label}
           data-ru={cat.labelRu}
+          aria-current={cat.id === currentCategory ? "page" : undefined}
         >
           {cat.label}
         </a>
       ))
     }
-  </div>
-  <div class="filter-lang">
-    <div>
-      <svg
-        class="lang-icon"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M2 12h20"></path>
-        <path
-          d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-        ></path>
-      </svg>
-    </div>
-    <button class="lang-btn" data-lang="en">EN</button>
-    <button class="lang-btn" data-lang="ru">RU</button>
+  </nav>
+  <div
+    class="filter-lang"
+    role="group"
+    aria-label="Language selection"
+    data-aria-label-en="Language selection"
+    data-aria-label-ru="Выбор языка"
+  >
+    <svg
+      class="lang-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M2 12h20"></path>
+      <path
+        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+      ></path>
+    </svg>
+    <button class="lang-btn" data-lang="en" aria-pressed="true">EN</button>
+    <button class="lang-btn" data-lang="ru" aria-pressed="false">RU</button>
   </div>
 </div>

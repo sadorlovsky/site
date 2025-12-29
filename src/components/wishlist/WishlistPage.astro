@@ -62,7 +62,14 @@ const { items, categories, currentCategory } = Astro.props;
         currentCategory={currentCategory}
       />
 
-      <div class="wishlist-grid" id="wishlist-grid">
+      <div
+        class="wishlist-grid"
+        id="wishlist-grid"
+        role="list"
+        aria-label="Wishlist items"
+        data-aria-label-en="Wishlist items"
+        data-aria-label-ru="Список желаний"
+      >
         {items.map((item) => <WishlistItem item={item} />)}
       </div>
     </div>
