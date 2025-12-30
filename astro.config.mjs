@@ -18,7 +18,14 @@ const cdnDomain = isProd ? CDN_URL : CDN_DEV_URL;
 // https://astro.build/config
 export default defineConfig({
   output: "static",
-  adapter: vercel(),
+  adapter: vercel({
+    isr: {
+      // Bypass token for on-demand revalidation
+      bypassToken: VERCEL_ISR_BYPASS_TOKEN,
+      // Exclude API routes and dynamic pages from ISR
+      exclude: ["/api/*", "/wishlist/*"],
+    },
+  }),
   image: {
     domains: [
       "pub-4b913e87f0c44d508111225ea44c624f.r2.dev", // R2 dev
