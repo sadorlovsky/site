@@ -1,11 +1,13 @@
 import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
-import { CDN_URL, CDN_DEV_URL } from "astro:env/server";
+import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
-// CDN URL helper - uses production URL in prod, dev URL otherwise
-const cdnUrl = import.meta.env.PROD ? CDN_URL : (CDN_DEV_URL ?? CDN_URL);
+// CDN domain helper - uses production domain in prod, dev domain otherwise
+const cdnDomain = import.meta.env.PROD
+  ? CDN_DOMAIN
+  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN);
 
 export function getCdnImageUrl(filename: string): string {
-  return `${cdnUrl}/${filename}`;
+  return `https://${cdnDomain}/${filename}`;
 }
 
 // Types

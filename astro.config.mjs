@@ -6,14 +6,14 @@ import vercel from "@astrojs/vercel";
 import db from "@astrojs/db";
 import { loadEnv } from "vite";
 
-const { VERCEL_ISR_BYPASS_TOKEN, CDN_URL, CDN_DEV_URL } = loadEnv(
+const { VERCEL_ISR_BYPASS_TOKEN, CDN_DOMAIN, CDN_DEV_DOMAIN } = loadEnv(
   process.env.NODE_ENV,
   process.cwd(),
   "",
 );
 
 const isProd = process.env.NODE_ENV === "production";
-const cdnDomain = isProd ? CDN_URL : CDN_DEV_URL;
+const cdnDomain = isProd ? CDN_DOMAIN : CDN_DEV_DOMAIN;
 console.log("CDN Domain:", cdnDomain, "isProd:", isProd);
 
 // https://astro.build/config
@@ -38,12 +38,12 @@ export default defineConfig({
   },
   env: {
     schema: {
-      CDN_DEV_URL: envField.string({
+      CDN_DEV_DOMAIN: envField.string({
         context: "server",
         access: "secret",
         optional: true,
       }),
-      CDN_URL: envField.string({ context: "server", access: "secret" }),
+      CDN_DOMAIN: envField.string({ context: "server", access: "secret" }),
     },
   },
   experimental: {
