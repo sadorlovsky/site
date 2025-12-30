@@ -33,7 +33,11 @@ export default defineConfig({
   },
   env: {
     schema: {
-      CDN_DEV_URL: envField.string({ context: "server", access: "secret" }),
+      CDN_DEV_URL: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
       CDN_URL: envField.string({ context: "server", access: "secret" }),
     },
   },
