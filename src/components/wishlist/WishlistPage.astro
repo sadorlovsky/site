@@ -100,7 +100,11 @@ const { items, categories, currentCategory } = Astro.props;
         data-aria-label-en="Wishlist items"
         data-aria-label-ru="Список желаний"
       >
-        {items.map((item) => <WishlistItem item={item} />)}
+        {
+          items.map((item, index) => (
+            <WishlistItem item={item} isLCP={index === 0} />
+          ))
+        }
       </div>
     </div>
   </main>

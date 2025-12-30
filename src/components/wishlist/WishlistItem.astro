@@ -6,9 +6,10 @@ import {
 
 interface Props {
   item: WishlistItemWithReservation;
+  isLCP?: boolean;
 }
 
-const { item } = Astro.props;
+const { item, isLCP = false } = Astro.props;
 const imageUrl = getCdnImageUrl(item.imageUrl);
 ---
 
@@ -28,8 +29,9 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
       alt={item.title}
       width="400"
       height="300"
-      loading="lazy"
-      decoding="async"
+      loading={isLCP ? "eager" : "lazy"}
+      decoding={isLCP ? "sync" : "async"}
+      fetchpriority={isLCP ? "high" : undefined}
     />
     {
       item.received && (
