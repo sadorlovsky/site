@@ -1,5 +1,6 @@
 ---
 import "@styles/global.css";
+import { Font } from "astro:assets";
 
 const { title } = Astro.props;
 ---
@@ -13,8 +14,7 @@ const { title } = Astro.props;
     <meta name="description" content="Zach" />
     <link rel="icon" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#000000" />
-    <link rel="preconnect" href="https://rsms.me/" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <Font cssVariable="--font-inter" preload />
   </head>
   <body>
     <slot />

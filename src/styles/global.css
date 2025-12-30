@@ -9,7 +9,7 @@
 }
 
 :root {
-  font-family: Inter, sans-serif;
+  font-family: var(--font-inter);
   font-feature-settings:
     "liga" 1,
     "calt" 1,
@@ -21,10 +21,6 @@
 }
 
 @supports (font-variation-settings: normal) {
-  :root {
-    font-family: InterVariable, sans-serif;
-  }
-
   pre,
   code {
     font-family: "FiracodeVariable", monospace;

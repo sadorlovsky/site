@@ -1,5 +1,6 @@
 ---
 import "@styles/global.css";
+import { Font } from "astro:assets";
 
 const { frontmatter } = Astro.props;
 ---
@@ -11,8 +12,7 @@ const { frontmatter } = Astro.props;
     <title>{frontmatter.title}</title>
     <meta name="title" content="Zach" />
     <meta name="description" content="Zach" />
-    <link rel="preconnect" href="https://rsms.me/" />
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <Font cssVariable="--font-inter" preload />
   </head>
   <body>
     <main class="md">
