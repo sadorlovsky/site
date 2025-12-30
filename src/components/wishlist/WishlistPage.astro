@@ -110,6 +110,13 @@ const { items, categories, currentCategory } = Astro.props;
   </main>
 
   <script>
-    import "@client/wishlist";
+    // Dynamic import to avoid blocking critical path
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        import("@client/wishlist");
+      });
+    } else {
+      import("@client/wishlist");
+    }
   </script>
 </PageLayout>

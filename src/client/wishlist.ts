@@ -350,5 +350,5 @@ function updateAriaLabels(lang: "en" | "ru") {
   });
 }
 
-// Initialize when the page loads
-document.addEventListener("DOMContentLoaded", initializeWishlist);
+// Initialize immediately - module is dynamically imported after DOMContentLoaded
+initializeWishlist();
