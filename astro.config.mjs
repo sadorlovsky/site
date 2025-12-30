@@ -12,6 +12,9 @@ const { VERCEL_ISR_BYPASS_TOKEN, CDN_URL, CDN_DEV_URL } = loadEnv(
   "",
 );
 
+const isProd = process.env.NODE_ENV === "production";
+const cdnDomain = isProd ? CDN_URL : CDN_DEV_URL;
+
 // https://astro.build/config
 export default defineConfig({
   output: "static",
@@ -24,10 +27,7 @@ export default defineConfig({
     // },
   }),
   image: {
-    domains: [
-      CDN_DEV_URL, // R2 dev
-      CDN_URL, // R2 production
-    ],
+    domains: [cdnDomain],
   },
   integrations: [icon(), mdx(), react(), db()],
   markdown: {
