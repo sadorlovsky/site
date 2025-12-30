@@ -132,36 +132,33 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
 
       {
         !item.received && (
-          <>
-            <div class="reserve-btn-skeleton" aria-hidden="true" />
-            <button
-              class="reserve-btn"
-              data-item-id={item.id}
-              data-item-title={item.title}
-              data-item-title-ru={item.titleRu || item.title}
-              data-reserved-by={item.reservedBy}
-              data-en-reserve="Reserve"
-              data-ru-reserve="Зарезервировать"
-              data-en-reserved="Reserved"
-              data-ru-reserved="Зарезервировано"
-              data-en-cancel="Cancel"
-              data-ru-cancel="Отменить"
-              aria-label={
-                item.isReserved
-                  ? `Cancel reservation for ${item.title}`
-                  : `Reserve ${item.title}`
-              }
-              data-aria-label-en-reserve={`Reserve ${item.title}`}
-              data-aria-label-ru-reserve={`Зарезервировать ${item.titleRu || item.title}`}
-              data-aria-label-en-cancel={`Cancel reservation for ${item.title}`}
-              data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
-              data-aria-label-en-reserved={`Reserved: ${item.title}`}
-              data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
-              hidden
-            >
-              {item.isReserved ? "Reserved" : "Reserve"}
-            </button>
-          </>
+          <button
+            class="reserve-btn"
+            data-item-id={item.id}
+            data-item-title={item.title}
+            data-item-title-ru={item.titleRu || item.title}
+            data-reserved-by={item.reservedBy}
+            data-en-reserve="Reserve"
+            data-ru-reserve="Зарезервировать"
+            data-en-reserved="Reserved"
+            data-ru-reserved="Зарезервировано"
+            data-en-cancel="Cancel"
+            data-ru-cancel="Отменить"
+            aria-label={
+              item.isReserved
+                ? `Cancel reservation for ${item.title}`
+                : `Reserve ${item.title}`
+            }
+            data-aria-label-en-reserve={`Reserve ${item.title}`}
+            data-aria-label-ru-reserve={`Зарезервировать ${item.titleRu || item.title}`}
+            data-aria-label-en-cancel={`Cancel reservation for ${item.title}`}
+            data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
+            data-aria-label-en-reserved={`Reserved: ${item.title}`}
+            data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
+            hidden
+          >
+            {item.isReserved ? "Reserved" : "Reserve"}
+          </button>
         )
       }
     </div>

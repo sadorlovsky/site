@@ -60,6 +60,25 @@ const { items, categories, currentCategory } = Astro.props;
             const label = el.getAttribute("data-aria-label-" + lang);
             if (label) el.setAttribute("aria-label", label);
           });
+
+        // Apply prices based on language
+        document.querySelectorAll(".item-price").forEach((el) => {
+          const originalPrice = el.getAttribute("data-price-original") || "";
+          const priceRub = el.getAttribute("data-price-rub");
+
+          if (lang === "ru" && priceRub) {
+            // Format RUB price with space separator
+            const match = priceRub.match(/₽(\d+)/);
+            if (match) {
+              const num = parseInt(match[1], 10);
+              const rounded = Math.round(num / 10) * 10;
+              const formatted = rounded.toLocaleString("ru-RU");
+              el.textContent = formatted + " ₽";
+            }
+          } else {
+            el.textContent = originalPrice;
+          }
+        });
       }
 
       // Apply when DOM is ready

@@ -88,11 +88,7 @@ function showButtons() {
             : button.dataset.enReserve) ?? null;
       }
 
-      // Hide skeleton and show button
-      const skeleton = button.previousElementSibling as HTMLElement;
-      if (skeleton?.classList.contains("reserve-btn-skeleton")) {
-        skeleton.classList.add("hidden");
-      }
+      // Show button
       button.hidden = false;
     });
 }
