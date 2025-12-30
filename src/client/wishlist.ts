@@ -89,7 +89,7 @@ function showButtons() {
       }
 
       // Show button
-      button.hidden = false;
+      button.classList.remove("reserve-btn--loading");
     });
 }
 

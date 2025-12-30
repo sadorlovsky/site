@@ -133,7 +133,7 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
       {
         !item.received && (
           <button
-            class="reserve-btn"
+            class="reserve-btn reserve-btn--loading"
             data-item-id={item.id}
             data-item-title={item.title}
             data-item-title-ru={item.titleRu || item.title}
@@ -155,7 +155,6 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
             data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
             data-aria-label-en-reserved={`Reserved: ${item.title}`}
             data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
-            hidden
           >
             {item.isReserved ? "Reserved" : "Reserve"}
           </button>

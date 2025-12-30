@@ -446,6 +446,10 @@ html.lang-ready .wishlist-container {
   transform: none;
 }
 
+.reserve-btn--loading {
+  visibility: hidden;
+}
+
 /* Accessibility - Focus styles */
 .filter-btn:focus-visible,
 .reserve-btn:focus-visible,
