@@ -1,4 +1,12 @@
 import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
+import { CDN_URL, CDN_DEV_URL } from "astro:env/server";
+
+// CDN URL helper - uses production URL in prod, dev URL otherwise
+const cdnUrl = import.meta.env.PROD ? CDN_URL : CDN_DEV_URL;
+
+export function getCdnImageUrl(filename: string): string {
+  return `${cdnUrl}/${filename}`;
+}
 
 // Types
 export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR";

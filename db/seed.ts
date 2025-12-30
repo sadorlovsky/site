@@ -1,16 +1,4 @@
 import { db, WishlistItem, ExchangeRate, Reservation } from "astro:db";
-import { loadEnv } from "vite";
-
-const { CDN_DEV_URL, CDN_URL } = loadEnv(
-  process.env.NODE_ENV as string,
-  process.cwd(),
-  "",
-);
-
-const isProd = process.env.NODE_ENV === "production";
-const cdnUrl = isProd ? CDN_URL : CDN_DEV_URL;
-
-const img = (name: string) => `${cdnUrl}/${name}`;
 
 // https://astro.build/db/seed
 export default async function seed() {
@@ -59,7 +47,7 @@ export default async function seed() {
       title: "The Florida Project Limited Edition 4K UHD",
       titleRu: "Проект Флорида 4K UHD, лимитированное издание",
       price: "$64",
-      imageUrl: img("second-sight-florida-project.webp"),
+      imageUrl: "second-sight-florida-project.webp",
       //TODO: rewrite
       description:
         "Sean Baker's pastel-colored poverty. Kids, motels, and broken dreams",
@@ -75,7 +63,7 @@ export default async function seed() {
       title: "Tangerine Limited Edition Blu-ray",
       titleRu: "Мандарин на Blu-ray, лимитированное издание",
       price: "£25",
-      imageUrl: img("second-sight-tangerine.webp"),
+      imageUrl: "second-sight-tangerine.webp",
       //TODO: rewrite
       description:
         "Shot on iPhone 5s. Trans sex workers in LA on Christmas Eve",
@@ -91,7 +79,7 @@ export default async function seed() {
       title: "Titanium Band for Apple Watch Ultra",
       titleRu: "Титановый ремешок для Apple Watch Ultra",
       price: "$249",
-      imageUrl: img("apple-watch-band.webp"),
+      imageUrl: "apple-watch-band.webp",
       url: "https://nomadgoods.com/products/titanium-band-46mm-49mm-natural-hardware-v3",
       description: "A band to pretend I’m not broke",
       descriptionRu: "Ремешок, чтобы притворяться, что я не броук",
@@ -104,7 +92,7 @@ export default async function seed() {
       title: "Astro Bot Soundtrack Vinyl",
       titleRu: "Саундтрек Astro Bot на виниле",
       price: "$39",
-      imageUrl: img("astrobot-vinyl.webp"),
+      imageUrl: "astrobot-vinyl.webp",
       url: "https://www.fangamer.com/collections/astro-bot/products/astro-bot-2024-vinyl",
       //TODO: rewrite
       description: "Robo, robo, robo",
@@ -118,7 +106,7 @@ export default async function seed() {
       title: "Celeste Desk Mat",
       titleRu: "Коврик для стола Celeste",
       price: "$28",
-      imageUrl: img("celeste-deskmat.webp"),
+      imageUrl: "celeste-deskmat.webp",
       url: "https://www.fangamer.com/collections/celeste/products/celeste-desk-mat-skies",
       description: "Large desk mat with Celeste artwork",
       descriptionRu: "Большой коврик для стола с артом из Celeste",
@@ -131,7 +119,7 @@ export default async function seed() {
       title: "TPOB XO Clipper (Slime Edition)",
       titleRu: "Машинка для стрижки TPOB XO (Slime)",
       price: "$74",
-      imageUrl: img("tpob-xo-clipper.webp"),
+      imageUrl: "tpob-xo-clipper.webp",
       url: "https://tpobusa.com/collections/clippers/products/xo-clipper-slime",
       description:
         "Professional cordless clipper so I can cut my hair at home and avoid people",
@@ -147,7 +135,7 @@ export default async function seed() {
       title: "TPOB Mini Skull (Blackout edition)",
       titleRu: "Электробритва TPOB Mini Skull (Blackout)",
       price: "$45",
-      imageUrl: img("tpob-mini-skull.webp"),
+      imageUrl: "tpob-mini-skull.webp",
       url: "https://tpobusa.com/collections/shavers/products/blackout-mini-skull",
       description: "Compact electric shaver for travel",
       descriptionRu: "Компактная электробритва в дорогу",
@@ -161,7 +149,7 @@ export default async function seed() {
       title: "Hollow Knight Gods & Nightmares Vinyl Soundtrack",
       titleRu: "Саундтрек Hollow Knight: Gods & Nightmares на виниле",
       price: "$29",
-      imageUrl: img("hollowknight-vinyl.webp"),
+      imageUrl: "hollowknight-vinyl.webp",
       url: "https://www.fangamer.com/collections/vinyl-game-soundtracks/products/hollow-knight-gods-nightmares-vinyl-soundtrack",
       //TODO: rewrite
       description:
@@ -179,7 +167,7 @@ export default async function seed() {
       titleRu:
         "Коллекционное издание Hollow Knight для Nintendo Switch + Журнал Охотника",
       price: "$107",
-      imageUrl: img("hollowknight-collectors-edition.webp"),
+      imageUrl: "hollowknight-collectors-edition.webp",
       url: "https://www.fangamer.com/products/hollow-knight-game-collectors-edition-nintendo-switch",
       //TODO: rewrite
       description: "Physical copy + lore journal. For the shelf and the soul",
@@ -193,7 +181,7 @@ export default async function seed() {
       title: "Hollow Knight Blanket",
       titleRu: "Плед Hollow Knight",
       price: "$45",
-      imageUrl: img("hollowknight-blanket.webp"),
+      imageUrl: "hollowknight-blanket.webp",
       url: "https://www.fangamer.com/products/hollow-knight-blanket",
       description: "A blanket to wrap myself in instead of dealing with life",
       descriptionRu:
@@ -207,7 +195,7 @@ export default async function seed() {
       title: "X Trilogy: Collector's Edition Box Set (4K UHD)",
       titleRu: "Трилогия X: Коллекционное издание (4K UHD)",
       price: "$100",
-      imageUrl: img("a24-x-trilogy.webp"),
+      imageUrl: "a24-x-trilogy.webp",
       url: "https://shop.a24films.com/products/x-trilogy-collectors-edition",
       //TODO: rewrite
       description:
@@ -223,7 +211,7 @@ export default async function seed() {
       title: "Possession 4K Limited Edition UHD Blu-ray",
       titleRu: "Одержимая 4K UHD, лимитированное издание",
       price: "$85",
-      imageUrl: img("second-sight-possesion.webp"),
+      imageUrl: "second-sight-possesion.webp",
       url: "https://www.ebay.com/itm/326922568960",
       //TODO: rewrite
       description:
@@ -239,7 +227,7 @@ export default async function seed() {
       titleRu: "Простая история на Blu-ray",
       price: "AU$140",
 
-      imageUrl: img("imprint-the-straight-story.webp"),
+      imageUrl: "imprint-the-straight-story.webp",
       url: "https://www.ebay.com/itm/276396157419",
       description:
         "David Lynch, but calm. A straight story. The only Lynch film I don't have in my collection yet",
@@ -254,7 +242,7 @@ export default async function seed() {
       title: "Tokyo Decadence Blu-ray",
       titleRu: "Токийский декаданс на Blu-ray",
       price: "$31",
-      imageUrl: img("tokyo-decadence.webp"),
+      imageUrl: "tokyo-decadence.webp",
       url: "https://www.ebay.com/itm/375499327864",
       //TODO: rewrite
       description: "Ryu Murakami's erotic drama. Tokyo's underground desires",
@@ -269,7 +257,7 @@ export default async function seed() {
       title: "555 Soundtrack Vinyl LP",
       titleRu: "Саундтрек 555 на виниле, очень редкий",
       price: "$57",
-      imageUrl: img("555-vinyl.webp"),
+      imageUrl: "555-vinyl.webp",
       url: "https://www.ebay.com/itm/176437398555",
       description: "Limited to 50 copies. Unfortunately, I need this",
       descriptionRu: "Лимитированное издание, тираж 50 копий. Это мне надо.",
@@ -282,7 +270,7 @@ export default async function seed() {
       title: "Nekromantik Soundtrack Vinyl LP + EP",
       titleRu: "Саундтрек Некромантик на виниле, очень редкий",
       price: "€300",
-      imageUrl: img("nekromantik-vinyl.webp"),
+      imageUrl: "nekromantik-vinyl.webp",
       url: "https://www.ebay.com/itm/134673382645",
       description:
         "Absurdly rare and absurdly expensive. Unfortunately, I need this",
@@ -297,7 +285,7 @@ export default async function seed() {
       title: "Nekromantik T-Shirt",
       titleRu: "Футболка Nekromantik",
       price: "$25",
-      imageUrl: img("nekromantik-tshirt.webp"),
+      imageUrl: "nekromantik-tshirt.webp",
       url: "https://www.ebay.com/itm/135116828682",
       //TODO: rewrite
       description: "For those who get it. A great conversation stopper",
@@ -312,7 +300,7 @@ export default async function seed() {
       title: "Vans Sk8-Hi",
       titleRu: "Кеды Vans Sk8-Hi",
       price: "$145",
-      imageUrl: img("vans-sk8hi.avif"),
+      imageUrl: "vans-sk8hi.avif",
       url: "https://www.vans.com/en-us/p/shoes/icons/sk8-hi-5325/sk8-hi-waterproof-insulated-shoe-VN000DAQBKA?size=8.5+Men+%3D+10.0+Women",
       description: "Waterproof and insulated — for winter",
       descriptionRu: "С водозащитой и утеплением — на зиму",
@@ -325,7 +313,7 @@ export default async function seed() {
       title: "Jordan Club Hat",
       titleRu: "Кепка Jordan Club",
       price: "$25",
-      imageUrl: img("jordan-club-hat.avif"),
+      imageUrl: "jordan-club-hat.avif",
       url: "https://www.nike.com/t/jordan-club-unstructured-curved-bill-hat-TR8rQt/HQ1963-010",
       description: "Basic cap",
       descriptionRu: "Базовая кепка",
@@ -338,7 +326,7 @@ export default async function seed() {
       title: "Philips Sonicare 9900 Prestige",
       titleRu: "Электрическая зубная щётка Philips Sonicare",
       price: "$300",
-      imageUrl: img("philips-sonicare-diamondclean.webp"),
+      imageUrl: "philips-sonicare-diamondclean.webp",
       url: "https://a.co/d/49pcu6S",
       description: "The fancy toothbrush",
       descriptionRu: "Модная зубная щётка",
@@ -351,7 +339,7 @@ export default async function seed() {
       title: "Yung Lean — Warlord (White Vinyl LP)",
       titleRu: "Yung Lean — Warlord (белый винил, лимитированное издание)",
       price: "$70",
-      imageUrl: img("yung-lean-warlord-vinyl.webp"),
+      imageUrl: "yung-lean-warlord-vinyl.webp",
       url: "https://www.discogs.com/sell/item/1950442079",
       description: "My favorite Yung Lean album. Pure 2016 nostalgia",
       descriptionRu: "Мой любимый альбом Yung Lean, ностальгия по 2016",
@@ -364,7 +352,7 @@ export default async function seed() {
       title: "Funko POP Twin Peaks Laura Palmer",
       titleRu: "Funko POP Twin Peaks (Лора Палмер)",
       price: "$120",
-      imageUrl: img("funko-pop-laura-palmer.jpg"),
+      imageUrl: "funko-pop-laura-palmer.jpg",
       url: "https://a.co/d/fqFZyLg",
       description: "Extremely rare. And yes, that’s the whole reason.",
       descriptionRu: "Крайне редкая, но в этом вся суть",
@@ -378,7 +366,7 @@ export default async function seed() {
       titleRu:
         "Boy Harsher — Lesser Man EP (красный винил, лимитированное издание)",
       price: "€50",
-      imageUrl: img("boy-harsher-lesser-man-vinyl.jpg"),
+      imageUrl: "boy-harsher-lesser-man-vinyl.jpg",
       url: "https://www.discogs.com/sell/item/2961810748",
       //TODO: rewrite
       description: "Dark synth duo. Pain you can dance to",
@@ -392,7 +380,7 @@ export default async function seed() {
       title: "Philips Sonicare Power Flosser 3000",
       titleRu: "Ирригатор Philips Sonicare",
       price: "$70",
-      imageUrl: img("philips-sonicare-flosser.jpg"),
+      imageUrl: "philips-sonicare-flosser.jpg",
       url: "https://a.co/d/hrfsFUQ",
       //TODO: rewrite
       description: "Water flossing. For teeth that deserve better",
@@ -406,7 +394,7 @@ export default async function seed() {
       title: "Adidas Terrex Free Hiker 2.0 Low GORE-TEX",
       titleRu: "Кроссовки Adidas Terrex",
       price: "$180",
-      imageUrl: img("terrex-shoes.avif"),
+      imageUrl: "terrex-shoes.avif",
       url: "https://www.adidas.com/us/terrex-free-hiker-2.0-low-gore-tex-hiking-shoes/IH0672.html?forceSelSize=9",
       description: "I need sneakers for city, hiking, and shitty weather",
       descriptionRu:
@@ -420,7 +408,7 @@ export default async function seed() {
       title: "Adidas Beanie",
       titleRu: "Шапка Adidas",
       price: "$17",
-      imageUrl: img("adidas-beanie.avif"),
+      imageUrl: "adidas-beanie.avif",
       url: "https://www.adidas.com/us/unisex-trefoil-beanie/JL1081.html",
       description: "Basic beanie",
       descriptionRu: "Базовая шапка",
@@ -433,7 +421,7 @@ export default async function seed() {
       title: "RIPNDIP Boxers 3 Pack",
       titleRu: "Боксеры RIPNDIP 3 шт.",
       price: "$36",
-      imageUrl: img("ripndip-boxers.webp"),
+      imageUrl: "ripndip-boxers.webp",
       url: "https://www.ripndipclothing.com/en-kz/collections/holiday-2025/products/smd-boxers-3-pack-multi",
       //TODO: rewrite
       description:
@@ -448,7 +436,7 @@ export default async function seed() {
       title: "RIPNDIP Longsleeve",
       titleRu: "Лонгслив RIPNDIP",
       price: "$44",
-      imageUrl: img("ripndip-long-sleave.webp"),
+      imageUrl: "ripndip-long-sleave.webp",
       url: "https://www.ripndipclothing.com/collections/holiday-2025/products/the-happiest-cat-ls-black",
       //TODO: rewrite
       description:
@@ -464,7 +452,7 @@ export default async function seed() {
       title: "RIPNDIP Knit Sweater",
       titleRu: "Свитер RIPNDIP",
       price: "$80",
-      imageUrl: img("ripndip-knit-sweater.webp"),
+      imageUrl: "ripndip-knit-sweater.webp",
       url: "https://www.ripndipclothing.com/collections/holiday-2025/products/out-of-this-world-knit-sweater-black",
       //TODO: rewrite
       description: "Cozy knit with RIPNDIP vibes. Warm and weird",
@@ -478,7 +466,7 @@ export default async function seed() {
       title: "Vans Skate Half Cab",
       titleRu: "Кеды Vans Skate Half Cab",
       price: "$85",
-      imageUrl: img("vans-skate-half-cab.avif"),
+      imageUrl: "vans-skate-half-cab.avif",
       url: "https://www.vans.com/en-us/p/shoes/icons/half-cab-1992/skate-half-cab-shoe-VN0A5FCDY28?size=8.5+Men+=+10.0+Women",
       //TODO: rewrite
       description: "Classic skate silhouette. Steve Caballero's legacy",
@@ -492,7 +480,7 @@ export default async function seed() {
       title: "Philips Norelco Head Shaver Pro 7000 Series",
       titleRu: "Электробритва для головы Philips Norelco",
       price: "$85",
-      imageUrl: img("philips-head-shaver.webp"),
+      imageUrl: "philips-head-shaver.webp",
       url: "https://www.usa.philips.com/c-p/HS7980_40/head-shaver-pro-7000-series-advanced-shaver-with-90-min-runt~",
       //TODO: rewrite
       description: "For the bald look. Quick and clean head shaving",
@@ -507,7 +495,7 @@ export default async function seed() {
       title: "Calvin Klein 3-Pack T-Shirt",
       titleRu: "Набор футболок Calvin Klein 3 шт.",
       price: "$37",
-      imageUrl: img("ck-3-pack-t-shirt.webp"),
+      imageUrl: "ck-3-pack-t-shirt.webp",
       url: "https://www.calvinklein.us/en/underwear/men/undershirt-tank/cotton-classics-3-pack-classic-fit-crewneck-t-shirt/NB4051-UB1.html",
       //TODO: rewrite
       description: "Basic white tees. The foundation of any wardrobe",
@@ -521,7 +509,7 @@ export default async function seed() {
       title: "Calvin Klein Tech Pique T-Shirt",
       titleRu: "Футболка Calvin Klein",
       price: "$35",
-      imageUrl: img("ck-tech-pique-t-shirt.webp"),
+      imageUrl: "ck-tech-pique-t-shirt.webp",
       url: "https://www.calvinklein.us/en/men/apparel/tops/tech-pique-t-shirt/4LD298G-UB1.html",
       //TODO: rewrite
       description: "Technical fabric tee. Minimal and functional",
@@ -536,7 +524,7 @@ export default async function seed() {
       title: "Adidas Oversized Tee (2 pcs)",
       titleRu: "Оверсайз футболка Adidas (2 шт)",
       price: "$48",
-      imageUrl: img("adidas-oversized-tee.avif"),
+      imageUrl: "adidas-oversized-tee.avif",
       url: "https://www.adidas.com/us/trefoil-essentials-oversized-tee/JD0349.html",
       //TODO: rewrite
       description: "Oversized fit with the classic trefoil. Comfy everyday tee",
@@ -551,7 +539,7 @@ export default async function seed() {
       title: "Adidas Pants",
       titleRu: "Штаны Adidas",
       price: "$48",
-      imageUrl: img("adidas-pants.avif"),
+      imageUrl: "adidas-pants.avif",
       url: "https://www.adidas.com/us/trefoil-essentials-pants/IY7361.html?forceSelSize=XS",
       //TODO: rewrite
       description: "Relaxed joggers for home and errands",
@@ -565,7 +553,7 @@ export default async function seed() {
       title: "Adidas Fleece Pants",
       titleRu: "Флисовые штаны Adidas",
       price: "$50",
-      imageUrl: img("adidas-3-stripes-pants.avif"),
+      imageUrl: "adidas-3-stripes-pants.avif",
       url: "https://www.adidas.com/us/essentials-3-stripes-fleece-pants/KE7273.html?forceSelSize=XS",
       //TODO: rewrite
       description: "Fleece joggers with the iconic stripes. Warm and classic",
@@ -580,7 +568,7 @@ export default async function seed() {
       title: "Adidas Sweatshirt",
       titleRu: "Свитшот Adidas",
       price: "$50",
-      imageUrl: img("adidas-sweatshirt.avif"),
+      imageUrl: "adidas-sweatshirt.avif",
       url: "https://www.adidas.com/us/soft-lux-sweatshirt/KF0485.html?pr=pdpctl_rr&slot=3&rec=ds&forceSelSize=S",
       //TODO: rewrite
       description: "Premium soft fabric. For cozy days",
@@ -594,7 +582,7 @@ export default async function seed() {
       title: "Adidas Hoodie",
       titleRu: "Худи Adidas",
       price: "$36",
-      imageUrl: img("adidas-hoodie.avif"),
+      imageUrl: "adidas-hoodie.avif",
       url: "https://www.adidas.com/us/trefoil-essentials-hoodie/IY4930.html",
       //TODO: rewrite
       description: "Classic hoodie with trefoil logo. A staple",
@@ -608,7 +596,7 @@ export default async function seed() {
       title: "Adidas Crazy Warm hoodie",
       titleRu: "Тёплая худи на молнии Adidas",
       price: "$70",
-      imageUrl: img("adidas-crazy-warm-hoodie.avif"),
+      imageUrl: "adidas-crazy-warm-hoodie.avif",
       url: "https://www.adidas.com/us/adidas-crazy-warm-fullzip-hoodie/JZ9673.html",
       //TODO: rewrite
       description: "Extra warm full-zip hoodie. For cold days",
@@ -622,7 +610,7 @@ export default async function seed() {
       title: "Three 6 Mafia — When The Smoke Clears (Vinyl LP)",
       titleRu: "Three 6 Mafia — When The Smoke Clears (винил)",
       price: "€113",
-      imageUrl: img("three-6-mafia-wtsc-vinyl.jpg"),
+      imageUrl: "three-6-mafia-wtsc-vinyl.jpg",
       url: "https://www.discogs.com/sell/item/3321466926",
       description: "Memphis legends. Sippin' on Some Syrup",
       descriptionRu: "Легенды Мемфиса. Sippin' on Some Syrup",
@@ -635,7 +623,7 @@ export default async function seed() {
       title: "Three 6 Mafia — Chpt. 2: World Domination (Vinyl LP)",
       titleRu: "Three 6 Mafia — Chpt. 2: World Domination (винил)",
       price: "£62",
-      imageUrl: img("three-6-mafia-c2wd-vinyl.jpg"),
+      imageUrl: "three-6-mafia-c2wd-vinyl.jpg",
       url: "https://www.discogs.com/sell/item/2461938065",
       //TODO: rewrite
       description: "The album that started it all. Dark Memphis rap",
@@ -651,7 +639,7 @@ export default async function seed() {
       titleRu:
         "Gravediggaz — The Pick, The Sickle And The Shovel (белый винил, 2xLP)",
       price: "$80",
-      imageUrl: img("gravediggaz-tptats-vinyl.jpg"),
+      imageUrl: "gravediggaz-tptats-vinyl.jpg",
       url: "https://www.discogs.com/sell/item/2536779531",
       //TODO: rewrite
       description:
@@ -668,7 +656,7 @@ export default async function seed() {
       title: "Scentio Milk Plus Shower Cream 2x450ml",
       titleRu: "Крем-гель для душа Scentio Milk Plus 2шт по 450мл",
       price: "$75",
-      imageUrl: img("scentio-milk-plus-shower-cream.jpg"),
+      imageUrl: "scentio-milk-plus-shower-cream.jpg",
       url: "https://www.ebay.com/itm/204688834164",
       //TODO: rewrite
       description: "Thai milk shower cream. Smells amazing, skin feels great",
@@ -683,7 +671,7 @@ export default async function seed() {
       title: "Grace & Stella Aloe Vera Gel",
       titleRu: "Гель с алоэ вера Grace & Stella",
       price: "₹2438",
-      imageUrl: img("grace-stella-aloe-vera-gel.jpg"),
+      imageUrl: "grace-stella-aloe-vera-gel.jpg",
       url: "https://kiwla.com/products/grace--stella-aloe-vera-gel",
       description: "Aloe you very much",
       category: "home",
@@ -695,7 +683,7 @@ export default async function seed() {
       title: "Salomon X Ultra 5 Mid Gore-Tex",
       titleRu: "Ботинки Salomon X Ultra 5 Mid Gore-Tex",
       price: "$185",
-      imageUrl: img("salomon-x-ultra-5-mid-gtx.webp"),
+      imageUrl: "salomon-x-ultra-5-mid-gtx.webp",
       url: "https://www.salomon.com/en-us/product/x-ultra-5-mid-gore-tex-li6287/L47754200",
       description: "Another pair of hiking boots",
       descriptionRu: "Ещё одни треккинговые ботинки",
@@ -710,7 +698,7 @@ export default async function seed() {
       titleRu:
         "Книга «Что это за маленький мопед с хромированным рулем в глубине двора?», Жорж Перек",
       price: "₽768",
-      imageUrl: img("perec-moped.jpg"),
+      imageUrl: "perec-moped.jpg",
       url: "https://vse-svobodny.com/product/zhorzh-perek-chto-eto-za-malenkii-moped/",
       //TODO: rewrite
       description: "Perec's early novella. Language games and Algerian war",
@@ -725,7 +713,7 @@ export default async function seed() {
       titleRu:
         "Книга «Время магов. Великое десятилетие философии», Вольфрам Айленбергер",
       price: "₽672",
-      imageUrl: img("eilenberger-time-of-magicians.webp"),
+      imageUrl: "eilenberger-time-of-magicians.webp",
       url: "https://vse-svobodny.com/product/volfram-ajlenberger-vremya-magov/",
       //TODO: rewrite
       description:
@@ -742,7 +730,7 @@ export default async function seed() {
       title: "Michel Foucault — Discipline and Punish",
       titleRu: "Книга «Надзирать и наказывать. Рождение тюрьмы», Мишель Фуко",
       price: "₽784",
-      imageUrl: img("foucault-discipline-punish.webp"),
+      imageUrl: "foucault-discipline-punish.webp",
       url: "https://vse-svobodny.com/product/fuko-nadzirat-i-nakazyvat-3/",
       //TODO: rewrite
       description: "The birth of the prison. Biopower and surveillance",
@@ -758,7 +746,7 @@ export default async function seed() {
       titleRu:
         "Книга «Рождение клиники. Археология медицинского взгляда», Мишель Фуко",
       price: "₽784",
-      imageUrl: img("foucault-birth-clinic.jpg"),
+      imageUrl: "foucault-birth-clinic.jpg",
       url: "https://vse-svobodny.com/product/mishel-fuko-rozhdenie-cliniki/",
       //TODO: rewrite
       description: "Archaeology of medical perception. Early Foucault",
@@ -773,7 +761,7 @@ export default async function seed() {
       title: "Fazer Moomin Soft Fudge (2 pcs)",
       titleRu: "Ириски Fazer Moomin (2 шт)",
       price: "€6.20",
-      imageUrl: img("fazer-moomin-fudge.webp"),
+      imageUrl: "fazer-moomin-fudge.webp",
       url: "https://www.fazer.com/en/products/moomin-soft-fudge-candy-bag-160-g-p403386/",
       description: "Tasty Finnish toffees with Moomins",
       descriptionRu: "Вкусные финские ириски с муми-троллями",
@@ -787,7 +775,7 @@ export default async function seed() {
       title: "Moomin Blueberry-raspberry liquorice stick (30 pcs)",
       titleRu: "Лакричные палочки Fazer Moomin с черникой и малиной (30 шт)",
       price: "€10",
-      imageUrl: img("moomin-blueberry-raspberry-liquorice-stick.webp"),
+      imageUrl: "moomin-blueberry-raspberry-liquorice-stick.webp",
       url: "https://www.fazer.com/en/products/moomin-blueberry-raspberry-liquorice-stick-20g-p907676/",
       description: "Disgusting liquorice sticks, but with Moomins",
       descriptionRu: "Омерзительные лакричные палочки, но зато с муми-троллями",
@@ -800,7 +788,7 @@ export default async function seed() {
       title: "Geisha Seasalt & Caramel chocolate praline",
       titleRu: "Шоколадные конфеты Geisha с морской солью и карамелью",
       price: "€6.50",
-      imageUrl: img("geisha-caramel-seasalt.webp"),
+      imageUrl: "geisha-caramel-seasalt.webp",
       url: "https://www.fazer.com/en/products/geisha-caramel-sea-salt-100-g-p401720/",
       description: "Very tasty Finnish chocolates",
       descriptionRu: "Очень вкусные финские конфеты",
@@ -814,7 +802,7 @@ export default async function seed() {
       title: "Fazermint mint chocolate praline",
       titleRu: "Шоколадные конфеты Fazermint с мятой",
       price: "€6.50",
-      imageUrl: img("fazermint.webp"),
+      imageUrl: "fazermint.webp",
       url: "https://www.fazer.com/en/products/fazermint-mint-chocolate-praline-250g-p405315/",
       description: "Finnish dark chocolate candies with mint filling",
       descriptionRu: "Финские конфеты из тёмного шоколада с мятной начинкой",
@@ -827,7 +815,7 @@ export default async function seed() {
       title: "Dumle Original (2 pcs)",
       titleRu: "Конфеты Dumle Original (2 шт)",
       price: "€7.80",
-      imageUrl: img("dumle-original.webp"),
+      imageUrl: "dumle-original.webp",
       url: "https://www.fazer.com/en/products/dumle-original-200g-p403261/",
       description: "Chocolate-covered toffee candies. Finnish classic",
       descriptionRu: "Классические финские ириски в шоколаде Dumle",
@@ -841,7 +829,7 @@ export default async function seed() {
       title: "Dumle winter mix candy bag (2 pcs)",
       titleRu: "Конфеты Dumle winter mix (2 шт)",
       price: "€8.60",
-      imageUrl: img("dumle-winter-mix.webp"),
+      imageUrl: "dumle-winter-mix.webp",
       url: "https://www.fazer.com/en/products/dumle-winter-mix-candy-bag-180g2-p405704/",
       description: "Winter edition Dumle",
       descriptionRu: "Зимний микс Dumle",
@@ -854,7 +842,7 @@ export default async function seed() {
       title: "Dumle Mix 295g",
       titleRu: "Конфеты Dumle Mix 295г",
       price: "€3.90",
-      imageUrl: img("dumle-mix-295g.webp"),
+      imageUrl: "dumle-mix-295g.webp",
       url: "https://www.fazer.com/en/products/dumle-mix-295g-p405340/",
       description: "All Dumle flavors in one bag",
       descriptionRu: "Все вкусы ирисок Dumle в одной упаковке",
@@ -867,7 +855,7 @@ export default async function seed() {
       title: "Dumle gift box",
       titleRu: "Подарочная коробка с конфетами Dumle",
       price: "€12.80",
-      imageUrl: img("dumle-box.webp"),
+      imageUrl: "dumle-box.webp",
       url: "https://www.fazer.com/en/products/dumle-gift-box-pdumle-box-4084/",
       description: "Mix of Finnish sweets in a gift box",
       descriptionRu: "Микс финских сладостей в подарочной коробке",
@@ -880,7 +868,7 @@ export default async function seed() {
       title: "Super Salmiakki 80g (2 pcs)",
       titleRu: "Солёная лакрица Fazer Super Salmiakki 80г (2 шт)",
       price: "€3.40",
-      imageUrl: img("super-salmiakki.webp"),
+      imageUrl: "super-salmiakki.webp",
       url: "https://www.fazer.com/en/products/super-salmiakki-80-g-p403769/",
       description: "Finnish salty liquorice, disgusting",
       descriptionRu: "Финская солёная лакрица, отвратительно",
@@ -894,7 +882,7 @@ export default async function seed() {
       title: "Remix Salmiakki salty liquorice bag 230g (2 pcs)",
       titleRu: "Ассорти солёной лакрицы Fazer Remix Salmiakki 230г (2 шт)",
       price: "€3.60",
-      imageUrl: img("fazer-remix-salmiakki.webp"),
+      imageUrl: "fazer-remix-salmiakki.webp",
       url: "https://www.fazer.com/en/products/remix-salmiakki-salty-liquorice-bag-230g-p404191/",
       description: "Finnish salty liquorice, disgusting",
       descriptionRu: "Финская солёная лакрица, отвратительно",
@@ -908,7 +896,7 @@ export default async function seed() {
       title: "Islanti candies 375g",
       titleRu: "Конфеты Fazer Islanti с белым медведем 375г",
       price: "€7.50",
-      imageUrl: img("fazer-islanti.webp"),
+      imageUrl: "fazer-islanti.webp",
       url: "https://www.fazer.com/en/products/islanti-candies-375g-p403565/",
       description:
         "Polar bear candies. Crunchy shell, soft filling, secret fruit blend",
@@ -923,7 +911,7 @@ export default async function seed() {
       title: "Kiss-kiss 375g",
       titleRu: "Конфеты Fazer Kiss-kiss с котятами 375г",
       price: "€7.50",
-      imageUrl: img("fazer-kiss-kiss.webp"),
+      imageUrl: "fazer-kiss-kiss.webp",
       url: "https://www.fazer.com/en/products/kiss-kiss-375g-p403750/",
       description:
         "Finland's oldest candy since 1897. Kittens, pink shell, toffee filling",
@@ -938,7 +926,7 @@ export default async function seed() {
       title: "Daim Chocolates 460g",
       titleRu: "Шоколадные конфеты Daim 460г",
       price: "$30",
-      imageUrl: img("daim-460g.jpg"),
+      imageUrl: "daim-460g.jpg",
       url: "https://a.co/d/9C9TyEs",
       description: "The best candy in the world",
       descriptionRu: "Вкуснее конфет в жизни не ел",
@@ -952,7 +940,7 @@ export default async function seed() {
       title: "Krucifix Klan — Fuckin' Wit Dis Klan (Vinyl LP)",
       titleRu: "",
       price: "$58",
-      imageUrl: img("krucifix-klan-fwdk-vinyl.jpg"),
+      imageUrl: "krucifix-klan-fwdk-vinyl.jpg",
       url: "https://www.discogs.com/sell/item/3742200592",
       description: "",
       descriptionRu: "",
@@ -965,7 +953,7 @@ export default async function seed() {
       title: "Koopsta Knicca — Da Devil's Playground (Vinyl LP)",
       titleRu: "",
       price: "$65",
-      imageUrl: img("koopsta-knicca-ddp-vinyl.jpg"),
+      imageUrl: "koopsta-knicca-ddp-vinyl.jpg",
       url: "https://www.discogs.com/sell/item/3964651738",
       description: "",
       descriptionRu: "",

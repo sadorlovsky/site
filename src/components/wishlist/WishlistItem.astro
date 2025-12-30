@@ -1,11 +1,15 @@
 ---
-import type { WishlistItemWithReservation } from "@lib/wishlist";
+import {
+  getCdnImageUrl,
+  type WishlistItemWithReservation,
+} from "@lib/wishlist";
 
 interface Props {
   item: WishlistItemWithReservation;
 }
 
 const { item } = Astro.props;
+const imageUrl = getCdnImageUrl(item.imageUrl);
 ---
 
 <article
@@ -20,7 +24,7 @@ const { item } = Astro.props;
     <div class="skeleton"></div>
     <img
       class="wishlist-img"
-      src={item.imageUrl}
+      src={imageUrl}
       alt={item.title}
       width="400"
       height="300"
