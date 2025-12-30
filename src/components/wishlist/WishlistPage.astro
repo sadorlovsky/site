@@ -41,11 +41,39 @@ const { items, categories, currentCategory } = Astro.props;
           Date.now().toString(36) + Math.random().toString(36).slice(2);
         localStorage.setItem("wishlist-visitor-id", id);
       }
+
+      // Apply translations immediately to prevent FOUC
+      function applyTranslations() {
+        document.querySelectorAll("[data-en][data-ru]").forEach((el) => {
+          const text = el.getAttribute("data-" + lang);
+          if (text) el.textContent = text;
+        });
+        document
+          .querySelectorAll("[data-title-en][data-title-ru]")
+          .forEach((el) => {
+            const title = el.getAttribute("data-title-" + lang);
+            if (title) el.setAttribute("title", title);
+          });
+        document
+          .querySelectorAll("[data-aria-label-en][data-aria-label-ru]")
+          .forEach((el) => {
+            const label = el.getAttribute("data-aria-label-" + lang);
+            if (label) el.setAttribute("aria-label", label);
+          });
+      }
+
+      // Apply when DOM is ready
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+          applyTranslations();
+          document.documentElement.classList.add("lang-ready");
+        });
+      } else {
+        applyTranslations();
+        document.documentElement.classList.add("lang-ready");
+      }
     })();
   </script>
-  <!-- NOTE: The inline script above duplicates detectBrowserLang logic from @lib/i18n
-       because it must run synchronously before page render to prevent flash of wrong language.
-       Inline scripts cannot use ES module imports. -->
 
   <main>
     <div class="wishlist-container">

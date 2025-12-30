@@ -23,6 +23,31 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
     if (lang === "ru") {
       document.documentElement.classList.add("lang-ru");
     }
+
+    // Apply translations immediately to prevent FOUC
+    function applyTranslations() {
+      document.querySelectorAll("[data-en][data-ru]").forEach((el) => {
+        const text = el.getAttribute("data-" + lang);
+        if (text) el.textContent = text;
+      });
+      document
+        .querySelectorAll("[data-title-en][data-title-ru]")
+        .forEach((el) => {
+          const title = el.getAttribute("data-title-" + lang);
+          if (title) el.setAttribute("title", title);
+        });
+    }
+
+    // Apply when DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        applyTranslations();
+        document.documentElement.classList.add("lang-ready");
+      });
+    } else {
+      applyTranslations();
+      document.documentElement.classList.add("lang-ready");
+    }
   })();
 </script>
 
@@ -36,6 +61,15 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 </PageLayout>
 
 <style>
+  /* Hide content until language is applied to prevent FOUC */
+  main {
+    opacity: 0;
+  }
+
+  html.lang-ready main {
+    opacity: 1;
+  }
+
   main {
     max-width: 800px;
     margin: 0 auto;

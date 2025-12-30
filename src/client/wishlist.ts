@@ -22,9 +22,6 @@ export function initializeWishlist() {
   // Update prices based on language
   updatePricesForLanguage(currentLang);
 
-  // Show content after language is applied
-  document.documentElement.classList.add("lang-ready");
-
   initializeReserveButtons();
   initializeLangChangeListener();
 }
