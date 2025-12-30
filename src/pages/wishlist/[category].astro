@@ -4,6 +4,8 @@ import { getWishlistItems, categories, isValidCategory } from "@lib/wishlist";
 
 export const prerender = false;
 
+Astro.response.headers.set("CDN-Cache-Control", "no-store");
+
 const { category } = Astro.params;
 
 // Redirect /wishlist/all to /wishlist
