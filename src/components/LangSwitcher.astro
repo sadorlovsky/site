@@ -1,0 +1,183 @@
+---
+interface Props {
+  storageKey: string;
+  variant?: "default" | "accent";
+}
+
+const { storageKey, variant = "default" } = Astro.props;
+---
+
+<div
+  class:list={[
+    "lang-switcher",
+    { "lang-switcher--accent": variant === "accent" },
+  ]}
+  role="group"
+  aria-label="Language selection"
+  data-aria-label-en="Language selection"
+  data-aria-label-ru="Выбор языка"
+  data-storage-key={storageKey}
+>
+  <svg
+    class="lang-switcher-icon"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M2 12h20"></path>
+    <path
+      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+    ></path>
+  </svg>
+  <button class="lang-switcher-btn" data-lang="en" aria-pressed="true"
+    >ENG</button
+  >
+  <button class="lang-switcher-btn" data-lang="ru" aria-pressed="false"
+    >РУС</button
+  >
+</div>
+
+<style>
+  .lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.4rem;
+    background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
+    border-radius: 10px;
+  }
+
+  .lang-switcher-icon {
+    color: light-dark(#888, #777);
+    flex-shrink: 0;
+  }
+
+  .lang-switcher-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: light-dark(#555, #aaa);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .lang-switcher-btn:hover {
+    color: light-dark(#111, #fff);
+  }
+
+  /* Default: EN is active */
+  .lang-switcher-btn[data-lang="en"] {
+    color: light-dark(#111, #fff);
+    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
+  }
+
+  /* When lang-ru class is on html, RU is active */
+  html.lang-ru .lang-switcher-btn[data-lang="en"] {
+    color: light-dark(#555, #aaa);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  html.lang-ru .lang-switcher-btn[data-lang="ru"] {
+    color: light-dark(#111, #fff);
+    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
+  }
+
+  .lang-switcher-btn:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+  }
+
+  /* Accent variant - uses accent color for focus */
+  .lang-switcher--accent .lang-switcher-btn:focus-visible {
+    outline-color: var(--accent-start, rgb(237, 98, 146));
+  }
+
+  /* Accessibility - Increased contrast */
+  @media (prefers-contrast: more) {
+    .lang-switcher {
+      border: 1px solid light-dark(#ccc, #555);
+    }
+
+    .lang-switcher-btn {
+      color: light-dark(#555, #bbb);
+    }
+  }
+
+  /* Accessibility - Reduced transparency */
+  @media (prefers-reduced-transparency: reduce) {
+    .lang-switcher {
+      background: light-dark(#f0f0f0, #333333);
+    }
+
+    .lang-switcher-btn[data-lang="en"] {
+      background: light-dark(#ffffff, #444444);
+      box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+    }
+
+    html.lang-ru .lang-switcher-btn[data-lang="ru"] {
+      background: light-dark(#ffffff, #444444);
+      box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+    }
+  }
+</style>
+
+<script>
+  import { setLang, applyTranslations, type Lang } from "@lib/i18n";
+
+  function setupLangSwitchers() {
+    document
+      .querySelectorAll<HTMLElement>(".lang-switcher")
+      .forEach((switcher) => {
+        const storageKey = switcher.dataset.storageKey;
+        if (!storageKey) return;
+
+        const buttons =
+          switcher.querySelectorAll<HTMLButtonElement>(".lang-switcher-btn");
+
+        // Set initial aria-pressed state
+        const currentLang = localStorage.getItem(storageKey) || "en";
+        buttons.forEach((btn) => {
+          btn.setAttribute(
+            "aria-pressed",
+            btn.dataset.lang === currentLang ? "true" : "false",
+          );
+        });
+
+        // Add click handlers
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const lang = btn.dataset.lang as Lang | null;
+            if (!lang) return;
+
+            setLang(storageKey, lang);
+
+            buttons.forEach((b) => {
+              b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+            });
+
+            applyTranslations(lang);
+
+            // Dispatch custom event for page-specific handlers
+            window.dispatchEvent(
+              new CustomEvent("lang-change", { detail: { lang, storageKey } }),
+            );
+          });
+        });
+      });
+  }
+
+  setupLangSwitchers();
+</script>

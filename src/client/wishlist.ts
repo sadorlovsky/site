@@ -1,7 +1,6 @@
 import { actions } from "astro:actions";
-import { setLang, applyTranslations, type Lang } from "@lib/i18n";
+import type { Lang } from "@lib/i18n";
 
-const LANG_STORAGE_KEY = "wishlist-lang";
 const VISITOR_ID_KEY = "wishlist-visitor-id";
 let currentLang: Lang = "en";
 
@@ -18,14 +17,6 @@ export function initializeWishlist() {
   if (currentLang === "ru") {
     updateLanguage("ru");
     updateAriaLabels("ru");
-
-    // Update aria-pressed for language buttons
-    document.querySelectorAll<HTMLButtonElement>(".lang-btn").forEach((btn) => {
-      btn.setAttribute(
-        "aria-pressed",
-        btn.dataset.lang === "ru" ? "true" : "false",
-      );
-    });
   }
 
   // Update prices based on language
@@ -35,7 +26,7 @@ export function initializeWishlist() {
   document.documentElement.classList.add("lang-ready");
 
   initializeReserveButtons();
-  initializeLanguageSwitcher();
+  initializeLangChangeListener();
 }
 
 function initializeReserveButtons() {
@@ -193,34 +184,21 @@ function initializeReserveButtons() {
   });
 }
 
-function initializeLanguageSwitcher() {
-  const langButtons = document.querySelectorAll<HTMLButtonElement>(".lang-btn");
+function initializeLangChangeListener() {
+  // Listen for lang-change event from LangSwitcher component
+  window.addEventListener("lang-change", ((
+    event: CustomEvent<{ lang: Lang; storageKey: string }>,
+  ) => {
+    const { lang } = event.detail;
+    if (lang === currentLang) return;
 
-  langButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const lang = btn.dataset.lang as Lang;
-      if (!lang || lang === currentLang) return;
+    currentLang = lang;
 
-      currentLang = lang;
-      setLang(LANG_STORAGE_KEY, lang);
-
-      // Update aria-pressed on language buttons
-      langButtons.forEach((b) => {
-        b.setAttribute(
-          "aria-pressed",
-          b.dataset.lang === lang ? "true" : "false",
-        );
-      });
-
-      // Apply shared translations (data-en, data-ru, data-title-*, data-aria-label-*)
-      applyTranslations(lang);
-
-      // Update wishlist-specific elements
-      updateLanguage(lang);
-      updateAriaLabels(lang);
-      updatePricesForLanguage(lang);
-    });
-  });
+    // Update wishlist-specific elements
+    updateLanguage(lang);
+    updateAriaLabels(lang);
+    updatePricesForLanguage(lang);
+  }) as EventListener);
 }
 
 function formatRubPrice(price: string): string {

@@ -1,5 +1,6 @@
 ---
 import type { Category } from "@lib/wishlist";
+import LangSwitcher from "@components/LangSwitcher.astro";
 
 interface Props {
   categories: Category[];
@@ -32,32 +33,5 @@ const { categories, currentCategory } = Astro.props;
       ))
     }
   </nav>
-  <div
-    class="filter-lang"
-    role="group"
-    aria-label="Language selection"
-    data-aria-label-en="Language selection"
-    data-aria-label-ru="Выбор языка"
-  >
-    <svg
-      class="lang-icon"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="10"></circle>
-      <path d="M2 12h20"></path>
-      <path
-        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
-      ></path>
-    </svg>
-    <button class="lang-btn" data-lang="en" aria-pressed="true">ENG</button>
-    <button class="lang-btn" data-lang="ru" aria-pressed="false">РУС</button>
-  </div>
+  <LangSwitcher storageKey="wishlist-lang" variant="accent" />
 </div>
