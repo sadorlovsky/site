@@ -16,6 +16,13 @@ if (!isValidCategory(category)) {
   return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
+// export function getStaticPaths() {
+//   return validCategoryIds.map((category) => ({
+//     params: { category },
+//   }));
+// }
+
+// const { category } = Astro.params;
 const items = await getWishlistItems(category);
 ---
 
