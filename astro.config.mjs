@@ -1,4 +1,4 @@
-import { defineConfig, envField, fontProviders } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 import icon from "astro-icon";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -19,12 +19,12 @@ const cdnDomain = isProd ? CDN_URL : CDN_DEV_URL;
 export default defineConfig({
   output: "static",
   adapter: vercel({
-    // isr: {
-    //   // Bypass token for on-demand revalidation
-    //   bypassToken: VERCEL_ISR_BYPASS_TOKEN,
-    //   // Exclude API routes and dynamic pages from ISR
-    //   exclude: [/^\/api\/.*/, /^\/wishlist(\/.*)?$/],
-    // },
+    isr: {
+      // Bypass token for on-demand revalidation
+      bypassToken: VERCEL_ISR_BYPASS_TOKEN,
+      // Exclude API routes and dynamic pages from ISR
+      exclude: [/^\/api\/.*/],
+    },
   }),
   image: {
     domains: [cdnDomain],
