@@ -8,7 +8,7 @@ function getVisitorId(): string {
   return localStorage.getItem(VISITOR_ID_KEY) || "";
 }
 
-export function initializeWishlist() {
+export async function initializeWishlist() {
   // Check if language was set by inline script
   const isRussian = document.documentElement.classList.contains("lang-ru");
   currentLang = isRussian ? "ru" : "en";
@@ -22,8 +22,34 @@ export function initializeWishlist() {
   // Update prices based on language
   updatePricesForLanguage(currentLang);
 
+  // Fetch fresh reservations from API and update UI
+  await fetchAndApplyReservations();
+
   initializeReserveButtons();
   initializeLangChangeListener();
+}
+
+async function fetchAndApplyReservations() {
+  try {
+    const response = await fetch("/api/wishlist/reservations");
+    if (!response.ok) return;
+
+    const reservations: Record<number, string> = await response.json();
+
+    // Update each item's reservation status
+    document
+      .querySelectorAll<HTMLButtonElement>(".reserve-btn")
+      .forEach((button) => {
+        const itemId = button.dataset.itemId;
+        if (!itemId) return;
+
+        const reservedBy = reservations[parseInt(itemId)] || "";
+        // Update the data attribute with fresh data
+        button.dataset.reservedBy = reservedBy;
+      });
+  } catch {
+    // Silently fail - will use SSR data as fallback
+  }
 }
 
 function initializeReserveButtons() {
