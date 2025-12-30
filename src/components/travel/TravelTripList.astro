@@ -6,6 +6,7 @@ import {
   getSortedYears,
   formatTripDate,
 } from "@lib/travel";
+import { getCityName } from "@lib/travel/cities-i18n";
 import styles from "./TravelTripList.module.css";
 
 const getCountryFlag = (code: string) => {
@@ -35,7 +36,13 @@ const years = getSortedYears(tripsByYear);
         <div class={styles.yearTrips}>
           {tripsByYear[year].map((trip) => (
             <div class={styles.trip}>
-              <div class={styles.date}>{formatTripDate(trip)}</div>
+              <div
+                class={styles.date}
+                data-en={formatTripDate(trip, "en")}
+                data-ru={formatTripDate(trip, "ru")}
+              >
+                {formatTripDate(trip)}
+              </div>
               <div class={styles.destination}>
                 {trip.destinations.map((destination, destIndex) => {
                   const flagInfo = getCountryFlag(destination.country[0]);
@@ -73,7 +80,10 @@ const years = getSortedYears(tripsByYear);
                               ].join(" ")}
                             />
                           ))}
-                        {`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
+                        <span
+                          data-en={`${getCityName(city, "en")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
+                          data-ru={`${getCityName(city, "ru")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
+                        >{`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}</span>
                       </div>
                     </>
                   ));

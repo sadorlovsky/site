@@ -9,10 +9,37 @@ import { Icon } from "astro-icon/components";
       name="instagram"
       width={24}
       height={24}
-      title="Check out my travel photos"
+      data-title-en="My travel photos"
+      data-title-ru="Фото из путешествий"
     />
-    <span class="only-wide">Check out my travel photos</span>
+    <span
+      class="only-wide"
+      data-en="My travel photos"
+      data-ru="Фото из путешествий">My travel photos</span
+    >
   </a>
+  <div class="lang-switcher" role="group" aria-label="Language selection">
+    <svg
+      class="lang-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10"></circle>
+      <path d="M2 12h20"></path>
+      <path
+        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+      ></path>
+    </svg>
+    <button class="lang-btn" data-lang="en" aria-pressed="true">ENG</button>
+    <button class="lang-btn" data-lang="ru" aria-pressed="false">РУС</button>
+  </div>
 </div>
 
 <style>
@@ -44,9 +71,99 @@ import { Icon } from "astro-icon/components";
     width: 24px;
   }
 
+  .lang-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.4rem;
+    background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
+    border-radius: 10px;
+  }
+
+  .lang-icon {
+    color: light-dark(#888, #777);
+    flex-shrink: 0;
+  }
+
+  .lang-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: light-dark(#555, #aaa);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .lang-btn:hover {
+    color: light-dark(#111, #fff);
+  }
+
+  .lang-btn[data-lang="en"] {
+    color: light-dark(#111, #fff);
+    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
+  }
+
+  html.lang-ru .lang-btn[data-lang="en"] {
+    color: light-dark(#555, #aaa);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  html.lang-ru .lang-btn[data-lang="ru"] {
+    color: light-dark(#111, #fff);
+    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
+  }
+
+  .lang-btn:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+  }
+
   @media (max-width: 480px) {
     .only-wide {
       display: none;
     }
   }
 </style>
+
+<script>
+  import { initLang, setLang, applyTranslations, type Lang } from "@lib/i18n";
+
+  const LANG_KEY = "travel-lang";
+
+  function setupLangSwitcher() {
+    const buttons = document.querySelectorAll(".lang-switcher .lang-btn");
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const lang = btn.getAttribute("data-lang") as Lang | null;
+        if (!lang) return;
+
+        setLang(LANG_KEY, lang);
+
+        buttons.forEach((b) => {
+          b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+        });
+
+        applyTranslations(lang);
+      });
+    });
+
+    const currentLang = localStorage.getItem(LANG_KEY) || "en";
+    buttons.forEach((b) => {
+      b.setAttribute(
+        "aria-pressed",
+        b.getAttribute("data-lang") === currentLang ? "true" : "false",
+      );
+    });
+  }
+
+  const lang = initLang(LANG_KEY);
+  applyTranslations(lang);
+  setupLangSwitcher();
+</script>

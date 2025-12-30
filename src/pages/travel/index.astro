@@ -6,10 +6,30 @@ import TravelStats from "@components/travel/TravelStats.astro";
 import TravelTripList from "@components/travel/TravelTripList.astro";
 ---
 
+<script is:inline>
+  (() => {
+    const LANG_KEY = "travel-lang";
+    let lang = localStorage.getItem(LANG_KEY);
+
+    if (!lang) {
+      const browserLangs = navigator.languages || [navigator.language];
+      const isRussian = browserLangs.some((l) =>
+        l.toLowerCase().startsWith("ru"),
+      );
+      lang = isRussian ? "ru" : "en";
+      localStorage.setItem(LANG_KEY, lang);
+    }
+
+    if (lang === "ru") {
+      document.documentElement.classList.add("lang-ru");
+    }
+  })();
+</script>
+
 <PageLayout title="Zach's travels">
   <main>
     <TravelHeader />
-    <TravelMap />
+    <!-- <TravelMap /> -->
     <TravelStats />
     <TravelTripList />
   </main>

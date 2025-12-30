@@ -1,4 +1,4 @@
-import { db, WishlistItem, ExchangeRate } from "astro:db";
+import { db, WishlistItem, ExchangeRate, Reservation } from "astro:db";
 import { loadEnv } from "vite";
 
 const { CDN_DEV_URL } = loadEnv(
@@ -969,6 +969,34 @@ export default async function seed() {
       category: "vinyl",
       priority: "low",
       received: false,
+    },
+  ]);
+
+  // Seed reservations for testing
+  await db.insert(Reservation).values([
+    {
+      id: 1,
+      itemId: 12, // Hollow Knight Blanket
+      reservedBy: "test-visitor",
+      reservedAt: new Date(),
+    },
+    {
+      id: 2,
+      itemId: 53, // Moomin Blueberry-raspberry liquorice stick
+      reservedBy: "test-visitor",
+      reservedAt: new Date(),
+    },
+    {
+      id: 3,
+      itemId: 56, // Dumle Original
+      reservedBy: "test-visitor",
+      reservedAt: new Date(),
+    },
+    {
+      id: 4,
+      itemId: 58, // Dumle Mix 295g
+      reservedBy: "test-visitor",
+      reservedAt: new Date(),
     },
   ]);
 }

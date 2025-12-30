@@ -1,17 +1,12 @@
 import { actions } from "astro:actions";
+import { setLang, applyTranslations, type Lang } from "@lib/i18n";
 
 const LANG_STORAGE_KEY = "wishlist-lang";
 const VISITOR_ID_KEY = "wishlist-visitor-id";
-let currentLang: "en" | "ru" = "en";
+let currentLang: Lang = "en";
 
 function getVisitorId(): string {
   return localStorage.getItem(VISITOR_ID_KEY) || "";
-}
-
-function saveLanguage(lang: "en" | "ru") {
-  try {
-    localStorage.setItem(LANG_STORAGE_KEY, lang);
-  } catch {}
 }
 
 export function initializeWishlist() {
@@ -203,18 +198,11 @@ function initializeLanguageSwitcher() {
 
   langButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const lang = btn.dataset.lang as "en" | "ru";
+      const lang = btn.dataset.lang as Lang;
       if (!lang || lang === currentLang) return;
 
       currentLang = lang;
-      saveLanguage(lang);
-
-      // Update lang-ru class on html (CSS handles button styling)
-      if (lang === "ru") {
-        document.documentElement.classList.add("lang-ru");
-      } else {
-        document.documentElement.classList.remove("lang-ru");
-      }
+      setLang(LANG_STORAGE_KEY, lang);
 
       // Update aria-pressed on language buttons
       langButtons.forEach((b) => {
@@ -224,13 +212,12 @@ function initializeLanguageSwitcher() {
         );
       });
 
-      // Update all translatable elements
+      // Apply shared translations (data-en, data-ru, data-title-*, data-aria-label-*)
+      applyTranslations(lang);
+
+      // Update wishlist-specific elements
       updateLanguage(lang);
-
-      // Update aria-labels
       updateAriaLabels(lang);
-
-      // Update prices for new language
       updatePricesForLanguage(lang);
     });
   });

@@ -43,6 +43,9 @@ const { items, categories, currentCategory } = Astro.props;
       }
     })();
   </script>
+  <!-- NOTE: The inline script above duplicates detectBrowserLang logic from @lib/i18n
+       because it must run synchronously before page render to prevent flash of wrong language.
+       Inline scripts cannot use ES module imports. -->
 
   <main>
     <div class="wishlist-container">

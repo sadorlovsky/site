@@ -16,7 +16,7 @@ export interface Trip {
 }
 
 // Month names for formatting
-const MONTH_NAMES = [
+const MONTH_NAMES_EN = [
   "Jan",
   "Feb",
   "Mar",
@@ -31,12 +31,28 @@ const MONTH_NAMES = [
   "Dec",
 ];
 
-export function formatTripDate(trip: Trip): string {
-  const startMonth = MONTH_NAMES[trip.month - 1];
+const MONTH_NAMES_RU = [
+  "Янв",
+  "Фев",
+  "Мар",
+  "Апр",
+  "Май",
+  "Июн",
+  "Июл",
+  "Авг",
+  "Сен",
+  "Окт",
+  "Ноя",
+  "Дек",
+];
+
+export function formatTripDate(trip: Trip, lang: "en" | "ru" = "en"): string {
+  const monthNames = lang === "ru" ? MONTH_NAMES_RU : MONTH_NAMES_EN;
+  const startMonth = monthNames[trip.month - 1];
 
   // Trip spans multiple months (same year or across years)
   if (trip.endMonth && trip.endMonth !== trip.month) {
-    const endMonth = MONTH_NAMES[trip.endMonth - 1];
+    const endMonth = monthNames[trip.endMonth - 1];
     return `${startMonth} - ${endMonth}`;
   }
 

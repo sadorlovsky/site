@@ -17,14 +17,18 @@ const continentsPercent = Math.floor(
 
 <div class="stats">
   <div class="card">
-    <h3>Trips</h3>
+    <h3 data-en="Trips" data-ru="Поездки">Trips</h3>
     <div class="value">{tripsCount}</div>
   </div>
   <div class="card">
-    <h3>Countries</h3>
+    <h3 data-en="Countries" data-ru="Страны">Countries</h3>
     <div class="with-info">
       <span class="value">{countries.size} / {countryListSize}</span>
-      <a href="/travel/countries" title="Why this number?">
+      <a
+        href="/travel/countries"
+        data-title-en="Why this number?"
+        data-title-ru="Почему такое число?"
+      >
         <Icon name="info" class="info-icon" />
       </a>
     </div>
@@ -36,11 +40,11 @@ const continentsPercent = Math.floor(
     </div>
   </div>
   <div class="card">
-    <h3>Cities</h3>
+    <h3 data-en="Cities" data-ru="Города">Cities</h3>
     <div class="value">{cities.size}</div>
   </div>
   <div class="card">
-    <h3>Continents</h3>
+    <h3 data-en="Continents" data-ru="Континенты">Continents</h3>
     <div class="value">{continentsVisited} / {continentsTotal}</div>
     <div class="progress-row">
       <div class="progress-bar">
