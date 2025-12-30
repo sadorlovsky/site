@@ -1,13 +1,16 @@
 import { db, WishlistItem, ExchangeRate, Reservation } from "astro:db";
 import { loadEnv } from "vite";
 
-const { CDN_DEV_URL } = loadEnv(
+const { CDN_DEV_URL, CDN_URL } = loadEnv(
   process.env.NODE_ENV as string,
   process.cwd(),
   "",
 );
 
-const img = (name: string) => `${CDN_DEV_URL}/${name}`;
+const isProd = process.env.NODE_ENV === "production";
+const cdnUrl = isProd ? CDN_URL : CDN_DEV_URL;
+
+const img = (name: string) => `${cdnUrl}/${name}`;
 
 // https://astro.build/db/seed
 export default async function seed() {
