@@ -32,7 +32,11 @@ export async function initializeWishlist() {
 async function fetchAndApplyReservations() {
   try {
     const response = await fetch("/api/wishlist/reservations");
-    if (!response.ok) return;
+    if (!response.ok) {
+      // Still show buttons on error, using SSR data
+      showButtons();
+      return;
+    }
 
     const reservations: Record<number, string> = await response.json();
 
@@ -47,9 +51,50 @@ async function fetchAndApplyReservations() {
         // Update the data attribute with fresh data
         button.dataset.reservedBy = reservedBy;
       });
+
+    // Show buttons after data is loaded
+    showButtons();
   } catch {
-    // Silently fail - will use SSR data as fallback
+    // Still show buttons on error, using SSR data
+    showButtons();
   }
+}
+
+function showButtons() {
+  const visitorId = getVisitorId();
+
+  document
+    .querySelectorAll<HTMLButtonElement>(".reserve-btn")
+    .forEach((button) => {
+      const reservedBy = button.dataset.reservedBy || "";
+      const isReserved = reservedBy.length > 0;
+      const isOwnReservation = isReserved && reservedBy === visitorId;
+
+      // Set correct text based on language and state
+      if (isReserved && isOwnReservation) {
+        button.textContent =
+          (currentLang === "ru"
+            ? button.dataset.ruCancel
+            : button.dataset.enCancel) ?? null;
+      } else if (isReserved) {
+        button.textContent =
+          (currentLang === "ru"
+            ? button.dataset.ruReserved
+            : button.dataset.enReserved) ?? null;
+      } else {
+        button.textContent =
+          (currentLang === "ru"
+            ? button.dataset.ruReserve
+            : button.dataset.enReserve) ?? null;
+      }
+
+      // Hide skeleton and show button
+      const skeleton = button.previousElementSibling as HTMLElement;
+      if (skeleton?.classList.contains("reserve-btn-skeleton")) {
+        skeleton.classList.add("hidden");
+      }
+      button.hidden = false;
+    });
 }
 
 function initializeReserveButtons() {
