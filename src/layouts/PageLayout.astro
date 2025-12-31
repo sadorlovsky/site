@@ -15,6 +15,16 @@ const cdnDomain = import.meta.env.PROD ? "cdn.orlovsky.dev" : null;
     <meta name="description" content="Zach" />
     <link rel="icon" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#000000" />
+    <meta
+      name="theme-color"
+      content="#f8f8ff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#191919"
+      media="(prefers-color-scheme: dark)"
+    />
     {cdnDomain && <link rel="preconnect" href={`https://${cdnDomain}`} />}
     <Font cssVariable="--font-inter" preload />
   </head>

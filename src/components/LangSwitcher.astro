@@ -132,6 +132,23 @@ const { storageKey, variant = "default" } = Astro.props;
       box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
     }
   }
+
+  /* Mobile - compact version */
+  @media (max-width: 600px) {
+    .lang-switcher {
+      gap: 0.25rem;
+      padding: 0.25rem;
+    }
+
+    .lang-switcher-icon {
+      display: none;
+    }
+
+    .lang-switcher-btn {
+      padding: 0.35rem 0.5rem;
+      font-size: 0.7rem;
+    }
+  }
 </style>
 
 <script is:inline>

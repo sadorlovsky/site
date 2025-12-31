@@ -1,0 +1,479 @@
+---
+import type { Category } from "@lib/wishlist";
+
+interface Props {
+  categories: Category[];
+  currentCategory: string;
+}
+
+const { categories, currentCategory } = Astro.props;
+---
+
+{
+  (
+    <div
+      class="mobile-filter-bar"
+      role="navigation"
+      aria-label="Quick category filter"
+      data-aria-label-en="Quick category filter"
+      data-aria-label-ru="Быстрый фильтр по категории"
+      hidden
+    >
+      <div class="mobile-filter-bar-inner">
+        <div class="mobile-filter-categories-wrapper">
+          <div class="mobile-filter-categories">
+            {categories.map((cat) => (
+              <a
+                href={cat.href}
+                class={`mobile-filter-btn ${cat.id === currentCategory ? "active" : ""}`}
+                data-category={cat.id}
+                data-en={cat.label}
+                data-ru={cat.labelRu}
+                aria-current={cat.id === currentCategory ? "page" : undefined}
+              >
+                {cat.label}
+              </a>
+            ))}
+          </div>
+        </div>
+        <div
+          class="mobile-lang-switcher"
+          role="group"
+          aria-label="Language"
+          data-storage-key="wishlist-lang"
+        >
+          <button
+            class="mobile-lang-btn"
+            data-lang="en"
+            aria-pressed="true"
+            aria-label="English"
+          >
+            ENG
+          </button>
+          <button
+            class="mobile-lang-btn"
+            data-lang="ru"
+            aria-pressed="false"
+            aria-label="Русский"
+          >
+            РУС
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .mobile-filter-bar {
+    display: none;
+  }
+
+  /* Only show on narrow screens where grid is single column */
+  @media (max-width: 600px) {
+    .mobile-filter-bar {
+      display: block;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 0.75rem 1rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      background: light-dark(rgba(255, 255, 255, 0.92), rgba(30, 30, 32, 0.92));
+      border-top: 1px solid
+        light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    @supports (backdrop-filter: blur(20px)) {
+      .mobile-filter-bar {
+        background: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 32, 0.8));
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+    }
+
+    .mobile-filter-bar[hidden] {
+      display: block;
+      transform: translateY(100%);
+    }
+
+    .mobile-filter-bar:not([hidden]) {
+      transform: translateY(0);
+    }
+  }
+
+  .mobile-filter-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 100%;
+  }
+
+  .mobile-filter-categories-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Edge fade using mask - fades content at edges */
+  .mobile-filter-categories {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 24px,
+      black calc(100% - 24px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 24px,
+      black calc(100% - 24px),
+      transparent
+    );
+  }
+
+  /* Show full content when scrolled to start */
+  .mobile-filter-categories-wrapper.at-start .mobile-filter-categories {
+    mask-image: linear-gradient(
+      to right,
+      black,
+      black calc(100% - 24px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black,
+      black calc(100% - 24px),
+      transparent
+    );
+  }
+
+  /* Show full content when scrolled to end */
+  .mobile-filter-categories-wrapper.at-end .mobile-filter-categories {
+    mask-image: linear-gradient(to right, transparent, black 24px, black);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 24px,
+      black
+    );
+  }
+
+  /* Show full content when scrolled to both edges (no scroll needed) */
+  .mobile-filter-categories-wrapper.at-start.at-end .mobile-filter-categories {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .mobile-filter-categories {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 0.25rem 0;
+  }
+
+  .mobile-filter-categories::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-filter-btn,
+  .mobile-filter-btn:visited {
+    flex-shrink: 0;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: light-dark(#555, #aaa);
+    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-filter-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-filter-btn.active {
+    color: white;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  }
+
+  .mobile-lang-switcher {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    padding: 0.25rem;
+    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+    border-radius: 8px;
+  }
+
+  .mobile-lang-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: light-dark(#666, #888);
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mobile-lang-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-lang-btn[aria-pressed="true"] {
+    color: light-dark(#111, #fff);
+    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+  }
+
+  /* Sync with html.lang-ru */
+  html.lang-ru .mobile-lang-btn[data-lang="en"] {
+    color: light-dark(#666, #888);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  html.lang-ru .mobile-lang-btn[data-lang="en"][aria-pressed="true"] {
+    color: light-dark(#666, #888);
+    background: transparent;
+    box-shadow: none;
+  }
+
+  html.lang-ru .mobile-lang-btn[data-lang="ru"] {
+    color: light-dark(#111, #fff);
+    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
+    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+  }
+
+  /* Accessibility - Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-filter-bar {
+      transition: none;
+    }
+  }
+
+  /* Accessibility - Reduced transparency */
+  @media (prefers-reduced-transparency: reduce) {
+    .mobile-filter-bar {
+      background: light-dark(#ffffff, #1e1e20);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
+  /* Accessibility - Increased contrast */
+  @media (prefers-contrast: more) {
+    .mobile-filter-bar {
+      border-top: 2px solid light-dark(#999, #666);
+    }
+
+    .mobile-filter-btn,
+    .mobile-filter-btn:visited {
+      color: light-dark(#333, #ddd);
+      background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
+      border: 2px solid light-dark(#999, #666);
+    }
+
+    .mobile-lang-switcher {
+      border: 1px solid light-dark(#999, #666);
+    }
+
+    .mobile-lang-btn {
+      color: light-dark(#333, #ddd);
+    }
+  }
+</style>
+
+<script>
+  function initMobileFilterBar() {
+    const bar = document.querySelector<HTMLElement>(".mobile-filter-bar");
+    const topFilters = document.querySelector<HTMLElement>(".filters");
+    const categoriesWrapper = bar?.querySelector<HTMLElement>(
+      ".mobile-filter-categories-wrapper",
+    );
+    const categoriesScroller = bar?.querySelector<HTMLElement>(
+      ".mobile-filter-categories",
+    );
+    const activeBtn = categoriesScroller?.querySelector<HTMLElement>(
+      ".mobile-filter-btn.active",
+    );
+
+    if (!bar || !topFilters) return;
+
+    // Check if we're on a narrow screen
+    const mediaQuery = window.matchMedia("(max-width: 600px)");
+
+    let isVisible = false;
+    let hasScrolledToActive = false;
+
+    // Update edge fade classes based on scroll position
+    function updateEdgeFades() {
+      if (!categoriesScroller || !categoriesWrapper) return;
+
+      const { scrollLeft, scrollWidth, clientWidth } = categoriesScroller;
+      const threshold = 5;
+
+      const atStart = scrollLeft <= threshold;
+      const atEnd = scrollLeft + clientWidth >= scrollWidth - threshold;
+
+      categoriesWrapper.classList.toggle("at-start", atStart);
+      categoriesWrapper.classList.toggle("at-end", atEnd);
+    }
+
+    // Scroll active category to center
+    function scrollToActiveCategory() {
+      if (!categoriesScroller || !activeBtn || hasScrolledToActive) return;
+
+      const scrollerRect = categoriesScroller.getBoundingClientRect();
+      const btnRect = activeBtn.getBoundingClientRect();
+
+      // Calculate scroll position to center the active button
+      const scrollLeft =
+        activeBtn.offsetLeft -
+        categoriesScroller.offsetWidth / 2 +
+        activeBtn.offsetWidth / 2;
+
+      categoriesScroller.scrollTo({
+        left: Math.max(0, scrollLeft),
+        behavior: "instant",
+      });
+
+      hasScrolledToActive = true;
+      updateEdgeFades();
+    }
+
+    function updateVisibility() {
+      if (!mediaQuery.matches) {
+        bar.hidden = true;
+        isVisible = false;
+        return;
+      }
+
+      const filtersRect = topFilters.getBoundingClientRect();
+      // Show bar when top filters are scrolled out of view
+      const shouldShow = filtersRect.bottom < 0;
+
+      if (shouldShow !== isVisible) {
+        isVisible = shouldShow;
+        bar.hidden = !shouldShow;
+
+        // Scroll to active category when bar becomes visible
+        if (shouldShow) {
+          requestAnimationFrame(() => {
+            scrollToActiveCategory();
+          });
+        }
+      }
+    }
+
+    // Throttled scroll handler
+    let ticking = false;
+    function onScroll() {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateVisibility();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    // Listen for horizontal scroll on categories
+    if (categoriesScroller) {
+      categoriesScroller.addEventListener("scroll", updateEdgeFades, {
+        passive: true,
+      });
+      // Initial edge fade state
+      updateEdgeFades();
+    }
+
+    // Setup language switcher
+    const langSwitcher = bar.querySelector(".mobile-lang-switcher");
+    if (langSwitcher) {
+      const storageKey =
+        langSwitcher.getAttribute("data-storage-key") || "wishlist-lang";
+      const buttons =
+        langSwitcher.querySelectorAll<HTMLButtonElement>(".mobile-lang-btn");
+
+      // Sync initial state
+      const currentLang = localStorage.getItem(storageKey) || "en";
+      buttons.forEach((btn) => {
+        btn.setAttribute(
+          "aria-pressed",
+          btn.dataset.lang === currentLang ? "true" : "false",
+        );
+      });
+
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const lang = btn.dataset.lang;
+          if (!lang) return;
+
+          localStorage.setItem(storageKey, lang);
+
+          if (lang === "ru") {
+            document.documentElement.classList.add("lang-ru");
+          } else {
+            document.documentElement.classList.remove("lang-ru");
+          }
+
+          buttons.forEach((b) => {
+            b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+          });
+
+          // Apply translations
+          document
+            .querySelectorAll<HTMLElement>("[data-en][data-ru]")
+            .forEach((el) => {
+              const text = el.getAttribute("data-" + lang);
+              if (text) el.textContent = text;
+            });
+
+          // Dispatch event for other components
+          window.dispatchEvent(
+            new CustomEvent("lang-change", {
+              detail: { lang, storageKey },
+            }),
+          );
+        });
+      });
+
+      // Listen for lang changes from other switchers
+      window.addEventListener("lang-change", ((
+        e: CustomEvent<{ lang: string; storageKey: string }>,
+      ) => {
+        if (e.detail.storageKey === storageKey) {
+          buttons.forEach((btn) => {
+            btn.setAttribute(
+              "aria-pressed",
+              btn.dataset.lang === e.detail.lang ? "true" : "false",
+            );
+          });
+        }
+      }) as EventListener);
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    mediaQuery.addEventListener("change", updateVisibility);
+
+    // Initial check
+    updateVisibility();
+  }
+
+  initMobileFilterBar();
+  document.addEventListener("astro:page-load", initMobileFilterBar);
+</script>
