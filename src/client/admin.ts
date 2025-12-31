@@ -80,8 +80,7 @@ function initializeImageUpload() {
   const uploadArea = document.getElementById("image-upload");
   const fileInput = document.getElementById("image-file") as HTMLInputElement;
   const preview = document.getElementById("image-preview");
-  const previewImg = document.getElementById("preview-img") as HTMLImageElement;
-  const filenameEl = document.getElementById("image-filename");
+  const removeBtn = document.querySelector(".btn-remove-image");
 
   if (!uploadArea || !fileInput) return;
 
@@ -112,6 +111,20 @@ function initializeImageUpload() {
     if (fileInput.files?.length) {
       handleFileUpload(fileInput.files[0]);
     }
+  });
+
+  // Remove image button
+  removeBtn?.addEventListener("click", () => {
+    const imageUrlInput = document.getElementById(
+      "imageUrl",
+    ) as HTMLInputElement;
+    const uploadP = uploadArea.querySelector("p");
+
+    uploadedFilename = null;
+    if (imageUrlInput) imageUrlInput.value = "";
+    if (preview) preview.hidden = true;
+    if (fileInput) fileInput.value = "";
+    if (uploadP) uploadP.textContent = "Drop image here or click to upload";
   });
 }
 
@@ -187,8 +200,9 @@ function openModal(item?: WishlistItem) {
     submitBtn.textContent = "Save Changes";
 
     // Fill form
-    (document.getElementById("item-id") as HTMLInputElement).value =
-      String(item.id);
+    (document.getElementById("item-id") as HTMLInputElement).value = String(
+      item.id,
+    );
     (document.getElementById("title") as HTMLInputElement).value = item.title;
     (document.getElementById("titleRu") as HTMLInputElement).value =
       item.titleRu || "";
@@ -351,7 +365,8 @@ async function handleToggleReceived(btn: HTMLButtonElement) {
 
     // Update UI
     btn.dataset.received = String(!currentReceived);
-    btn.textContent = currentReceived ? "Mark Received" : "Unmark";
+    btn.textContent = !currentReceived ? "✓" : "○";
+    btn.title = !currentReceived ? "Unmark as received" : "Mark as received";
 
     const article = btn.closest("article");
     if (article) {
