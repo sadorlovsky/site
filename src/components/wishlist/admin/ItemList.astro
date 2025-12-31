@@ -1,0 +1,139 @@
+---
+import { getCdnImageUrl, type Category } from "@lib/wishlist";
+
+interface WishlistItem {
+  id: number;
+  title: string;
+  titleRu: string | null;
+  price: string;
+  imageUrl: string;
+  description: string | null;
+  descriptionRu: string | null;
+  url: string | null;
+  category: string;
+  priority: string | null;
+  received: boolean;
+  createdAt: Date;
+  weight: number;
+}
+
+interface Reservation {
+  itemId: number;
+  reservedBy: string;
+  reservedAt: Date;
+}
+
+interface Props {
+  items: WishlistItem[];
+  reservations: Map<number, Reservation>;
+  categories: Category[];
+}
+
+const { items, reservations, categories } = Astro.props;
+
+function getCategoryLabel(categoryId: string): string {
+  const cat = categories.find((c) => c.id === categoryId);
+  return cat?.label || categoryId;
+}
+---
+
+<div class="items-list">
+  {items.length === 0 ? (
+    <p class="no-items">No items yet. Add your first item!</p>
+  ) : (
+    items.map((item) => {
+      const reservation = reservations.get(item.id);
+      const itemClasses = [
+        "item-card",
+        reservation ? "reserved" : "",
+        item.received ? "received" : "",
+      ].filter(Boolean).join(" ");
+
+      return (
+        <article class={itemClasses} data-item-id={item.id}>
+          <img
+            src={getCdnImageUrl(item.imageUrl)}
+            alt={item.title}
+            loading="lazy"
+          />
+          <div class="item-info">
+            <h3>{item.title}</h3>
+            <div class="item-meta">
+              <span class="price">{item.price}</span>
+              <span class="category">{getCategoryLabel(item.category.split(",")[0])}</span>
+              {item.priority && (
+                <span class={`priority priority-${item.priority}`}>{item.priority}</span>
+              )}
+              {item.received && <span class="received-badge">Received</span>}
+            </div>
+            {reservation && (
+              <div class="reserved-badge">
+                Reserved by: {reservation.reservedBy}
+              </div>
+            )}
+          </div>
+          <div class="item-actions">
+            <button
+              class="btn btn-secondary btn-small btn-edit"
+              data-item-id={item.id}
+              data-item={JSON.stringify(item)}
+            >
+              Edit
+            </button>
+            <button
+              class="btn btn-secondary btn-small btn-toggle-received"
+              data-item-id={item.id}
+              data-received={item.received}
+            >
+              {item.received ? "Unmark" : "Mark Received"}
+            </button>
+            <button
+              class="btn btn-danger btn-small btn-delete"
+              data-item-id={item.id}
+            >
+              Delete
+            </button>
+          </div>
+        </article>
+      );
+    })
+  )}
+</div>
+
+<style>
+  .no-items {
+    text-align: center;
+    color: light-dark(#6b7280, #9ca3af);
+    padding: 2rem;
+  }
+
+  .priority {
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .priority-high {
+    background: light-dark(#fee2e2, #7f1d1d);
+    color: light-dark(#dc2626, #fecaca);
+  }
+
+  .priority-medium {
+    background: light-dark(#fef3c7, #78350f);
+    color: light-dark(#d97706, #fde68a);
+  }
+
+  .priority-low {
+    background: light-dark(#dbeafe, #1e3a8a);
+    color: light-dark(#2563eb, #93c5fd);
+  }
+
+  .received-badge {
+    background: light-dark(#dcfce7, #14532d);
+    color: light-dark(#16a34a, #86efac);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+  }
+</style>
