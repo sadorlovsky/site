@@ -45,14 +45,21 @@ const itemCategories = categories.filter((c) => c.id !== "all");
 
         <div class="form-group">
           <label for="image">Image *</label>
-          <div class="image-upload" id="image-upload">
-            <input type="file" id="image-file" accept="image/*" />
-            <p>Drop image here or click to upload</p>
-          </div>
-          <input type="hidden" id="imageUrl" name="imageUrl" />
-          <div id="image-preview" class="image-preview" hidden>
-            <img id="preview-img" src="" alt="Preview" />
-            <p id="image-filename"></p>
+          <div class="image-upload-wrapper">
+            <div class="image-upload" id="image-upload">
+              <input type="file" id="image-file" accept="image/*" />
+              <p>Drop image here or click to upload</p>
+            </div>
+            <input type="hidden" id="imageUrl" name="imageUrl" />
+            <div id="image-preview" class="image-preview" hidden>
+              <img id="preview-img" src="" alt="Preview" />
+              <span id="image-filename"></span>
+              <button
+                type="button"
+                class="btn-remove-image"
+                title="Remove image">&times;</button
+              >
+            </div>
           </div>
         </div>
 
@@ -63,7 +70,8 @@ const itemCategories = categories.filter((c) => c.id !== "all");
           </div>
           <div class="form-group">
             <label for="descriptionRu">Description (RU)</label>
-            <textarea id="descriptionRu" name="descriptionRu" rows="2"></textarea>
+            <textarea id="descriptionRu" name="descriptionRu" rows="2"
+            ></textarea>
           </div>
         </div>
 
@@ -71,9 +79,11 @@ const itemCategories = categories.filter((c) => c.id !== "all");
           <div class="form-group">
             <label for="category">Category *</label>
             <select id="category" name="category" required>
-              {itemCategories.map((cat) => (
-                <option value={cat.id}>{cat.label}</option>
-              ))}
+              {
+                itemCategories.map((cat) => (
+                  <option value={cat.id}>{cat.label}</option>
+                ))
+              }
             </select>
           </div>
           <div class="form-group">
@@ -88,14 +98,23 @@ const itemCategories = categories.filter((c) => c.id !== "all");
         </div>
 
         <div class="form-group">
-          <label for="weight">Weight (for sorting, higher = more important)</label>
+          <label for="weight"
+            >Weight (for sorting, higher = more important)</label
+          >
           <input type="number" id="weight" name="weight" value="0" min="0" />
         </div>
       </form>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
-      <button type="submit" form="item-form" class="btn btn-primary" id="modal-submit">
+      <button type="button" class="btn btn-secondary modal-cancel"
+        >Cancel</button
+      >
+      <button
+        type="submit"
+        form="item-form"
+        class="btn btn-primary"
+        id="modal-submit"
+      >
         Save Item
       </button>
     </div>

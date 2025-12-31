@@ -13,6 +13,26 @@ export interface Session {
 }
 
 /**
+ * Check if dev bypass is enabled (skips passkey auth in development)
+ */
+export function isDevBypassEnabled(): boolean {
+  return !import.meta.env.PROD && import.meta.env.ADMIN_DEV_BYPASS === "true";
+}
+
+/**
+ * Create a fake session for dev bypass
+ */
+function createDevSession(): Session {
+  return {
+    id: "dev-session",
+    credentialId: "dev-credential",
+    expiresAt: new Date(Date.now() + SESSION_DURATION_MS),
+    createdAt: new Date(),
+    userAgent: "dev-bypass",
+  };
+}
+
+/**
  * Generate a cryptographically secure random ID
  */
 function generateSecureId(): string {
@@ -40,7 +60,9 @@ async function signValue(value: string, secret: string): Promise<string> {
     key,
     encoder.encode(value),
   );
-  const signatureBase64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+  const signatureBase64 = btoa(
+    String.fromCharCode(...new Uint8Array(signature)),
+  )
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=/g, "");
@@ -77,6 +99,11 @@ async function verifySignedValue(
 export async function verifySession(
   cookies: AstroCookies,
 ): Promise<Session | null> {
+  // Dev bypass - skip authentication in development
+  if (isDevBypassEnabled()) {
+    return createDevSession();
+  }
+
   const signedSessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!signedSessionId) return null;
 
