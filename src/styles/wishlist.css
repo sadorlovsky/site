@@ -23,34 +23,36 @@ html.lang-ready .wishlist-container {
   position: relative;
 }
 
-/* Ambient background blobs */
-.wishlist-container::before,
-.wishlist-container::after {
-  content: "";
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.5;
-  z-index: -1;
-  pointer-events: none;
-}
+/* Ambient background blobs - disabled on touch devices for performance */
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-container::before,
+  .wishlist-container::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+  }
 
-.wishlist-container::before {
-  width: 600px;
-  height: 600px;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  top: -200px;
-  right: -200px;
-  opacity: light-dark(0.15, 0.2);
-}
+  .wishlist-container::before {
+    width: 600px;
+    height: 600px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -200px;
+    right: -200px;
+    opacity: light-dark(0.15, 0.2);
+  }
 
-.wishlist-container::after {
-  width: 500px;
-  height: 500px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  bottom: 0;
-  left: -150px;
-  opacity: light-dark(0.1, 0.15);
+  .wishlist-container::after {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    bottom: 0;
+    left: -150px;
+    opacity: light-dark(0.1, 0.15);
+  }
 }
 
 /* Header */
@@ -132,8 +134,6 @@ html.lang-ready .wishlist-container {
   display: flex;
   flex-direction: column;
   background: light-dark(var(--glass-bg-light), var(--glass-bg-dark));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid
     light-dark(var(--glass-border-light), var(--glass-border-dark));
   border-radius: 20px;
@@ -143,14 +143,26 @@ html.lang-ready .wishlist-container {
     0 4px 24px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
     0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
       inset;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
 }
 
-.wishlist-item:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow:
-    0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
-    0 0 0 1px light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1))
-      inset;
+/* Apply backdrop-filter only on non-touch devices to prevent iOS Safari crashes */
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-item {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-item:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+      0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
+      0 0 0 1px light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1))
+        inset;
+  }
 }
 
 .wishlist-item.item-received {
@@ -174,12 +186,14 @@ html.lang-ready .wishlist-container {
   color: light-dark(#555, #aaa);
 }
 
-.wishlist-item.item-received:hover {
-  transform: none;
-  box-shadow:
-    0 4px 24px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
-    0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
-      inset;
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-item.item-received:hover {
+    transform: none;
+    box-shadow:
+      0 4px 24px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
+      0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
+        inset;
+  }
 }
 
 /* Item image */
@@ -234,12 +248,14 @@ html.lang-ready .wishlist-container {
     transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.wishlist-item:hover .item-image img {
-  transform: scale(1.08);
-}
+@media (hover: hover) and (pointer: fine) {
+  .wishlist-item:hover .item-image img {
+    transform: scale(1.08);
+  }
 
-.wishlist-item.item-received:hover .item-image img {
-  transform: none;
+  .wishlist-item.item-received:hover .item-image img {
+    transform: none;
+  }
 }
 
 /* Badges */
@@ -282,12 +298,19 @@ html.lang-ready .wishlist-container {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: light-dark(rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.15));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: light-dark(rgba(0, 0, 0, 0.8), rgba(40, 40, 45, 0.9));
   color: white;
   border-radius: 8px;
   z-index: 2;
+}
+
+/* Apply backdrop-filter on priority badge only on non-touch devices */
+@media (hover: hover) and (pointer: fine) {
+  .priority-badge {
+    background: light-dark(rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.15));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
 }
 
 .priority-high {
