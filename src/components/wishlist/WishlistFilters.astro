@@ -38,22 +38,24 @@ const { categories, currentCategory } = Astro.props;
 
 <script>
   function initFilterCategories() {
-    const categories =
-      document.querySelector<HTMLElement>(".filter-categories");
-    if (!categories) return;
+    const el = document.querySelector<HTMLElement>(".filter-categories");
+    if (!el) return;
+
+    // Store reference after null check for use in closures
+    const categoriesEl: HTMLElement = el;
 
     const activeBtn =
-      categories.querySelector<HTMLElement>(".filter-btn.active");
+      categoriesEl.querySelector<HTMLElement>(".filter-btn.active");
 
     function updateEdgeFades() {
-      const { scrollLeft, scrollWidth, clientWidth } = categories;
+      const { scrollLeft, scrollWidth, clientWidth } = categoriesEl;
       const threshold = 5;
 
       const atStart = scrollLeft <= threshold;
       const atEnd = scrollLeft + clientWidth >= scrollWidth - threshold;
 
-      categories.classList.toggle("at-start", atStart);
-      categories.classList.toggle("at-end", atEnd);
+      categoriesEl.classList.toggle("at-start", atStart);
+      categoriesEl.classList.toggle("at-end", atEnd);
     }
 
     // Scroll active category to center
@@ -62,10 +64,10 @@ const { categories, currentCategory } = Astro.props;
 
       const scrollLeft =
         activeBtn.offsetLeft -
-        categories.offsetWidth / 2 +
+        categoriesEl.offsetWidth / 2 +
         activeBtn.offsetWidth / 2;
 
-      categories.scrollTo({
+      categoriesEl.scrollTo({
         left: Math.max(0, scrollLeft),
         behavior: "instant",
       });
@@ -73,7 +75,7 @@ const { categories, currentCategory } = Astro.props;
       updateEdgeFades();
     }
 
-    categories.addEventListener("scroll", updateEdgeFades, { passive: true });
+    categoriesEl.addEventListener("scroll", updateEdgeFades, { passive: true });
 
     // Initial scroll to active and check edges
     scrollToActiveCategory();

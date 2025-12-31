@@ -300,19 +300,24 @@ const { categories, currentCategory } = Astro.props;
 
 <script>
   function initMobileFilterBar() {
-    const bar = document.querySelector<HTMLElement>(".mobile-filter-bar");
-    const topFilters = document.querySelector<HTMLElement>(".filters");
-    const categoriesWrapper = bar?.querySelector<HTMLElement>(
+    const barQuery = document.querySelector<HTMLElement>(".mobile-filter-bar");
+    const topFiltersQuery = document.querySelector<HTMLElement>(".filters");
+
+    if (!barQuery || !topFiltersQuery) return;
+
+    // Store references after null check for use in closures
+    const barEl: HTMLElement = barQuery;
+    const topFiltersEl: HTMLElement = topFiltersQuery;
+
+    const categoriesWrapper = barEl.querySelector<HTMLElement>(
       ".mobile-filter-categories-wrapper",
     );
-    const categoriesScroller = bar?.querySelector<HTMLElement>(
+    const categoriesScroller = barEl.querySelector<HTMLElement>(
       ".mobile-filter-categories",
     );
     const activeBtn = categoriesScroller?.querySelector<HTMLElement>(
       ".mobile-filter-btn.active",
     );
-
-    if (!bar || !topFilters) return;
 
     // Check if we're on a narrow screen
     const mediaQuery = window.matchMedia("(max-width: 600px)");
@@ -358,18 +363,18 @@ const { categories, currentCategory } = Astro.props;
 
     function updateVisibility() {
       if (!mediaQuery.matches) {
-        bar.hidden = true;
+        barEl.hidden = true;
         isVisible = false;
         return;
       }
 
-      const filtersRect = topFilters.getBoundingClientRect();
+      const filtersRect = topFiltersEl.getBoundingClientRect();
       // Show bar when top filters are scrolled out of view
       const shouldShow = filtersRect.bottom < 0;
 
       if (shouldShow !== isVisible) {
         isVisible = shouldShow;
-        bar.hidden = !shouldShow;
+        barEl.hidden = !shouldShow;
 
         // Scroll to active category when bar becomes visible
         if (shouldShow) {
@@ -402,7 +407,7 @@ const { categories, currentCategory } = Astro.props;
     }
 
     // Setup language switcher
-    const langSwitcher = bar.querySelector(".mobile-lang-switcher");
+    const langSwitcher = barEl.querySelector(".mobile-lang-switcher");
     if (langSwitcher) {
       const storageKey =
         langSwitcher.getAttribute("data-storage-key") || "wishlist-lang";
