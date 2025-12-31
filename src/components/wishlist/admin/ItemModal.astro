@@ -1,0 +1,103 @@
+---
+import { categories } from "@lib/wishlist";
+
+// Filter out "all" category for the dropdown
+const itemCategories = categories.filter((c) => c.id !== "all");
+---
+
+<div id="item-modal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add Item</h2>
+      <button class="modal-close" type="button">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="item-form">
+        <input type="hidden" id="item-id" name="id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="title">Title (EN) *</label>
+            <input type="text" id="title" name="title" required />
+          </div>
+          <div class="form-group">
+            <label for="titleRu">Title (RU)</label>
+            <input type="text" id="titleRu" name="titleRu" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="price">Price *</label>
+            <input
+              type="text"
+              id="price"
+              name="price"
+              placeholder="$64, €300, AU$140"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="url">Product URL</label>
+            <input type="url" id="url" name="url" placeholder="https://..." />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="image">Image *</label>
+          <div class="image-upload" id="image-upload">
+            <input type="file" id="image-file" accept="image/*" />
+            <p>Drop image here or click to upload</p>
+          </div>
+          <input type="hidden" id="imageUrl" name="imageUrl" />
+          <div id="image-preview" class="image-preview" hidden>
+            <img id="preview-img" src="" alt="Preview" />
+            <p id="image-filename"></p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="description">Description (EN)</label>
+            <textarea id="description" name="description" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="descriptionRu">Description (RU)</label>
+            <textarea id="descriptionRu" name="descriptionRu" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Category *</label>
+            <select id="category" name="category" required>
+              {itemCategories.map((cat) => (
+                <option value={cat.id}>{cat.label}</option>
+              ))}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority" name="priority">
+              <option value="">None</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="weight">Weight (for sorting, higher = more important)</label>
+          <input type="number" id="weight" name="weight" value="0" min="0" />
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+      <button type="submit" form="item-form" class="btn btn-primary" id="modal-submit">
+        Save Item
+      </button>
+    </div>
+  </div>
+</div>
