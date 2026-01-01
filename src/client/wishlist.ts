@@ -306,6 +306,33 @@ function showPopover(popover: HTMLElement | null) {
     hidePopover(activePopover);
   }
 
+  // Calculate popover width and position based on card
+  const card = popover.closest(".wishlist-item") as HTMLElement;
+  const popoverContent = popover.querySelector(
+    ".popover-content",
+  ) as HTMLElement;
+  const messageBtn = popover
+    .closest(".reserve-wrapper")
+    ?.querySelector(".message-btn") as HTMLElement;
+
+  if (card && popoverContent) {
+    // Popover width = card width
+    popoverContent.style.width = `${card.offsetWidth}px`;
+
+    // Calculate left offset so popover is centered on card
+    // We need to find how far the message button is from the card's left edge
+    if (messageBtn) {
+      const cardRect = card.getBoundingClientRect();
+      const btnRect = messageBtn.getBoundingClientRect();
+      const btnCenterFromCardLeft =
+        btnRect.left + btnRect.width / 2 - cardRect.left;
+      const popoverCenterOffset = card.offsetWidth / 2;
+      // Offset to shift popover so its center aligns with card center
+      const leftOffset = popoverCenterOffset - btnCenterFromCardLeft;
+      popover.style.left = `calc(16px + ${leftOffset}px)`;
+    }
+  }
+
   // Check if there's an existing message
   const existingMessage = popover.dataset.message || "";
   const hasMessage = existingMessage.length > 0;
