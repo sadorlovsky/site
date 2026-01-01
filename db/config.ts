@@ -34,6 +34,7 @@ const Reservation = defineTable({
     itemId: column.number({ references: () => WishlistItem.columns.id }),
     reservedBy: column.text(), // Name or identifier of person who reserved
     reservedAt: column.date(),
+    message: column.text({ optional: true }), // Optional message from reserver
   },
 });
 

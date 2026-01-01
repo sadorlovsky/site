@@ -3,6 +3,7 @@ import type { Lang } from "@lib/i18n";
 
 const VISITOR_ID_KEY = "wishlist-visitor-id";
 let currentLang: Lang = "en";
+let activePopover: HTMLElement | null = null;
 
 function getVisitorId(): string {
   return localStorage.getItem(VISITOR_ID_KEY) || "";
@@ -27,6 +28,7 @@ export async function initializeWishlist() {
 
   initializeReserveButtons();
   initializeLangChangeListener();
+  initializePopovers();
 }
 
 async function fetchAndApplyReservations() {
@@ -108,16 +110,18 @@ function initializeReserveButtons() {
     const isReserved = reservedBy.length > 0;
     const isOwnReservation = isReserved && reservedBy === visitorId;
 
-    // Get badge element (in the item-image section)
+    // Get badge and message button elements
     const article = button.closest("article");
     const badge = article?.querySelector(
       ".own-reservation-badge",
     ) as HTMLElement;
+    const wrapper = button.closest(".reserve-wrapper");
+    const messageBtn = wrapper?.querySelector(".message-btn") as HTMLElement;
 
     // Set initial button state
     if (isReserved) {
       if (isOwnReservation) {
-        // Own reservation - show Cancel and badge
+        // Own reservation - show Cancel, badge, and message button
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruCancel
@@ -132,6 +136,9 @@ function initializeReserveButtons() {
               (currentLang === "ru" ? badge.dataset.ru : badge.dataset.en) ??
               null;
           }
+        }
+        if (messageBtn) {
+          messageBtn.hidden = false;
         }
       } else {
         // Someone else's reservation - show Reserved (disabled)
@@ -152,10 +159,14 @@ function initializeReserveButtons() {
       const isCurrentlyReserved = currentReservedBy.length > 0;
       const isOwn = isCurrentlyReserved && currentReservedBy === visitorId;
 
-      // Get badge for this item
+      // Get badge and message button for this item
       const itemArticle = this.closest("article");
       const itemBadge = itemArticle?.querySelector(
         ".own-reservation-badge",
+      ) as HTMLElement;
+      const itemWrapper = this.closest(".reserve-wrapper");
+      const itemMessageBtn = itemWrapper?.querySelector(
+        ".message-btn",
       ) as HTMLElement;
 
       if (isCurrentlyReserved && isOwn) {
@@ -165,7 +176,16 @@ function initializeReserveButtons() {
           textContent: this.textContent,
           hasClass: this.classList.contains("own-reservation"),
           badgeHidden: itemBadge?.hidden,
+          messageBtnHidden: itemMessageBtn?.hidden,
         };
+
+        // Hide popover if open
+        const popover = itemWrapper?.querySelector(
+          ".reserve-popover",
+        ) as HTMLElement;
+        if (popover) {
+          hidePopover(popover);
+        }
 
         // Optimistically update UI
         this.dataset.reservedBy = "";
@@ -175,6 +195,7 @@ function initializeReserveButtons() {
             : this.dataset.enReserve) ?? null;
         this.classList.remove("own-reservation");
         if (itemBadge) itemBadge.hidden = true;
+        if (itemMessageBtn) itemMessageBtn.hidden = true;
         // Update aria-label
         const reserveAriaLabel =
           currentLang === "ru"
@@ -194,6 +215,8 @@ function initializeReserveButtons() {
           this.textContent = previousState.textContent;
           if (previousState.hasClass) this.classList.add("own-reservation");
           if (itemBadge) itemBadge.hidden = previousState.badgeHidden ?? false;
+          if (itemMessageBtn)
+            itemMessageBtn.hidden = previousState.messageBtnHidden ?? true;
           alert(error.message || "Failed to cancel reservation");
         }
       } else if (!isCurrentlyReserved) {
@@ -203,6 +226,7 @@ function initializeReserveButtons() {
           textContent: this.textContent,
           hasClass: this.classList.contains("own-reservation"),
           badgeHidden: itemBadge?.hidden,
+          messageBtnHidden: itemMessageBtn?.hidden,
         };
 
         // Optimistically update UI
@@ -221,6 +245,30 @@ function initializeReserveButtons() {
                 ? itemBadge.dataset.ru
                 : itemBadge.dataset.en) ?? null;
           }
+        }
+        // Show message button with animated glow border
+        if (itemMessageBtn) {
+          itemMessageBtn.hidden = false;
+          // Add glow elements and animation (skip if reduced motion)
+          const prefersReducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+          ).matches;
+          if (!prefersReducedMotion) {
+            const glowEffect = document.createElement("span");
+            glowEffect.className = "glow-effect";
+            const glowBlur = document.createElement("span");
+            glowBlur.className = "glow-blur";
+            itemMessageBtn.appendChild(glowBlur);
+            itemMessageBtn.appendChild(glowEffect);
+            itemMessageBtn.classList.add("glow-border");
+          }
+          itemMessageBtn.classList.add("show-tooltip");
+          setTimeout(() => {
+            itemMessageBtn.classList.remove("glow-border", "show-tooltip");
+            itemMessageBtn
+              .querySelectorAll(".glow-effect, .glow-blur")
+              .forEach((el) => el.remove());
+          }, 4000);
         }
         // Update aria-label
         const cancelAriaLabel =
@@ -241,10 +289,238 @@ function initializeReserveButtons() {
           this.textContent = previousState.textContent;
           if (!previousState.hasClass) this.classList.remove("own-reservation");
           if (itemBadge) itemBadge.hidden = previousState.badgeHidden ?? true;
+          if (itemMessageBtn)
+            itemMessageBtn.hidden = previousState.messageBtnHidden ?? true;
           alert(error.message || "Failed to reserve item");
         }
       }
     });
+  });
+}
+
+function showPopover(popover: HTMLElement | null) {
+  if (!popover) return;
+
+  // Close any other open popover
+  if (activePopover && activePopover !== popover) {
+    hidePopover(activePopover);
+  }
+
+  // Check if there's an existing message
+  const existingMessage = popover.dataset.message || "";
+  const hasMessage = existingMessage.length > 0;
+
+  // Update popover content for current language and mode
+  updatePopoverLanguage(popover, currentLang, hasMessage);
+
+  // Pre-fill textarea with existing message
+  const textarea = popover.querySelector(
+    ".popover-textarea",
+  ) as HTMLTextAreaElement;
+  if (textarea) {
+    textarea.value = existingMessage;
+  }
+
+  // Show popover with animation
+  popover.hidden = false;
+  // Force reflow for animation
+  popover.offsetHeight;
+  popover.classList.add("visible");
+  activePopover = popover;
+
+  // Focus textarea and move cursor to end
+  if (textarea) {
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }, 100);
+  }
+}
+
+function hidePopover(popover: HTMLElement | null) {
+  if (!popover) return;
+
+  popover.classList.remove("visible");
+  // Clear textarea
+  const textarea = popover.querySelector(
+    ".popover-textarea",
+  ) as HTMLTextAreaElement;
+  if (textarea) {
+    textarea.value = "";
+  }
+
+  // Hide after animation
+  setTimeout(() => {
+    popover.hidden = true;
+  }, 250);
+
+  if (activePopover === popover) {
+    activePopover = null;
+  }
+}
+
+function updatePopoverLanguage(
+  popover: HTMLElement,
+  lang: "en" | "ru",
+  hasMessage: boolean = false,
+) {
+  // Update title
+  const title = popover.querySelector(".popover-title") as HTMLElement;
+  if (title) {
+    title.textContent =
+      (lang === "ru" ? title.dataset.ru : title.dataset.en) ?? null;
+  }
+
+  // Update label
+  const label = popover.querySelector(".popover-label") as HTMLElement;
+  if (label) {
+    label.textContent =
+      (lang === "ru" ? label.dataset.ru : label.dataset.en) ?? null;
+  }
+
+  // Update textarea placeholder
+  const textarea = popover.querySelector(
+    ".popover-textarea",
+  ) as HTMLTextAreaElement;
+  if (textarea) {
+    textarea.placeholder =
+      (lang === "ru"
+        ? textarea.dataset.placeholderRu
+        : textarea.dataset.placeholderEn) ?? "";
+  }
+
+  // Update skip/delete button based on mode
+  const skipBtn = popover.querySelector(
+    ".popover-btn-skip",
+  ) as HTMLElement | null;
+  if (skipBtn) {
+    if (hasMessage) {
+      skipBtn.textContent =
+        (lang === "ru" ? skipBtn.dataset.ruDelete : skipBtn.dataset.enDelete) ??
+        null;
+      skipBtn.classList.add("delete-mode");
+    } else {
+      skipBtn.textContent =
+        (lang === "ru" ? skipBtn.dataset.ruSkip : skipBtn.dataset.enSkip) ??
+        null;
+      skipBtn.classList.remove("delete-mode");
+    }
+  }
+
+  // Update save button
+  const saveBtn = popover.querySelector(
+    ".popover-btn-save",
+  ) as HTMLElement | null;
+  if (saveBtn) {
+    saveBtn.textContent =
+      (lang === "ru" ? saveBtn.dataset.ru : saveBtn.dataset.en) ?? null;
+  }
+}
+
+function initializePopovers() {
+  // Handle message button clicks
+  document.querySelectorAll(".message-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      // Stop glow animation immediately
+      btn.classList.remove("glow-border", "show-tooltip");
+      btn
+        .querySelectorAll(".glow-effect, .glow-blur")
+        .forEach((el) => el.remove());
+      const wrapper = btn.closest(".reserve-wrapper");
+      const popover = wrapper?.querySelector(".reserve-popover") as HTMLElement;
+      if (popover) {
+        showPopover(popover);
+      }
+    });
+  });
+
+  // Handle Skip and Save buttons
+  document.querySelectorAll(".reserve-popover").forEach((popover) => {
+    const skipBtn = popover.querySelector(".popover-btn-skip");
+    const saveBtn = popover.querySelector(".popover-btn-save");
+    const textarea = popover.querySelector(
+      ".popover-textarea",
+    ) as HTMLTextAreaElement;
+
+    skipBtn?.addEventListener("click", async () => {
+      const isDeleteMode = skipBtn.classList.contains("delete-mode");
+
+      if (isDeleteMode) {
+        // Delete the message
+        const wrapper = popover.closest(".reserve-wrapper");
+        const reserveBtn = wrapper?.querySelector(
+          ".reserve-btn",
+        ) as HTMLButtonElement;
+        const itemId = reserveBtn?.dataset.itemId;
+        const visitorId = getVisitorId();
+
+        if (itemId && visitorId) {
+          const { error } = await actions.deleteReservationMessage({
+            itemId: parseInt(itemId),
+            visitorId,
+          });
+
+          if (!error) {
+            // Update local data attribute
+            (popover as HTMLElement).dataset.message = "";
+          } else {
+            console.error("Failed to delete message:", error.message);
+          }
+        }
+      }
+
+      hidePopover(popover as HTMLElement);
+    });
+
+    saveBtn?.addEventListener("click", async () => {
+      const message = textarea?.value.trim();
+      // Get itemId from the reserve button in the same wrapper
+      const wrapper = popover.closest(".reserve-wrapper");
+      const reserveBtn = wrapper?.querySelector(
+        ".reserve-btn",
+      ) as HTMLButtonElement;
+      const itemId = reserveBtn?.dataset.itemId;
+      const visitorId = getVisitorId();
+
+      if (message && itemId && visitorId) {
+        const { error } = await actions.saveReservationMessage({
+          itemId: parseInt(itemId),
+          visitorId,
+          message,
+        });
+
+        if (!error) {
+          // Update local data attribute
+          (popover as HTMLElement).dataset.message = message;
+        } else {
+          console.error("Failed to save message:", error.message);
+        }
+      }
+
+      hidePopover(popover as HTMLElement);
+    });
+
+    // Close on Escape key
+    textarea?.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        hidePopover(popover as HTMLElement);
+      }
+    });
+  });
+
+  // Close popover when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!activePopover) return;
+
+    const target = e.target as HTMLElement;
+    const isClickInsidePopover = activePopover.contains(target);
+    const isClickOnReserveBtn = target.closest(".reserve-btn");
+    const isClickOnMessageBtn = target.closest(".message-btn");
+
+    if (!isClickInsidePopover && !isClickOnReserveBtn && !isClickOnMessageBtn) {
+      hidePopover(activePopover);
+    }
   });
 }
 

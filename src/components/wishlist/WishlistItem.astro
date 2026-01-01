@@ -132,32 +132,135 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
 
       {
         !item.received && (
-          <button
-            class="reserve-btn reserve-btn--loading"
-            data-item-id={item.id}
-            data-item-title={item.title}
-            data-item-title-ru={item.titleRu || item.title}
-            data-reserved-by={item.reservedBy}
-            data-en-reserve="Reserve"
-            data-ru-reserve="Зарезервировать"
-            data-en-reserved="Reserved"
-            data-ru-reserved="Зарезервировано"
-            data-en-cancel="Cancel"
-            data-ru-cancel="Отменить"
-            aria-label={
-              item.isReserved
-                ? `Cancel reservation for ${item.title}`
-                : `Reserve ${item.title}`
-            }
-            data-aria-label-en-reserve={`Reserve ${item.title}`}
-            data-aria-label-ru-reserve={`Зарезервировать ${item.titleRu || item.title}`}
-            data-aria-label-en-cancel={`Cancel reservation for ${item.title}`}
-            data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
-            data-aria-label-en-reserved={`Reserved: ${item.title}`}
-            data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
-          >
-            {item.isReserved ? "Reserved" : "Reserve"}
-          </button>
+          <div class="reserve-wrapper">
+            <button
+              class="message-btn"
+              data-tooltip-en="Leave a message?"
+              data-tooltip-ru="Оставить сообщение?"
+              aria-label="Leave a message"
+              data-aria-label-en="Leave a message"
+              data-aria-label-ru="Оставить сообщение"
+              hidden
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              class="reserve-btn reserve-btn--loading"
+              data-item-id={item.id}
+              data-item-title={item.title}
+              data-item-title-ru={item.titleRu || item.title}
+              data-reserved-by={item.reservedBy}
+              data-en-reserve="Reserve"
+              data-ru-reserve="Зарезервировать"
+              data-en-reserved="Reserved"
+              data-ru-reserved="Зарезервировано"
+              data-en-cancel="Cancel"
+              data-ru-cancel="Отменить"
+              aria-label={
+                item.isReserved
+                  ? `Cancel reservation for ${item.title}`
+                  : `Reserve ${item.title}`
+              }
+              data-aria-label-en-reserve={`Reserve ${item.title}`}
+              data-aria-label-ru-reserve={`Зарезервировать ${item.titleRu || item.title}`}
+              data-aria-label-en-cancel={`Cancel reservation for ${item.title}`}
+              data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
+              data-aria-label-en-reserved={`Reserved: ${item.title}`}
+              data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
+            >
+              {item.isReserved ? "Reserved" : "Reserve"}
+            </button>
+            <div
+              class="reserve-popover"
+              data-message={item.reservationMessage || ""}
+              hidden
+            >
+              <div class="popover-content">
+                <div class="popover-header">
+                  <span class="popover-icon">
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M10 18.333a8.333 8.333 0 1 0 0-16.666 8.333 8.333 0 0 0 0 16.666Z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M7.5 10l1.667 1.667L12.5 8.333"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span
+                    class="popover-title"
+                    data-en="Reserved!"
+                    data-ru="Зарезервировано!"
+                  >
+                    Reserved!
+                  </span>
+                </div>
+                <label
+                  class="popover-label"
+                  data-en="Leave an anonymous message"
+                  data-ru="Оставить анонимное сообщение?"
+                >
+                  Leave an anonymous message
+                </label>
+                <textarea
+                  class="popover-textarea"
+                  rows="2"
+                  maxlength="200"
+                  data-placeholder-en="e.g., I'll bring it to the party!"
+                  data-placeholder-ru="напр., Привезу на праздник!"
+                  placeholder="e.g., I'll bring it to the party!"
+                />
+                <div class="popover-actions">
+                  <button
+                    type="button"
+                    class="popover-btn popover-btn-skip"
+                    data-en-skip="Skip"
+                    data-ru-skip="Пропустить"
+                    data-en-delete="Delete"
+                    data-ru-delete="Удалить"
+                  >
+                    Skip
+                  </button>
+                  <button
+                    type="button"
+                    class="popover-btn popover-btn-save"
+                    data-en="Save"
+                    data-ru="Сохранить"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )
       }
     </div>

@@ -961,6 +961,19 @@ export default async function seed() {
       priority: "low",
       received: false,
     },
+    {
+      id: 67,
+      title: "Begotten T-Shirt",
+      titleRu: "Футболка Begotten",
+      price: "$22",
+      imageUrl: "begotten-tshirt.webp",
+      url: "https://ebay.us/m/pWNkbY",
+      description: "Black t-shirt with Begotten movie print",
+      descriptionRu: "Чёрная футболка с принтом Begotten",
+      category: "merch,clothing",
+      priority: "medium",
+      received: false,
+    },
   ]);
 
   // Seed reservations for testing

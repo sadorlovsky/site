@@ -36,6 +36,7 @@ export type WishlistItemWithReservation = {
   weight: number;
   isReserved: boolean;
   reservedBy: string | null;
+  reservationMessage: string | null;
 };
 
 export type Category = {
@@ -167,6 +168,7 @@ export async function getWishlistItems(
       priceRub,
       isReserved: !!reservation,
       reservedBy: reservation?.reservedBy ?? null,
+      reservationMessage: reservation?.message ?? null,
     };
   });
 
