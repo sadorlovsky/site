@@ -306,31 +306,38 @@ function showPopover(popover: HTMLElement | null) {
     hidePopover(activePopover);
   }
 
-  // Calculate popover width and position based on card
+  // Calculate popover width and arrow position based on card
   const card = popover.closest(".wishlist-item") as HTMLElement;
   const popoverContent = popover.querySelector(
     ".popover-content",
   ) as HTMLElement;
-  const messageBtn = popover
-    .closest(".reserve-wrapper")
-    ?.querySelector(".message-btn") as HTMLElement;
+  const wrapper = popover.closest(".reserve-wrapper") as HTMLElement;
+  const messageBtn = wrapper?.querySelector(".message-btn") as HTMLElement;
 
-  if (card && popoverContent) {
+  if (card && popoverContent && messageBtn && wrapper) {
+    const cardWidth = card.offsetWidth;
     // Popover width = card width
-    popoverContent.style.width = `${card.offsetWidth}px`;
+    popoverContent.style.width = `${cardWidth}px`;
 
-    // Calculate left offset so popover is centered on card
-    // We need to find how far the message button is from the card's left edge
-    if (messageBtn) {
-      const cardRect = card.getBoundingClientRect();
-      const btnRect = messageBtn.getBoundingClientRect();
-      const btnCenterFromCardLeft =
-        btnRect.left + btnRect.width / 2 - cardRect.left;
-      const popoverCenterOffset = card.offsetWidth / 2;
-      // Offset to shift popover so its center aligns with card center
-      const leftOffset = popoverCenterOffset - btnCenterFromCardLeft;
-      popover.style.left = `calc(16px + ${leftOffset}px)`;
-    }
+    // Calculate where the arrow should be positioned
+    // Arrow needs to point at center of message button
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const btnRect = messageBtn.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+
+    // Center of button relative to card left edge
+    const btnCenterFromCard = btnRect.left + btnRect.width / 2 - cardRect.left;
+
+    // Arrow position as percentage of popover width
+    const arrowLeftPercent = (btnCenterFromCard / cardWidth) * 100;
+
+    // Set arrow position via CSS custom property
+    popoverContent.style.setProperty("--arrow-left", `${arrowLeftPercent}%`);
+
+    // Position popover so it aligns with card
+    const wrapperFromCard = wrapperRect.left - cardRect.left;
+    popover.style.left = `${-wrapperFromCard}px`;
+    popover.style.transform = "translateY(8px) scale(0.95)";
   }
 
   // Check if there's an existing message
