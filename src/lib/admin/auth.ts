@@ -2,7 +2,7 @@ import { db, AdminSession, eq } from "astro:db";
 import type { AstroCookies } from "astro";
 
 const SESSION_COOKIE_NAME = "admin_session";
-const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days (reduced from 30)
 
 export interface Session {
   id: string;
@@ -14,9 +14,19 @@ export interface Session {
 
 /**
  * Check if dev bypass is enabled (skips passkey auth in development)
+ * Only allows bypass on localhost to prevent accidental exposure on staging/preview
  */
-export function isDevBypassEnabled(): boolean {
-  return !import.meta.env.PROD && import.meta.env.ADMIN_DEV_BYPASS === "true";
+export function isDevBypassEnabled(requestHost?: string | null): boolean {
+  if (import.meta.env.PROD) return false;
+  if (import.meta.env.ADMIN_DEV_BYPASS !== "true") return false;
+
+  // If no host provided, allow bypass (for backwards compatibility in tests)
+  if (!requestHost) return true;
+
+  // Only allow bypass on localhost
+  const host = requestHost.split(":")[0]; // Remove port if present
+  const allowedHosts = ["localhost", "127.0.0.1", "::1"];
+  return allowedHosts.includes(host);
 }
 
 /**
@@ -95,12 +105,15 @@ async function verifySignedValue(
 
 /**
  * Verify session from cookies and return session data if valid
+ * @param cookies - Astro cookies object
+ * @param requestHost - Optional host header for dev bypass validation
  */
 export async function verifySession(
   cookies: AstroCookies,
+  requestHost?: string | null,
 ): Promise<Session | null> {
-  // Dev bypass - skip authentication in development
-  if (isDevBypassEnabled()) {
+  // Dev bypass - skip authentication in development (only on localhost)
+  if (isDevBypassEnabled(requestHost)) {
     return createDevSession();
   }
 
@@ -166,7 +179,7 @@ export async function createSession(
   cookies.set(SESSION_COOKIE_NAME, signedSessionId, {
     httpOnly: true,
     secure: import.meta.env.PROD,
-    sameSite: "lax",
+    sameSite: "strict",
     path: "/",
     maxAge: SESSION_DURATION_MS / 1000,
   });

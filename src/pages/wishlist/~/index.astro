@@ -9,7 +9,10 @@ import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 export const prerender = false;
 
 // Verify authentication
-const session = await verifySession(Astro.cookies);
+const session = await verifySession(
+  Astro.cookies,
+  Astro.request.headers.get("host"),
+);
 if (!session) {
   return Astro.redirect("/wishlist/~/login");
 }

@@ -19,12 +19,13 @@ const updateItemSchema = z.object({
   received: z.boolean().optional(),
 });
 
-async function revalidateWishlist(baseUrl: string) {
+async function revalidateWishlist() {
   const secret = import.meta.env.REVALIDATION_SECRET;
-  if (!secret) return;
+  const siteUrl = import.meta.env.SITE;
+  if (!secret || !siteUrl) return;
 
   try {
-    await fetch(`${baseUrl}/api/revalidate`, {
+    await fetch(`${siteUrl}/api/revalidate`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${secret}`,
@@ -37,7 +38,7 @@ async function revalidateWishlist(baseUrl: string) {
 
 // UPDATE item
 export const PUT: APIRoute = async ({ params, request, cookies }) => {
-  const session = await verifySession(cookies);
+  const session = await verifySession(cookies, request.headers.get("host"));
   if (!session) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
@@ -104,8 +105,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
     }
 
     // Revalidate ISR
-    const baseUrl = `https://${request.headers.get("host")}`;
-    await revalidateWishlist(baseUrl);
+    await revalidateWishlist();
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -122,7 +122,7 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
 
 // DELETE item
 export const DELETE: APIRoute = async ({ params, request, cookies }) => {
-  const session = await verifySession(cookies);
+  const session = await verifySession(cookies, request.headers.get("host"));
   if (!session) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
@@ -159,8 +159,7 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
     await db.delete(WishlistItem).where(eq(WishlistItem.id, itemId));
 
     // Revalidate ISR
-    const baseUrl = `https://${request.headers.get("host")}`;
-    await revalidateWishlist(baseUrl);
+    await revalidateWishlist();
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
@@ -177,7 +176,7 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
 
 // PATCH - toggle received status or reservation
 export const PATCH: APIRoute = async ({ params, request, cookies }) => {
-  const session = await verifySession(cookies);
+  const session = await verifySession(cookies, request.headers.get("host"));
   if (!session) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
@@ -240,8 +239,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       }
 
       // Revalidate ISR
-      const baseUrl = `https://${request.headers.get("host")}`;
-      await revalidateWishlist(baseUrl);
+      await revalidateWishlist();
 
       return new Response(
         JSON.stringify({ success: true, reserved: body.reserved }),
@@ -259,8 +257,7 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       .where(eq(WishlistItem.id, itemId));
 
     // Revalidate ISR
-    const baseUrl = `https://${request.headers.get("host")}`;
-    await revalidateWishlist(baseUrl);
+    await revalidateWishlist();
 
     return new Response(JSON.stringify({ success: true, received }), {
       status: 200,

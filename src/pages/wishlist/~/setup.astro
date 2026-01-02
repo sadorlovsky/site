@@ -22,6 +22,9 @@ if (!isValidToken) {
     statusText: "Not Found",
   });
 }
+
+// Pass token to client for API calls
+const safeToken = setupToken;
 ---
 
 <AdminLayout title="Setup - Wishlist Admin">
@@ -50,6 +53,9 @@ if (!isValidToken) {
       </div>
     </div>
   </div>
+  <script is:inline define:vars={{ safeToken }}>
+    window.__SETUP_TOKEN__ = safeToken;
+  </script>
 </AdminLayout>
 
 <script>
@@ -71,10 +77,17 @@ if (!isValidToken) {
     registerBtn.textContent = "Registering...";
     errorEl.hidden = true;
 
+    // Get setup token from window
+    const setupToken = (window as unknown as { __SETUP_TOKEN__: string })
+      .__SETUP_TOKEN__;
+
     try {
       // Get registration options from server
       const optionsRes = await fetch("/api/admin/auth/registration-options", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${setupToken}`,
+        },
       });
 
       if (!optionsRes.ok) {
@@ -90,7 +103,10 @@ if (!isValidToken) {
       // Verify with server
       const verifyRes = await fetch("/api/admin/auth/registration-verify", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${setupToken}`,
+        },
         body: JSON.stringify({
           credential,
           deviceName: deviceNameInput.value.trim() || undefined,

@@ -6,15 +6,29 @@ export const prerender = false;
 const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
 const CHALLENGE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
-export const POST: APIRoute = async ({ cookies }) => {
+export const POST: APIRoute = async ({ cookies, request }) => {
   try {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();
     if (credentialsExist) {
-      return new Response(
-        JSON.stringify({ error: "Setup already complete" }),
-        { status: 403, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Setup already complete" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate setup token to prevent unauthorized registration
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
+
+    if (!token || !expectedToken || token !== expectedToken) {
+      return new Response(JSON.stringify({ error: "Invalid setup token" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const options = await getRegistrationOptions();

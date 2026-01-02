@@ -15,10 +15,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();
     if (credentialsExist) {
-      return new Response(
-        JSON.stringify({ error: "Setup already complete" }),
-        { status: 403, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Setup already complete" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate setup token to prevent unauthorized registration
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
+
+    if (!token || !expectedToken || token !== expectedToken) {
+      return new Response(JSON.stringify({ error: "Invalid setup token" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Get challenge from cookie
@@ -38,10 +52,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     };
 
     if (!credential) {
-      return new Response(
-        JSON.stringify({ error: "Missing credential" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "Missing credential" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Verify and store the credential
@@ -71,9 +85,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   } catch (error) {
     console.error("Error verifying registration:", error);
-    return new Response(
-      JSON.stringify({ error: "Verification failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Verification failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
