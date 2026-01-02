@@ -1,10 +1,55 @@
-import type { WishlistItem, Reservation, Category } from "./types";
+import type {
+  WishlistItem,
+  Reservation,
+  Category,
+  ExchangeRates,
+} from "./types";
+
+// Currency prefixes for parsing prices
+const currencyPrefixes = [
+  { prefix: "AU$", currency: "AUD" },
+  { prefix: "$", currency: "USD" },
+  { prefix: "£", currency: "GBP" },
+  { prefix: "€", currency: "EUR" },
+  { prefix: "₹", currency: "INR" },
+] as const;
+
+// Parse price string and convert to RUB
+function convertToRub(
+  price: string,
+  exchangeRates: ExchangeRates,
+): number | null {
+  const trimmed = price.trim();
+
+  for (const { prefix, currency } of currencyPrefixes) {
+    if (trimmed.startsWith(prefix)) {
+      const amount = parseInt(
+        trimmed.slice(prefix.length).replace(/,/g, ""),
+        10,
+      );
+      if (isNaN(amount)) return null;
+
+      const rate = exchangeRates[currency];
+      if (!rate) return null;
+
+      return Math.round(amount * rate);
+    }
+  }
+
+  return null;
+}
+
+// Format number as RUB price
+function formatRub(amount: number): string {
+  return `₽${amount.toLocaleString("ru-RU")}`;
+}
 
 interface ItemListProps {
   items: WishlistItem[];
   reservations: Map<number, Reservation>;
   categories: Category[];
   cdnDomain: string;
+  exchangeRates: ExchangeRates;
   onEdit: (item: WishlistItem) => void;
   onDelete: (id: number) => Promise<void>;
   onToggleReceived: (id: number, received: boolean) => Promise<void>;
@@ -14,8 +59,9 @@ interface ItemListProps {
 interface ItemCardProps {
   item: WishlistItem;
   reservation: Reservation | undefined;
-  categoryLabel: string;
+  categoryLabels: { id: string; label: string }[];
   cdnDomain: string;
+  priceRub: number | null;
   onEdit: () => void;
   onDelete: () => Promise<void>;
   onToggleReceived: () => Promise<void>;
@@ -25,8 +71,9 @@ interface ItemCardProps {
 function ItemCard({
   item,
   reservation,
-  categoryLabel,
+  categoryLabels,
   cdnDomain,
+  priceRub,
   onEdit,
   onDelete,
   onToggleReceived,
@@ -69,13 +116,28 @@ function ItemCard({
       </div>
 
       <div className="item-content">
-        <div className="item-header">
-          <h3>{item.title}</h3>
-          <span className="item-price">{item.price}</span>
+        {/* Primary info */}
+        <div className="item-primary">
+          <div className="item-header">
+            <span className="item-id">#{item.id}</span>
+            <h3>{item.title}</h3>
+          </div>
+          {item.titleRu && <p className="item-title-ru">{item.titleRu}</p>}
+          <div className="item-prices">
+            <span className="item-price">{item.price}</span>
+            {priceRub && (
+              <span className="item-price-rub">{formatRub(priceRub)}</span>
+            )}
+          </div>
         </div>
 
-        <div className="item-tags">
-          <span className="tag tag-category">{categoryLabel}</span>
+        {/* Categories */}
+        <div className="item-categories">
+          {categoryLabels.map(({ id, label }) => (
+            <span key={id} className="tag tag-category">
+              {label}
+            </span>
+          ))}
           {item.priority && (
             <span className={`tag tag-priority tag-priority-${item.priority}`}>
               {item.priority}
@@ -85,6 +147,22 @@ function ItemCard({
             <span className="tag tag-weight">w:{item.weight}</span>
           )}
         </div>
+
+        {/* Descriptions (secondary info) */}
+        {(item.description || item.descriptionRu) && (
+          <div className="item-descriptions">
+            {item.description && (
+              <p className="item-description">
+                <span className="desc-label">EN:</span> {item.description}
+              </p>
+            )}
+            {item.descriptionRu && (
+              <p className="item-description">
+                <span className="desc-label">RU:</span> {item.descriptionRu}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="item-actions">
           <button
@@ -175,14 +253,20 @@ export function ItemList({
   reservations,
   categories,
   cdnDomain,
+  exchangeRates,
   onEdit,
   onDelete,
   onToggleReceived,
   onToggleReserved,
 }: ItemListProps) {
-  const getCategoryLabel = (categoryId: string): string => {
-    const cat = categories.find((c) => c.id === categoryId);
-    return cat?.label || categoryId;
+  const getCategoryLabels = (
+    categoryString: string,
+  ): { id: string; label: string }[] => {
+    const categoryIds = categoryString.split(",").map((c) => c.trim());
+    return categoryIds.map((id) => {
+      const cat = categories.find((c) => c.id === id);
+      return { id, label: cat?.label || id };
+    });
   };
 
   if (items.length === 0) {
@@ -196,8 +280,9 @@ export function ItemList({
           key={item.id}
           item={item}
           reservation={reservations.get(item.id)}
-          categoryLabel={getCategoryLabel(item.category.split(",")[0])}
+          categoryLabels={getCategoryLabels(item.category)}
           cdnDomain={cdnDomain}
+          priceRub={convertToRub(item.price, exchangeRates)}
           onEdit={() => onEdit(item)}
           onDelete={() => onDelete(item.id)}
           onToggleReceived={() => onToggleReceived(item.id, item.received)}

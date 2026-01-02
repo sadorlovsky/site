@@ -3,7 +3,7 @@ import AdminLayout from "@layouts/AdminLayout.astro";
 import { AdminPanel } from "@components/wishlist/admin";
 import { verifySession } from "@lib/admin/auth";
 import { categories } from "@lib/wishlist";
-import { db, WishlistItem, Reservation } from "astro:db";
+import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
 import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 export const prerender = false;
@@ -22,11 +22,20 @@ const cdnDomain = import.meta.env.PROD
   ? CDN_DOMAIN
   : (CDN_DEV_DOMAIN ?? CDN_DOMAIN);
 
-// Fetch all items and reservations
-const [items, reservations] = await Promise.all([
+// Fetch all items, reservations, and exchange rates
+const [items, reservations, exchangeRates] = await Promise.all([
   db.select().from(WishlistItem),
   db.select().from(Reservation),
+  db.select().from(ExchangeRate),
 ]);
+
+// Build exchange rates map: { USD: rate, EUR: rate, ... }
+const exchangeRatesMap: Record<string, number> = {};
+for (const rate of exchangeRates) {
+  if (rate.toCurrency === "RUB") {
+    exchangeRatesMap[rate.fromCurrency] = rate.rate;
+  }
+}
 
 // Create reservation map
 const reservationMap = new Map(reservations.map((r) => [r.itemId, r]));
@@ -62,5 +71,6 @@ const reservationsArray = Array.from(reservationMap.entries());
     initialReservations={reservationsArray}
     categories={categories}
     cdnDomain={cdnDomain}
+    exchangeRates={exchangeRatesMap}
   />
 </AdminLayout>

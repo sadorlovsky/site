@@ -492,11 +492,26 @@
   gap: 0.6rem;
 }
 
+/* Primary Info Section */
+.item-primary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
 .item-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: 0.4rem;
+}
+
+.item-id {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: light-dark(#999, #666);
+  font-family: ui-monospace, monospace;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
 }
 
 .item-header h3 {
@@ -510,6 +525,27 @@
   line-clamp: 2;
   overflow: hidden;
   flex: 1;
+  margin: 0;
+}
+
+.item-title-ru {
+  font-size: 0.75rem;
+  color: light-dark(#666, #999);
+  line-height: 1.3;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+/* Prices */
+.item-prices {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .item-price {
@@ -522,7 +558,52 @@
   border-radius: 6px;
 }
 
-/* Item Tags */
+.item-price-rub {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: light-dark(#666, #999);
+  white-space: nowrap;
+}
+
+/* Categories */
+.item-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Descriptions */
+.item-descriptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.03));
+  border-radius: 6px;
+  margin-top: 0.25rem;
+}
+
+.item-description {
+  font-size: 0.7rem;
+  color: light-dark(#555, #aaa);
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.desc-label {
+  font-weight: 600;
+  color: light-dark(#888, #777);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Item Tags (legacy alias) */
 .item-tags {
   display: flex;
   flex-wrap: wrap;

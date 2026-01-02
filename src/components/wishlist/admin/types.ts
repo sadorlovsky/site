@@ -35,4 +35,6 @@ export interface ItemFormData {
   weight: number;
 }
 
+export type ExchangeRates = Record<string, number>;
+
 export type { Category };

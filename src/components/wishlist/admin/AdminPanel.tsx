@@ -6,6 +6,7 @@ import type {
   Reservation,
   Category,
   ItemFormData,
+  ExchangeRates,
 } from "./types";
 
 interface AdminPanelProps {
@@ -13,6 +14,7 @@ interface AdminPanelProps {
   initialReservations: [number, Reservation][];
   categories: Category[];
   cdnDomain: string;
+  exchangeRates: ExchangeRates;
 }
 
 export function AdminPanel({
@@ -20,6 +22,7 @@ export function AdminPanel({
   initialReservations,
   categories,
   cdnDomain,
+  exchangeRates,
 }: AdminPanelProps) {
   const [items, setItems] = useState<WishlistItem[]>(initialItems);
   const [reservations, setReservations] = useState<Map<number, Reservation>>(
@@ -385,6 +388,7 @@ export function AdminPanel({
           reservations={reservations}
           categories={categories}
           cdnDomain={cdnDomain}
+          exchangeRates={exchangeRates}
           onEdit={openEditModal}
           onDelete={handleDelete}
           onToggleReceived={handleToggleReceived}
