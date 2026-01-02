@@ -103,6 +103,7 @@
 .form-group input,
 .form-group textarea {
   width: 100%;
+  box-sizing: border-box;
   padding: 0.6rem 0.9rem;
   font-size: 0.9rem;
   border: 2px solid light-dark(#ddd, #444);
@@ -135,6 +136,45 @@
 
 .form-group select {
   cursor: pointer;
+}
+
+/* Category Checkboxes */
+.category-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
+  border: 2px solid light-dark(#ddd, #444);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.checkbox-label:hover {
+  border-color: light-dark(#bbb, #555);
+}
+
+.checkbox-label:has(input:checked) {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  border-color: transparent;
+  color: white;
+}
+
+.checkbox-label input {
+  display: none;
+}
+
+.checkbox-text {
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .form-row {
@@ -728,19 +768,25 @@
 
 .image-preview {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
   padding: 0.75rem;
   background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
   border-radius: 10px;
 }
 
 .image-preview img {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 4/3;
   object-fit: cover;
   border-radius: 8px;
-  flex-shrink: 0;
+}
+
+.image-preview-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .image-preview span {

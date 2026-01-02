@@ -32,10 +32,13 @@ export function ItemModal({
     description: "",
     descriptionRu: "",
     url: "",
-    category: itemCategories[0]?.id || "",
+    category: "",
     priority: "",
     weight: 0,
   }));
+
+  // Selected categories as array for multi-select
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -49,6 +52,10 @@ export function ItemModal({
     if (!isOpen) return;
 
     if (item) {
+      const cats = item.category
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
       setFormData({
         title: item.title,
         titleRu: item.titleRu || "",
@@ -57,10 +64,11 @@ export function ItemModal({
         description: item.description || "",
         descriptionRu: item.descriptionRu || "",
         url: item.url || "",
-        category: item.category.split(",")[0],
+        category: item.category,
         priority: item.priority || "",
         weight: item.weight,
       });
+      setSelectedCategories(cats);
       setImagePreview(`https://${cdnDomain}/${item.imageUrl}`);
     } else {
       setFormData({
@@ -71,13 +79,14 @@ export function ItemModal({
         description: "",
         descriptionRu: "",
         url: "",
-        category: itemCategories[0]?.id || "",
+        category: "",
         priority: "",
         weight: 0,
       });
+      setSelectedCategories([]);
       setImagePreview(null);
     }
-  }, [isOpen, item, cdnDomain, itemCategories]);
+  }, [isOpen, item, cdnDomain]);
 
   // Handle body scroll lock
   useEffect(() => {
@@ -118,6 +127,15 @@ export function ItemModal({
       ...prev,
       [name]: name === "weight" ? parseInt(value, 10) || 0 : value,
     }));
+  };
+
+  const handleCategoryToggle = (categoryId: string) => {
+    setSelectedCategories((prev) => {
+      if (prev.includes(categoryId)) {
+        return prev.filter((c) => c !== categoryId);
+      }
+      return [...prev, categoryId];
+    });
   };
 
   const handleFileUpload = useCallback(async (file: File) => {
@@ -195,7 +213,7 @@ export function ItemModal({
       !formData.title ||
       !formData.price ||
       !formData.imageUrl ||
-      !formData.category
+      selectedCategories.length === 0
     ) {
       alert("Please fill in all required fields");
       return;
@@ -204,7 +222,11 @@ export function ItemModal({
     setIsSaving(true);
 
     try {
-      await onSave(formData, item?.id);
+      const dataToSave = {
+        ...formData,
+        category: selectedCategories.join(", "),
+      };
+      await onSave(dataToSave, item?.id);
     } catch (error) {
       console.error("Save error:", error);
       alert(error instanceof Error ? error.message : "Failed to save item");
@@ -314,15 +336,17 @@ export function ItemModal({
                 {imagePreview && (
                   <div className="image-preview">
                     <img src={imagePreview} alt="Preview" />
-                    <span>{formData.imageUrl}</span>
-                    <button
-                      type="button"
-                      className="btn-remove-image"
-                      title="Remove image"
-                      onClick={handleRemoveImage}
-                    >
-                      &times;
-                    </button>
+                    <div className="image-preview-info">
+                      <span>{formData.imageUrl}</span>
+                      <button
+                        type="button"
+                        className="btn-remove-image"
+                        title="Remove image"
+                        onClick={handleRemoveImage}
+                      >
+                        &times;
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -351,24 +375,23 @@ export function ItemModal({
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="category">Category *</label>
-                <select
-                  id="category"
-                  name="category"
-                  className="select"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  required
-                >
-                  {itemCategories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
+            <div className="form-group">
+              <label>Categories *</label>
+              <div className="category-checkboxes">
+                {itemCategories.map((cat) => (
+                  <label key={cat.id} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategories.includes(cat.id)}
+                      onChange={() => handleCategoryToggle(cat.id)}
+                    />
+                    <span className="checkbox-text">{cat.label}</span>
+                  </label>
+                ))}
               </div>
+            </div>
+
+            <div className="form-row">
               <div className="form-group">
                 <label htmlFor="priority">Priority</label>
                 <select
@@ -384,20 +407,17 @@ export function ItemModal({
                   <option value="low">Low</option>
                 </select>
               </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="weight">
-                Weight (for sorting, higher = more important)
-              </label>
-              <input
-                type="number"
-                id="weight"
-                name="weight"
-                value={formData.weight}
-                onChange={handleInputChange}
-                min={0}
-              />
+              <div className="form-group">
+                <label htmlFor="weight">Weight (higher = more important)</label>
+                <input
+                  type="number"
+                  id="weight"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={handleInputChange}
+                  min={0}
+                />
+              </div>
             </div>
           </form>
         </div>
