@@ -45,6 +45,21 @@ function formatRub(amount: number): string {
   return `₽${amount.toLocaleString("ru-RU")}`;
 }
 
+// Format date as short string
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+// Truncate string with ellipsis
+function truncateId(id: string, maxLength = 8): string {
+  if (id.length <= maxLength) return id;
+  return `${id.slice(0, maxLength)}...`;
+}
+
 interface ItemListProps {
   items: WishlistItem[];
   reservations: Map<number, Reservation>;
@@ -195,6 +210,31 @@ function ItemCard({
             )}
           </div>
         )}
+
+        {/* Meta info: dates and reservation */}
+        <div className="item-meta">
+          <span className="meta-item" title="Added date">
+            Added {formatDate(item.createdAt)}
+          </span>
+          {reservation && (
+            <>
+              <span className="meta-separator">•</span>
+              <span
+                className="meta-item meta-reserved"
+                title={`Reserved by ${reservation.reservedBy}`}
+              >
+                Reserved by{" "}
+                <span
+                  className="reserved-by"
+                  data-reservator-id={reservation.reservedBy}
+                >
+                  {truncateId(reservation.reservedBy)}
+                </span>{" "}
+                on {formatDate(reservation.reservedAt)}
+              </span>
+            </>
+          )}
+        </div>
 
         <div className="item-actions">
           <button

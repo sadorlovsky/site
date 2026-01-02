@@ -686,6 +686,38 @@
   letter-spacing: 0.03em;
 }
 
+/* Item Meta (dates, reservation info) */
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  color: light-dark(#888, #777);
+  padding-top: 0.35rem;
+}
+
+.meta-item {
+  display: inline;
+}
+
+.meta-separator {
+  color: light-dark(#ccc, #555);
+}
+
+.meta-reserved {
+  color: light-dark(#b45309, #fcd34d);
+}
+
+.reserved-by {
+  font-weight: 600;
+  font-family: ui-monospace, monospace;
+  cursor: default;
+  /* Future: make clickable for filtering */
+  /* cursor: pointer; */
+  /* text-decoration: underline dashed; */
+}
+
 /* Item Tags (legacy alias) */
 .item-tags {
   display: flex;
