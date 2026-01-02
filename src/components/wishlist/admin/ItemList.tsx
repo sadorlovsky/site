@@ -8,6 +8,7 @@ interface ItemListProps {
   onEdit: (item: WishlistItem) => void;
   onDelete: (id: number) => Promise<void>;
   onToggleReceived: (id: number, received: boolean) => Promise<void>;
+  onToggleReserved: (id: number, reserved: boolean) => Promise<void>;
 }
 
 interface ItemCardProps {
@@ -18,6 +19,7 @@ interface ItemCardProps {
   onEdit: () => void;
   onDelete: () => Promise<void>;
   onToggleReceived: () => Promise<void>;
+  onToggleReserved: () => Promise<void>;
 }
 
 function ItemCard({
@@ -28,6 +30,7 @@ function ItemCard({
   onEdit,
   onDelete,
   onToggleReceived,
+  onToggleReserved,
 }: ItemCardProps) {
   const isReserved = !!reservation;
 
@@ -105,6 +108,24 @@ function ItemCard({
             Edit
           </button>
           <button
+            className={`action-btn action-reserved ${isReserved ? "active" : ""}`}
+            onClick={onToggleReserved}
+            data-tooltip={isReserved ? "Remove reservation" : "Reserve item"}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
+          <button
             className={`action-btn action-received ${item.received ? "active" : ""}`}
             onClick={onToggleReceived}
             data-tooltip={
@@ -157,6 +178,7 @@ export function ItemList({
   onEdit,
   onDelete,
   onToggleReceived,
+  onToggleReserved,
 }: ItemListProps) {
   const getCategoryLabel = (categoryId: string): string => {
     const cat = categories.find((c) => c.id === categoryId);
@@ -179,6 +201,9 @@ export function ItemList({
           onEdit={() => onEdit(item)}
           onDelete={() => onDelete(item.id)}
           onToggleReceived={() => onToggleReceived(item.id, item.received)}
+          onToggleReserved={() =>
+            onToggleReserved(item.id, reservations.has(item.id))
+          }
         />
       ))}
     </div>

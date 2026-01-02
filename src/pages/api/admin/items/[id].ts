@@ -175,7 +175,7 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
   }
 };
 
-// PATCH - toggle received status
+// PATCH - toggle received status or reservation
 export const PATCH: APIRoute = async ({ params, request, cookies }) => {
   const session = await verifySession(cookies);
   if (!session) {
@@ -208,6 +208,48 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
     }
 
     const body = await request.json();
+
+    // Handle reservation toggle
+    if (typeof body.reserved === "boolean") {
+      const existingReservation = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.itemId, itemId));
+
+      if (body.reserved) {
+        // Create reservation if not exists
+        if (existingReservation.length === 0) {
+          const allReservations = await db.select().from(Reservation);
+          const nextId =
+            allReservations.length > 0
+              ? Math.max(...allReservations.map((r) => r.id)) + 1
+              : 1;
+
+          await db.insert(Reservation).values({
+            id: nextId,
+            itemId,
+            reservedBy: "admin",
+            reservedAt: new Date(),
+          });
+        }
+      } else {
+        // Remove reservation if exists
+        if (existingReservation.length > 0) {
+          await db.delete(Reservation).where(eq(Reservation.itemId, itemId));
+        }
+      }
+
+      // Revalidate ISR
+      const baseUrl = `https://${request.headers.get("host")}`;
+      await revalidateWishlist(baseUrl);
+
+      return new Response(
+        JSON.stringify({ success: true, reserved: body.reserved }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // Handle received toggle
     const received =
       typeof body.received === "boolean" ? body.received : !items[0].received;
 

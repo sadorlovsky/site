@@ -605,6 +605,21 @@
   background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
 }
 
+.action-reserved {
+  width: 34px;
+  background: light-dark(rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.15));
+  color: light-dark(#b45309, #fcd34d);
+}
+
+.action-reserved:hover {
+  background: light-dark(rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.25));
+}
+
+.action-reserved.active {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
 .action-received {
   width: 34px;
   background: light-dark(rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.15));
@@ -850,4 +865,97 @@
     padding-left: 1.25rem;
     padding-right: 1.25rem;
   }
+}
+
+/* Toolbar Actions */
+.toolbar-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Reservations Modal */
+.reservations-modal {
+  max-width: 600px;
+}
+
+.reservations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.reservation-group {
+  background: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.03));
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.reservation-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid
+    light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: light-dark(#111, #fafafa);
+}
+
+.user-count {
+  font-size: 0.8rem;
+  color: light-dark(#666, #999);
+  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+}
+
+.reservation-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reservation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
+  border-radius: 8px;
+}
+
+.reservation-item img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.reservation-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.reservation-item-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: light-dark(#111, #fafafa);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reservation-item-price {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: light-dark(#666, #aaa);
 }
