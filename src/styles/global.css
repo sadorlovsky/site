@@ -507,6 +507,73 @@ sub {
   outline-offset: 2px;
 }
 
+/* Select */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 2.5rem 0.6rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: light-dark(#111, #f9fafb);
+  background-color: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  border: 2px solid light-dark(#ddd, #444);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.select:hover {
+  border-color: light-dark(#bbb, #555);
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--accent-start);
+  box-shadow: 0 0 0 3px rgba(237, 98, 146, 0.15);
+}
+
+.select:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+.select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Dark mode SVG arrow */
+@media (prefers-color-scheme: dark) {
+  .select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+}
+
+/* Select sizes */
+.select-sm {
+  padding: 0.4rem 2rem 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
+  background-size: 14px;
+  background-position: right 0.5rem center;
+}
+
+.select-lg {
+  padding: 0.8rem 2.75rem 0.8rem 1rem;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  background-size: 18px;
+  background-position: right 0.85rem center;
+}
+
 /* Tooltips */
 [data-tooltip] {
   position: relative;

@@ -357,6 +357,7 @@ export function ItemModal({
                 <select
                   id="category"
                   name="category"
+                  className="select"
                   value={formData.category}
                   onChange={handleInputChange}
                   required
@@ -373,6 +374,7 @@ export function ItemModal({
                 <select
                   id="priority"
                   name="priority"
+                  className="select"
                   value={formData.priority}
                   onChange={handleInputChange}
                 >
