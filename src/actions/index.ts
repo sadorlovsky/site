@@ -2,6 +2,8 @@ import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
 import { db, Reservation, WishlistItem, eq } from "astro:db";
 
+const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
+
 export const server = {
   reserve: defineAction({
     input: z.object({
@@ -9,6 +11,12 @@ export const server = {
       visitorId: z.string(),
     }),
     handler: async ({ itemId, visitorId }) => {
+      if (!reservationsEnabled) {
+        throw new ActionError({
+          code: "FORBIDDEN",
+          message: "Reservations are currently disabled",
+        });
+      }
       // Check if item exists
       const item = await db
         .select()

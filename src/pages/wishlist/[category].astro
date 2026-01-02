@@ -26,10 +26,12 @@ if (!isValidCategory(category)) {
 
 // const { category } = Astro.params;
 const items = await getWishlistItems(category);
+const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
 ---
 
 <WishlistPage
   items={items}
   categories={categories}
   currentCategory={category}
+  reservationsEnabled={reservationsEnabled}
 />

@@ -10,9 +10,10 @@ interface Props {
   items: WishlistItemWithReservation[];
   categories: Category[];
   currentCategory: string;
+  reservationsEnabled: boolean;
 }
 
-const { items, categories, currentCategory } = Astro.props;
+const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 ---
 
 <PageLayout title="Wishlist - Zach">
@@ -122,7 +123,11 @@ const { items, categories, currentCategory } = Astro.props;
       >
         {
           items.map((item, index) => (
-            <WishlistItem item={item} isLCP={index === 0} />
+            <WishlistItem
+              item={item}
+              isLCP={index === 0}
+              reservationsEnabled={reservationsEnabled}
+            />
           ))
         }
       </div>
