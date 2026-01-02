@@ -1,169 +1,339 @@
 ---
 import { getCollection } from "astro:content";
-import PageLayout from "../../layouts/PageLayout.astro";
-import Footer from "../../components/Footer.astro";
+import PageLayout from "@layouts/PageLayout.astro";
 
 const allPosts = await getCollection("posts");
 ---
 
-<PageLayout title="Zach writes">
-  <main>
-    <header class="page-header">
-      <h1>Zach's blog</h1>
-      <p class="subtitle">Thoughts, ideas, and occasional musings</p>
-    </header>
+<PageLayout title="Zach's Blog">
+  <main class="blog-page">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
 
-    <div class="posts-list">
-      {
-        allPosts.toReversed().map((post, index) => (
-          <>
-            <article class="post-preview">
-              <a href={`/blog/${post.slug}`} class="post-link">
-                <h2 class="post-title">{post.data.title}</h2>
-              </a>
-              <div class="post-meta">
+    <div class="container">
+      <header class="page-header">
+        <h1>Blog</h1>
+        <p class="subtitle">Thoughts, ideas, and occasional musings</p>
+      </header>
+
+      <div class="posts-list">
+        {
+          allPosts.toReversed().map((post) => (
+            <a href={`/blog/${post.slug}`} class="post-card">
+              <article>
                 <time datetime={post.data.pubDate.toISOString()}>
                   {new Date(post.data.pubDate).toLocaleDateString("en-US", {
                     day: "numeric",
-                    month: "long",
+                    month: "short",
                     year: "numeric",
                   })}
                 </time>
-              </div>
-              {post.data.description && (
-                <p class="post-description">{post.data.description}</p>
-              )}
-            </article>
-            {index < allPosts.length - 1 && <hr class="post-divider" />}
-          </>
-        ))
+                <h2 class="post-title">{post.data.title}</h2>
+                {post.data.description && (
+                  <p class="post-description">{post.data.description}</p>
+                )}
+                <span class="read-more">
+                  Read more
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M5 12h14" />
+                    <path d="m12 5 7 7-7 7" />
+                  </svg>
+                </span>
+              </article>
+            </a>
+          ))
+        }
+      </div>
+
+      {
+        allPosts.length === 0 && (
+          <div class="empty-state">
+            <p>No posts yet. Check back soon!</p>
+          </div>
+        )
       }
     </div>
   </main>
-  <Footer />
 </PageLayout>
 
 <style>
-  main {
-    padding: 40px 25px;
-    margin: 0 auto;
+  .blog-page {
+    --accent-start: rgb(237, 98, 146);
+    --accent-end: rgb(237, 87, 96);
+    --glass-bg-light: rgba(255, 255, 255, 0.7);
+    --glass-bg-dark: rgba(40, 40, 45, 0.7);
+    --glass-border-light: rgba(255, 255, 255, 0.5);
+    --glass-border-dark: rgba(255, 255, 255, 0.1);
+
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ambient background blobs */
+  .blog-page .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blog-page .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -200px;
+    right: -150px;
+    opacity: 0.2;
+    animation: float1 12s ease-in-out infinite;
+  }
+
+  .blog-page .blob-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    bottom: -150px;
+    left: -100px;
+    opacity: 0.15;
+    animation: float2 15s ease-in-out infinite;
+  }
+
+  @keyframes float1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-40px, 40px) scale(1.1);
+    }
+  }
+
+  @keyframes float2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(30px, -30px) scale(1.05);
+    }
+  }
+
+  .blog-page .container {
+    position: relative;
+    z-index: 1;
     max-width: 720px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
   }
 
-  .page-header {
-    margin-bottom: 3rem;
+  .blog-page .page-header {
     text-align: center;
+    margin-bottom: 3rem;
   }
 
-  .page-header h1 {
-    margin-bottom: 0.5rem;
+  .blog-page .page-header h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.5rem 0;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .subtitle {
+  .blog-page .subtitle {
+    font-size: 1.1rem;
     color: light-dark(#666, #999);
-    font-size: 1.125rem;
     margin: 0;
+    font-weight: 400;
   }
 
-  .posts-list {
-    margin-top: 2rem;
+  .blog-page .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
-  .post-preview {
-    padding: 1.5rem 0;
-    transition: transform 0.2s ease;
-  }
-
-  .post-preview:hover {
-    transform: translateX(4px);
-  }
-
-  .post-link {
+  .blog-page .post-card {
+    display: block;
     text-decoration: none;
     color: inherit;
-    display: block;
+    background: light-dark(var(--glass-bg-light), var(--glass-bg-dark));
+    border: 1px solid
+      light-dark(var(--glass-border-light), var(--glass-border-dark));
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow:
+      0 4px 20px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
+      0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
+        inset;
   }
 
-  .post-title {
-    font-size: 1.5rem;
+  .blog-page .post-card:visited {
+    color: inherit;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .blog-page .post-card {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .blog-page .post-card:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow:
+        0 12px 30px -5px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.4)),
+        0 0 0 1px light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1))
+          inset;
+    }
+
+    .blog-page .post-card:hover .post-title {
+      background: linear-gradient(
+        135deg,
+        var(--accent-start),
+        var(--accent-end)
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .blog-page .post-card:hover .read-more {
+      color: var(--accent-start);
+    }
+
+    .blog-page .post-card:hover .read-more svg {
+      transform: translateX(4px);
+    }
+  }
+
+  .blog-page .post-card article {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .blog-page .post-card time {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: light-dark(#888, #777);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .blog-page .post-title {
+    font-size: 1.35rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     color: light-dark(#111, #fafafa);
     line-height: 1.3;
-    transition: color 0.2s ease;
+    transition: all 0.3s ease;
   }
 
-  .post-link:hover .post-title {
-    color: light-dark(#0066cc, #66b3ff);
+  .blog-page .post-description {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: light-dark(#555, #aaa);
+    margin: 0.25rem 0 0 0;
   }
 
-  .post-meta {
-    font-size: 0.875rem;
-    color: light-dark(#666, #999);
-    font-weight: 500;
-    letter-spacing: 0.01em;
-  }
-
-  .post-meta time {
+  .blog-page .read-more {
     display: inline-flex;
     align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: light-dark(#666, #888);
+    margin-top: 0.5rem;
+    transition: color 0.3s ease;
   }
 
-  .post-meta time::before {
-    content: "📅";
-    margin-right: 0.5rem;
-    font-size: 1rem;
+  .blog-page .read-more svg {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .post-description {
-    margin-top: 0.75rem;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: light-dark(#444, #bbb);
+  .blog-page .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: light-dark(#666, #888);
   }
 
-  .post-divider {
+  .blog-page .empty-state p {
+    font-size: 1.1rem;
     margin: 0;
-    border: none;
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      light-dark(#e0e0e0, #333) 20%,
-      light-dark(#e0e0e0, #333) 80%,
-      transparent
-    );
   }
 
-  @media (max-width: 768px) {
-    main {
-      padding: 30px 20px;
-    }
-
-    .page-header {
-      margin-bottom: 2rem;
-    }
-
-    .post-title {
-      font-size: 1.25rem;
-    }
-
-    .post-preview {
-      padding: 1.25rem 0;
-    }
-
-    .post-preview:hover {
-      transform: none;
-    }
-  }
-
+  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .post-preview {
+    .blog-page .blob-1,
+    .blog-page .blob-2 {
+      animation: none;
+    }
+
+    .blog-page .post-card {
       transition: none;
     }
 
-    .post-preview:hover {
+    .blog-page .post-card:hover {
       transform: none;
+    }
+
+    .blog-page .read-more svg {
+      transition: none;
+    }
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    .blog-page .blob-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -100px;
+    }
+
+    .blog-page .blob-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -100px;
+      left: -80px;
+    }
+
+    .blog-page .container {
+      padding: 2rem 1rem 3rem;
+    }
+
+    .blog-page .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .blog-page .posts-list {
+      gap: 1rem;
+    }
+
+    .blog-page .post-card {
+      padding: 1.25rem;
+      border-radius: 12px;
+    }
+
+    .blog-page .post-title {
+      font-size: 1.15rem;
+    }
+
+    .blog-page .post-description {
+      font-size: 0.9rem;
     }
   }
 </style>
