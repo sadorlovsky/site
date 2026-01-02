@@ -1,6 +1,4 @@
 :root {
-  --accent-start: rgb(237, 98, 146);
-  --accent-end: rgb(237, 87, 96);
   --glass-bg-light: rgba(255, 255, 255, 0.7);
   --glass-bg-dark: rgba(40, 40, 45, 0.7);
   --glass-border-light: rgba(255, 255, 255, 0.5);
@@ -384,35 +382,6 @@ html.lang-ready .wishlist-container {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: default;
-}
-
-.item-price[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 6px;
-  padding: 0.4rem 0.65rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: white;
-  background: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-}
-
-.item-price[data-tooltip]:hover::before {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 5px solid transparent;
-  border-top-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-  z-index: 10;
 }
 
 /* Reserve button */

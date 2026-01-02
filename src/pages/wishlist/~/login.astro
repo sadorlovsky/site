@@ -1,5 +1,5 @@
 ---
-import AdminLayout from "@components/wishlist/admin/AdminLayout.astro";
+import AdminLayout from "@layouts/AdminLayout.astro";
 import { verifySession } from "@lib/admin/auth";
 import { hasCredentials } from "@lib/admin/webauthn";
 
@@ -73,7 +73,8 @@ if (!credentialsExist) {
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      errorEl.textContent = error instanceof Error ? error.message : "Authentication failed";
+      errorEl.textContent =
+        error instanceof Error ? error.message : "Authentication failed";
       errorEl.hidden = false;
       loginBtn.disabled = false;
       loginBtn.textContent = "Sign in with Passkey";

@@ -1,10 +1,10 @@
 ---
-import AdminLayout from "@components/wishlist/admin/AdminLayout.astro";
-import ItemList from "@components/wishlist/admin/ItemList.astro";
-import ItemModal from "@components/wishlist/admin/ItemModal.astro";
+import AdminLayout from "@layouts/AdminLayout.astro";
+import { AdminPanel } from "@components/wishlist/admin";
 import { verifySession } from "@lib/admin/auth";
 import { categories } from "@lib/wishlist";
 import { db, WishlistItem, Reservation } from "astro:db";
+import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 export const prerender = false;
 
@@ -14,6 +14,11 @@ if (!session) {
   return Astro.redirect("/wishlist/~/login");
 }
 
+// CDN domain
+const cdnDomain = import.meta.env.PROD
+  ? CDN_DOMAIN
+  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN);
+
 // Fetch all items and reservations
 const [items, reservations] = await Promise.all([
   db.select().from(WishlistItem),
@@ -21,9 +26,7 @@ const [items, reservations] = await Promise.all([
 ]);
 
 // Create reservation map
-const reservationMap = new Map(
-  reservations.map((r) => [r.itemId, r])
-);
+const reservationMap = new Map(reservations.map((r) => [r.itemId, r]));
 
 // Sort: reserved items first, then by createdAt (newest first)
 const sortedItems = [...items].sort((a, b) => {
@@ -37,29 +40,24 @@ const sortedItems = [...items].sort((a, b) => {
   // Then by createdAt (newest first)
   return b.createdAt.getTime() - a.createdAt.getTime();
 });
+
+// Convert Map to array for serialization
+const reservationsArray = Array.from(reservationMap.entries());
 ---
 
 <AdminLayout title="Wishlist Admin">
   <header class="admin-header">
     <h1>Wishlist Admin</h1>
     <form method="POST" action="/api/admin/auth/logout">
-      <button type="submit" class="btn btn-secondary btn-small">Logout</button>
+      <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
     </form>
   </header>
 
-  <div class="admin-section">
-    <button id="add-item-btn" class="btn btn-primary add-item-btn">
-      + Add Item
-    </button>
-
-    <h2>All Items ({items.length})</h2>
-    <ItemList items={sortedItems} reservations={reservationMap} categories={categories} />
-  </div>
-
-  <ItemModal />
+  <AdminPanel
+    client:load
+    initialItems={sortedItems}
+    initialReservations={reservationsArray}
+    categories={categories}
+    cdnDomain={cdnDomain}
+  />
 </AdminLayout>
-
-<script>
-  import { initializeAdmin } from "@client/admin";
-  initializeAdmin();
-</script>
