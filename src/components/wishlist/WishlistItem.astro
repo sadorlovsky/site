@@ -8,9 +8,10 @@ import {
 interface Props {
   item: WishlistItemWithReservation;
   isLCP?: boolean;
+  reservationsEnabled?: boolean;
 }
 
-const { item, isLCP = false } = Astro.props;
+const { item, isLCP = false, reservationsEnabled = true } = Astro.props;
 const imageUrl = getCdnImageUrl(item.imageUrl);
 ---
 
@@ -131,7 +132,7 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
       </span>
 
       {
-        !item.received && (
+        !item.received && reservationsEnabled && (
           <button
             class="reserve-btn reserve-btn--loading"
             data-item-id={item.id}

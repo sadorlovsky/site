@@ -7,6 +7,12 @@ export const prerender = false;
 Astro.response.headers.set("CDN-Cache-Control", "no-store");
 
 const items = await getWishlistItems();
+const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
 ---
 
-<WishlistPage items={items} categories={categories} currentCategory="all" />
+<WishlistPage
+  items={items}
+  categories={categories}
+  currentCategory="all"
+  reservationsEnabled={reservationsEnabled}
+/>
