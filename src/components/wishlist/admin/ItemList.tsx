@@ -1,3 +1,4 @@
+import { useState, useRef, useCallback } from "react";
 import type {
   WishlistItem,
   Reservation,
@@ -50,10 +51,12 @@ interface ItemListProps {
   categories: Category[];
   cdnDomain: string;
   exchangeRates: ExchangeRates;
+  isDraggable: boolean;
   onEdit: (item: WishlistItem) => void;
   onDelete: (id: number) => Promise<void>;
   onToggleReceived: (id: number, received: boolean) => Promise<void>;
   onToggleReserved: (id: number, reserved: boolean) => Promise<void>;
+  onReorder?: (reorderedItems: WishlistItem[]) => void;
 }
 
 interface ItemCardProps {
@@ -62,10 +65,18 @@ interface ItemCardProps {
   categoryLabels: { id: string; label: string }[];
   cdnDomain: string;
   priceRub: number | null;
+  isDraggable: boolean;
+  isDragging: boolean;
+  dragOverPosition: "before" | "after" | null;
   onEdit: () => void;
   onDelete: () => Promise<void>;
   onToggleReceived: () => Promise<void>;
   onToggleReserved: () => Promise<void>;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: (e: React.DragEvent) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragLeave: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent) => void;
 }
 
 function ItemCard({
@@ -74,10 +85,18 @@ function ItemCard({
   categoryLabels,
   cdnDomain,
   priceRub,
+  isDraggable,
+  isDragging,
+  dragOverPosition,
   onEdit,
   onDelete,
   onToggleReceived,
   onToggleReserved,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDragLeave,
+  onDrop,
 }: ItemCardProps) {
   const isReserved = !!reservation;
 
@@ -90,12 +109,25 @@ function ItemCard({
     "item-card",
     isReserved ? "reserved" : "",
     item.received ? "received" : "",
+    isDraggable ? "draggable" : "",
+    isDragging ? "dragging" : "",
+    dragOverPosition === "before" ? "drag-over-before" : "",
+    dragOverPosition === "after" ? "drag-over-after" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   return (
-    <article className={itemClasses} data-item-id={item.id}>
+    <article
+      className={itemClasses}
+      data-item-id={item.id}
+      draggable={isDraggable}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="item-image">
         <img
           src={`https://${cdnDomain}/${item.imageUrl}`}
@@ -254,27 +286,133 @@ export function ItemList({
   categories,
   cdnDomain,
   exchangeRates,
+  isDraggable,
   onEdit,
   onDelete,
   onToggleReceived,
   onToggleReserved,
+  onReorder,
 }: ItemListProps) {
-  const getCategoryLabels = (
-    categoryString: string,
-  ): { id: string; label: string }[] => {
-    const categoryIds = categoryString.split(",").map((c) => c.trim());
-    return categoryIds.map((id) => {
-      const cat = categories.find((c) => c.id === id);
-      return { id, label: cat?.label || id };
+  const [draggedItemId, setDraggedItemId] = useState<number | null>(null);
+  const [dragOverItemId, setDragOverItemId] = useState<number | null>(null);
+  const [dragOverPosition, setDragOverPosition] = useState<
+    "before" | "after" | null
+  >(null);
+  const dragCounter = useRef<Map<number, number>>(new Map());
+
+  const getCategoryLabels = useCallback(
+    (categoryString: string): { id: string; label: string }[] => {
+      const categoryIds = categoryString.split(",").map((c) => c.trim());
+      return categoryIds.map((id) => {
+        const cat = categories.find((c) => c.id === id);
+        return { id, label: cat?.label || id };
+      });
+    },
+    [categories],
+  );
+
+  const handleDragStart = useCallback((e: React.DragEvent, itemId: number) => {
+    setDraggedItemId(itemId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(itemId));
+    // Add a slight delay to allow the drag image to be captured
+    requestAnimationFrame(() => {
+      const element = e.target as HTMLElement;
+      element.classList.add("dragging");
     });
-  };
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedItemId(null);
+    setDragOverItemId(null);
+    setDragOverPosition(null);
+    dragCounter.current.clear();
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent, itemId: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    // Determine if dropping before or after based on mouse position
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const midpoint = rect.left + rect.width / 2;
+    const position = e.clientX < midpoint ? "before" : "after";
+
+    setDragOverItemId(itemId);
+    setDragOverPosition(position);
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent, itemId: number) => {
+    e.preventDefault();
+    const count = (dragCounter.current.get(itemId) || 0) + 1;
+    dragCounter.current.set(itemId, count);
+  }, []);
+
+  const handleDragLeave = useCallback(
+    (itemId: number) => {
+      const count = (dragCounter.current.get(itemId) || 0) - 1;
+      dragCounter.current.set(itemId, count);
+
+      if (count <= 0) {
+        dragCounter.current.delete(itemId);
+        if (dragOverItemId === itemId) {
+          setDragOverItemId(null);
+          setDragOverPosition(null);
+        }
+      }
+    },
+    [dragOverItemId],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent, targetItemId: number) => {
+      e.preventDefault();
+
+      const draggedId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      if (isNaN(draggedId) || draggedId === targetItemId) {
+        handleDragEnd();
+        return;
+      }
+
+      // Find indices
+      const draggedIndex = items.findIndex((item) => item.id === draggedId);
+      const targetIndex = items.findIndex((item) => item.id === targetItemId);
+
+      if (draggedIndex === -1 || targetIndex === -1) {
+        handleDragEnd();
+        return;
+      }
+
+      // Create new array with reordered items
+      const newItems = [...items];
+      const [draggedItem] = newItems.splice(draggedIndex, 1);
+
+      // Calculate new target index after removal
+      let newTargetIndex = targetIndex;
+      if (draggedIndex < targetIndex) {
+        newTargetIndex = targetIndex - 1;
+      }
+
+      // Insert at correct position
+      if (dragOverPosition === "after") {
+        newItems.splice(newTargetIndex + 1, 0, draggedItem);
+      } else {
+        newItems.splice(newTargetIndex, 0, draggedItem);
+      }
+
+      // Notify parent about reorder
+      onReorder?.(newItems);
+      handleDragEnd();
+    },
+    [items, dragOverPosition, onReorder, handleDragEnd],
+  );
 
   if (items.length === 0) {
     return <p className="no-items">No items yet. Add your first item!</p>;
   }
 
   return (
-    <div className="items-list">
+    <div className={`items-list${isDraggable ? " drag-enabled" : ""}`}>
       {items.map((item) => (
         <ItemCard
           key={item.id}
@@ -283,12 +421,25 @@ export function ItemList({
           categoryLabels={getCategoryLabels(item.category)}
           cdnDomain={cdnDomain}
           priceRub={convertToRub(item.price, exchangeRates)}
+          isDraggable={isDraggable}
+          isDragging={draggedItemId === item.id}
+          dragOverPosition={
+            dragOverItemId === item.id ? dragOverPosition : null
+          }
           onEdit={() => onEdit(item)}
           onDelete={() => onDelete(item.id)}
           onToggleReceived={() => onToggleReceived(item.id, item.received)}
           onToggleReserved={() =>
             onToggleReserved(item.id, reservations.has(item.id))
           }
+          onDragStart={(e) => handleDragStart(e, item.id)}
+          onDragEnd={handleDragEnd}
+          onDragOver={(e) => {
+            handleDragEnter(e, item.id);
+            handleDragOver(e, item.id);
+          }}
+          onDragLeave={() => handleDragLeave(item.id)}
+          onDrop={(e) => handleDrop(e, item.id)}
         />
       ))}
     </div>

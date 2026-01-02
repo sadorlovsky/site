@@ -40,6 +40,10 @@ export function AdminPanel({
     "all" | "reserved" | "received"
   >("all");
   const [sortMode, setSortMode] = useState<"admin" | "public">("admin");
+  const [reorderedItems, setReorderedItems] = useState<WishlistItem[] | null>(
+    null,
+  );
+  const [isSavingWeights, setIsSavingWeights] = useState(false);
 
   // Debounce search query
   useEffect(() => {
@@ -49,6 +53,11 @@ export function AdminPanel({
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Reset reordered items when switching sort mode or filters
+  useEffect(() => {
+    setReorderedItems(null);
+  }, [sortMode, selectedCategory, selectedStatus, debouncedSearchQuery]);
 
   // Filter categories (exclude "all" for the dropdown, but keep for filter logic)
   const filterCategories = useMemo(
@@ -332,6 +341,87 @@ export function AdminPanel({
     [],
   );
 
+  // Handle reorder from drag-and-drop
+  const handleReorder = useCallback((newOrderedItems: WishlistItem[]) => {
+    setReorderedItems(newOrderedItems);
+  }, []);
+
+  // Calculate new weights based on position
+  const calculateNewWeights = useCallback((orderedItems: WishlistItem[]) => {
+    // Group by priority, then assign weights within each group
+    // Higher position = higher weight
+    const weightChanges: { id: number; weight: number }[] = [];
+
+    // Filter to non-received items only (received items don't need weights)
+    const activeItems = orderedItems.filter((item) => !item.received);
+
+    // Assign weights based on position (higher index = lower weight for same priority)
+    // We'll use a simple approach: position in list = weight (reversed)
+    const maxWeight = activeItems.length;
+
+    activeItems.forEach((item, index) => {
+      const newWeight = maxWeight - index;
+      if (item.weight !== newWeight) {
+        weightChanges.push({ id: item.id, weight: newWeight });
+      }
+    });
+
+    return weightChanges;
+  }, []);
+
+  // Save weight changes to database
+  const handleSaveWeights = useCallback(async () => {
+    if (!reorderedItems) return;
+
+    const weightChanges = calculateNewWeights(reorderedItems);
+
+    if (weightChanges.length === 0) {
+      setReorderedItems(null);
+      return;
+    }
+
+    setIsSavingWeights(true);
+
+    try {
+      // Update each item's weight
+      const updatePromises = weightChanges.map(({ id, weight }) =>
+        fetch(`/api/admin/items/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ weight }),
+        }),
+      );
+
+      const results = await Promise.all(updatePromises);
+
+      // Check for errors
+      const failedUpdates = results.filter((r) => !r.ok);
+      if (failedUpdates.length > 0) {
+        throw new Error(`Failed to update ${failedUpdates.length} items`);
+      }
+
+      // Update local state with new weights
+      setItems((prev) =>
+        prev.map((item) => {
+          const change = weightChanges.find((c) => c.id === item.id);
+          return change ? { ...item, weight: change.weight } : item;
+        }),
+      );
+
+      setReorderedItems(null);
+    } catch (error) {
+      console.error("Failed to save weights:", error);
+      alert("Failed to save weight changes. Please try again.");
+    } finally {
+      setIsSavingWeights(false);
+    }
+  }, [reorderedItems, calculateNewWeights]);
+
+  // Discard weight changes
+  const handleDiscardWeights = useCallback(() => {
+    setReorderedItems(null);
+  }, []);
+
   return (
     <>
       <div className="admin-section">
@@ -437,18 +527,41 @@ export function AdminPanel({
               Clear filters
             </button>
           )}
+          {reorderedItems && (
+            <div className="weight-actions">
+              <span className="weight-hint">Drag to reorder, then save</span>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleDiscardWeights}
+                disabled={isSavingWeights}
+              >
+                Discard
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handleSaveWeights}
+                disabled={isSavingWeights}
+              >
+                {isSavingWeights ? "Saving..." : "Save Order"}
+              </button>
+            </div>
+          )}
         </div>
 
         <ItemList
-          items={filteredItems}
+          items={reorderedItems || filteredItems}
           reservations={reservations}
           categories={categories}
           cdnDomain={cdnDomain}
           exchangeRates={exchangeRates}
+          isDraggable={sortMode === "public" && !hasActiveFilters}
           onEdit={openEditModal}
           onDelete={handleDelete}
           onToggleReceived={handleToggleReceived}
           onToggleReserved={handleToggleReserved}
+          onReorder={handleReorder}
         />
       </div>
 
