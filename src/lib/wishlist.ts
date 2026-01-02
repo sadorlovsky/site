@@ -12,6 +12,7 @@ export function getCdnImageUrl(filename: string): string {
 
 // Types
 export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR";
+export type ReservationStatus = "reserved" | "confirmed";
 
 export type ParsedPrice = {
   amount: number; // In cents
@@ -35,7 +36,7 @@ export type WishlistItemWithReservation = {
   createdAt: Date;
   weight: number;
   isReserved: boolean;
-  reservedBy: string | null;
+  reservationStatus: ReservationStatus | null;
 };
 
 export type Category = {
@@ -160,13 +161,16 @@ export async function getWishlistItems(
     const reservation = reservations.find((r) => r.itemId === item.id);
     const priceUsd = computePriceUsd(item.price);
     const priceRub = priceUsd && usdToRub ? priceUsd * usdToRub : null;
+    const reservationStatus = reservation
+      ? (reservation.status ?? "confirmed")
+      : null;
 
     return {
       ...item,
       priceUsd,
       priceRub,
       isReserved: !!reservation,
-      reservedBy: reservation?.reservedBy ?? null,
+      reservationStatus,
     };
   });
 

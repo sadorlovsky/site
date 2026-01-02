@@ -6,10 +6,10 @@ export const prerender = false;
 export const GET: APIRoute = async () => {
   const reservations = await db.select().from(Reservation);
 
-  // Return map of itemId -> visitorId
-  const reservationMap: Record<number, string> = {};
+  // Return map of itemId -> reservation status
+  const reservationMap: Record<number, "reserved" | "confirmed"> = {};
   for (const r of reservations) {
-    reservationMap[r.itemId] = r.reservedBy;
+    reservationMap[r.itemId] = r.status ?? "confirmed";
   }
 
   return new Response(JSON.stringify(reservationMap), {

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { db, WishlistItem, ExchangeRate, Reservation } from "astro:db";
 
 // https://astro.build/db/seed
@@ -970,24 +971,32 @@ export default async function seed() {
       itemId: 12, // Hollow Knight Blanket
       reservedBy: "test-visitor",
       reservedAt: new Date(),
+      reservationToken: randomUUID(),
+      status: "confirmed",
     },
     {
       id: 2,
       itemId: 53, // Moomin Blueberry-raspberry liquorice stick
       reservedBy: "test-visitor",
       reservedAt: new Date(),
+      reservationToken: randomUUID(),
+      status: "confirmed",
     },
     {
       id: 3,
       itemId: 56, // Dumle Original
       reservedBy: "test-visitor",
       reservedAt: new Date(),
+      reservationToken: randomUUID(),
+      status: "confirmed",
     },
     {
       id: 4,
       itemId: 58, // Dumle Mix 295g
       reservedBy: "test-visitor",
       reservedAt: new Date(),
+      reservationToken: randomUUID(),
+      status: "confirmed",
     },
   ]);
 }

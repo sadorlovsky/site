@@ -35,6 +35,11 @@ const Reservation = defineTable({
     reservedBy: column.text(), // visitorId from localStorage
     ip: column.text({ optional: true }), // Client IP address
     reservedAt: column.date(),
+    reservationToken: column.text(), // per-reservation secret for unreserve
+    status: column.text({
+      optional: true,
+      enum: ["reserved", "confirmed"],
+    }),
   },
 });
 

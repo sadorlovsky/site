@@ -5,11 +5,11 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/copy-data-files.js",
-    "dev": "astro dev",
-    "start": "astro dev",
+    "dev": "bun --bun astro dev",
+    "start": "bun --bun astro dev",
     "prebuild": "node scripts/copy-data-files.js",
-    "build": "astro build",
-    "preview": "astro preview",
+    "build": "bun --bun astro build",
+    "preview": "bun --bun astro preview",
     "astro": "astro",
     "test": "vitest"
   },
