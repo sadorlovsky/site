@@ -70,22 +70,40 @@ function showButtons() {
       const isReserved = reservedBy.length > 0;
       const isOwnReservation = isReserved && reservedBy === visitorId;
 
+      // Get badge elements
+      const article = button.closest("article");
+      const reservedBadge = article?.querySelector(
+        ".reserved-badge",
+      ) as HTMLElement;
+
       // Set correct text based on language and state
       if (isReserved && isOwnReservation) {
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruCancel
             : button.dataset.enCancel) ?? null;
+        if (reservedBadge) reservedBadge.hidden = true;
       } else if (isReserved) {
-        button.textContent =
-          (currentLang === "ru"
-            ? button.dataset.ruReserved
-            : button.dataset.enReserved) ?? null;
+        // Someone else's reservation - hide button, show badge
+        button.style.visibility = "hidden";
+        button.style.pointerEvents = "none";
+        button.disabled = true;
+        if (reservedBadge) {
+          reservedBadge.hidden = false;
+          const span = reservedBadge.querySelector("span");
+          if (span) {
+            span.textContent =
+              (currentLang === "ru"
+                ? reservedBadge.dataset.ru
+                : reservedBadge.dataset.en) ?? null;
+          }
+        }
       } else {
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruReserve
             : button.dataset.enReserve) ?? null;
+        if (reservedBadge) reservedBadge.hidden = true;
       }
 
       // Show button
@@ -108,39 +126,52 @@ function initializeReserveButtons() {
     const isReserved = reservedBy.length > 0;
     const isOwnReservation = isReserved && reservedBy === visitorId;
 
-    // Get badge element (in the item-image section)
+    // Get badge elements (in the item-image section)
     const article = button.closest("article");
-    const badge = article?.querySelector(
+    const ownBadge = article?.querySelector(
       ".own-reservation-badge",
+    ) as HTMLElement;
+    const reservedBadge = article?.querySelector(
+      ".reserved-badge",
     ) as HTMLElement;
 
     // Set initial button state
     if (isReserved) {
       if (isOwnReservation) {
-        // Own reservation - show Cancel and badge
+        // Own reservation - show Cancel and own badge
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruCancel
             : button.dataset.enCancel) ?? null;
         button.classList.add("own-reservation");
-        if (badge) {
-          badge.hidden = false;
+        if (ownBadge) {
+          ownBadge.hidden = false;
           // Update badge text for current language
-          const span = badge.querySelector("span");
+          const span = ownBadge.querySelector("span");
           if (span) {
             span.textContent =
-              (currentLang === "ru" ? badge.dataset.ru : badge.dataset.en) ??
-              null;
+              (currentLang === "ru"
+                ? ownBadge.dataset.ru
+                : ownBadge.dataset.en) ?? null;
           }
         }
+        if (reservedBadge) reservedBadge.hidden = true;
       } else {
-        // Someone else's reservation - show Reserved (disabled)
-        button.textContent =
-          (currentLang === "ru"
-            ? button.dataset.ruReserved
-            : button.dataset.enReserved) ?? null;
-        button.classList.add("reserved-other");
+        // Someone else's reservation - hide button, show reserved badge
+        button.style.visibility = "hidden";
+        button.style.pointerEvents = "none";
         button.disabled = true;
+        if (reservedBadge) {
+          reservedBadge.hidden = false;
+          const span = reservedBadge.querySelector("span");
+          if (span) {
+            span.textContent =
+              (currentLang === "ru"
+                ? reservedBadge.dataset.ru
+                : reservedBadge.dataset.en) ?? null;
+          }
+        }
+        if (ownBadge) ownBadge.hidden = true;
       }
     }
 

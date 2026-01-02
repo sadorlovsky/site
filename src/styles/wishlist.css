@@ -260,7 +260,8 @@ html.lang-ready .wishlist-container {
 
 /* Badges */
 .received-badge,
-.own-reservation-badge {
+.own-reservation-badge,
+.reserved-badge {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
@@ -279,13 +280,20 @@ html.lang-ready .wishlist-container {
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
+.reserved-badge {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.4);
+}
+
 .received-badge svg,
-.own-reservation-badge svg {
+.own-reservation-badge svg,
+.reserved-badge svg {
   width: 12px;
   height: 12px;
 }
 
-.own-reservation-badge[hidden] {
+.own-reservation-badge[hidden],
+.reserved-badge[hidden] {
   display: none;
 }
 
@@ -447,13 +455,6 @@ html.lang-ready .wishlist-container {
   box-shadow: none;
 }
 
-.reserve-btn.reserved-other {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  cursor: default;
-  box-shadow: 0 4px 15px rgba(237, 87, 96, 0.3);
-}
-
 .reserve-btn.received {
   background: linear-gradient(135deg, #10b981, #059669);
   color: white;
@@ -537,7 +538,6 @@ html.lang-ready .wishlist-container {
     border-color: light-dark(#bbb, #666);
   }
 
-  .reserve-btn.reserved-other,
   .reserve-btn.received {
     border-color: transparent;
   }

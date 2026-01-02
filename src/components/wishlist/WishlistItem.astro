@@ -8,9 +8,10 @@ import {
 interface Props {
   item: WishlistItemWithReservation;
   isLCP?: boolean;
+  reservationsEnabled?: boolean;
 }
 
-const { item, isLCP = false } = Astro.props;
+const { item, isLCP = false, reservationsEnabled = true } = Astro.props;
 const imageUrl = getCdnImageUrl(item.imageUrl);
 ---
 
@@ -80,6 +81,28 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
       </svg>
       <span>Reserved by you</span>
     </div>
+    <div
+      class="reserved-badge"
+      data-en="Reserved"
+      data-ru="Зарезервировано"
+      hidden={!item.isReserved || reservationsEnabled}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M13.5 4L6 11.5L2.5 8"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span>Reserved</span>
+    </div>
   </div>
   <div class="item-content">
     <h2
@@ -131,7 +154,7 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
       </span>
 
       {
-        !item.received && (
+        !item.received && reservationsEnabled && (
           <button
             class="reserve-btn reserve-btn--loading"
             data-item-id={item.id}
