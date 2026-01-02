@@ -4,10 +4,8 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/copy-data-files.js",
     "dev": "astro dev",
     "start": "astro dev",
-    "prebuild": "node scripts/copy-data-files.js",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
