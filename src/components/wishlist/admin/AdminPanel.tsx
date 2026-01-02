@@ -39,6 +39,7 @@ export function AdminPanel({
   const [selectedStatus, setSelectedStatus] = useState<
     "all" | "reserved" | "received"
   >("all");
+  const [sortMode, setSortMode] = useState<"admin" | "public">("admin");
 
   // Debounce search query
   useEffect(() => {
@@ -88,7 +89,13 @@ export function AdminPanel({
     );
   }, [reservations, items]);
 
-  // Filtered items
+  // Priority order for public sorting
+  const priorityOrder: Record<string, number> = useMemo(
+    () => ({ high: 0, medium: 1, low: 2 }),
+    [],
+  );
+
+  // Filtered and sorted items
   const filteredItems = useMemo(() => {
     let result = items;
 
@@ -121,6 +128,32 @@ export function AdminPanel({
       );
     }
 
+    // Sort based on mode
+    result = [...result].sort((a, b) => {
+      if (sortMode === "public") {
+        // Public sorting: received last → priority → weight → createdAt
+        if (a.received && !b.received) return 1;
+        if (!a.received && b.received) return -1;
+
+        const aPriority = a.priority ? (priorityOrder[a.priority] ?? 3) : 3;
+        const bPriority = b.priority ? (priorityOrder[b.priority] ?? 3) : 3;
+        if (aPriority !== bPriority) return aPriority - bPriority;
+
+        if (a.weight !== b.weight) return b.weight - a.weight;
+
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      } else {
+        // Admin sorting: reserved first → createdAt (newest first)
+        const aReserved = reservations.has(a.id);
+        const bReserved = reservations.has(b.id);
+
+        if (aReserved && !bReserved) return -1;
+        if (!aReserved && bReserved) return 1;
+
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      }
+    });
+
     return result;
   }, [
     items,
@@ -128,6 +161,8 @@ export function AdminPanel({
     selectedCategory,
     debouncedSearchQuery,
     reservations,
+    sortMode,
+    priorityOrder,
   ]);
 
   // Check if any filters are active
@@ -365,6 +400,27 @@ export function AdminPanel({
                 aria-pressed={selectedStatus === "received"}
               >
                 Received
+              </button>
+            </div>
+
+            <div className="sort-toggle" role="group" aria-label="Sort mode">
+              <button
+                type="button"
+                className={`sort-toggle-btn${sortMode === "admin" ? " active" : ""}`}
+                onClick={() => setSortMode("admin")}
+                aria-pressed={sortMode === "admin"}
+                title="Reserved first, then newest"
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                className={`sort-toggle-btn${sortMode === "public" ? " active" : ""}`}
+                onClick={() => setSortMode("public")}
+                aria-pressed={sortMode === "public"}
+                title="Priority → Weight → Newest (as on public page)"
+              >
+                Public
               </button>
             </div>
           </div>

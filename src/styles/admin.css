@@ -324,6 +324,42 @@
   outline-offset: 2px;
 }
 
+/* Sort Toggle */
+.sort-toggle {
+  display: flex;
+  align-items: center;
+  padding: 0.25rem;
+  background: light-dark(rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.15));
+  border-radius: 10px;
+}
+
+.sort-toggle-btn {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: light-dark(#555, #aaa);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sort-toggle-btn:hover {
+  color: light-dark(#111, #fff);
+}
+
+.sort-toggle-btn.active {
+  color: white;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35));
+}
+
+.sort-toggle-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
 /* Filter Header */
 .filter-header {
   display: flex;
