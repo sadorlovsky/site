@@ -1,5 +1,6 @@
 import { actions } from "astro:actions";
 import type { Lang } from "@lib/i18n";
+import { showSnackbar } from "./snackbar";
 
 const VISITOR_ID_KEY = "wishlist-visitor-id";
 let currentLang: Lang = "en";
@@ -194,7 +195,7 @@ function initializeReserveButtons() {
           this.textContent = previousState.textContent;
           if (previousState.hasClass) this.classList.add("own-reservation");
           if (itemBadge) itemBadge.hidden = previousState.badgeHidden ?? false;
-          alert(error.message || "Failed to cancel reservation");
+          showSnackbar(error.message || "Failed to cancel reservation");
         }
       } else if (!isCurrentlyReserved) {
         // Make reservation - optimistic UI
@@ -241,7 +242,14 @@ function initializeReserveButtons() {
           this.textContent = previousState.textContent;
           if (!previousState.hasClass) this.classList.remove("own-reservation");
           if (itemBadge) itemBadge.hidden = previousState.badgeHidden ?? true;
-          alert(error.message || "Failed to reserve item");
+
+          // If banned, refetch all reservations to update UI
+          if (error.code === "FORBIDDEN") {
+            await fetchAndApplyReservations();
+            initializeReserveButtons();
+          }
+
+          showSnackbar(error.message || "Failed to reserve item");
         }
       }
     });

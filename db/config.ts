@@ -32,12 +32,24 @@ const Reservation = defineTable({
   columns: {
     id: column.number({ primaryKey: true }),
     itemId: column.number({ references: () => WishlistItem.columns.id }),
-    reservedBy: column.text(), // Name or identifier of person who reserved
+    reservedBy: column.text(), // visitorId from localStorage
+    ip: column.text({ optional: true }), // Client IP address
     reservedAt: column.date(),
+  },
+});
+
+const Ban = defineTable({
+  columns: {
+    id: column.number({ primaryKey: true }),
+    visitorId: column.text({ optional: true }),
+    ip: column.text({ optional: true }),
+    reason: column.text({ enum: ["spam", "greed", "multi_account"] }),
+    expiresAt: column.date(),
+    createdAt: column.date({ default: new Date() }),
   },
 });
 
 // https://astro.build/db/config
 export default defineDb({
-  tables: { WishlistItem, Reservation, ExchangeRate },
+  tables: { WishlistItem, Reservation, ExchangeRate, Ban },
 });
