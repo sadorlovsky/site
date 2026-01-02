@@ -53,9 +53,11 @@ const { categories, currentCategory } = Astro.props;
 
       const atStart = scrollLeft <= threshold;
       const atEnd = scrollLeft + clientWidth >= scrollWidth - threshold;
+      const isScrollable = scrollWidth > clientWidth + threshold;
 
       categoriesEl.classList.toggle("at-start", atStart);
       categoriesEl.classList.toggle("at-end", atEnd);
+      categoriesEl.classList.toggle("is-scrollable", isScrollable);
     }
 
     // Scroll active category to center
@@ -74,6 +76,62 @@ const { categories, currentCategory } = Astro.props;
 
       updateEdgeFades();
     }
+
+    // Drag-to-scroll for desktop (non-touch devices)
+    let isDragging = false;
+    let startX = 0;
+    let scrollStart = 0;
+    let hasDragged = false;
+
+    function onMouseDown(e: MouseEvent) {
+      // Only enable drag on devices with mouse (not touch)
+      if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
+        return;
+
+      // Only enable drag if content is scrollable
+      if (categoriesEl.scrollWidth <= categoriesEl.clientWidth) return;
+
+      // Prevent native link drag
+      e.preventDefault();
+
+      isDragging = true;
+      hasDragged = false;
+      startX = e.pageX;
+      scrollStart = categoriesEl.scrollLeft;
+      categoriesEl.style.cursor = "grabbing";
+      categoriesEl.style.userSelect = "none";
+    }
+
+    function onMouseMove(e: MouseEvent) {
+      if (!isDragging) return;
+
+      const dx = e.pageX - startX;
+      if (Math.abs(dx) > 3) {
+        hasDragged = true;
+      }
+      categoriesEl.scrollLeft = scrollStart - dx;
+    }
+
+    function onMouseUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      categoriesEl.style.cursor = "";
+      categoriesEl.style.userSelect = "";
+    }
+
+    function onClickCapture(e: MouseEvent) {
+      // Prevent click on links if we were dragging
+      if (hasDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        hasDragged = false;
+      }
+    }
+
+    categoriesEl.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+    categoriesEl.addEventListener("click", onClickCapture, true);
 
     categoriesEl.addEventListener("scroll", updateEdgeFades, { passive: true });
 
