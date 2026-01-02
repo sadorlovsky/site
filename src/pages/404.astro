@@ -1,21 +1,311 @@
 ---
-import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 ---
 
-<PageLayout title="Lost in Zach's World">
-  <div class="container">
-    <h1><span class="code">404:</span> Not found</h1>
-  </div>
+<PageLayout title="404 - Page Not Found">
+  <main>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="content">
+      <div class="error-code">
+        <span class="digit">4</span>
+        <span class="digit zero">0</span>
+        <span class="digit">4</span>
+      </div>
+
+      <h1>Lost in space</h1>
+      <p class="subtitle">
+        The page you're looking for has drifted into the void
+      </p>
+
+      <a href="/" class="home-btn">
+        <span>Take me home</span>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+
+    <div class="stars"></div>
+  </main>
 </PageLayout>
 
 <style>
-  .container {
+  :root {
+    --accent-start: rgb(237, 98, 146);
+    --accent-end: rgb(237, 87, 96);
+  }
+
+  main {
     width: 100%;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Animated background blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -150px;
+    right: -100px;
+    opacity: 0.25;
+    animation: float1 8s ease-in-out infinite;
+  }
+
+  .blob-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    bottom: -100px;
+    left: -100px;
+    opacity: 0.2;
+    animation: float2 10s ease-in-out infinite;
+  }
+
+  @keyframes float1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-30px, 30px) scale(1.1);
+    }
+  }
+
+  @keyframes float2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(30px, -20px) scale(1.05);
+    }
+  }
+
+  /* Starfield background */
+  .stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      radial-gradient(2px 2px at 20px 30px, white, transparent),
+      radial-gradient(
+        2px 2px at 40px 70px,
+        rgba(255, 255, 255, 0.8),
+        transparent
+      ),
+      radial-gradient(1px 1px at 90px 40px, white, transparent),
+      radial-gradient(
+        2px 2px at 160px 120px,
+        rgba(255, 255, 255, 0.9),
+        transparent
+      ),
+      radial-gradient(1px 1px at 230px 80px, white, transparent),
+      radial-gradient(
+        2px 2px at 300px 150px,
+        rgba(255, 255, 255, 0.7),
+        transparent
+      ),
+      radial-gradient(1px 1px at 370px 50px, white, transparent),
+      radial-gradient(
+        2px 2px at 450px 180px,
+        rgba(255, 255, 255, 0.8),
+        transparent
+      ),
+      radial-gradient(1px 1px at 520px 90px, white, transparent),
+      radial-gradient(2px 2px at 600px 200px, white, transparent);
+    background-size: 650px 250px;
+    animation: twinkle 5s ease-in-out infinite;
+    opacity: light-dark(0.15, 0.4);
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: light-dark(0.15, 0.4);
+    }
+    50% {
+      opacity: light-dark(0.08, 0.25);
+    }
+  }
+
+  /* Content */
+  .content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  /* Error code */
+  .error-code {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .digit {
+    font-size: clamp(5rem, 20vw, 10rem);
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .digit:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .digit.zero {
+    animation: bounce 2s ease-in-out infinite;
+  }
+
+  .digit:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+  }
+
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-weight: 700;
+    color: light-dark(#111, #fafafa);
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    color: light-dark(#666, #999);
+    margin: 0 0 2.5rem 0;
+    max-width: 400px;
+    line-height: 1.5;
+  }
+
+  /* Home button */
+  .home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    border-radius: 12px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(237, 87, 96, 0.35);
+  }
+
+  .home-btn svg {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .home-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 8px 30px rgba(237, 87, 96, 0.45);
+  }
+
+  .home-btn:hover svg {
+    transform: translateX(4px);
+  }
+
+  .home-btn:active {
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .blob-1,
+    .blob-2 {
+      animation: none;
+    }
+
+    .stars {
+      animation: none;
+    }
+
+    .digit {
+      animation: none;
+    }
+
+    .digit.zero {
+      animation: none;
+    }
+
+    .home-btn,
+    .home-btn svg {
+      transition: none;
+    }
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 480px) {
+    .blob-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -80px;
+    }
+
+    .blob-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -80px;
+      left: -80px;
+    }
+
+    .error-code {
+      gap: 0.25rem;
+    }
   }
 </style>

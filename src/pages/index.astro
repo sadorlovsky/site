@@ -5,19 +5,94 @@ import Avatar from "@components/Avatar.astro";
 
 <PageLayout title="Zach">
   <main>
-    <div class="profile-picture">
-      <div class="shape"></div>
-      <Avatar class="picture" />
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="content">
+      <div class="profile-picture">
+        <div class="shape"></div>
+        <Avatar class="picture" />
+      </div>
+
+      <div class="info">
+        <h1>Zach</h1>
+        <p class="bio">Software engineer & traveler</p>
+      </div>
     </div>
   </main>
 </PageLayout>
 
 <style>
+  :root {
+    --accent-start: rgb(237, 98, 146);
+    --accent-end: rgb(237, 87, 96);
+  }
+
   main {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ambient background blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -200px;
+    right: -150px;
+    opacity: 0.2;
+    animation: float1 12s ease-in-out infinite;
+  }
+
+  .blob-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    bottom: -150px;
+    left: -100px;
+    opacity: 0.15;
+    animation: float2 15s ease-in-out infinite;
+  }
+
+  @keyframes float1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-40px, 40px) scale(1.1);
+    }
+  }
+
+  @keyframes float2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(30px, -30px) scale(1.05);
+    }
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
   }
 
   .profile-picture {
@@ -36,8 +111,8 @@ import Avatar from "@components/Avatar.astro";
     height: 100%;
     background-image: linear-gradient(
       90deg,
-      rgb(237, 98, 146) 25%,
-      rgb(237, 87, 96) 87.5%
+      var(--accent-start) 25%,
+      var(--accent-end) 87.5%
     );
     background-size: 200% 200%;
     animation:
@@ -50,6 +125,40 @@ import Avatar from "@components/Avatar.astro";
   .picture {
     height: 100%;
     z-index: 1;
+  }
+
+  .info {
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bio {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    color: light-dark(#666, #999);
+    margin: 0.5rem 0 0 0;
+    font-weight: 400;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes morph {
@@ -76,6 +185,49 @@ import Avatar from "@components/Avatar.astro";
     }
     100% {
       background-position: 7% 0%;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .blob-1,
+    .blob-2 {
+      animation: none;
+    }
+
+    .info {
+      animation: none;
+    }
+
+    .shape {
+      animation: none;
+      border-radius: 50%;
+    }
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 480px) {
+    .blob-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -100px;
+    }
+
+    .blob-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -100px;
+      left: -80px;
+    }
+
+    .profile-picture {
+      width: 16rem;
+      height: 16rem;
+    }
+
+    .content {
+      gap: 1.5rem;
     }
   }
 </style>
