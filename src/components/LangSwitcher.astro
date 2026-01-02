@@ -133,15 +133,18 @@ const { storageKey, variant = "default" } = Astro.props;
     }
   }
 
+  /* Hide globe when filter categories become scrollable */
+  @media (max-width: 768px) {
+    .lang-switcher-icon {
+      display: none;
+    }
+  }
+
   /* Mobile - compact version */
   @media (max-width: 600px) {
     .lang-switcher {
       gap: 0.25rem;
       padding: 0.25rem;
-    }
-
-    .lang-switcher-icon {
-      display: none;
     }
 
     .lang-switcher-btn {
