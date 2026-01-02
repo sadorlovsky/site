@@ -180,6 +180,17 @@ const { categories, currentCategory } = Astro.props;
     padding: 0.25rem 0;
   }
 
+  /* Drag-to-scroll cursor for desktop (only when scrollable) */
+  @media (hover: hover) and (pointer: fine) {
+    .mobile-filter-categories.is-scrollable {
+      cursor: grab;
+    }
+
+    .mobile-filter-categories.is-scrollable:active {
+      cursor: grabbing;
+    }
+  }
+
   .mobile-filter-categories::-webkit-scrollbar {
     display: none;
   }
@@ -334,9 +345,11 @@ const { categories, currentCategory } = Astro.props;
 
       const atStart = scrollLeft <= threshold;
       const atEnd = scrollLeft + clientWidth >= scrollWidth - threshold;
+      const isScrollable = scrollWidth > clientWidth + threshold;
 
       categoriesWrapper.classList.toggle("at-start", atStart);
       categoriesWrapper.classList.toggle("at-end", atEnd);
+      categoriesScroller.classList.toggle("is-scrollable", isScrollable);
     }
 
     // Scroll active category to center
@@ -404,6 +417,63 @@ const { categories, currentCategory } = Astro.props;
       });
       // Initial edge fade state
       updateEdgeFades();
+
+      // Drag-to-scroll for desktop (non-touch devices)
+      let isDragging = false;
+      let startX = 0;
+      let scrollStart = 0;
+      let hasDragged = false;
+
+      function onMouseDown(e: MouseEvent) {
+        // Only enable drag on devices with mouse (not touch)
+        if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
+          return;
+
+        // Only enable drag if content is scrollable
+        if (categoriesScroller!.scrollWidth <= categoriesScroller!.clientWidth)
+          return;
+
+        // Prevent native link drag
+        e.preventDefault();
+
+        isDragging = true;
+        hasDragged = false;
+        startX = e.pageX;
+        scrollStart = categoriesScroller!.scrollLeft;
+        categoriesScroller!.style.cursor = "grabbing";
+        categoriesScroller!.style.userSelect = "none";
+      }
+
+      function onMouseMove(e: MouseEvent) {
+        if (!isDragging) return;
+
+        const dx = e.pageX - startX;
+        if (Math.abs(dx) > 3) {
+          hasDragged = true;
+        }
+        categoriesScroller!.scrollLeft = scrollStart - dx;
+      }
+
+      function onMouseUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        categoriesScroller!.style.cursor = "";
+        categoriesScroller!.style.userSelect = "";
+      }
+
+      function onClickCapture(e: MouseEvent) {
+        // Prevent click on links if we were dragging
+        if (hasDragged) {
+          e.preventDefault();
+          e.stopPropagation();
+          hasDragged = false;
+        }
+      }
+
+      categoriesScroller.addEventListener("mousedown", onMouseDown);
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+      categoriesScroller.addEventListener("click", onClickCapture, true);
     }
 
     // Setup language switcher

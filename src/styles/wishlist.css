@@ -581,6 +581,17 @@ html.lang-ready .wishlist-container {
 }
 
 /* Responsive */
+/* Drag-to-scroll cursor for desktop (only when scrollable) */
+@media (hover: hover) and (pointer: fine) {
+  .filter-categories.is-scrollable {
+    cursor: grab;
+  }
+
+  .filter-categories.is-scrollable:active {
+    cursor: grabbing;
+  }
+}
+
 @media (max-width: 768px) {
   .wishlist-container {
     padding: 2rem 1rem 4rem;
