@@ -26,17 +26,26 @@ const continentsPercent = Math.floor(
       <span class="value">{countries.size} / {countryListSize}</span>
       <a
         href="/travel/countries"
-        data-title-en="Why this number?"
-        data-title-ru="Почему такое число?"
+        class="info-link"
+        aria-label="Why this number? View country list"
+        data-aria-label-en="Why this number? View country list"
+        data-aria-label-ru="Почему такое число? Посмотреть список стран"
       >
-        <Icon name="info" class="info-icon" />
+        <Icon name="info" class="info-icon" aria-hidden="true" />
       </a>
     </div>
     <div class="progress-row">
-      <div class="progress-bar">
+      <div
+        class="progress-bar"
+        role="progressbar"
+        aria-valuenow={countriesPercent}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-label="Countries visited progress"
+      >
         <div class="progress-fill" style={`width: ${countriesPercent}%`}></div>
       </div>
-      <span class="percent">{countriesPercent}%</span>
+      <span class="percent" aria-hidden="true">{countriesPercent}%</span>
     </div>
   </div>
   <div class="card">
@@ -47,10 +56,17 @@ const continentsPercent = Math.floor(
     <h3 data-en="Continents" data-ru="Континенты">Continents</h3>
     <div class="value">{continentsVisited} / {continentsTotal}</div>
     <div class="progress-row">
-      <div class="progress-bar">
+      <div
+        class="progress-bar"
+        role="progressbar"
+        aria-valuenow={continentsPercent}
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-label="Continents visited progress"
+      >
         <div class="progress-fill" style={`width: ${continentsPercent}%`}></div>
       </div>
-      <span class="percent">{continentsPercent}%</span>
+      <span class="percent" aria-hidden="true">{continentsPercent}%</span>
     </div>
   </div>
 </div>
@@ -96,18 +112,27 @@ const continentsPercent = Math.floor(
     align-items: center;
   }
 
-  .with-info > a {
+  .info-link {
     display: inline-flex;
+    padding: 0.2rem;
+    border-radius: 4px;
+    transition: color 0.2s ease;
+  }
+
+  .info-link:hover .info-icon {
+    color: #888;
+  }
+
+  .info-link:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
   }
 
   .info-icon {
     color: #666;
     width: 16px;
     height: 16px;
-  }
-
-  .info-icon:hover {
-    color: #888;
+    transition: color 0.2s ease;
   }
 
   .progress-row {
@@ -176,6 +201,14 @@ const continentsPercent = Math.floor(
 
     .card:last-child {
       border-radius: 0 0 5px 5px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .info-link,
+    .info-icon,
+    .progress-fill {
+      transition: none;
     }
   }
 </style>
