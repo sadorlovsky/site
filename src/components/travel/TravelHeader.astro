@@ -5,14 +5,16 @@ import LangSwitcher from "@components/LangSwitcher.astro";
 
 <div class="heading">
   <h1 class="title">Zach's travels</h1>
-  <a class="photos-link" href="https://instagram.com/sadorlovsky">
-    <Icon
-      name="instagram"
-      width={24}
-      height={24}
-      data-title-en="My travel photos"
-      data-title-ru="Фото из путешествий"
-    />
+  <a
+    class="photos-link"
+    href="https://instagram.com/sadorlovsky"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="My travel photos on Instagram"
+    data-aria-label-en="My travel photos on Instagram"
+    data-aria-label-ru="Фото из путешествий в Instagram"
+  >
+    <Icon name="instagram" width={24} height={24} aria-hidden="true" />
     <span
       class="only-wide"
       data-en="My travel photos"
@@ -41,6 +43,18 @@ import LangSwitcher from "@components/LangSwitcher.astro";
     gap: 0.5em;
     text-decoration: none;
     color: unset;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: color 0.2s ease;
+  }
+
+  .photos-link:hover {
+    color: light-dark(#111, #fff);
+  }
+
+  .photos-link:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
   }
 
   .title {
@@ -54,6 +68,12 @@ import LangSwitcher from "@components/LangSwitcher.astro";
   @media (max-width: 480px) {
     .only-wide {
       display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .photos-link {
+      transition: none;
     }
   }
 </style>
