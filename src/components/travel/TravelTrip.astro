@@ -1,0 +1,82 @@
+---
+import "flag-icons/css/flag-icons.min.css";
+import type { Trip } from "@lib/travel";
+import { formatTripDate } from "@lib/travel";
+import { getCityName } from "@lib/travel/cities-i18n";
+import styles from "./TravelTripList.module.css";
+
+interface Props {
+  trip: Trip;
+}
+
+const { trip } = Astro.props;
+
+const getCountryFlag = (code: string) => {
+  const parts = code.split("-");
+  if (parts.length > 1) {
+    return {
+      isRegional: true,
+      countryCode: parts[0],
+      regionCode: code,
+    };
+  }
+  return {
+    isRegional: false,
+    code: code,
+  };
+};
+
+const isTba = trip.year === null;
+const dateEn = isTba ? "TBA" : formatTripDate(trip, "en");
+const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
+---
+
+<div class={styles.trip}>
+  <div class={styles.date} data-en={dateEn} data-ru={dateRu}>
+    {dateEn}
+  </div>
+  <div class={styles.destination}>
+    {
+      trip.destinations.map((destination, destIndex) => {
+        const flagInfo = getCountryFlag(destination.country[0]);
+        return destination.cities.map((city, cityIndex) => (
+          <>
+            {destIndex > 0 && cityIndex === 0 && (
+              <span class={styles.separator}>→</span>
+            )}
+            <div class={styles.city}>
+              {cityIndex === 0 &&
+                (flagInfo.isRegional ? (
+                  <span class={styles.flagGroup}>
+                    <span
+                      class={[
+                        styles.flag,
+                        "fi",
+                        `fi-${flagInfo.countryCode}`,
+                      ].join(" ")}
+                    />
+                    <span class={styles.flagDivider}>·</span>
+                    <span
+                      class={[
+                        styles.flag,
+                        "fi",
+                        `fi-${flagInfo.regionCode}`,
+                      ].join(" ")}
+                    />
+                  </span>
+                ) : (
+                  <span
+                    class={[styles.flag, "fi", `fi-${flagInfo.code}`].join(" ")}
+                  />
+                ))}
+              <span
+                data-en={`${getCityName(city, "en")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
+                data-ru={`${getCityName(city, "ru")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
+              >{`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}</span>
+            </div>
+          </>
+        ));
+      })
+    }
+  </div>
+</div>

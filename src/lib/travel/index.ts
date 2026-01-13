@@ -8,10 +8,11 @@ export interface Destination {
 }
 
 export interface Trip {
-  year: number;
-  month: number;
+  year: number | null;
+  month: number | null;
   endYear?: number | null;
   endMonth: number | null;
+  description?: string;
   destinations: Destination[];
 }
 
@@ -47,6 +48,11 @@ const MONTH_NAMES_RU = [
 ];
 
 export function formatTripDate(trip: Trip, lang: "en" | "ru" = "en"): string {
+  // TBA trips
+  if (trip.year === null || trip.month === null) {
+    return "TBA";
+  }
+
   const monthNames = lang === "ru" ? MONTH_NAMES_RU : MONTH_NAMES_EN;
   const startMonth = monthNames[trip.month - 1];
 
@@ -85,14 +91,25 @@ export function getCountryListSize(markdownContent: string) {
   return -1;
 }
 
-// Group trips by year
+// Separate TBA trips from dated trips
+export function getTbaTrips(data: Trip[]): Trip[] {
+  return data.filter((trip) => trip.year === null);
+}
+
+// Get only dated trips (non-TBA)
+export function getDatedTrips(data: Trip[]): Trip[] {
+  return data.filter((trip) => trip.year !== null);
+}
+
+// Group trips by year (only dated trips)
 export function groupTripsByYear(data: Trip[]): Record<number, Trip[]> {
-  return data.reduce(
+  return getDatedTrips(data).reduce(
     (acc, trip) => {
-      if (!acc[trip.year]) {
-        acc[trip.year] = [];
+      const year = trip.year as number;
+      if (!acc[year]) {
+        acc[year] = [];
       }
-      acc[trip.year].push(trip);
+      acc[year].push(trip);
       return acc;
     },
     {} as Record<number, Trip[]>,
@@ -107,9 +124,10 @@ export function getSortedYears(tripsByYear: Record<number, Trip[]>): number[] {
 }
 
 export const trips = tripsData as Trip[];
-export const tripsCount = trips.length;
-export const countries = getCountries(trips);
-export const cities = getCities(trips);
+export const datedTrips = getDatedTrips(trips);
+export const tripsCount = datedTrips.length;
+export const countries = getCountries(datedTrips);
+export const cities = getCities(datedTrips);
 export const countryListSize = getCountryListSize(countryList.rawContent());
 export const continentsVisited = 2;
 export const continentsTotal = 7;
