@@ -1,95 +1,38 @@
 ---
-import "flag-icons/css/flag-icons.min.css";
 import {
   trips,
   groupTripsByYear,
   getSortedYears,
-  formatTripDate,
+  getTbaTrips,
 } from "@lib/travel";
-import { getCityName } from "@lib/travel/cities-i18n";
+import TravelTrip from "./TravelTrip.astro";
 import styles from "./TravelTripList.module.css";
-
-const getCountryFlag = (code: string) => {
-  const parts = code.split("-");
-  if (parts.length > 1) {
-    return {
-      isRegional: true,
-      countryCode: parts[0], // "gb"
-      regionCode: code, // "gb-eng"
-    };
-  }
-  return {
-    isRegional: false,
-    code: code,
-  };
-};
 
 const tripsByYear = groupTripsByYear(trips);
 const years = getSortedYears(tripsByYear);
+// const tbaTrips = getTbaTrips(trips);
 ---
 
 <div class={styles.tripList}>
+  <!-- {
+    tbaTrips.length > 0 && (
+      <div class={styles.yearGroup}>
+        <div class={styles.yearHeader}>TBA</div>
+        <div class={styles.yearTrips}>
+          {tbaTrips.map((trip) => (
+            <TravelTrip trip={trip} />
+          ))}
+        </div>
+      </div>
+    )
+  } -->
   {
     years.map((year) => (
       <div class={styles.yearGroup}>
         <div class={styles.yearHeader}>{year}</div>
         <div class={styles.yearTrips}>
           {tripsByYear[year].map((trip) => (
-            <div class={styles.trip}>
-              <div
-                class={styles.date}
-                data-en={formatTripDate(trip, "en")}
-                data-ru={formatTripDate(trip, "ru")}
-              >
-                {formatTripDate(trip)}
-              </div>
-              <div class={styles.destination}>
-                {trip.destinations.map((destination, destIndex) => {
-                  const flagInfo = getCountryFlag(destination.country[0]);
-                  return destination.cities.map((city, cityIndex) => (
-                    <>
-                      {destIndex > 0 && cityIndex === 0 && (
-                        <span class={styles.separator}>→</span>
-                      )}
-                      <div class={styles.city}>
-                        {cityIndex === 0 &&
-                          (flagInfo.isRegional ? (
-                            <span class={styles.flagGroup}>
-                              <span
-                                class={[
-                                  styles.flag,
-                                  "fi",
-                                  `fi-${flagInfo.countryCode}`,
-                                ].join(" ")}
-                              />
-                              <span class={styles.flagDivider}>·</span>
-                              <span
-                                class={[
-                                  styles.flag,
-                                  "fi",
-                                  `fi-${flagInfo.regionCode}`,
-                                ].join(" ")}
-                              />
-                            </span>
-                          ) : (
-                            <span
-                              class={[
-                                styles.flag,
-                                "fi",
-                                `fi-${flagInfo.code}`,
-                              ].join(" ")}
-                            />
-                          ))}
-                        <span
-                          data-en={`${getCityName(city, "en")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
-                          data-ru={`${getCityName(city, "ru")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
-                        >{`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}</span>
-                      </div>
-                    </>
-                  ));
-                })}
-              </div>
-            </div>
+            <TravelTrip trip={trip} />
           ))}
         </div>
       </div>

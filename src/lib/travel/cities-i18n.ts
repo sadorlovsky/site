@@ -26,12 +26,16 @@ export const cityNamesRu: Record<string, string> = {
 
   // Uzbekistan
   Tashkent: "Ташкент",
+  Samarkand: "Самарканд",
+  Bukhara: "Бухара",
+  Fergana: "Фергана",
 
   // Turkey
   Istanbul: "Стамбул",
 
   // UAE
   "Abu Dhabi": "Абу-Даби",
+  Dubai: "Дубай",
 
   // Kazakhstan
   Aktau: "Актау",
@@ -97,6 +101,8 @@ export const cityNamesRu: Record<string, string> = {
 
   // Sweden
   Stockholm: "Стокгольм",
+  Malmö: "Мальмё",
+  Göteborg: "Гётеборг",
 
   // Poland
   Warsaw: "Варшава",
@@ -120,6 +126,92 @@ export const cityNamesRu: Record<string, string> = {
 
   // Czechia
   Prague: "Прага",
+
+  // Japan
+  Tokyo: "Токио",
+  Kyoto: "Киото",
+  Osaka: "Осака",
+  Hiroshima: "Хиросима",
+  Itsukushima: "Ицукусима",
+  Sapporo: "Саппоро",
+
+  // Kyrgyzstan
+  Bishkek: "Бишкек",
+
+  // Tajikistan
+  Dushanbe: "Душанбе",
+
+  // Svalbard
+  Longyearbyen: "Лонгйир",
+  Pyramiden: "Пирамида",
+  "Ny-Ålesund": "Ню-Олесунн",
+
+  // Egypt
+  Cairo: "Каир",
+  Giza: "Гиза",
+  Alexandria: "Александрия",
+  "El Gouna": "Эль-Гуна",
+
+  // Morocco
+  Casablanca: "Касабланка",
+  Marrakech: "Марракеш",
+  Rabat: "Рабат",
+  Fez: "Фес",
+  Zaida: "Заида",
+  Tangier: "Танжер",
+
+  // Denmark
+  Copenhagen: "Копенгаген",
+
+  // Norway
+  Oslo: "Осло",
+
+  // Iceland
+  Reykjavik: "Рейкьявик",
+
+  // Serbia
+  Belgrade: "Белград",
+  "Novi Sad": "Нови-Сад",
+
+  // Bosnia and Herzegovina
+  Sarajevo: "Сараево",
+
+  // Montenegro
+  Podgorica: "Подгорица",
+  Budva: "Будва",
+  Bar: "Бар",
+
+  // Albania
+  Tiranë: "Тирана",
+
+  // Malaysia
+  "Kuala Lumpur": "Куала-Лумпур",
+
+  // Hong Kong
+  "Hong Kong": "Гонконг",
+
+  // Macau
+  Macau: "Макао",
+
+  // Taiwan
+  Taipei: "Тайбэй",
+
+  // South Korea
+  Seoul: "Сеул",
+
+  // India
+  Delhi: "Дели",
+  Jaipur: "Джайпур",
+  Agra: "Агра",
+  Mumbai: "Мумбаи",
+  Bengaluru: "Бангалор",
+  Goa: "Гоа",
+
+  // Sri Lanka
+  Colombo: "Коломбо",
+
+  // China
+  Beijing: "Пекин",
 };
 
 export function getCityName(city: string, lang: "en" | "ru"): string {

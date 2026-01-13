@@ -1,5 +1,153 @@
 [
   {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Dubai trip",
+    "destinations": [{ "country": ["ae", "are"], "cities": ["Dubai"] }]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Japan multi-city tour",
+    "destinations": [
+      {
+        "country": ["jp", "jpn"],
+        "cities": [
+          "Tokyo",
+          "Kyoto",
+          "Osaka",
+          "Hiroshima",
+          "Itsukushima",
+          "Sapporo"
+        ]
+      }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Uzbekistan historical cities",
+    "destinations": [
+      {
+        "country": ["uz", "uzb"],
+        "cities": ["Samarkand", "Bukhara", "Fergana"]
+      }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Central Asia adventure",
+    "destinations": [
+      { "country": ["kg", "kgz"], "cities": ["Bishkek"] },
+      { "country": ["tj", "tjk"], "cities": ["Dushanbe"] }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Svalbard Arctic expedition",
+    "destinations": [
+      {
+        "country": ["sj", "sjm"],
+        "cities": ["Longyearbyen", "Pyramiden", "Ny-Ålesund"]
+      }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Egypt exploration",
+    "destinations": [
+      {
+        "country": ["eg", "egy"],
+        "cities": ["Cairo", "Giza", "Alexandria", "El Gouna"]
+      }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Morocco adventure",
+    "destinations": [
+      {
+        "country": ["ma", "mar"],
+        "cities": [
+          "Casablanca",
+          "Marrakech",
+          "Rabat",
+          "Fez",
+          "Zaida",
+          "Tangier"
+        ]
+      }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Nordic countries tour",
+    "destinations": [
+      { "country": ["dk", "dnk"], "cities": ["Copenhagen"] },
+      { "country": ["se", "swe"], "cities": ["Malmö", "Göteborg"] },
+      { "country": ["no", "nor"], "cities": ["Oslo"] },
+      { "country": ["is", "isl"], "cities": ["Reykjavik"] }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Balkans tour",
+    "destinations": [
+      { "country": ["rs", "srb"], "cities": ["Belgrade", "Novi Sad"] },
+      { "country": ["ba", "bih"], "cities": ["Sarajevo"] },
+      { "country": ["me", "mne"], "cities": ["Podgorica", "Budva", "Bar"] },
+      { "country": ["al", "alb"], "cities": ["Tiranë"] }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "East Asia tour",
+    "destinations": [
+      { "country": ["my", "mys"], "cities": ["Kuala Lumpur"] },
+      { "country": ["hk", "hkg"], "cities": ["Hong Kong"] },
+      { "country": ["mo", "mac"], "cities": ["Macau"] },
+      { "country": ["tw", "twn"], "cities": ["Taipei"] },
+      { "country": ["kr", "kor"], "cities": ["Seoul"] }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "India and Sri Lanka",
+    "destinations": [
+      {
+        "country": ["in", "ind"],
+        "cities": ["Delhi", "Jaipur", "Agra", "Mumbai", "Bengaluru", "Goa"]
+      },
+      { "country": ["lk", "lka"], "cities": ["Colombo"] }
+    ]
+  },
+  {
+    "year": 2026,
+    "month": 1,
+    "endMonth": null,
+    "description": "Beijing trip",
+    "destinations": [{ "country": ["cn", "chn"], "cities": ["Beijing"] }]
+  },
+  {
     "year": 2025,
     "month": 7,
     "endMonth": null,
@@ -14,6 +162,7 @@
     "year": 2024,
     "month": 10,
     "endMonth": null,
+    "description": "UK trip",
     "destinations": [
       {
         "country": ["gb-eng", "gbr"],
@@ -81,6 +230,7 @@
     "month": 10,
     "endYear": 2023,
     "endMonth": 1,
+    "description": "Western Europe tour",
     "destinations": [
       {
         "country": ["es", "esp"],
@@ -264,6 +414,7 @@
     "year": 2019,
     "month": 5,
     "endMonth": null,
+    "description": "Baltic and Nordic tour",
     "destinations": [
       { "country": ["by", "blr"], "cities": ["Minsk"] },
       { "country": ["lv", "lva"], "cities": ["Riga", "Jūrmala"] },
@@ -304,6 +455,7 @@
     "year": 2018,
     "month": 8,
     "endMonth": null,
+    "description": "Netherlands and Belgium",
     "destinations": [
       { "country": ["nl", "nld"], "cities": ["Amsterdam"] },
       { "country": ["be", "bel"], "cities": ["Brussels", "Bruges", "Antwerp"] }
