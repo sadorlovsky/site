@@ -212,6 +212,18 @@ export const cityNamesRu: Record<string, string> = {
 
   // China
   Beijing: "Пекин",
+  Shanghai: "Шанхай",
+
+  // Vietnam
+  "Nha Trang": "Нячанг",
+  "Phu Quoc": "Фукуок",
+  "Mui Ne": "Муйне",
+  "Ho Chi Minh City": "Хошимин",
+  Hanoi: "Ханой",
+
+  // Thailand
+  Bangkok: "Бангкок",
+  Phuket: "Пхукет",
 };
 
 export function getCityName(city: string, lang: "en" | "ru"): string {
