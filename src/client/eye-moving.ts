@@ -1,8 +1,15 @@
+// Movement multipliers for parallax effect
+const IRIS_MULTIPLIER = 1.0; // Base movement (iris/радужка)
+const PUPIL_MULTIPLIER = 1.15; // Pupil moves slightly more (deeper in eye)
+const HIGHLIGHT_MULTIPLIER = 0.95; // Highlight follows pupil but lags slightly (stays inside pupil)
+
 // Eye configuration for each eye
 const eyes = {
   left: {
     rectId: "left-eye-rect",
     ballId: "left-eye-ball",
+    pupilId: "left-eye-pupil",
+    highlightId: "left-eye-highlight",
     centerX: 67.21,
     centerY: 165.48,
     radius: 90.42 - 67.21,
@@ -13,6 +20,8 @@ const eyes = {
   right: {
     rectId: "right-eye-rect",
     ballId: "right-eye-ball",
+    pupilId: "right-eye-pupil",
+    highlightId: "right-eye-highlight",
     centerX: 169.21,
     centerY: 157.48,
     radius: 192.42 - 169.21,
@@ -22,7 +31,7 @@ const eyes = {
   },
 };
 
-// Current position for smooth interpolation
+// Current position for smooth interpolation (base position)
 let currentPositions = {
   left: { x: 0, y: 0 },
   right: { x: 0, y: 0 },
@@ -85,6 +94,8 @@ function animate() {
   for (const [key, eye] of Object.entries(eyes)) {
     const eyeKey = key as "left" | "right";
     const eyeBall = document.getElementById(eye.ballId);
+    const eyePupil = document.getElementById(eye.pupilId);
+    const eyeHighlight = document.getElementById(eye.highlightId);
     if (!eyeBall) continue;
 
     const current = currentPositions[eyeKey];
@@ -105,7 +116,22 @@ function animate() {
     current.x = newX;
     current.y = newY;
 
-    eyeBall.setAttribute("transform", `translate(${newX}, ${newY})`);
+    // Apply different multipliers for parallax effect
+    const irisX = newX * IRIS_MULTIPLIER;
+    const irisY = newY * IRIS_MULTIPLIER;
+    const pupilX = newX * PUPIL_MULTIPLIER;
+    const pupilY = newY * PUPIL_MULTIPLIER;
+    // Highlight barely moves (simulates fixed light source)
+    const highlightX = newX * HIGHLIGHT_MULTIPLIER;
+    const highlightY = newY * HIGHLIGHT_MULTIPLIER;
+
+    // Apply transforms
+    eyeBall.setAttribute("transform", `translate(${irisX}, ${irisY})`);
+    eyePupil?.setAttribute("transform", `translate(${pupilX}, ${pupilY})`);
+    eyeHighlight?.setAttribute(
+      "transform",
+      `translate(${highlightX}, ${highlightY})`,
+    );
   }
 
   if (needsUpdate) {
