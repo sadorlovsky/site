@@ -1,8 +1,9 @@
 import { Map as MapLibre } from "maplibre-gl";
-import { countries } from "@lib/travel";
+import { countries, cities, cityCoordinates } from "@lib/travel";
 
 const MOBILE_BREAKPOINT = 480;
 const VISITED_COLOR = "#ed6292";
+const CITY_COLOR = "#ffffff";
 const BORDER_COLOR = "#c74b7a";
 const LIGHT_BG = "#f8f8ff";
 const DARK_BG = "#191919";
@@ -118,6 +119,54 @@ async function initMap(): Promise<void> {
       filter: ["in", ["get", "ADM0_A3"], ["literal", Array.from(countries)]],
     },
     "boundary_2",
+  );
+
+  // Add visited cities source
+  const cityFeatures = Array.from(cities)
+    .filter((city) => cityCoordinates[city])
+    .map((city) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "Point" as const,
+        coordinates: cityCoordinates[city],
+      },
+      properties: { name: city },
+    }));
+
+  map.addSource("visited-cities", {
+    type: "geojson",
+    data: {
+      type: "FeatureCollection",
+      features: cityFeatures,
+    },
+  });
+
+  // Add visited cities layer with blur effect (before labels)
+  map.addLayer(
+    {
+      id: "visited-cities",
+      type: "circle",
+      source: "visited-cities",
+      paint: {
+        "circle-color": CITY_COLOR,
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          1,
+          3,
+          3,
+          8,
+          5,
+          20,
+          8,
+          50,
+        ],
+        "circle-blur": 1,
+        "circle-opacity": 0.5,
+      },
+    },
+    "label_other",
   );
 
   // Hide placeholder when map is fully rendered

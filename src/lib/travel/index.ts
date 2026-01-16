@@ -1,4 +1,5 @@
 import tripsData from "./trips.json";
+import citiesData from "./cities.json";
 import * as countryList from "../../pages/travel/countries.md";
 
 // Types for the new trip format
@@ -128,6 +129,7 @@ export const datedTrips = getDatedTrips(trips);
 export const tripsCount = datedTrips.length;
 export const countries = getCountries(datedTrips);
 export const cities = getCities(datedTrips);
+export const cityCoordinates = citiesData as Record<string, [number, number]>;
 export const countryListSize = getCountryListSize(countryList.rawContent());
 export const continentsVisited = 2;
 export const continentsTotal = 7;
