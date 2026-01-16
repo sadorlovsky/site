@@ -174,6 +174,20 @@ async function initMap(): Promise<void> {
     const placeholder = document.getElementById("placeholder");
     if (placeholder) placeholder.style.opacity = "0";
   });
+
+  // Function to fly to a city
+  function flyToCity(cityName: string): void {
+    if (cityCoordinates[cityName]) {
+      map.flyTo({
+        center: cityCoordinates[cityName] as [number, number],
+        zoom: 6,
+        duration: 1000,
+      });
+    }
+  }
+
+  // Expose flyToCity globally for external use
+  (window as unknown as { flyToCity: typeof flyToCity }).flyToCity = flyToCity;
 }
 
 if (document.readyState === "loading") {

@@ -70,6 +70,8 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
                   />
                 ))}
               <span
+                class="city-name"
+                data-city={city}
                 data-en={`${getCityName(city, "en")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
                 data-ru={`${getCityName(city, "ru")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
               >{`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}</span>
