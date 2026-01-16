@@ -120,9 +120,11 @@ async function initMap(): Promise<void> {
     "boundary_2",
   );
 
-  // Hide placeholder
-  const placeholder = document.getElementById("placeholder");
-  if (placeholder) placeholder.style.opacity = "0";
+  // Hide placeholder when map is fully rendered
+  map.once("idle", () => {
+    const placeholder = document.getElementById("placeholder");
+    if (placeholder) placeholder.style.opacity = "0";
+  });
 }
 
 if (document.readyState === "loading") {
