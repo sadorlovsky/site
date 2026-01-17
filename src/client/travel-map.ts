@@ -1,5 +1,6 @@
 import { Map as MapLibre } from "maplibre-gl";
 import { countries, cities, cityCoordinates } from "@lib/travel";
+import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
 const MOBILE_BREAKPOINT = 480;
 const VISITED_COLOR = "#ed6292";
@@ -121,6 +122,35 @@ async function initMap(): Promise<void> {
     "boundary_2",
   );
 
+  // Add Crimea exclusion layer (to hide it from visited countries)
+  map.addSource("crimea", {
+    type: "geojson",
+    data: crimeaGeoJson as GeoJSON.Feature,
+  });
+
+  const isDark = colorSchemeQuery.matches;
+  map.addLayer(
+    {
+      id: "crimea-mask",
+      type: "fill",
+      source: "crimea",
+      paint: {
+        "fill-color": isDark ? DARK_BG : LIGHT_BG,
+        "fill-opacity": 1,
+      },
+    },
+    "boundary_2",
+  );
+
+  // Update crimea mask on color scheme change
+  colorSchemeQuery.addEventListener("change", (e) => {
+    map.setPaintProperty(
+      "crimea-mask",
+      "fill-color",
+      e.matches ? DARK_BG : LIGHT_BG,
+    );
+  });
+
   // Add visited cities source
   const cityFeatures = Array.from(cities)
     .filter((city) => cityCoordinates[city])
@@ -162,8 +192,8 @@ async function initMap(): Promise<void> {
           8,
           50,
         ],
-        "circle-blur": 1,
-        "circle-opacity": 0.5,
+        "circle-blur": 0.25,
+        "circle-opacity": 0.45,
       },
     },
     "label_other",

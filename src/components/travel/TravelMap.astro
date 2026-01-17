@@ -30,6 +30,11 @@ import "flag-icons/css/flag-icons.min.css";
     width: 100%;
   }
 
+  .map:has(canvas:focus-visible) {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+  }
+
   @media (max-width: 480px) {
     .map {
       height: 300px;
@@ -169,6 +174,10 @@ import "flag-icons/css/flag-icons.min.css";
 </style>
 
 <style is:global>
+  .map canvas:focus {
+    outline: none;
+  }
+
   .maplibregl-marker > svg g[fill="#3FB1CE"] {
     fill: red;
   }
