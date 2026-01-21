@@ -1,5 +1,6 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
+import PageHeader from "@components/PageHeader.astro";
 import WishlistItem from "@components/wishlist/WishlistItem.astro";
 import WishlistFilters from "@components/wishlist/WishlistFilters.astro";
 import MobileFilterBar from "@components/wishlist/MobileFilterBar.astro";
@@ -98,20 +99,19 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 
   <main>
     <div class="wishlist-container">
-      <header class="wishlist-header">
-        <h1 data-en="My Wishlist" data-ru="Мой вишлист">My Wishlist</h1>
-        <p
-          class="subtitle"
-          data-en="Things I'd love to have"
-          data-ru="Вещи, которые я хотел бы получить"
-        >
-          Things I'd love to have
-        </p>
-      </header>
+      <PageHeader
+        variant="fancy"
+        pageTitle={{ en: "Wishlist", ru: "Вишлист" }}
+        subtitle={{
+          en: "Things I'd love to have",
+          ru: "Вещи, которые я хотел бы получить",
+        }}
+      />
 
       <WishlistFilters
         categories={categories}
         currentCategory={currentCategory}
+        showLangSwitcher={true}
       />
 
       <div

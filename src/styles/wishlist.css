@@ -55,30 +55,6 @@ html.lang-ready .wishlist-container {
   }
 }
 
-/* Header */
-.wishlist-header {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.wishlist-header h1 {
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.subtitle {
-  font-size: 1rem;
-  color: light-dark(#666, #999);
-  margin: 0;
-  font-weight: 400;
-}
-
 /* Filters */
 .filters {
   display: flex;
@@ -639,10 +615,6 @@ html.lang-ready .wishlist-container {
     width: 250px;
     height: 250px;
     left: -100px;
-  }
-
-  .wishlist-header {
-    margin-bottom: 2rem;
   }
 
   .filters {
