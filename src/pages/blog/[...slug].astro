@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 
 export async function getStaticPaths() {
@@ -22,18 +23,7 @@ const { Content } = await entry.render();
     <div class="container">
       <nav class="back-nav">
         <a href="/blog" class="back-link">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="m15 18-6-6 6-6"></path>
-          </svg>
+          <Icon name="arrow-left" width={18} height={18} />
           <span>All posts</span>
         </a>
       </nav>
