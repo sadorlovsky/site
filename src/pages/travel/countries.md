@@ -3,7 +3,7 @@ layout: ../../layouts/MarkdownLayout.astro
 title: "List of countries and territories"
 ---
 # List of countries and territories
-## UN Members <!--- Member states of the United Nations (193) -->
+## Member States (193)
 1. Islamic Republic of Afghanistan
 2. Republic of Albania
 3. People’s Democratic Republic of Algeria
@@ -198,18 +198,18 @@ title: "List of countries and territories"
 192. Republic of Zambia
 193. Republic of Zimbabwe
 
-## UN Non-member observers <!--- Current non-member observers (2) -->
+## Observer States (2)
 194. Holy See
 195. State of Palestine
 
-## Dependent territories <!--- Dependent territories (47) -->
+## Dependent Territories (47)
 ### Australia <!--- 3 -->
 196. Christmas Island
 197. Cocos (Keeling) Islands
 198. Norfolk Island
 ### China <!--- 2 -->
-199. Hong Kong
-200. Macao
+199. Hong Kong SAR
+200. Macao SAR
 ### Denmark <!--- 2 -->
 201. Faroe Islands
 202. Greenland
@@ -222,7 +222,7 @@ title: "List of countries and territories"
 207. Martinique
 208. Mayotte
 209. New Caledonia
-210. Reunion
+210. Réunion
 211. Saint Barthelemy
 212. Saint Martin
 213. Saint-Pierre and Miquelon
@@ -253,7 +253,7 @@ title: "List of countries and territories"
 234. Montserrat
 235. Pitcairn Islands
 236. Saint Helena
-237. Turks and Cacios Islands
+237. Turks and Caicos Islands
 ### United States <!--- 5 -->
 238. American Samoa
 239. Guam
@@ -261,7 +261,7 @@ title: "List of countries and territories"
 241. Puerto Rico
 242. U.S. Virgin Islands
 
-## Other <!--- 8 -->
+## Partially Recognized States (8)
 243. Republic of Abkhazia
 244. Republic of China (Taiwan)
 245. Republic of Kosovo
