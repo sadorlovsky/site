@@ -1,10 +1,25 @@
 ---
 import { Icon } from "astro-icon/components";
 import LangSwitcher from "@components/LangSwitcher.astro";
+
+interface Props {
+  pageTitle: {
+    en: string;
+    ru: string;
+  };
+}
+
+const { pageTitle } = Astro.props;
 ---
 
 <div class="heading">
-  <h1 class="title">Zach's travels</h1>
+  <h1 class="title">
+    <a href="/" class="name-link" data-en="Zach" data-ru="Зак">Zach</a>
+    <span class="separator">/</span>
+    <span class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}
+      >{pageTitle.en}</span
+    >
+  </h1>
   <a
     class="photos-link"
     href="https://instagram.com/sadorlovsky"
@@ -35,6 +50,29 @@ import LangSwitcher from "@components/LangSwitcher.astro";
   h1 {
     margin: 0;
     font-size: 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 0.35em;
+  }
+
+  .name-link,
+  .separator {
+    color: light-dark(#666, #888);
+  }
+
+  .name-link {
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .name-link:hover {
+    color: light-dark(#111, #fff);
+  }
+
+  .name-link:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   .photos-link {
@@ -72,7 +110,8 @@ import LangSwitcher from "@components/LangSwitcher.astro";
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .photos-link {
+    .photos-link,
+    .name-link {
       transition: none;
     }
   }
