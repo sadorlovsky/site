@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
+import PageHeader from "@components/PageHeader.astro";
 
 const allPosts = await getCollection("posts");
 ---
@@ -11,10 +12,14 @@ const allPosts = await getCollection("posts");
     <div class="blob blob-2"></div>
 
     <div class="container">
-      <header class="page-header">
-        <h1>Blog</h1>
-        <p class="subtitle">Thoughts, ideas, and occasional musings</p>
-      </header>
+      <PageHeader
+        variant="fancy"
+        pageTitle={{ en: "Blog", ru: "Blog" }}
+        subtitle={{
+          en: "Thoughts, ideas, and occasional musings",
+          ru: "Thoughts, ideas, and occasional musings",
+        }}
+      />
 
       <div class="posts-list">
         {
@@ -134,29 +139,6 @@ const allPosts = await getCollection("posts");
     max-width: 720px;
     margin: 0 auto;
     padding: 3rem 1.5rem 4rem;
-  }
-
-  .blog-page .page-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .blog-page .page-header h1 {
-    font-size: clamp(2rem, 6vw, 3rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0 0 0.5rem 0;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .blog-page .subtitle {
-    font-size: 1.1rem;
-    color: light-dark(#666, #999);
-    margin: 0;
-    font-weight: 400;
   }
 
   .blog-page .posts-list {

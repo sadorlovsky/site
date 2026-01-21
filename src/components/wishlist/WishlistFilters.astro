@@ -5,9 +5,10 @@ import LangSwitcher from "@components/LangSwitcher.astro";
 interface Props {
   categories: Category[];
   currentCategory: string;
+  showLangSwitcher?: boolean;
 }
 
-const { categories, currentCategory } = Astro.props;
+const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
 ---
 
 <div class="filters">
@@ -33,7 +34,11 @@ const { categories, currentCategory } = Astro.props;
       ))
     }
   </nav>
-  <LangSwitcher storageKey="wishlist-lang" variant="accent" />
+  {
+    showLangSwitcher && (
+      <LangSwitcher storageKey="wishlist-lang" variant="accent" />
+    )
+  }
 </div>
 
 <script>
