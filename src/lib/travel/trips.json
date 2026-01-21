@@ -141,6 +141,19 @@
     ]
   },
   {
+    "year": null,
+    "month": null,
+    "endMonth": null,
+    "description": "Thailand and Vietnam",
+    "destinations": [
+      {
+        "country": ["th", "tha"],
+        "cities": ["Bangkok", "Chiang Mai", "Phuket"]
+      },
+      { "country": ["vn", "vnm"], "cities": ["Ho Chi Minh City", "Vũng Tàu"] }
+    ]
+  },
+  {
     "year": 2026,
     "month": 1,
     "endMonth": null,
