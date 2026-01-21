@@ -223,7 +223,11 @@ export const cityNamesRu: Record<string, string> = {
 
   // Thailand
   Bangkok: "Бангкок",
+  "Chiang Mai": "Чиангмай",
   Phuket: "Пхукет",
+
+  // Vietnam
+  "Vũng Tàu": "Вунгтау",
 };
 
 export function getCityName(city: string, lang: "en" | "ru"): string {
