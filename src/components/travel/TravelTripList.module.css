@@ -13,7 +13,9 @@
 .yearHeader {
   position: sticky;
   top: 0;
-  background-color: var(--dark-bg, #191919);
+  background-color: rgba(25, 25, 25, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-weight: 600;
   font-size: 1.25rem;
   padding: 0.5rem 0;
@@ -24,7 +26,7 @@
 
 @media (prefers-color-scheme: light) {
   .yearHeader {
-    background-color: var(--light-bg, #f8f8ff);
+    background-color: rgba(248, 248, 255, 0.8);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 }

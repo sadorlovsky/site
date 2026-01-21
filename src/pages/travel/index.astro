@@ -1,6 +1,6 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
-import TravelHeader from "@components/travel/TravelHeader.astro";
+import PageHeader from "@components/PageHeader.astro";
 import TravelMap from "@components/travel/TravelMap.astro";
 import TravelStats from "@components/travel/TravelStats.astro";
 import TravelTripList from "@components/travel/TravelTripList.astro";
@@ -53,7 +53,11 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 
 <PageLayout title="Zach's travels">
   <main>
-    <TravelHeader pageTitle={{ en: "Travels", ru: "Путешествия" }} />
+    <PageHeader
+      variant="minimal"
+      pageTitle={{ en: "Travels", ru: "Путешествия" }}
+      langSwitcher="travel-lang"
+    />
     <TravelMap />
     <TravelStats />
     <TravelTripList />
@@ -72,12 +76,12 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 
   main {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 20px auto 0;
     margin-bottom: 35px;
     box-sizing: border-box;
     padding: 0 1em;
 
     display: grid;
-    gap: 20px;
+    gap: 1.25rem;
   }
 </style>
