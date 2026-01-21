@@ -1,0 +1,156 @@
+---
+import LangSwitcher from "@components/LangSwitcher.astro";
+
+interface Props {
+  pageTitle: {
+    en: string;
+    ru: string;
+  };
+  subtitle?: {
+    en: string;
+    ru: string;
+  };
+  variant?: "minimal" | "fancy";
+  langSwitcher?: string;
+}
+
+const { pageTitle, subtitle, variant = "fancy", langSwitcher } = Astro.props;
+const isMinimal = variant === "minimal";
+---
+
+<header class:list={["page-header", { minimal: isMinimal, fancy: !isMinimal }]}>
+  <div class="title-row">
+    <h1 class="title">
+      <a href="/" class="name-link" data-en="Zach" data-ru="Зак">Zach</a>
+      <span class="separator">/</span>
+      <span class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}
+        >{pageTitle.en}</span
+      >
+    </h1>
+    {langSwitcher && <LangSwitcher storageKey={langSwitcher} />}
+    <slot name="actions" />
+  </div>
+  {
+    subtitle && (
+      <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
+        {subtitle.en}
+      </p>
+    )
+  }
+  <slot />
+</header>
+
+<style>
+  /* Base styles */
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+  }
+
+  .title {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.35em;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .name-link {
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .separator {
+    color: light-dark(#666, #888);
+  }
+
+  /* Fancy variant name-link - dim */
+  .fancy .name-link {
+    color: light-dark(#666, #888);
+    -webkit-text-fill-color: light-dark(#666, #888);
+  }
+
+  .fancy .name-link:hover {
+    color: light-dark(#444, #bbb);
+    -webkit-text-fill-color: light-dark(#444, #bbb);
+  }
+
+  /* Minimal variant name-link - gradient */
+  .minimal .name-link {
+    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .minimal .name-link:hover {
+    opacity: 0.7;
+  }
+
+  .name-link:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .subtitle {
+    color: light-dark(#666, #999);
+    margin: 0;
+    font-weight: 400;
+  }
+
+  /* Fancy variant (default) */
+  .fancy .title {
+    font-size: clamp(2rem, 6vw, 3rem);
+  }
+
+  .fancy .page-title {
+    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .fancy .subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Minimal variant */
+  .minimal {
+    text-align: left;
+    margin: 0;
+  }
+
+  .minimal .title-row {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .minimal .title {
+    justify-content: flex-start;
+    font-size: 24px;
+  }
+
+  .minimal .page-title {
+    color: light-dark(#111, #fafafa);
+  }
+
+  .minimal .subtitle {
+    font-size: 0.95rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .name-link {
+      transition: none;
+    }
+  }
+</style>
