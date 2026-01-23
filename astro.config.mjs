@@ -1,4 +1,4 @@
-import { defineConfig, envField } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import icon from "astro-icon";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -46,6 +46,7 @@ export default defineConfig({
     },
   },
   experimental: {
+    contentIntellisense: true,
     fonts: [
       {
         provider: "local",

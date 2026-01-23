@@ -1,0 +1,657 @@
+---
+import { getCollection, render } from "astro:content";
+import { Icon } from "astro-icon/components";
+import PageLayout from "@layouts/PageLayout.astro";
+import PageHeader from "@components/PageHeader.astro";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  const sortedPosts = posts.sort(
+    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  );
+
+  return sortedPosts.map((post, index) => ({
+    params: { id: post.id },
+    props: {
+      post,
+      prevPost: sortedPosts[index + 1] || null,
+      nextPost: sortedPosts[index - 1] || null,
+    },
+  }));
+}
+
+const { post, prevPost, nextPost } = Astro.props;
+const { Content } = await render(post);
+---
+
+<PageLayout title={post.data.title}>
+  <main>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="container">
+      <PageHeader
+        variant="minimal"
+        pageTitle={{ en: "Blog", ru: "Блог", href: "/blog" }}
+      />
+
+      <article>
+        <header class="post-header">
+          <div class="post-meta">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {
+                new Date(post.data.pubDate).toLocaleDateString("en-US", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              }
+            </time>
+            <button
+              id="copy-link"
+              class="copy-link"
+              aria-label="Copy link to post"
+              title="Copy link"
+            >
+              <Icon name="link" width={16} height={16} class="icon-link" />
+              <Icon name="check" width={16} height={16} class="icon-check" />
+            </button>
+          </div>
+          <h1>{post.data.title}</h1>
+          {
+            post.data.description && (
+              <p class="description">{post.data.description}</p>
+            )
+          }
+        </header>
+
+        <nav id="toc" class="toc" aria-label="Table of contents" hidden>
+          <h2 class="toc-title">Contents</h2>
+          <ol id="toc-list"></ol>
+        </nav>
+
+        <div class="content">
+          <Content />
+        </div>
+
+        {
+          (prevPost || nextPost) && (
+            <nav class="post-nav" aria-label="Post navigation">
+              {prevPost ? (
+                <a href={`/blog/${prevPost.id}`} class="post-nav-link prev">
+                  <Icon name="arrow-left" width={16} height={16} />
+                  <span class="post-nav-title">{prevPost.data.title}</span>
+                </a>
+              ) : (
+                <div />
+              )}
+              {nextPost ? (
+                <a href={`/blog/${nextPost.id}`} class="post-nav-link next">
+                  <span class="post-nav-title">{nextPost.data.title}</span>
+                  <Icon name="arrow-right" width={16} height={16} />
+                </a>
+              ) : (
+                <div />
+              )}
+            </nav>
+          )
+        }
+      </article>
+    </div>
+
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top" hidden>
+      <Icon name="chevron-up" width={20} height={20} />
+    </button>
+  </main>
+</PageLayout>
+
+<style>
+  :root {
+    --accent-start: rgb(237, 98, 146);
+    --accent-end: rgb(237, 87, 96);
+  }
+
+  main {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Ambient background blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -200px;
+    right: -150px;
+    opacity: 0.15;
+    animation: float1 12s ease-in-out infinite;
+  }
+
+  .blob-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    bottom: -150px;
+    left: -100px;
+    opacity: 0.1;
+    animation: float2 15s ease-in-out infinite;
+  }
+
+  @keyframes float1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-40px, 40px) scale(1.1);
+    }
+  }
+
+  @keyframes float2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(30px, -30px) scale(1.05);
+    }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .post-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid
+      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+  }
+
+  .post-header time {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: light-dark(#888, #777);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .post-header h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0.75rem 0 0 0;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .post-header .description {
+    font-size: 1.1rem;
+    color: light-dark(#555, #aaa);
+    margin: 1rem 0 0 0;
+    line-height: 1.6;
+  }
+
+  /* Post meta (date + copy link) */
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .copy-link {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: light-dark(#888, #666);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .copy-link {
+      display: inline-flex;
+    }
+  }
+
+  .copy-link:hover {
+    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+    color: var(--accent-start);
+  }
+
+  .copy-link:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  .copy-link .icon-check {
+    display: none;
+  }
+
+  .copy-link.copied .icon-link {
+    display: none;
+  }
+
+  .copy-link.copied .icon-check {
+    display: block;
+    color: #22c55e;
+  }
+
+  /* Table of Contents */
+  .toc {
+    margin-bottom: 2rem;
+    padding: 1rem 0 1rem 1.25rem;
+    border-left: 2px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+  }
+
+  .toc-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+    color: light-dark(#666, #888);
+  }
+
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-item {
+    margin-bottom: 0.4rem;
+  }
+
+  .toc-h3 {
+    padding-left: 1rem;
+  }
+
+  .toc a {
+    color: light-dark(#555, #aaa);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+  .toc a:hover {
+    color: var(--accent-start);
+  }
+
+  .toc a:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  /* Post navigation (prev/next) */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid
+      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+  }
+
+  .post-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    color: light-dark(#555, #aaa);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    min-width: 0;
+  }
+
+  .post-nav-link:hover {
+    color: var(--accent-start);
+  }
+
+  .post-nav-link:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  .post-nav-link.next {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .post-nav-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .post-nav-link svg {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .post-nav-link.prev:hover svg {
+    transform: translateX(-3px);
+  }
+
+  .post-nav-link.next:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* Back to top button */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid
+      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+    background: light-dark(rgba(255, 255, 255, 0.9), rgba(40, 40, 45, 0.9));
+    color: light-dark(#666, #aaa);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.3s,
+      transform 0.3s,
+      background 0.2s,
+      color 0.2s;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .back-to-top {
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+
+  .back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .back-to-top:hover {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    border-color: transparent;
+    color: white;
+  }
+
+  .back-to-top:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  /* Content typography */
+  .content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: light-dark(#333, #ddd);
+  }
+
+  .content :global(h2) {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 2.5rem 0 1rem 0;
+    color: light-dark(#111, #fafafa);
+  }
+
+  .content :global(h3) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 2rem 0 0.75rem 0;
+    color: light-dark(#222, #eee);
+  }
+
+  .content :global(p) {
+    margin: 0 0 1.5rem 0;
+  }
+
+  .content :global(a) {
+    color: var(--accent-start);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.2s ease;
+  }
+
+  .content :global(a:hover) {
+    color: var(--accent-end);
+  }
+
+  .content :global(code) {
+    font-family: "FiraCodeVariable", monospace;
+    font-size: 0.9em;
+    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+  }
+
+  .content :global(pre) {
+    background: light-dark(#1e1e1e, #0d0d0d);
+    border-radius: 12px;
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  .content :global(pre code) {
+    background: none;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .content :global(ul),
+  .content :global(ol) {
+    margin: 0 0 1.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .content :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .content :global(blockquote) {
+    border-left: 3px solid var(--accent-start);
+    margin: 1.5rem 0;
+    padding: 0.5rem 0 0.5rem 1.25rem;
+    color: light-dark(#555, #aaa);
+    font-style: italic;
+  }
+
+  .content :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+  }
+
+  .content :global(hr) {
+    border: none;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      light-dark(#ddd, #444) 20%,
+      light-dark(#ddd, #444) 80%,
+      transparent
+    );
+    margin: 2.5rem 0;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .blob-1,
+    .blob-2 {
+      animation: none;
+    }
+
+    .post-nav-link,
+    .post-nav-link svg,
+    .back-to-top,
+    .copy-link,
+    .toc a {
+      transition: none;
+    }
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    .blob-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -100px;
+    }
+
+    .blob-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -100px;
+      left: -80px;
+    }
+
+    .container {
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .post-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+    }
+
+    .content {
+      font-size: 1rem;
+    }
+
+    .content :global(h2) {
+      font-size: 1.3rem;
+    }
+
+    .content :global(h3) {
+      font-size: 1.15rem;
+    }
+
+    .content :global(pre) {
+      padding: 1rem;
+      border-radius: 8px;
+      margin-left: -0.5rem;
+      margin-right: -0.5rem;
+    }
+
+    .toc {
+      padding: 0.75rem 0 0.75rem 1rem;
+    }
+
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .post-nav-link.next {
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .back-to-top {
+      bottom: 1.5rem;
+      right: 1.5rem;
+    }
+  }
+</style>
+
+<script>
+  // Back to top button
+  const backToTopBtn = document.getElementById("back-to-top");
+  const threshold = 300;
+
+  if (backToTopBtn) {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    window.addEventListener("scroll", () => {
+      const shouldShow = window.scrollY > threshold;
+      backToTopBtn.classList.toggle("visible", shouldShow);
+      backToTopBtn.hidden = !shouldShow;
+    });
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    });
+  }
+
+  // Copy link button
+  const copyLinkBtn = document.getElementById("copy-link");
+
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(window.location.href);
+      copyLinkBtn.classList.add("copied");
+      setTimeout(() => copyLinkBtn.classList.remove("copied"), 2000);
+    });
+  }
+
+  // Table of Contents
+  const content = document.querySelector(".content");
+  const toc = document.getElementById("toc");
+  const tocList = document.getElementById("toc-list");
+
+  if (content && toc && tocList) {
+    const headings = content.querySelectorAll("h2, h3");
+
+    if (headings.length >= 2) {
+      toc.hidden = false;
+
+      headings.forEach((heading, index) => {
+        if (!heading.id) {
+          heading.id = `heading-${index}`;
+        }
+
+        const li = document.createElement("li");
+        li.className =
+          heading.tagName === "H3" ? "toc-item toc-h3" : "toc-item";
+
+        const a = document.createElement("a");
+        a.href = `#${heading.id}`;
+        a.textContent = heading.textContent;
+
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    }
+  }
+</script>
