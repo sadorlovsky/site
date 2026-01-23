@@ -49,24 +49,22 @@ export default defineConfig({
     contentIntellisense: true,
     fonts: [
       {
-        provider: fontProviders.local(),
+        provider: "local",
         name: "Inter",
         cssVariable: "--font-inter",
         fallbacks: ["system-ui", "sans-serif"],
-        options: {
-          variants: [
-            {
-              weight: "100 900",
-              style: "normal",
-              src: ["./src/assets/fonts/InterVariable.woff2"],
-            },
-            {
-              weight: "100 900",
-              style: "italic",
-              src: ["./src/assets/fonts/InterVariable-Italic.woff2"],
-            },
-          ],
-        },
+        variants: [
+          {
+            weight: "100 900",
+            style: "normal",
+            src: ["./src/assets/fonts/InterVariable.woff2"],
+          },
+          {
+            weight: "100 900",
+            style: "italic",
+            src: ["./src/assets/fonts/InterVariable-Italic.woff2"],
+          },
+        ],
       },
     ],
   },
