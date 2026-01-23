@@ -29,6 +29,8 @@ async function initMap(): Promise<void> {
 
   await new Promise<void>((resolve) => map.on("load", resolve));
 
+  // map.setProjection({ type: "globe" });
+
   // Add countries source from MapLibre demo tiles
   map.addSource("countries", {
     type: "vector",
@@ -103,6 +105,38 @@ async function initMap(): Promise<void> {
   colorSchemeQuery.addEventListener("change", (e) =>
     applyColorScheme(e.matches),
   );
+
+  // // Fade in country labels at higher zoom levels
+  // const countryLabelLayers = [
+  //   "label_country_1",
+  //   "label_country_2",
+  //   "label_country_3",
+  // ];
+  // for (const layer of countryLabelLayers) {
+  //   map.setPaintProperty(layer, "text-opacity", [
+  //     "interpolate",
+  //     ["linear"],
+  //     ["zoom"],
+  //     3,
+  //     0,
+  //     5,
+  //     1,
+  //   ]);
+  // }
+
+  // // Fade in water labels at higher zoom levels
+  // const waterLabelLayers = ["water_name_point_label", "water_name_line_label"];
+  // for (const layer of waterLabelLayers) {
+  //   map.setPaintProperty(layer, "text-opacity", [
+  //     "interpolate",
+  //     ["linear"],
+  //     ["zoom"],
+  //     3,
+  //     0,
+  //     5,
+  //     1,
+  //   ]);
+  // }
 
   map.setPaintProperty("boundary_2", "line-color", BORDER_COLOR);
 

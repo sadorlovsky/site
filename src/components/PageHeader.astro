@@ -5,6 +5,7 @@ interface Props {
   pageTitle: {
     en: string;
     ru: string;
+    href?: string;
   };
   subtitle?: {
     en: string;
@@ -12,9 +13,23 @@ interface Props {
   };
   variant?: "minimal" | "fancy";
   langSwitcher?: string;
+  parentLink?: {
+    href: string;
+    label: {
+      en: string;
+      ru: string;
+    };
+  };
 }
 
-const { pageTitle, subtitle, variant = "fancy", langSwitcher } = Astro.props;
+const {
+  pageTitle,
+  subtitle,
+  variant = "fancy",
+  langSwitcher,
+  parentLink,
+} = Astro.props;
+const pageTitleHref = pageTitle.href;
 const isMinimal = variant === "minimal";
 ---
 
@@ -23,9 +38,37 @@ const isMinimal = variant === "minimal";
     <h1 class="title">
       <a href="/" class="name-link" data-en="Zach" data-ru="Зак">Zach</a>
       <span class="separator">/</span>
-      <span class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}
-        >{pageTitle.en}</span
-      >
+      {
+        parentLink && (
+          <>
+            <a
+              href={parentLink.href}
+              class="parent-link"
+              data-en={parentLink.label.en}
+              data-ru={parentLink.label.ru}
+            >
+              {parentLink.label.en}
+            </a>
+            <span class="separator">/</span>
+          </>
+        )
+      }
+      {
+        pageTitleHref ? (
+          <a
+            href={pageTitleHref}
+            class="page-title-link"
+            data-en={pageTitle.en}
+            data-ru={pageTitle.ru}
+          >
+            {pageTitle.en}
+          </a>
+        ) : (
+          <span class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
+            {pageTitle.en}
+          </span>
+        )
+      }
     </h1>
     {langSwitcher && <LangSwitcher storageKey={langSwitcher} />}
     <slot name="actions" />
@@ -83,22 +126,44 @@ const isMinimal = variant === "minimal";
     -webkit-text-fill-color: light-dark(#444, #bbb);
   }
 
-  /* Minimal variant name-link - gradient */
+  /* Minimal variant name-link - dim */
   .minimal .name-link {
-    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: light-dark(#666, #888);
+    -webkit-text-fill-color: light-dark(#666, #888);
   }
 
   .minimal .name-link:hover {
-    opacity: 0.7;
+    color: light-dark(#444, #bbb);
+    -webkit-text-fill-color: light-dark(#444, #bbb);
   }
 
-  .name-link:focus-visible {
+  .name-link:focus-visible,
+  .parent-link:focus-visible {
     outline: 2px solid light-dark(#333, #fff);
     outline-offset: 2px;
     border-radius: 2px;
+  }
+
+  /* Parent link (breadcrumb middle segment) */
+  .parent-link {
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .minimal .parent-link {
+    color: light-dark(#666, #999);
+  }
+
+  .minimal .parent-link:hover {
+    color: light-dark(#444, #bbb);
+  }
+
+  .fancy .parent-link {
+    color: light-dark(#666, #888);
+  }
+
+  .fancy .parent-link:hover {
+    color: light-dark(#444, #bbb);
   }
 
   .subtitle {
@@ -138,10 +203,51 @@ const isMinimal = variant === "minimal";
   .minimal .title {
     justify-content: flex-start;
     font-size: 24px;
+    min-width: 0;
+    flex-wrap: wrap;
   }
 
   .minimal .page-title {
-    color: light-dark(#111, #fafafa);
+    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .minimal .page-title-link {
+    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .minimal .page-title-link:hover {
+    opacity: 0.7;
+  }
+
+  .fancy .page-title-link {
+    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .fancy .page-title-link:hover {
+    opacity: 0.7;
+  }
+
+  .page-title-link:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+    border-radius: 2px;
   }
 
   .minimal .subtitle {
@@ -149,7 +255,9 @@ const isMinimal = variant === "minimal";
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .name-link {
+    .name-link,
+    .parent-link,
+    .page-title-link {
       transition: none;
     }
   }

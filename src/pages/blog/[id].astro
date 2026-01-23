@@ -2,16 +2,25 @@
 import { getCollection, render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
+import PageHeader from "@components/PageHeader.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
-  return posts.map((post) => ({
+  const sortedPosts = posts.sort(
+    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  );
+
+  return sortedPosts.map((post, index) => ({
     params: { id: post.id },
-    props: { post },
+    props: {
+      post,
+      prevPost: sortedPosts[index + 1] || null,
+      nextPost: sortedPosts[index - 1] || null,
+    },
   }));
 }
 
-const { post } = Astro.props;
+const { post, prevPost, nextPost } = Astro.props;
 const { Content } = await render(post);
 ---
 
@@ -21,24 +30,33 @@ const { Content } = await render(post);
     <div class="blob blob-2"></div>
 
     <div class="container">
-      <nav class="back-nav">
-        <a href="/blog" class="back-link">
-          <Icon name="arrow-left" width={18} height={18} />
-          <span>All posts</span>
-        </a>
-      </nav>
+      <PageHeader
+        variant="minimal"
+        pageTitle={{ en: "Blog", ru: "Блог", href: "/blog" }}
+      />
 
       <article>
         <header class="post-header">
-          <time datetime={post.data.pubDate.toISOString()}>
-            {
-              new Date(post.data.pubDate).toLocaleDateString("en-US", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })
-            }
-          </time>
+          <div class="post-meta">
+            <time datetime={post.data.pubDate.toISOString()}>
+              {
+                new Date(post.data.pubDate).toLocaleDateString("en-US", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })
+              }
+            </time>
+            <button
+              id="copy-link"
+              class="copy-link"
+              aria-label="Copy link to post"
+              title="Copy link"
+            >
+              <Icon name="link" width={16} height={16} class="icon-link" />
+              <Icon name="check" width={16} height={16} class="icon-check" />
+            </button>
+          </div>
           <h1>{post.data.title}</h1>
           {
             post.data.description && (
@@ -47,11 +65,43 @@ const { Content } = await render(post);
           }
         </header>
 
+        <nav id="toc" class="toc" aria-label="Table of contents" hidden>
+          <h2 class="toc-title">Contents</h2>
+          <ol id="toc-list"></ol>
+        </nav>
+
         <div class="content">
           <Content />
         </div>
+
+        {
+          (prevPost || nextPost) && (
+            <nav class="post-nav" aria-label="Post navigation">
+              {prevPost ? (
+                <a href={`/blog/${prevPost.id}`} class="post-nav-link prev">
+                  <Icon name="arrow-left" width={16} height={16} />
+                  <span class="post-nav-title">{prevPost.data.title}</span>
+                </a>
+              ) : (
+                <div />
+              )}
+              {nextPost ? (
+                <a href={`/blog/${nextPost.id}`} class="post-nav-link next">
+                  <span class="post-nav-title">{nextPost.data.title}</span>
+                  <Icon name="arrow-right" width={16} height={16} />
+                </a>
+              ) : (
+                <div />
+              )}
+            </nav>
+          )
+        }
       </article>
     </div>
+
+    <button id="back-to-top" class="back-to-top" aria-label="Back to top" hidden>
+      <Icon name="chevron-up" width={20} height={20} />
+    </button>
   </main>
 </PageLayout>
 
@@ -122,52 +172,10 @@ const { Content } = await render(post);
     max-width: 720px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
-  }
 
-  .back-nav {
-    margin-bottom: 2rem;
-  }
-
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    color: light-dark(#666, #888);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .back-link:hover {
-    color: var(--accent-start);
-  }
-
-  .back-link:hover svg {
-    transform: translateX(-3px);
-  }
-
-  .back-link svg {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  article {
-    background: light-dark(rgba(255, 255, 255, 0.6), rgba(40, 40, 45, 0.6));
-    border: 1px solid
-      light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1));
-    border-radius: 20px;
-    padding: 2.5rem;
-    box-shadow:
-      0 4px 24px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
-      0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
-        inset;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    article {
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
   .post-header {
@@ -202,6 +210,207 @@ const { Content } = await render(post);
     color: light-dark(#555, #aaa);
     margin: 1rem 0 0 0;
     line-height: 1.6;
+  }
+
+  /* Post meta (date + copy link) */
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .copy-link {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: light-dark(#888, #666);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .copy-link {
+      display: inline-flex;
+    }
+  }
+
+  .copy-link:hover {
+    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+    color: var(--accent-start);
+  }
+
+  .copy-link:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  .copy-link .icon-check {
+    display: none;
+  }
+
+  .copy-link.copied .icon-link {
+    display: none;
+  }
+
+  .copy-link.copied .icon-check {
+    display: block;
+    color: #22c55e;
+  }
+
+  /* Table of Contents */
+  .toc {
+    margin-bottom: 2rem;
+    padding: 1rem 0 1rem 1.25rem;
+    border-left: 2px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+  }
+
+  .toc-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+    color: light-dark(#666, #888);
+  }
+
+  .toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-item {
+    margin-bottom: 0.4rem;
+  }
+
+  .toc-h3 {
+    padding-left: 1rem;
+  }
+
+  .toc a {
+    color: light-dark(#555, #aaa);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+  }
+
+  .toc a:hover {
+    color: var(--accent-start);
+  }
+
+  .toc a:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  /* Post navigation (prev/next) */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid
+      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+  }
+
+  .post-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    color: light-dark(#555, #aaa);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+    min-width: 0;
+  }
+
+  .post-nav-link:hover {
+    color: var(--accent-start);
+  }
+
+  .post-nav-link:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  .post-nav-link.next {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .post-nav-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .post-nav-link svg {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .post-nav-link.prev:hover svg {
+    transform: translateX(-3px);
+  }
+
+  .post-nav-link.next:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* Back to top button */
+  .back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid
+      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+    background: light-dark(rgba(255, 255, 255, 0.9), rgba(40, 40, 45, 0.9));
+    color: light-dark(#666, #aaa);
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.3s,
+      transform 0.3s,
+      background 0.2s,
+      color 0.2s;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .back-to-top {
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  }
+
+  .back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .back-to-top:hover {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    border-color: transparent;
+    color: white;
+  }
+
+  .back-to-top:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
   }
 
   /* Content typography */
@@ -308,8 +517,11 @@ const { Content } = await render(post);
       animation: none;
     }
 
-    .back-link,
-    .back-link svg {
+    .post-nav-link,
+    .post-nav-link svg,
+    .back-to-top,
+    .copy-link,
+    .toc a {
       transition: none;
     }
   }
@@ -332,15 +544,6 @@ const { Content } = await render(post);
 
     .container {
       padding: 1.5rem 1rem 3rem;
-    }
-
-    .back-nav {
-      margin-bottom: 1.5rem;
-    }
-
-    article {
-      padding: 1.5rem;
-      border-radius: 16px;
     }
 
     .post-header {
@@ -366,5 +569,89 @@ const { Content } = await render(post);
       margin-left: -0.5rem;
       margin-right: -0.5rem;
     }
+
+    .toc {
+      padding: 0.75rem 0 0.75rem 1rem;
+    }
+
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+
+    .post-nav-link.next {
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .back-to-top {
+      bottom: 1.5rem;
+      right: 1.5rem;
+    }
   }
 </style>
+
+<script>
+  // Back to top button
+  const backToTopBtn = document.getElementById("back-to-top");
+  const threshold = 300;
+
+  if (backToTopBtn) {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    window.addEventListener("scroll", () => {
+      const shouldShow = window.scrollY > threshold;
+      backToTopBtn.classList.toggle("visible", shouldShow);
+      backToTopBtn.hidden = !shouldShow;
+    });
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+      });
+    });
+  }
+
+  // Copy link button
+  const copyLinkBtn = document.getElementById("copy-link");
+
+  if (copyLinkBtn) {
+    copyLinkBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(window.location.href);
+      copyLinkBtn.classList.add("copied");
+      setTimeout(() => copyLinkBtn.classList.remove("copied"), 2000);
+    });
+  }
+
+  // Table of Contents
+  const content = document.querySelector(".content");
+  const toc = document.getElementById("toc");
+  const tocList = document.getElementById("toc-list");
+
+  if (content && toc && tocList) {
+    const headings = content.querySelectorAll("h2, h3");
+
+    if (headings.length >= 2) {
+      toc.hidden = false;
+
+      headings.forEach((heading, index) => {
+        if (!heading.id) {
+          heading.id = `heading-${index}`;
+        }
+
+        const li = document.createElement("li");
+        li.className =
+          heading.tagName === "H3" ? "toc-item toc-h3" : "toc-item";
+
+        const a = document.createElement("a");
+        a.href = `#${heading.id}`;
+        a.textContent = heading.textContent;
+
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    }
+  }
+</script>
