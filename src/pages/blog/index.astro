@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
 
-const allPosts = await getCollection("posts");
+const posts = await getCollection("blog");
 ---
 
 <PageLayout title="Zach's Blog">
@@ -24,8 +24,8 @@ const allPosts = await getCollection("posts");
 
       <div class="posts-list">
         {
-          allPosts.toReversed().map((post) => (
-            <a href={`/blog/${post.slug}`} class="post-card">
+          posts.toReversed().map((post) => (
+            <a href={`/blog/${post.id}`} class="post-card">
               <article>
                 <time datetime={post.data.pubDate.toISOString()}>
                   {new Date(post.data.pubDate).toLocaleDateString("en-US", {
@@ -49,7 +49,7 @@ const allPosts = await getCollection("posts");
       </div>
 
       {
-        allPosts.length === 0 && (
+        posts.length === 0 && (
           <div class="empty-state">
             <p>No posts yet. Check back soon!</p>
           </div>

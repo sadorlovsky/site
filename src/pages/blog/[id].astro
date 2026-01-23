@@ -4,18 +4,18 @@ import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection("posts");
-  return blogEntries.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry },
+  const posts = await getCollection("blog");
+  return posts.map((post) => ({
+    params: { id: post.id },
+    props: { post },
   }));
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
+const { post } = Astro.props;
+const { Content } = await render(post);
 ---
 
-<PageLayout title={entry.data.title}>
+<PageLayout title={post.data.title}>
   <main>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -30,19 +30,19 @@ const { Content } = await render(entry);
 
       <article>
         <header class="post-header">
-          <time datetime={entry.data.pubDate.toISOString()}>
+          <time datetime={post.data.pubDate.toISOString()}>
             {
-              new Date(entry.data.pubDate).toLocaleDateString("en-US", {
+              new Date(post.data.pubDate).toLocaleDateString("en-US", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",
               })
             }
           </time>
-          <h1>{entry.data.title}</h1>
+          <h1>{post.data.title}</h1>
           {
-            entry.data.description && (
-              <p class="description">{entry.data.description}</p>
+            post.data.description && (
+              <p class="description">{post.data.description}</p>
             )
           }
         </header>
