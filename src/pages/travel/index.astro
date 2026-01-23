@@ -52,6 +52,9 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 </script>
 
 <PageLayout title="Zach's travels">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
   <main>
     <PageHeader
       variant="minimal"
@@ -65,6 +68,60 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 </PageLayout>
 
 <style>
+  :root {
+    --accent-start: rgb(237, 98, 146);
+    --accent-end: rgb(237, 87, 96);
+  }
+
+  /* Ambient background blobs */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .blob-1 {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -200px;
+    right: -150px;
+    opacity: 0.15;
+    animation: float1 12s ease-in-out infinite;
+  }
+
+  .blob-2 {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    bottom: -150px;
+    left: -100px;
+    opacity: 0.1;
+    animation: float2 15s ease-in-out infinite;
+  }
+
+  @keyframes float1 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(-40px, 40px) scale(1.1);
+    }
+  }
+
+  @keyframes float2 {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(30px, -30px) scale(1.05);
+    }
+  }
+
   /* Hide content until language is applied to prevent FOUC */
   main {
     opacity: 0;
@@ -75,6 +132,8 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
   }
 
   main {
+    position: relative;
+    z-index: 1;
     max-width: 800px;
     margin: 20px auto 0;
     margin-bottom: 35px;
@@ -83,5 +142,30 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 
     display: grid;
     gap: 1.25rem;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .blob-1,
+    .blob-2 {
+      animation: none;
+    }
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    .blob-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      right: -100px;
+    }
+
+    .blob-2 {
+      width: 250px;
+      height: 250px;
+      bottom: -100px;
+      left: -80px;
+    }
   }
 </style>
