@@ -90,6 +90,25 @@
   transform: scale(0.98);
 }
 
+/* Keyboard moving state */
+.item-card.keyboard-moving {
+  outline: 3px solid var(--color-indigo);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 6px light-dark(rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.3)),
+    0 4px 20px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.25));
+}
+
+/* Focus styles for keyboard navigation */
+.item-card.draggable:focus {
+  outline: 2px solid var(--color-indigo);
+  outline-offset: 2px;
+}
+
+.item-card.draggable:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .item-card.drag-over-before {
   box-shadow:
     -4px 0 0 0 var(--color-indigo),

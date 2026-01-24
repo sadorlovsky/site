@@ -82,6 +82,7 @@ interface ItemCardProps {
   priceRub: number | null;
   isDraggable: boolean;
   isDragging: boolean;
+  isKeyboardMoving: boolean;
   dragOverPosition: "before" | "after" | null;
   onEdit: () => void;
   onDelete: () => void;
@@ -93,6 +94,7 @@ interface ItemCardProps {
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
+  onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
 function ItemCard({
@@ -103,6 +105,7 @@ function ItemCard({
   priceRub,
   isDraggable,
   isDragging,
+  isKeyboardMoving,
   dragOverPosition,
   onEdit,
   onDelete,
@@ -114,6 +117,7 @@ function ItemCard({
   onDragOver,
   onDragLeave,
   onDrop,
+  onKeyDown,
 }: ItemCardProps) {
   const isReserved = !!reservation;
 
@@ -123,6 +127,7 @@ function ItemCard({
     item.received ? "received" : "",
     isDraggable ? "draggable" : "",
     isDragging ? "dragging" : "",
+    isKeyboardMoving ? "keyboard-moving" : "",
     dragOverPosition === "before" ? "drag-over-before" : "",
     dragOverPosition === "after" ? "drag-over-after" : "",
   ]
@@ -134,12 +139,21 @@ function ItemCard({
       className={itemClasses}
       data-item-id={item.id}
       draggable={isDraggable}
+      tabIndex={isDraggable ? 0 : undefined}
+      role={isDraggable ? "listitem" : undefined}
+      aria-grabbed={isDraggable ? isKeyboardMoving : undefined}
+      aria-label={
+        isDraggable
+          ? `${item.title}. ${isKeyboardMoving ? "Moving. Use arrow keys to reorder, Enter to confirm, Escape to cancel." : "Press Space to start moving."}`
+          : item.title
+      }
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onDragEnter={onDragEnter}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
+      onKeyDown={onKeyDown}
     >
       <div className="item-image">
         <img
@@ -258,7 +272,7 @@ function ItemCard({
           <button
             className={`action-btn action-reserved ${isReserved ? "active" : ""}`}
             onClick={onToggleReserved}
-            data-tooltip={isReserved ? "Remove reservation" : "Reserve item"}
+            title={isReserved ? "Remove reservation" : "Reserve item"}
           >
             <svg
               width="16"
@@ -276,9 +290,7 @@ function ItemCard({
           <button
             className={`action-btn action-received ${item.received ? "active" : ""}`}
             onClick={onToggleReceived}
-            data-tooltip={
-              item.received ? "Mark as not received" : "Mark as received"
-            }
+            title={item.received ? "Mark as not received" : "Mark as received"}
           >
             <svg
               width="16"
@@ -296,7 +308,7 @@ function ItemCard({
           <button
             className="action-btn action-delete"
             onClick={onDelete}
-            data-tooltip="Delete item"
+            title="Delete item"
           >
             <svg
               width="16"
@@ -331,12 +343,16 @@ export function ItemList({
   onToggleReserved,
   onReorder,
 }: ItemListProps) {
+  // Drag state
   const [draggedItemId, setDraggedItemId] = useState<number | null>(null);
   const [dragOverItemId, setDragOverItemId] = useState<number | null>(null);
   const [dragOverPosition, setDragOverPosition] = useState<
     "before" | "after" | null
   >(null);
   const dragCounter = useRef<Map<number, number>>(new Map());
+
+  // Keyboard reorder state
+  const [keyboardMovingId, setKeyboardMovingId] = useState<number | null>(null);
 
   const getCategoryLabels = useCallback(
     (categoryString: string): { id: string; label: string }[] => {
@@ -349,11 +365,11 @@ export function ItemList({
     [categories],
   );
 
+  // Drag handlers
   const handleDragStart = useCallback((e: React.DragEvent, itemId: number) => {
     setDraggedItemId(itemId);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", String(itemId));
-    // Add a slight delay to allow the drag image to be captured
     requestAnimationFrame(() => {
       const element = e.target as HTMLElement;
       element.classList.add("dragging");
@@ -371,7 +387,6 @@ export function ItemList({
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
 
-    // Determine if dropping before or after based on mouse position
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const midpoint = rect.left + rect.width / 2;
     const position = e.clientX < midpoint ? "before" : "after";
@@ -412,7 +427,6 @@ export function ItemList({
         return;
       }
 
-      // Find indices
       const draggedIndex = items.findIndex((item) => item.id === draggedId);
       const targetIndex = items.findIndex((item) => item.id === targetItemId);
 
@@ -421,28 +435,85 @@ export function ItemList({
         return;
       }
 
-      // Create new array with reordered items
       const newItems = [...items];
       const [draggedItem] = newItems.splice(draggedIndex, 1);
 
-      // Calculate new target index after removal
       let newTargetIndex = targetIndex;
       if (draggedIndex < targetIndex) {
         newTargetIndex = targetIndex - 1;
       }
 
-      // Insert at correct position
       if (dragOverPosition === "after") {
         newItems.splice(newTargetIndex + 1, 0, draggedItem);
       } else {
         newItems.splice(newTargetIndex, 0, draggedItem);
       }
 
-      // Notify parent about reorder
       onReorder?.(newItems);
       handleDragEnd();
     },
     [items, dragOverPosition, onReorder, handleDragEnd],
+  );
+
+  // Keyboard reorder: move item by delta positions
+  const moveItemByKeyboard = useCallback(
+    (itemId: number, delta: number) => {
+      const currentIndex = items.findIndex((item) => item.id === itemId);
+      if (currentIndex === -1) return;
+
+      const newIndex = currentIndex + delta;
+      if (newIndex < 0 || newIndex >= items.length) return;
+
+      const newItems = [...items];
+      const [movedItem] = newItems.splice(currentIndex, 1);
+      newItems.splice(newIndex, 0, movedItem);
+
+      onReorder?.(newItems);
+    },
+    [items, onReorder],
+  );
+
+  // Keyboard handler for reordering
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, itemId: number) => {
+      if (!isDraggable) return;
+
+      // Space or Enter: toggle moving mode
+      if (e.key === " " || e.key === "Enter") {
+        // Don't trigger if focus is on a button inside the card
+        if ((e.target as HTMLElement).tagName === "BUTTON") return;
+
+        e.preventDefault();
+
+        if (keyboardMovingId === itemId) {
+          // Confirm move
+          setKeyboardMovingId(null);
+        } else {
+          // Start moving
+          setKeyboardMovingId(itemId);
+        }
+        return;
+      }
+
+      // Escape: cancel moving
+      if (e.key === "Escape" && keyboardMovingId === itemId) {
+        e.preventDefault();
+        setKeyboardMovingId(null);
+        return;
+      }
+
+      // Arrow keys: move item when in moving mode
+      if (keyboardMovingId === itemId) {
+        if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+          e.preventDefault();
+          moveItemByKeyboard(itemId, -1);
+        } else if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+          e.preventDefault();
+          moveItemByKeyboard(itemId, 1);
+        }
+      }
+    },
+    [isDraggable, keyboardMovingId, moveItemByKeyboard],
   );
 
   if (items.length === 0) {
@@ -450,7 +521,11 @@ export function ItemList({
   }
 
   return (
-    <div className={`items-list${isDraggable ? " drag-enabled" : ""}`}>
+    <div
+      className={`items-list${isDraggable ? " drag-enabled" : ""}`}
+      role={isDraggable ? "list" : undefined}
+      aria-label={isDraggable ? "Reorderable items list" : undefined}
+    >
       {items.map((item) => (
         <ItemCard
           key={item.id}
@@ -461,6 +536,7 @@ export function ItemList({
           priceRub={convertToRub(item.price, exchangeRates)}
           isDraggable={isDraggable}
           isDragging={draggedItemId === item.id}
+          isKeyboardMoving={keyboardMovingId === item.id}
           dragOverPosition={
             dragOverItemId === item.id ? dragOverPosition : null
           }
@@ -476,6 +552,7 @@ export function ItemList({
           onDragOver={(e) => handleDragOver(e, item.id)}
           onDragLeave={() => handleDragLeave(item.id)}
           onDrop={(e) => handleDrop(e, item.id)}
+          onKeyDown={(e) => handleKeyDown(e, item.id)}
         />
       ))}
     </div>
