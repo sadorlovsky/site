@@ -18,16 +18,16 @@ export interface Session {
  * Only allows bypass on localhost to prevent accidental exposure on staging/preview
  */
 export function isDevBypassEnabled(requestHost?: string | null): boolean {
+  // Never in production
   if (import.meta.env.PROD) return false;
-  if (import.meta.env.ADMIN_DEV_BYPASS !== "true") return false;
 
-  // If no host provided, allow bypass (for backwards compatibility in tests)
-  if (!requestHost) return true;
+  // Require host for security - no bypass without knowing the host
+  if (!requestHost) return false;
 
   // Only allow bypass on localhost
   const host = requestHost.split(":")[0]; // Remove port if present
-  const allowedHosts = ["localhost", "127.0.0.1", "::1"];
-  return allowedHosts.includes(host);
+  const localHosts = ["localhost", "127.0.0.1", "::1"];
+  return localHosts.includes(host);
 }
 
 /**
