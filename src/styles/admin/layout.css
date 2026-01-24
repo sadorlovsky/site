@@ -1,0 +1,91 @@
+/* Admin Panel - Layout */
+
+/* Container */
+.admin-container {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+  position: relative;
+}
+
+/* Ambient background blobs */
+@media (hover: hover) and (pointer: fine) {
+  .admin-container::before,
+  .admin-container::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .admin-container::before {
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    top: -150px;
+    right: -150px;
+    opacity: light-dark(0.12, 0.15);
+  }
+
+  .admin-container::after {
+    width: 400px;
+    height: 400px;
+    background: linear-gradient(
+      135deg,
+      var(--color-indigo),
+      var(--color-violet)
+    );
+    bottom: 100px;
+    left: -100px;
+    opacity: light-dark(0.08, 0.12);
+  }
+}
+
+/* Admin Header */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid
+    light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+}
+
+.admin-header h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Admin Sections */
+.admin-section {
+  margin-bottom: 2rem;
+}
+
+.admin-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: light-dark(#666, #aaa);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .admin-container {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}

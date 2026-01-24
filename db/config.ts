@@ -35,6 +35,7 @@ const Reservation = defineTable({
     reservedBy: column.text(), // Name or identifier of person who reserved
     reservedAt: column.date(),
   },
+  indexes: [{ on: ["itemId"], unique: true }],
 });
 
 const AdminCredential = defineTable({
@@ -52,11 +53,12 @@ const AdminCredential = defineTable({
 const AdminSession = defineTable({
   columns: {
     id: column.text({ primaryKey: true }), // Cryptographically random session ID
-    credentialId: column.text(), // FK to AdminCredential
+    credentialId: column.text({ references: () => AdminCredential.columns.id }),
     expiresAt: column.date(),
     createdAt: column.date(),
     userAgent: column.text({ optional: true }),
   },
+  indexes: [{ on: ["expiresAt"] }, { on: ["credentialId"] }],
 });
 
 // https://astro.build/db/config
