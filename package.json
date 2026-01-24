@@ -21,6 +21,7 @@
     "astro": "^5.16.6",
     "astro-expressive-code": "^0.40.2",
     "astro-icon": "^1.1.5",
+    "astro-seo": "^1.1.0",
     "flag-icons": "^7.5.0",
     "maplibre-gl": "^5.15.0",
     "polylabel": "^2.0.1",

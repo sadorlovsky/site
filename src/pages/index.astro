@@ -3,7 +3,7 @@ import PageLayout from "@layouts/PageLayout.astro";
 import Avatar from "@components/Avatar.astro";
 ---
 
-<PageLayout title="Zach">
+<PageLayout title="Home — Zach">
   <main>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
@@ -17,6 +17,11 @@ import Avatar from "@components/Avatar.astro";
       <div class="info">
         <h1>Zach</h1>
         <p class="bio">Software engineer & traveler</p>
+        <nav class="nav">
+          <!-- <a href="/blog">/Blog</a> -->
+          <a href="/travel">/Travel</a>
+          <a href="/wishlist">/Wishlist</a>
+        </nav>
       </div>
     </div>
   </main>
@@ -148,6 +153,29 @@ import Avatar from "@components/Avatar.astro";
     color: light-dark(#666, #999);
     margin: 0.5rem 0 0 0;
     font-weight: 400;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .nav a {
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: opacity 0.2s ease;
+  }
+
+  .nav a:hover {
+    opacity: 0.7;
   }
 
   @keyframes fadeInUp {
