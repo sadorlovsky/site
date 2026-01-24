@@ -1,5 +1,11 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
+
+interface Props {
+  mode?: "normal" | "globe";
+}
+
+const { mode = "globe" } = Astro.props;
 ---
 
 <link
@@ -7,15 +13,8 @@ import "flag-icons/css/flag-icons.min.css";
   rel="stylesheet"
 />
 
-<div id="map" class="map" data-testid="map">
+<div id="map" class="map" data-testid="map" data-mode={mode}>
   <div id="placeholder" class="placeholder"></div>
-  <!-- <div class="cities-toggle">
-    <label class="toggle-label">
-      <input type="checkbox" id="citiesToggle" class="toggle-input" />
-      <span class="toggle-slider"></span>
-      <span class="toggle-text">Cities</span>
-    </label>
-  </div> -->
 </div>
 
 <style>
