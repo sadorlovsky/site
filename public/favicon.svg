@@ -1,12 +1,12 @@
-<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_1_2)">
-<rect width="500" height="500" rx="24" fill="#1C1A1A"/>
-<path d="M334.776 462.073C405.217 462.073 462.073 404.941 462.073 334.224C462.073 263.783 405.217 206.927 334.776 206.927C264.059 206.927 206.927 263.783 206.927 334.224C206.927 404.941 264.059 462.073 334.776 462.073Z" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M409.83 310.337C409.83 310.337 398.935 314.047 386.564 309.537C374.234 305.055 368.131 295.166 368.131 295.166M300.869 295.166C300.869 295.166 294.911 305 282.526 309.509C270.203 313.992 259.17 310.337 259.17 310.337M362.235 386.784C362.235 386.784 351.029 376.806 334.562 376.806C318.164 376.806 306.772 386.784 306.772 386.784" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-</g>
-<defs>
-<clipPath id="clip0_1_2">
-<rect width="500" height="500" fill="white"/>
-</clipPath>
-</defs>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="blob-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgb(237, 98, 146)" />
+      <stop offset="100%" stop-color="rgb(237, 87, 96)" />
+    </linearGradient>
+  </defs>
+  <path
+    d="M371 82c55 32 97 88 105 152 8 65-18 138-74 178-56 41-143 49-203 21-61-28-95-92-99-156-3-65 24-129 75-167 51-39 126-51 196-28z"
+    fill="url(#blob-gradient)"
+  />
 </svg>
