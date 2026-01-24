@@ -68,7 +68,7 @@ interface ItemListProps {
   exchangeRates: ExchangeRates;
   isDraggable: boolean;
   onEdit: (item: WishlistItem) => void;
-  onDelete: (id: number) => Promise<void>;
+  onDelete: (id: number, title: string) => void;
   onToggleReceived: (id: number, received: boolean) => Promise<void>;
   onToggleReserved: (id: number, reserved: boolean) => Promise<void>;
   onReorder?: (reorderedItems: WishlistItem[]) => void;
@@ -84,7 +84,7 @@ interface ItemCardProps {
   isDragging: boolean;
   dragOverPosition: "before" | "after" | null;
   onEdit: () => void;
-  onDelete: () => Promise<void>;
+  onDelete: () => void;
   onToggleReceived: () => Promise<void>;
   onToggleReserved: () => Promise<void>;
   onDragStart: (e: React.DragEvent) => void;
@@ -114,11 +114,6 @@ function ItemCard({
   onDrop,
 }: ItemCardProps) {
   const isReserved = !!reservation;
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
-    await onDelete();
-  };
 
   const itemClasses = [
     "item-card",
@@ -297,7 +292,7 @@ function ItemCard({
           </button>
           <button
             className="action-btn action-delete"
-            onClick={handleDelete}
+            onClick={onDelete}
             data-tooltip="Delete item"
           >
             <svg
@@ -467,7 +462,7 @@ export function ItemList({
             dragOverItemId === item.id ? dragOverPosition : null
           }
           onEdit={() => onEdit(item)}
-          onDelete={() => onDelete(item.id)}
+          onDelete={() => onDelete(item.id, item.title)}
           onToggleReceived={() => onToggleReceived(item.id, item.received)}
           onToggleReserved={() =>
             onToggleReserved(item.id, reservations.has(item.id))

@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
+import { revalidateWishlist } from "@lib/admin/revalidate";
 import { db, WishlistItem, Reservation, eq } from "astro:db";
 import { z } from "zod";
 
@@ -18,23 +19,6 @@ const updateItemSchema = z.object({
   weight: z.number().optional(),
   received: z.boolean().optional(),
 });
-
-async function revalidateWishlist() {
-  const secret = import.meta.env.REVALIDATION_SECRET;
-  const siteUrl = import.meta.env.SITE;
-  if (!secret || !siteUrl) return;
-
-  try {
-    await fetch(`${siteUrl}/api/revalidate`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-      },
-    });
-  } catch (error) {
-    console.error("Failed to revalidate:", error);
-  }
-}
 
 // UPDATE item
 export const PUT: APIRoute = async ({ params, request, cookies }) => {
@@ -255,6 +239,11 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       .update(WishlistItem)
       .set({ received })
       .where(eq(WishlistItem.id, itemId));
+
+    // If marked as received, remove any existing reservation
+    if (received) {
+      await db.delete(Reservation).where(eq(Reservation.itemId, itemId));
+    }
 
     // Revalidate ISR
     await revalidateWishlist();

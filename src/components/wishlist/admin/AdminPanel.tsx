@@ -1,6 +1,8 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { ItemList } from "./ItemList";
 import { ItemModal } from "./ItemModal";
+import { ToastProvider, useToast } from "./Toast";
+import { ConfirmDialog } from "./ConfirmDialog";
 import type {
   WishlistItem,
   Reservation,
@@ -17,13 +19,16 @@ interface AdminPanelProps {
   exchangeRates: ExchangeRates;
 }
 
-export function AdminPanel({
+// Inner component that uses toast context
+function AdminPanelInner({
   initialItems,
   initialReservations,
   categories,
   cdnDomain,
   exchangeRates,
 }: AdminPanelProps) {
+  const { showToast } = useToast();
+
   const [items, setItems] = useState<WishlistItem[]>(initialItems);
   const [reservations, setReservations] = useState<Map<number, Reservation>>(
     () => new Map(initialReservations),
@@ -31,6 +36,14 @@ export function AdminPanel({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
   const [showReservationsModal, setShowReservationsModal] = useState(false);
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: "", message: "", onConfirm: () => {} });
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -270,75 +283,119 @@ export function AdminPanel({
     window.location.reload();
   }, []);
 
-  const handleDelete = useCallback(async (id: number) => {
-    const response = await fetch(`/api/admin/items/${id}`, {
-      method: "DELETE",
-    });
+  // Request delete confirmation
+  const requestDelete = useCallback(
+    (id: number, title: string) => {
+      setConfirmDialog({
+        isOpen: true,
+        title: "Delete Item",
+        message: `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+        onConfirm: async () => {
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+          try {
+            const response = await fetch(`/api/admin/items/${id}`, {
+              method: "DELETE",
+            });
 
-    const result = await response.json();
+            const result = await response.json();
 
-    if (!response.ok) {
-      throw new Error(result.error || "Failed to delete item");
-    }
+            if (!response.ok) {
+              throw new Error(result.error || "Failed to delete item");
+            }
 
-    // Remove item from state
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  }, []);
+            // Remove item from state
+            setItems((prev) => prev.filter((item) => item.id !== id));
+            showToast("Item deleted successfully", "success");
+          } catch (error) {
+            showToast(
+              error instanceof Error ? error.message : "Failed to delete item",
+              "error",
+            );
+          }
+        },
+      });
+    },
+    [showToast],
+  );
 
   const handleToggleReceived = useCallback(
     async (id: number, currentReceived: boolean) => {
-      const response = await fetch(`/api/admin/items/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ received: !currentReceived }),
-      });
+      try {
+        const response = await fetch(`/api/admin/items/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ received: !currentReceived }),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to update item");
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to update item");
+        }
+
+        // Update item in state
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id ? { ...item, received: !currentReceived } : item,
+          ),
+        );
+        showToast(
+          currentReceived ? "Marked as not received" : "Marked as received",
+          "success",
+        );
+      } catch (error) {
+        showToast(
+          error instanceof Error ? error.message : "Failed to update item",
+          "error",
+        );
       }
-
-      // Update item in state
-      setItems((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, received: !currentReceived } : item,
-        ),
-      );
     },
-    [],
+    [showToast],
   );
 
   const handleToggleReserved = useCallback(
     async (id: number, currentlyReserved: boolean) => {
-      const response = await fetch(`/api/admin/items/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reserved: !currentlyReserved }),
-      });
+      try {
+        const response = await fetch(`/api/admin/items/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reserved: !currentlyReserved }),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to update reservation");
-      }
-
-      // Update reservations in state
-      setReservations((prev) => {
-        const newMap = new Map(prev);
-        if (!currentlyReserved) {
-          newMap.set(id, {
-            itemId: id,
-            reservedBy: "admin",
-            reservedAt: new Date(),
-          });
-        } else {
-          newMap.delete(id);
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to update reservation");
         }
-        return newMap;
-      });
+
+        // Update reservations in state
+        setReservations((prev) => {
+          const newMap = new Map(prev);
+          if (!currentlyReserved) {
+            newMap.set(id, {
+              itemId: id,
+              reservedBy: "admin",
+              reservedAt: new Date(),
+            });
+          } else {
+            newMap.delete(id);
+          }
+          return newMap;
+        });
+        showToast(
+          currentlyReserved ? "Reservation removed" : "Item reserved",
+          "success",
+        );
+      } catch (error) {
+        showToast(
+          error instanceof Error
+            ? error.message
+            : "Failed to update reservation",
+          "error",
+        );
+      }
     },
-    [],
+    [showToast],
   );
 
   // Handle reorder from drag-and-drop
@@ -369,7 +426,7 @@ export function AdminPanel({
     return weightChanges;
   }, []);
 
-  // Save weight changes to database
+  // Save weight changes to database using batch endpoint
   const handleSaveWeights = useCallback(async () => {
     if (!reorderedItems) return;
 
@@ -383,21 +440,17 @@ export function AdminPanel({
     setIsSavingWeights(true);
 
     try {
-      // Update each item's weight
-      const updatePromises = weightChanges.map(({ id, weight }) =>
-        fetch(`/api/admin/items/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ weight }),
-        }),
-      );
+      // Use batch endpoint for efficient update
+      const response = await fetch("/api/admin/items/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updates: weightChanges }),
+      });
 
-      const results = await Promise.all(updatePromises);
+      const result = await response.json();
 
-      // Check for errors
-      const failedUpdates = results.filter((r) => !r.ok);
-      if (failedUpdates.length > 0) {
-        throw new Error(`Failed to update ${failedUpdates.length} items`);
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update weights");
       }
 
       // Update local state with new weights
@@ -409,13 +462,17 @@ export function AdminPanel({
       );
 
       setReorderedItems(null);
+      showToast("Order saved successfully", "success");
     } catch (error) {
       console.error("Failed to save weights:", error);
-      alert("Failed to save weight changes. Please try again.");
+      showToast(
+        error instanceof Error ? error.message : "Failed to save order",
+        "error",
+      );
     } finally {
       setIsSavingWeights(false);
     }
-  }, [reorderedItems, calculateNewWeights]);
+  }, [reorderedItems, calculateNewWeights, showToast]);
 
   // Discard weight changes
   const handleDiscardWeights = useCallback(() => {
@@ -558,7 +615,7 @@ export function AdminPanel({
           exchangeRates={exchangeRates}
           isDraggable={sortMode === "public" && !hasActiveFilters}
           onEdit={openEditModal}
-          onDelete={handleDelete}
+          onDelete={requestDelete}
           onToggleReceived={handleToggleReceived}
           onToggleReserved={handleToggleReserved}
           onReorder={handleReorder}
@@ -636,6 +693,29 @@ export function AdminPanel({
           </div>
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() =>
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }))
+        }
+      />
     </>
+  );
+}
+
+// Wrapper component with ToastProvider
+export function AdminPanel(props: AdminPanelProps) {
+  return (
+    <ToastProvider>
+      <AdminPanelInner {...props} />
+    </ToastProvider>
   );
 }

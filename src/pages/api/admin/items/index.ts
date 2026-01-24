@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
+import { revalidateWishlist } from "@lib/admin/revalidate";
 import { db, WishlistItem } from "astro:db";
 import { z } from "zod";
 
@@ -17,23 +18,6 @@ const createItemSchema = z.object({
   priority: z.enum(["high", "medium", "low"]).optional().or(z.literal("")),
   weight: z.number().default(0),
 });
-
-async function revalidateWishlist() {
-  const secret = import.meta.env.REVALIDATION_SECRET;
-  const siteUrl = import.meta.env.SITE;
-  if (!secret || !siteUrl) return;
-
-  try {
-    await fetch(`${siteUrl}/api/revalidate`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-      },
-    });
-  } catch (error) {
-    console.error("Failed to revalidate:", error);
-  }
-}
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   // Verify authentication
