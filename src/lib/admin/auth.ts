@@ -190,12 +190,24 @@ export async function deleteSession(cookies: AstroCookies): Promise<void> {
 
 /**
  * Clean up all expired sessions (can be called periodically)
+ * Throttled to run at most once per minute to prevent abuse
  */
+let lastCleanupTime = 0;
+const CLEANUP_THROTTLE_MS = 60 * 1000; // 1 minute
+
 export async function cleanupExpiredSessions(): Promise<number> {
-  const now = new Date();
+  const now = Date.now();
+
+  // Throttle: skip if called within the last minute
+  if (now - lastCleanupTime < CLEANUP_THROTTLE_MS) {
+    return 0;
+  }
+  lastCleanupTime = now;
+
+  const currentDate = new Date();
   const allSessions = await db.select().from(AdminSession);
   const expiredIds = allSessions
-    .filter((s) => s.expiresAt < now)
+    .filter((s) => s.expiresAt < currentDate)
     .map((s) => s.id);
 
   for (const id of expiredIds) {

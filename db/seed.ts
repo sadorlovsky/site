@@ -60,7 +60,6 @@ export default async function seed() {
       priority: "medium",
       received: false,
       createdAt: now,
-      createdAt: now,
     },
     {
       id: 2,
@@ -77,7 +76,6 @@ export default async function seed() {
       category: "blu-ray",
       priority: "medium",
       received: false,
-      createdAt: now,
       createdAt: now,
     },
     {

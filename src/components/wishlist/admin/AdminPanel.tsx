@@ -262,26 +262,67 @@ function AdminPanelInner({
     setEditingItem(null);
   };
 
-  const handleSave = useCallback(async (data: ItemFormData, id?: number) => {
-    const isEdit = id !== undefined;
-    const url = isEdit ? `/api/admin/items/${id}` : "/api/admin/items";
-    const method = isEdit ? "PUT" : "POST";
+  const handleSave = useCallback(
+    async (data: ItemFormData, id?: number) => {
+      const isEdit = id !== undefined;
+      const url = isEdit ? `/api/admin/items/${id}` : "/api/admin/items";
+      const method = isEdit ? "PUT" : "POST";
 
-    const response = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      throw new Error(result.error || "Failed to save item");
-    }
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to save item");
+      }
 
-    // Reload page to get fresh data from server
-    window.location.reload();
-  }, []);
+      // Update state locally instead of reloading
+      if (isEdit) {
+        // Update existing item
+        setItems((prev) =>
+          prev.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  ...data,
+                  titleRu: data.titleRu || null,
+                  description: data.description || null,
+                  descriptionRu: data.descriptionRu || null,
+                  url: data.url || null,
+                  priority: data.priority || null,
+                }
+              : item,
+          ),
+        );
+      } else {
+        // Add new item
+        const newItem: WishlistItem = {
+          id: result.id,
+          title: data.title,
+          titleRu: data.titleRu || null,
+          price: data.price,
+          imageUrl: data.imageUrl,
+          description: data.description || null,
+          descriptionRu: data.descriptionRu || null,
+          url: data.url || null,
+          category: data.category,
+          priority: data.priority || null,
+          weight: data.weight ?? 0,
+          received: false,
+          createdAt: new Date(),
+        };
+        setItems((prev) => [newItem, ...prev]);
+      }
+
+      closeModal();
+      showToast(isEdit ? "Item updated" : "Item created", "success");
+    },
+    [closeModal, showToast],
+  );
 
   // Request delete confirmation
   const requestDelete = useCallback(

@@ -4,10 +4,11 @@ import { timingSafeEqual } from "@lib/admin/crypto";
 
 export const prerender = false;
 
+const SETUP_TOKEN_COOKIE = "admin_setup_token";
 const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
 const CHALLENGE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
-export const POST: APIRoute = async ({ cookies, request }) => {
+export const POST: APIRoute = async ({ cookies }) => {
   try {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();
@@ -18,11 +19,8 @@ export const POST: APIRoute = async ({ cookies, request }) => {
       });
     }
 
-    // Validate setup token to prevent unauthorized registration
-    const authHeader = request.headers.get("Authorization");
-    const token = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : null;
+    // Validate setup token from httpOnly cookie
+    const token = cookies.get(SETUP_TOKEN_COOKIE)?.value;
     const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
     if (!token || !expectedToken || !timingSafeEqual(token, expectedToken)) {

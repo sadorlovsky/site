@@ -18,9 +18,9 @@ if (!session) {
 }
 
 // CDN domain
-const cdnDomain = import.meta.env.PROD
+const cdnDomain = (import.meta.env.PROD
   ? CDN_DOMAIN
-  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN);
+  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN)) ?? "";
 
 // Fetch all items, reservations, and exchange rates
 const [items, reservations, exchangeRates] = await Promise.all([

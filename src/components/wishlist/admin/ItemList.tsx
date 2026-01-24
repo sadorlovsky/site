@@ -89,6 +89,7 @@ interface ItemCardProps {
   onToggleReserved: () => Promise<void>;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: (e: React.DragEvent) => void;
+  onDragEnter: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
@@ -109,6 +110,7 @@ function ItemCard({
   onToggleReserved,
   onDragStart,
   onDragEnd,
+  onDragEnter,
   onDragOver,
   onDragLeave,
   onDrop,
@@ -134,6 +136,7 @@ function ItemCard({
       draggable={isDraggable}
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      onDragEnter={onDragEnter}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
@@ -469,10 +472,8 @@ export function ItemList({
           }
           onDragStart={(e) => handleDragStart(e, item.id)}
           onDragEnd={handleDragEnd}
-          onDragOver={(e) => {
-            handleDragEnter(e, item.id);
-            handleDragOver(e, item.id);
-          }}
+          onDragEnter={(e) => handleDragEnter(e, item.id)}
+          onDragOver={(e) => handleDragOver(e, item.id)}
           onDragLeave={() => handleDragLeave(item.id)}
           onDrop={(e) => handleDrop(e, item.id)}
         />

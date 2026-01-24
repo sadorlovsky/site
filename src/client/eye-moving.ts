@@ -166,7 +166,7 @@ function handlePointerMove(e: MouseEvent | TouchEvent) {
 }
 
 // Throttle function for performance
-function throttle<T extends (...args: unknown[]) => void>(
+function throttle<T extends (...args: never[]) => void>(
   func: T,
   limit: number,
 ): (...args: Parameters<T>) => void {

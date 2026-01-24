@@ -1,30 +1,50 @@
 ---
 import AdminLayout from "@layouts/AdminLayout.astro";
 import { hasCredentials } from "@lib/admin/webauthn";
+import { timingSafeEqual } from "@lib/admin/crypto";
 
 export const prerender = false;
+
+const SETUP_TOKEN_COOKIE = "admin_setup_token";
+const SETUP_TOKEN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 // Check if setup is allowed
 const credentialsExist = await hasCredentials();
 if (credentialsExist) {
+  // Clear any leftover setup token cookie
+  Astro.cookies.delete(SETUP_TOKEN_COOKIE, { path: "/" });
   return Astro.redirect("/wishlist/~/login");
 }
 
-// Validate setup token - redirect to 404 if invalid
-const setupToken = Astro.url.searchParams.get("token");
+// Check for token in URL (first visit)
+const urlToken = Astro.url.searchParams.get("token");
 const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
-const isValidToken =
-  setupToken && expectedToken && setupToken === expectedToken;
 
-if (!isValidToken) {
-  return new Response(null, {
-    status: 404,
-    statusText: "Not Found",
-  });
+if (urlToken && expectedToken) {
+  // Validate the token
+  if (timingSafeEqual(urlToken, expectedToken)) {
+    // Store token in httpOnly cookie and redirect to clean URL
+    Astro.cookies.set(SETUP_TOKEN_COOKIE, urlToken, {
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: "strict",
+      path: "/",
+      maxAge: SETUP_TOKEN_EXPIRY_MS / 1000,
+    });
+    return Astro.redirect("/wishlist/~/setup");
+  } else {
+    // Invalid token in URL
+    return new Response(null, { status: 404, statusText: "Not Found" });
+  }
 }
 
-// Pass token to client for API calls
-const safeToken = setupToken;
+// Check for token in cookie (subsequent visits)
+const cookieToken = Astro.cookies.get(SETUP_TOKEN_COOKIE)?.value;
+const isValidToken = cookieToken && expectedToken && timingSafeEqual(cookieToken, expectedToken);
+
+if (!isValidToken) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
 ---
 
 <AdminLayout title="Setup - Wishlist Admin">
@@ -53,9 +73,6 @@ const safeToken = setupToken;
       </div>
     </div>
   </div>
-  <script is:inline define:vars={{ safeToken }}>
-    window.__SETUP_TOKEN__ = safeToken;
-  </script>
 </AdminLayout>
 
 <script>
@@ -77,17 +94,11 @@ const safeToken = setupToken;
     registerBtn.textContent = "Registering...";
     errorEl.hidden = true;
 
-    // Get setup token from window
-    const setupToken = (window as unknown as { __SETUP_TOKEN__: string })
-      .__SETUP_TOKEN__;
-
     try {
-      // Get registration options from server
+      // Get registration options from server (token is in httpOnly cookie)
       const optionsRes = await fetch("/api/admin/auth/registration-options", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${setupToken}`,
-        },
+        credentials: "same-origin",
       });
 
       if (!optionsRes.ok) {
@@ -100,13 +111,11 @@ const safeToken = setupToken;
       // Start registration with browser WebAuthn API
       const credential = await startRegistration({ optionsJSON: options });
 
-      // Verify with server
+      // Verify with server (token is in httpOnly cookie)
       const verifyRes = await fetch("/api/admin/auth/registration-verify", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${setupToken}`,
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({
           credential,
           deviceName: deviceNameInput.value.trim() || undefined,

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { revalidateWishlist } from "@lib/admin/revalidate";
-import { db, WishlistItem, Reservation, eq } from "astro:db";
+import { db, WishlistItem, Reservation, eq, sql } from "astro:db";
 import { z } from "zod";
 
 export const prerender = false;
@@ -177,11 +177,13 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
   }
 
   try {
-    // Check if item exists
-    const items = await db
-      .select()
-      .from(WishlistItem)
-      .where(eq(WishlistItem.id, itemId));
+    const body = await request.json();
+
+    // Fetch item and reservation in parallel
+    const [items, existingReservation] = await Promise.all([
+      db.select().from(WishlistItem).where(eq(WishlistItem.id, itemId)),
+      db.select().from(Reservation).where(eq(Reservation.itemId, itemId)),
+    ]);
 
     if (items.length === 0) {
       return new Response(JSON.stringify({ error: "Item not found" }), {
@@ -190,30 +192,21 @@ export const PATCH: APIRoute = async ({ params, request, cookies }) => {
       });
     }
 
-    const body = await request.json();
-
     // Handle reservation toggle
     if (typeof body.reserved === "boolean") {
-      const existingReservation = await db
-        .select()
-        .from(Reservation)
-        .where(eq(Reservation.itemId, itemId));
-
       if (body.reserved) {
         // Create reservation if not exists
         if (existingReservation.length === 0) {
-          const allReservations = await db.select().from(Reservation);
-          const nextId =
-            allReservations.length > 0
-              ? Math.max(...allReservations.map((r) => r.id)) + 1
-              : 1;
-
-          await db.insert(Reservation).values({
-            id: nextId,
-            itemId,
-            reservedBy: "admin",
-            reservedAt: new Date(),
-          });
+          // Use atomic subquery to avoid race condition
+          await db.run(sql`
+            INSERT INTO Reservation (id, itemId, reservedBy, reservedAt)
+            VALUES (
+              COALESCE((SELECT MAX(id) FROM Reservation), 0) + 1,
+              ${itemId},
+              'admin',
+              ${new Date().toISOString()}
+            )
+          `);
         }
       } else {
         // Remove reservation if exists

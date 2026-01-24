@@ -3,6 +3,8 @@
  * Uses S3-compatible API to upload files to Cloudflare R2
  */
 
+import { generateSecureId } from "./crypto";
+
 interface UploadResult {
   success: boolean;
   filename?: string;
@@ -15,7 +17,7 @@ interface UploadResult {
 export function generateFilename(originalName: string): string {
   const ext = originalName.split(".").pop()?.toLowerCase() || "jpg";
   const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
+  const random = generateSecureId(6);
   return `wishlist/${timestamp}-${random}.${ext}`;
 }
 
@@ -132,7 +134,7 @@ export async function uploadToR2(
 }
 
 // Helper functions for AWS Signature V4
-async function sha256Hex(data: Uint8Array): Promise<string> {
+async function sha256Hex(data: BufferSource): Promise<string> {
   const hash = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(hash))
     .map((b) => b.toString(16).padStart(2, "0"))

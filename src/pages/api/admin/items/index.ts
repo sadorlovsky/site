@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { revalidateWishlist } from "@lib/admin/revalidate";
-import { db, WishlistItem } from "astro:db";
+import { db, WishlistItem, sql } from "astro:db";
 import { z } from "zod";
 
 export const prerender = false;
@@ -41,33 +41,35 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const data = parsed.data;
+    const now = new Date().toISOString();
 
-    // Get next ID
-    const allItems = await db.select().from(WishlistItem);
-    const nextId =
-      allItems.length > 0 ? Math.max(...allItems.map((i) => i.id)) + 1 : 1;
+    // Create item with atomic ID generation to avoid race condition
+    const result = await db.run(sql`
+      INSERT INTO WishlistItem (id, title, titleRu, price, imageUrl, description, descriptionRu, url, category, priority, weight, received, createdAt)
+      VALUES (
+        COALESCE((SELECT MAX(id) FROM WishlistItem), 0) + 1,
+        ${data.title},
+        ${data.titleRu || null},
+        ${data.price},
+        ${data.imageUrl},
+        ${data.description || null},
+        ${data.descriptionRu || null},
+        ${data.url || null},
+        ${data.category},
+        ${data.priority || null},
+        ${data.weight},
+        0,
+        ${now}
+      )
+    `);
 
-    // Create item
-    await db.insert(WishlistItem).values({
-      id: nextId,
-      title: data.title,
-      titleRu: data.titleRu || null,
-      price: data.price,
-      imageUrl: data.imageUrl,
-      description: data.description || null,
-      descriptionRu: data.descriptionRu || null,
-      url: data.url || null,
-      category: data.category,
-      priority: data.priority || null,
-      weight: data.weight,
-      received: false,
-      createdAt: new Date(),
-    });
+    // Get the inserted ID
+    const newId = Number(result.lastInsertRowid);
 
     // Revalidate ISR
     await revalidateWishlist();
 
-    return new Response(JSON.stringify({ success: true, id: nextId }), {
+    return new Response(JSON.stringify({ success: true, id: newId }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });

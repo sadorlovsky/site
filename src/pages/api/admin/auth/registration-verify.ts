@@ -9,6 +9,7 @@ import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 
 export const prerender = false;
 
+const SETUP_TOKEN_COOKIE = "admin_setup_token";
 const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -22,11 +23,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    // Validate setup token to prevent unauthorized registration
-    const authHeader = request.headers.get("Authorization");
-    const token = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : null;
+    // Validate setup token from httpOnly cookie
+    const token = cookies.get(SETUP_TOKEN_COOKIE)?.value;
     const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
     if (!token || !expectedToken || !timingSafeEqual(token, expectedToken)) {
@@ -73,8 +71,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Clear the challenge cookie
+    // Clear the challenge and setup token cookies (one-time use)
     cookies.delete(CHALLENGE_COOKIE_NAME, { path: "/" });
+    cookies.delete(SETUP_TOKEN_COOKIE, { path: "/" });
 
     // Create a session
     const userAgent = request.headers.get("user-agent") || undefined;
