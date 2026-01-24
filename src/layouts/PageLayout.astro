@@ -1,8 +1,14 @@
 ---
 import "@styles/global.css";
 import { Font } from "astro:assets";
+import { SEO } from "astro-seo";
 
-const { title } = Astro.props;
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Software engineer & traveler" } = Astro.props;
 const cdnDomain = import.meta.env.PROD ? "cdn.orlovsky.dev" : null;
 ---
 
@@ -10,9 +16,7 @@ const cdnDomain = import.meta.env.PROD ? "cdn.orlovsky.dev" : null;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>{title}</title>
-    <meta name="title" content="Zach" />
-    <meta name="description" content="Zach" />
+    <SEO title={title} description={description} />
     <link rel="icon" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#000000" />
     <meta
