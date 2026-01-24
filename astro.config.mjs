@@ -18,6 +18,14 @@ const cdnDomain = isProd ? CDN_DOMAIN : CDN_DEV_DOMAIN;
 // https://astro.build/config
 export default defineConfig({
   output: "static",
+  vite: {
+    optimizeDeps: {
+      exclude: ["@simplewebauthn/server"],
+    },
+    ssr: {
+      noExternal: ["@simplewebauthn/server"],
+    },
+  },
   adapter: vercel({
     isr: {
       // Bypass token for on-demand revalidation
@@ -46,6 +54,58 @@ export default defineConfig({
         context: "server",
         access: "secret",
         optional: true,
+      }),
+      // ISR Revalidation
+      REVALIDATION_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      // Admin Panel - Passkey Auth
+      ADMIN_SETUP_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+
+      ADMIN_SESSION_SECRET: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      ADMIN_RP_ID: envField.string({
+        context: "server",
+        access: "public",
+        optional: true,
+        default: "localhost",
+      }),
+      ADMIN_RP_NAME: envField.string({
+        context: "server",
+        access: "public",
+        optional: true,
+        default: "Wishlist Admin",
+      }),
+      // Cloudflare R2
+      R2_ACCOUNT_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      R2_ACCESS_KEY_ID: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      R2_SECRET_ACCESS_KEY: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      R2_BUCKET_NAME: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+        default: "wishlist-images",
       }),
     },
   },

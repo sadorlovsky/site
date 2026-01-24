@@ -129,7 +129,10 @@ export const datedTrips = getDatedTrips(trips);
 export const tripsCount = datedTrips.length;
 export const countries = getCountries(datedTrips);
 export const cities = getCities(datedTrips);
-export const cityCoordinates = citiesData as Record<string, [number, number]>;
+export const cityCoordinates = citiesData as unknown as Record<
+  string,
+  [number, number]
+>;
 export const countryListSize = getCountryListSize(countryList.rawContent());
 export const continentsVisited = 2;
 export const continentsTotal = 7;

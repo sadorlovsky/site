@@ -1,6 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
-import { db, Reservation, WishlistItem, eq } from "astro:db";
+import { db, Reservation, WishlistItem, eq, sql } from "astro:db";
 
 const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
 
@@ -51,20 +51,16 @@ export const server = {
         });
       }
 
-      // Get the next ID for the reservation
-      const allReservations = await db.select().from(Reservation);
-      const nextId =
-        allReservations.length > 0
-          ? Math.max(...allReservations.map((r) => r.id)) + 1
-          : 1;
-
-      // Create reservation
-      await db.insert(Reservation).values({
-        id: nextId,
-        itemId,
-        reservedBy: visitorId,
-        reservedAt: new Date(),
-      });
+      // Create reservation with atomic ID generation
+      await db.run(sql`
+        INSERT INTO Reservation (id, itemId, reservedBy, reservedAt)
+        VALUES (
+          COALESCE((SELECT MAX(id) FROM Reservation), 0) + 1,
+          ${itemId},
+          ${visitorId},
+          ${new Date().toISOString()}
+        )
+      `);
 
       return { success: true };
     },

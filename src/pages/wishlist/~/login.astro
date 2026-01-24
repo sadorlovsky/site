@@ -1,0 +1,86 @@
+---
+import AdminLayout from "@layouts/AdminLayout.astro";
+import { verifySession } from "@lib/admin/auth";
+import { hasCredentials } from "@lib/admin/webauthn";
+
+export const prerender = false;
+
+// Already authenticated? Redirect to admin
+const session = await verifySession(
+  Astro.cookies,
+  Astro.request.headers.get("host"),
+);
+if (session) {
+  return Astro.redirect("/wishlist/~");
+}
+
+// No credentials? Redirect to setup (but they need the token)
+const credentialsExist = await hasCredentials();
+if (!credentialsExist) {
+  return Astro.redirect("/wishlist/~/setup");
+}
+---
+
+<AdminLayout title="Login - Wishlist Admin">
+  <div class="auth-container">
+    <h1>Admin Login</h1>
+    <p>Use your passkey to sign in.</p>
+
+    <button id="login-btn" class="btn btn-primary" type="button">
+      Sign in with Passkey
+    </button>
+
+    <div id="error-message" class="error-message" hidden></div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { startAuthentication } from "@simplewebauthn/browser";
+
+  const loginBtn = document.getElementById("login-btn") as HTMLButtonElement;
+  const errorEl = document.getElementById("error-message") as HTMLDivElement;
+
+  loginBtn.addEventListener("click", async () => {
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Authenticating...";
+    errorEl.hidden = true;
+
+    try {
+      // Get authentication options from server
+      const optionsRes = await fetch("/api/admin/auth/authentication-options", {
+        method: "POST",
+      });
+
+      if (!optionsRes.ok) {
+        const error = await optionsRes.json();
+        throw new Error(error.error || "Failed to get options");
+      }
+
+      const options = await optionsRes.json();
+
+      // Start authentication with browser WebAuthn API
+      const credential = await startAuthentication({ optionsJSON: options });
+
+      // Verify with server
+      const verifyRes = await fetch("/api/admin/auth/authentication-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential }),
+      });
+
+      if (verifyRes.ok) {
+        window.location.href = "/wishlist/~";
+      } else {
+        const error = await verifyRes.json();
+        throw new Error(error.error || "Authentication failed");
+      }
+    } catch (error) {
+      console.error("Authentication error:", error);
+      errorEl.textContent =
+        error instanceof Error ? error.message : "Authentication failed";
+      errorEl.hidden = false;
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign in with Passkey";
+    }
+  });
+</script>

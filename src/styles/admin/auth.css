@@ -1,0 +1,42 @@
+/* Admin Panel - Auth Pages (Login/Setup) */
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  text-align: center;
+}
+
+.auth-container h1 {
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-container p {
+  color: light-dark(#666, #999);
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.auth-error h1 {
+  background: none;
+  -webkit-text-fill-color: light-dark(
+    var(--color-error-dark),
+    var(--color-error-light)
+  );
+  color: light-dark(var(--color-error-dark), var(--color-error-light));
+}
+
+.setup-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

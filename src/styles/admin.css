@@ -1,0 +1,10 @@
+/* Admin Panel Styles */
+
+@import "./admin/variables.css";
+@import "./admin/layout.css";
+@import "./admin/auth.css";
+@import "./admin/forms.css";
+@import "./admin/toolbar.css";
+@import "./admin/items.css";
+@import "./admin/modal.css";
+@import "./admin/toast.css";

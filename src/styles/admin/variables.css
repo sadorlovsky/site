@@ -1,0 +1,31 @@
+/* Admin Panel - CSS Variables */
+
+:root {
+  --glass-bg-light: rgba(255, 255, 255, 0.7);
+  --glass-bg-dark: rgba(40, 40, 45, 0.7);
+  --glass-border-light: rgba(255, 255, 255, 0.5);
+  --glass-border-dark: rgba(255, 255, 255, 0.1);
+
+  /* Semantic colors */
+  --color-indigo: #6366f1;
+  --color-indigo-dark: #4f46e5;
+  --color-indigo-light: #a5b4fc;
+  --color-violet: #8b5cf6;
+
+  /* Text colors */
+  --color-text-primary: #111;
+  --color-text-primary-dark: #fafafa;
+
+  /* Status colors */
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-success-light: #6ee7b7;
+  --color-success-lighter: #86efac;
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d97706;
+  --color-warning-light: #fcd34d;
+  --color-error: #ef4444;
+  --color-error-dark: #dc2626;
+  --color-error-light: #f87171;
+  --color-error-lighter: #fca5a5;
+}

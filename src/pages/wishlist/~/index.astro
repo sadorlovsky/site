@@ -1,0 +1,76 @@
+---
+import AdminLayout from "@layouts/AdminLayout.astro";
+import { AdminPanel } from "@components/wishlist/admin";
+import { verifySession } from "@lib/admin/auth";
+import { categories } from "@lib/wishlist";
+import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
+import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
+
+export const prerender = false;
+
+// Verify authentication
+const session = await verifySession(
+  Astro.cookies,
+  Astro.request.headers.get("host"),
+);
+if (!session) {
+  return Astro.redirect("/wishlist/~/login");
+}
+
+// CDN domain
+const cdnDomain = (import.meta.env.PROD
+  ? CDN_DOMAIN
+  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN)) ?? "";
+
+// Fetch all items, reservations, and exchange rates
+const [items, reservations, exchangeRates] = await Promise.all([
+  db.select().from(WishlistItem),
+  db.select().from(Reservation),
+  db.select().from(ExchangeRate),
+]);
+
+// Build exchange rates map: { USD: rate, EUR: rate, ... }
+const exchangeRatesMap: Record<string, number> = {};
+for (const rate of exchangeRates) {
+  if (rate.toCurrency === "RUB") {
+    exchangeRatesMap[rate.fromCurrency] = rate.rate;
+  }
+}
+
+// Create reservation map
+const reservationMap = new Map(reservations.map((r) => [r.itemId, r]));
+
+// Sort: reserved items first, then by createdAt (newest first)
+const sortedItems = [...items].sort((a, b) => {
+  const aReserved = reservationMap.has(a.id);
+  const bReserved = reservationMap.has(b.id);
+
+  // Reserved items first
+  if (aReserved && !bReserved) return -1;
+  if (!aReserved && bReserved) return 1;
+
+  // Then by createdAt (newest first)
+  return b.createdAt.getTime() - a.createdAt.getTime();
+});
+
+// Convert Map to array for serialization
+const reservationsArray = Array.from(reservationMap.entries());
+---
+
+<AdminLayout title="Wishlist Admin">
+  <header class="admin-header">
+    <h1>Wishlist Admin</h1>
+    <form method="POST" action="/api/admin/auth/logout">
+      <button type="submit" class="btn btn-secondary btn-sm">Logout</button>
+    </form>
+  </header>
+
+  <AdminPanel
+    client:load
+    initialItems={sortedItems}
+    initialReservations={reservationsArray}
+    categories={categories}
+    cdnDomain={cdnDomain}
+    exchangeRates={exchangeRatesMap}
+  />
+</AdminLayout>

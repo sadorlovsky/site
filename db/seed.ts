@@ -41,6 +41,8 @@ export default async function seed() {
     },
   ]);
 
+  const now = new Date();
+
   await db.insert(WishlistItem).values([
     {
       id: 1,
@@ -57,6 +59,7 @@ export default async function seed() {
       category: "blu-ray",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 2,
@@ -73,6 +76,7 @@ export default async function seed() {
       category: "blu-ray",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 5,
@@ -86,6 +90,7 @@ export default async function seed() {
       category: "other",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 6,
@@ -100,6 +105,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 7,
@@ -113,6 +119,7 @@ export default async function seed() {
       category: "merch,home",
       priority: null,
       received: true,
+      createdAt: now,
     },
     {
       id: 8,
@@ -128,6 +135,7 @@ export default async function seed() {
       category: "home",
       priority: "high",
       received: false,
+      createdAt: now,
       weight: 3,
     },
     {
@@ -142,6 +150,7 @@ export default async function seed() {
       category: "home",
       priority: "high",
       received: false,
+      createdAt: now,
       weight: 2,
     },
     {
@@ -159,6 +168,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 11,
@@ -175,6 +185,7 @@ export default async function seed() {
       category: "merch",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 12,
@@ -189,6 +200,7 @@ export default async function seed() {
       category: "merch,home",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 13,
@@ -205,6 +217,7 @@ export default async function seed() {
       category: "blu-ray",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 14,
@@ -220,6 +233,7 @@ export default async function seed() {
       category: "blu-ray",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 15,
@@ -236,6 +250,7 @@ export default async function seed() {
       category: "blu-ray",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 16,
@@ -251,6 +266,7 @@ export default async function seed() {
       category: "blu-ray",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 17,
@@ -264,6 +280,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 18,
@@ -279,6 +296,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 19,
@@ -294,6 +312,7 @@ export default async function seed() {
       category: "merch,clothing",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 20,
@@ -307,6 +326,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 21,
@@ -320,6 +340,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 22,
@@ -333,6 +354,7 @@ export default async function seed() {
       category: "home",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 23,
@@ -346,6 +368,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 24,
@@ -359,6 +382,7 @@ export default async function seed() {
       category: "merch",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 25,
@@ -374,6 +398,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 26,
@@ -388,6 +413,7 @@ export default async function seed() {
       category: "home",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 27,
@@ -402,6 +428,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 28,
@@ -415,6 +442,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 29,
@@ -430,6 +458,7 @@ export default async function seed() {
       category: "clothing",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 30,
@@ -446,6 +475,7 @@ export default async function seed() {
       category: "clothing",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 31,
@@ -460,6 +490,7 @@ export default async function seed() {
       category: "clothing",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 32,
@@ -474,6 +505,7 @@ export default async function seed() {
       category: "clothing",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 33,
@@ -488,6 +520,7 @@ export default async function seed() {
       category: "home",
       priority: "high",
       received: false,
+      createdAt: now,
       weight: 1,
     },
     {
@@ -503,6 +536,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 35,
@@ -518,6 +552,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 36,
@@ -533,6 +568,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 37,
@@ -547,6 +583,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 38,
@@ -562,6 +599,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 39,
@@ -576,6 +614,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 40,
@@ -590,6 +629,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 41,
@@ -604,6 +644,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 42,
@@ -617,6 +658,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 43,
@@ -631,6 +673,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "medium",
       received: false,
+      createdAt: now,
     },
     {
       id: 44,
@@ -649,6 +692,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 1,
     },
     {
@@ -665,6 +709,7 @@ export default async function seed() {
       category: "home",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 46,
@@ -677,6 +722,7 @@ export default async function seed() {
       category: "home",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 47,
@@ -690,6 +736,7 @@ export default async function seed() {
       category: "clothing",
       priority: "high",
       received: false,
+      createdAt: now,
     },
     {
       id: 48,
@@ -706,6 +753,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 49,
@@ -723,6 +771,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 1,
     },
     {
@@ -738,6 +787,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 3,
     },
     {
@@ -754,6 +804,7 @@ export default async function seed() {
       category: "books",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 2,
     },
     {
@@ -768,6 +819,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 3,
     },
     {
@@ -782,6 +834,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 54,
@@ -795,6 +848,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 2,
     },
     {
@@ -809,6 +863,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 56,
@@ -822,6 +877,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 4,
     },
     {
@@ -836,6 +892,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 58,
@@ -849,6 +906,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 59,
@@ -862,6 +920,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 60,
@@ -875,6 +934,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: -2,
     },
     {
@@ -889,6 +949,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: -1,
     },
     {
@@ -905,6 +966,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 63,
@@ -920,6 +982,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 64,
@@ -933,6 +996,7 @@ export default async function seed() {
       category: "sweets",
       priority: "low",
       received: false,
+      createdAt: now,
       weight: 1,
     },
     {
@@ -947,6 +1011,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "low",
       received: false,
+      createdAt: now,
     },
     {
       id: 66,
@@ -960,6 +1025,7 @@ export default async function seed() {
       category: "vinyl",
       priority: "low",
       received: false,
+      createdAt: now,
     },
   ]);
 

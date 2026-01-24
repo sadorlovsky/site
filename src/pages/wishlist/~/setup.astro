@@ -1,0 +1,142 @@
+---
+import AdminLayout from "@layouts/AdminLayout.astro";
+import { hasCredentials } from "@lib/admin/webauthn";
+import { timingSafeEqual } from "@lib/admin/crypto";
+import { SETUP_TOKEN_COOKIE, SETUP_TOKEN_EXPIRY_MS } from "@lib/admin/config";
+
+export const prerender = false;
+
+// Check if setup is allowed
+const credentialsExist = await hasCredentials();
+if (credentialsExist) {
+  // Clear any leftover setup token cookie
+  Astro.cookies.delete(SETUP_TOKEN_COOKIE, { path: "/" });
+  return Astro.redirect("/wishlist/~/login");
+}
+
+// Check for token in URL (first visit)
+const urlToken = Astro.url.searchParams.get("token");
+const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
+
+if (urlToken && expectedToken) {
+  // Validate the token
+  if (await timingSafeEqual(urlToken, expectedToken)) {
+    // Store token in httpOnly cookie and redirect to clean URL
+    Astro.cookies.set(SETUP_TOKEN_COOKIE, urlToken, {
+      httpOnly: true,
+      secure: import.meta.env.PROD,
+      sameSite: "strict",
+      path: "/",
+      maxAge: SETUP_TOKEN_EXPIRY_MS / 1000,
+    });
+    return Astro.redirect("/wishlist/~/setup");
+  } else {
+    // Invalid token in URL
+    return new Response(null, { status: 404, statusText: "Not Found" });
+  }
+}
+
+// Check for token in cookie (subsequent visits)
+const cookieToken = Astro.cookies.get(SETUP_TOKEN_COOKIE)?.value;
+const isValidToken = cookieToken && expectedToken && await timingSafeEqual(cookieToken, expectedToken);
+
+if (!isValidToken) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+---
+
+<AdminLayout title="Setup - Wishlist Admin">
+  <div class="auth-container">
+    <div class="setup-content">
+      <h1>Setup Admin Passkey</h1>
+      <p>Register a passkey to secure your admin account.</p>
+
+      <div class="form-group" style="width: 300px; margin-bottom: 1.5rem;">
+        <label for="device-name">Device Name (optional)</label>
+        <input
+          type="text"
+          id="device-name"
+          placeholder="e.g., MacBook Pro"
+          maxlength="50"
+        />
+      </div>
+
+      <button id="register-btn" class="btn btn-primary" type="button">
+        Register Passkey
+      </button>
+
+      <div id="error-message" class="error-message" hidden></div>
+      <div id="success-message" class="success-message" hidden>
+        Passkey registered! Redirecting...
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  import { startRegistration } from "@simplewebauthn/browser";
+
+  const registerBtn = document.getElementById(
+    "register-btn",
+  ) as HTMLButtonElement;
+  const deviceNameInput = document.getElementById(
+    "device-name",
+  ) as HTMLInputElement;
+  const errorEl = document.getElementById("error-message") as HTMLDivElement;
+  const successEl = document.getElementById(
+    "success-message",
+  ) as HTMLDivElement;
+
+  registerBtn.addEventListener("click", async () => {
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Registering...";
+    errorEl.hidden = true;
+
+    try {
+      // Get registration options from server (token is in httpOnly cookie)
+      const optionsRes = await fetch("/api/admin/auth/registration-options", {
+        method: "POST",
+        credentials: "same-origin",
+      });
+
+      if (!optionsRes.ok) {
+        const error = await optionsRes.json();
+        throw new Error(error.error || "Failed to get options");
+      }
+
+      const options = await optionsRes.json();
+
+      // Start registration with browser WebAuthn API
+      const credential = await startRegistration({ optionsJSON: options });
+
+      // Verify with server (token is in httpOnly cookie)
+      const verifyRes = await fetch("/api/admin/auth/registration-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({
+          credential,
+          deviceName: deviceNameInput.value.trim() || undefined,
+        }),
+      });
+
+      if (verifyRes.ok) {
+        successEl.hidden = false;
+        registerBtn.hidden = true;
+        setTimeout(() => {
+          window.location.href = "/wishlist/~";
+        }, 1500);
+      } else {
+        const error = await verifyRes.json();
+        throw new Error(error.error || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      errorEl.textContent =
+        error instanceof Error ? error.message : "Registration failed";
+      errorEl.hidden = false;
+      registerBtn.disabled = false;
+      registerBtn.textContent = "Register Passkey";
+    }
+  });
+</script>
