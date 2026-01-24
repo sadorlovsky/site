@@ -5,6 +5,11 @@ import {
 } from "@lib/admin/webauthn";
 import { createSession } from "@lib/admin/auth";
 import { timingSafeEqual } from "@lib/admin/crypto";
+import {
+  checkRateLimit,
+  rateLimitResponse,
+  getClientIP,
+} from "@lib/admin/rate-limit";
 import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 
 export const prerender = false;
@@ -13,6 +18,16 @@ const SETUP_TOKEN_COOKIE = "admin_setup_token";
 const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  // Rate limit by IP: 5 requests per minute (stricter for registration)
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`reg-verify:${clientIP}`, {
+    limit: 5,
+    windowMs: 60 * 1000,
+  });
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit);
+  }
+
   try {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();

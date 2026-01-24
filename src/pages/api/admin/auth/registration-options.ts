@@ -1,6 +1,11 @@
 import type { APIRoute } from "astro";
 import { getRegistrationOptions, hasCredentials } from "@lib/admin/webauthn";
 import { timingSafeEqual } from "@lib/admin/crypto";
+import {
+  checkRateLimit,
+  rateLimitResponse,
+  getClientIP,
+} from "@lib/admin/rate-limit";
 
 export const prerender = false;
 
@@ -8,7 +13,17 @@ const SETUP_TOKEN_COOKIE = "admin_setup_token";
 const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
 const CHALLENGE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
-export const POST: APIRoute = async ({ cookies }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  // Rate limit by IP: 5 requests per minute (stricter for registration)
+  const clientIP = getClientIP(request);
+  const rateLimit = checkRateLimit(`reg-options:${clientIP}`, {
+    limit: 5,
+    windowMs: 60 * 1000,
+  });
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit);
+  }
+
   try {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();

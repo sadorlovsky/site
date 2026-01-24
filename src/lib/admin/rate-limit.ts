@@ -6,6 +6,27 @@
  * For stricter limits, use Redis or a similar distributed store.
  */
 
+/**
+ * Get client IP from request headers.
+ * Works with Vercel, Cloudflare, and other proxies.
+ */
+export function getClientIP(request: Request): string {
+  // Vercel
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+
+  // Cloudflare
+  const cfConnectingIP = request.headers.get("cf-connecting-ip");
+  if (cfConnectingIP) {
+    return cfConnectingIP;
+  }
+
+  // Fallback
+  return "unknown";
+}
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
