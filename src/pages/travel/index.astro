@@ -8,9 +8,20 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 
 <script is:inline>
   (() => {
-    const LANG_KEY = "travel-lang";
+    const LANG_KEY = "lang";
     let lang = localStorage.getItem(LANG_KEY);
 
+    // Migration: check old keys if no unified lang exists
+    if (!lang) {
+      lang = localStorage.getItem("wishlist-lang") || localStorage.getItem("travel-lang");
+      if (lang) {
+        localStorage.setItem(LANG_KEY, lang);
+        localStorage.removeItem("wishlist-lang");
+        localStorage.removeItem("travel-lang");
+      }
+    }
+
+    // Detect from browser if still no lang
     if (!lang) {
       const browserLangs = navigator.languages || [navigator.language];
       const isRussian = browserLangs.some((l) =>
@@ -59,7 +70,7 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
     <PageHeader
       variant="minimal"
       pageTitle={{ en: "Travel", ru: "Путешествия" }}
-      langSwitcher="travel-lang"
+      langSwitcher="lang"
     />
     <TravelMap />
     <TravelStats />
