@@ -5,16 +5,19 @@ import PageHeader from "@components/PageHeader.astro";
 
 const posts = await getCollection("blog");
 const sortedPosts = posts.sort(
-  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
 );
 
 // Group posts by year
-const postsByYear = sortedPosts.reduce<Record<number, typeof posts>>((acc, post) => {
-  const year = new Date(post.data.pubDate).getFullYear();
-  if (!acc[year]) acc[year] = [];
-  acc[year].push(post);
-  return acc;
-}, {});
+const postsByYear = sortedPosts.reduce<Record<number, typeof posts>>(
+  (acc, post) => {
+    const year = new Date(post.data.pubDate).getFullYear();
+    if (!acc[year]) acc[year] = [];
+    acc[year].push(post);
+    return acc;
+  },
+  {},
+);
 
 const years = Object.keys(postsByYear)
   .map(Number)
@@ -91,7 +94,7 @@ const years = Object.keys(postsByYear)
     border-radius: 50%;
     filter: blur(80px);
     pointer-events: none;
-    z-index: 0;
+    z-index: 11;
   }
 
   .blob-1 {
@@ -158,13 +161,17 @@ const years = Object.keys(postsByYear)
   .year-header {
     position: sticky;
     top: 0;
-    background-color: light-dark(rgba(248, 248, 255, 0.85), rgba(25, 25, 25, 0.85));
+    background-color: light-dark(
+      rgba(248, 248, 255, 0.85),
+      rgba(25, 25, 25, 0.85)
+    );
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     font-weight: 600;
     font-size: 1.25rem;
     padding: 0.5rem 0;
-    border-bottom: 1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+    border-bottom: 1px solid
+      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
     margin-bottom: 0.5rem;
     z-index: 10;
     color: light-dark(#333, #fafafa);
@@ -182,7 +189,8 @@ const years = Object.keys(postsByYear)
     text-decoration: none;
     color: inherit;
     padding: 1.5rem 0;
-    border-bottom: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+    border-bottom: 1px solid
+      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
     transition: opacity 0.2s ease;
   }
 
