@@ -4,7 +4,7 @@ import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 // CDN domain helper - uses production domain in prod, dev domain otherwise
 const cdnDomain = import.meta.env.PROD
   ? CDN_DOMAIN
-  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN);
+  : (CDN_DEV_DOMAIN ?? CDN_DOMAIN ?? "");
 
 export function getCdnImageUrl(filename: string): string {
   return `https://${cdnDomain}/${filename}`;

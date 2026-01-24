@@ -20,10 +20,20 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 <PageLayout title="Wishlist — Zach">
   <script is:inline>
     (() => {
-      const LANG_KEY = "wishlist-lang";
+      const LANG_KEY = "lang";
       let lang = localStorage.getItem(LANG_KEY);
 
-      // If no saved language, detect from browser
+      // Migration: check old keys if no unified lang exists
+      if (!lang) {
+        lang = localStorage.getItem("wishlist-lang") || localStorage.getItem("travel-lang");
+        if (lang) {
+          localStorage.setItem(LANG_KEY, lang);
+          localStorage.removeItem("wishlist-lang");
+          localStorage.removeItem("travel-lang");
+        }
+      }
+
+      // Detect from browser if still no lang
       if (!lang) {
         const browserLangs = navigator.languages || [navigator.language];
         const isRussian = browserLangs.some((l) =>

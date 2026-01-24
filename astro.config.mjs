@@ -50,7 +50,11 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
-      CDN_DOMAIN: envField.string({ context: "server", access: "secret" }),
+      CDN_DOMAIN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
       // ISR Revalidation
       REVALIDATION_SECRET: envField.string({
         context: "server",
