@@ -17,19 +17,57 @@ async function initMap(): Promise<void> {
   const container = document.getElementById("map");
   if (!container) return;
 
+  const mode = (container.dataset.mode || "normal") as "normal" | "globe";
+  const isGlobe = mode === "globe";
   const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+
+  // For globe mode, use lower zoom to fit the globe in container
+  const getInitialZoom = (): number => {
+    if (isGlobe) {
+      return isMobile ? 0.5 : 1;
+    }
+    return isMobile ? 1 : 2;
+  };
 
   const map = new MapLibre({
     container: "map",
     style: "https://tiles.openfreemap.org/styles/positron",
     center: [43, 55],
-    zoom: isMobile ? 1 : 2,
+    zoom: getInitialZoom(),
+    minZoom: 1,
     attributionControl: false,
   });
 
   await new Promise<void>((resolve) => map.on("load", resolve));
 
-  // map.setProjection({ type: "globe" });
+  if (isGlobe) {
+    map.setProjection({ type: "globe" });
+
+    // Auto-rotation for globe mode
+    let isRotating = true;
+    const rotationSpeed = 0.15; // degrees per frame
+
+    function rotate() {
+      if (!isRotating) return;
+      const center = map.getCenter();
+      center.lng += rotationSpeed;
+      map.setCenter(center);
+      requestAnimationFrame(rotate);
+    }
+
+    // Start rotation
+    rotate();
+
+    // Stop rotation on user interaction
+    const stopRotation = () => {
+      isRotating = false;
+    };
+
+    map.on("mousedown", stopRotation);
+    map.on("touchstart", stopRotation);
+    map.on("wheel", stopRotation);
+    map.on("dragstart", stopRotation);
+  }
 
   // Add countries source from MapLibre demo tiles
   map.addSource("countries", {
@@ -81,7 +119,6 @@ async function initMap(): Promise<void> {
     }
 
     // Style labels
-    const textColor = isDark ? DARK_TEXT : LIGHT_TEXT;
     const labelLayers = [
       "label_country_1",
       "label_country_2",
@@ -95,9 +132,19 @@ async function initMap(): Promise<void> {
       "water_name_point_label",
       "water_name_line_label",
     ];
+
+    const textColor = isDark ? DARK_TEXT : LIGHT_TEXT;
     for (const layer of labelLayers) {
+      map.setLayoutProperty(layer, "visibility", "visible");
       map.setPaintProperty(layer, "text-color", textColor);
       map.setPaintProperty(layer, "text-halo-color", bg);
+    }
+
+    if (isGlobe) {
+      // Hide all labels in globe mode
+      for (const layer of labelLayers) {
+        map.setLayoutProperty(layer, "visibility", "none");
+      }
     }
   }
 
@@ -220,11 +267,11 @@ async function initMap(): Promise<void> {
           1,
           3,
           3,
-          8,
           5,
-          20,
+          5,
           8,
-          50,
+          8,
+          8,
         ],
         "circle-blur": 0.25,
         "circle-opacity": 0.45,
