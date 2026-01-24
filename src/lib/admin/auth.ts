@@ -1,5 +1,6 @@
 import { db, AdminSession, eq } from "astro:db";
 import type { AstroCookies } from "astro";
+import { timingSafeEqual, generateSecureId } from "./crypto";
 
 const SESSION_COOKIE_NAME = "admin_session";
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days (reduced from 30)
@@ -43,17 +44,6 @@ function createDevSession(): Session {
 }
 
 /**
- * Generate a cryptographically secure random ID
- */
-function generateSecureId(): string {
-  const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=/g, "");
-}
-
-/**
  * Sign a value using HMAC-SHA256
  */
 async function signValue(value: string, secret: string): Promise<string> {
@@ -92,15 +82,7 @@ async function verifySignedValue(
   const value = signedValue.slice(0, lastDotIndex);
   const expectedSigned = await signValue(value, secret);
 
-  // Constant-time comparison
-  if (signedValue.length !== expectedSigned.length) return null;
-
-  let result = 0;
-  for (let i = 0; i < signedValue.length; i++) {
-    result |= signedValue.charCodeAt(i) ^ expectedSigned.charCodeAt(i);
-  }
-
-  return result === 0 ? value : null;
+  return timingSafeEqual(signedValue, expectedSigned) ? value : null;
 }
 
 /**

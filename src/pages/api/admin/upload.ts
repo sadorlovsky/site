@@ -1,11 +1,18 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { uploadToR2, generateFilename } from "@lib/admin/r2";
+import { checkRateLimit, rateLimitResponse } from "@lib/admin/rate-limit";
 
 export const prerender = false;
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+// Rate limit: 20 uploads per minute per session
+const UPLOAD_RATE_LIMIT = {
+  limit: 20,
+  windowMs: 60 * 1000, // 1 minute
+};
 
 // Magic bytes signatures for image formats
 const MAGIC_BYTES: Record<string, { bytes: number[]; offset?: number }[]> = {
@@ -59,6 +66,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       status: 401,
       headers: { "Content-Type": "application/json" },
     });
+  }
+
+  // Rate limiting by session ID
+  const rateLimitKey = `upload:${session.id}`;
+  const rateLimit = checkRateLimit(rateLimitKey, UPLOAD_RATE_LIMIT);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit);
   }
 
   try {

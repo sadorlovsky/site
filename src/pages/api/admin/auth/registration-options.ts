@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { getRegistrationOptions, hasCredentials } from "@lib/admin/webauthn";
+import { timingSafeEqual } from "@lib/admin/crypto";
 
 export const prerender = false;
 
@@ -24,7 +25,7 @@ export const POST: APIRoute = async ({ cookies, request }) => {
       : null;
     const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
-    if (!token || !expectedToken || token !== expectedToken) {
+    if (!token || !expectedToken || !timingSafeEqual(token, expectedToken)) {
       return new Response(JSON.stringify({ error: "Invalid setup token" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },

@@ -4,6 +4,7 @@ import {
   hasCredentials,
 } from "@lib/admin/webauthn";
 import { createSession } from "@lib/admin/auth";
+import { timingSafeEqual } from "@lib/admin/crypto";
 import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 
 export const prerender = false;
@@ -28,7 +29,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       : null;
     const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
-    if (!token || !expectedToken || token !== expectedToken) {
+    if (!token || !expectedToken || !timingSafeEqual(token, expectedToken)) {
       return new Response(JSON.stringify({ error: "Invalid setup token" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
