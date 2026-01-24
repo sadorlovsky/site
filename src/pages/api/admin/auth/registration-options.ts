@@ -38,7 +38,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const token = cookies.get(SETUP_TOKEN_COOKIE)?.value;
     const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
-    if (!token || !expectedToken || !timingSafeEqual(token, expectedToken)) {
+    if (
+      !token ||
+      !expectedToken ||
+      !(await timingSafeEqual(token, expectedToken))
+    ) {
       return new Response(JSON.stringify({ error: "Invalid setup token" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },

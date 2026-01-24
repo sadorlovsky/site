@@ -82,7 +82,7 @@ async function verifySignedValue(
   const value = signedValue.slice(0, lastDotIndex);
   const expectedSigned = await signValue(value, secret);
 
-  return timingSafeEqual(signedValue, expectedSigned) ? value : null;
+  return (await timingSafeEqual(signedValue, expectedSigned)) ? value : null;
 }
 
 /**

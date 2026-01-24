@@ -3,20 +3,40 @@
  */
 
 /**
- * Constant-time string comparison to prevent timing attacks.
- * Always compares all characters regardless of where differences occur.
+ * Compute SHA-256 hash of a string.
  */
-export function timingSafeEqual(a: string, b: string): boolean {
+async function sha256(str: string): Promise<Uint8Array> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return new Uint8Array(hashBuffer);
+}
+
+/**
+ * Constant-time comparison of two byte arrays.
+ * Arrays must be the same length.
+ */
+function constantTimeCompare(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) {
     return false;
   }
 
   let result = 0;
   for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    result |= a[i] ^ b[i];
   }
 
   return result === 0;
+}
+
+/**
+ * Timing-safe string comparison to prevent timing attacks.
+ * Hashes both strings to ensure constant-time comparison regardless of input length.
+ * This prevents leaking information about the length of secrets.
+ */
+export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
+  const [hashA, hashB] = await Promise.all([sha256(a), sha256(b)]);
+  return constantTimeCompare(hashA, hashB);
 }
 
 /**

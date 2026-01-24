@@ -22,7 +22,7 @@ const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
 if (urlToken && expectedToken) {
   // Validate the token
-  if (timingSafeEqual(urlToken, expectedToken)) {
+  if (await timingSafeEqual(urlToken, expectedToken)) {
     // Store token in httpOnly cookie and redirect to clean URL
     Astro.cookies.set(SETUP_TOKEN_COOKIE, urlToken, {
       httpOnly: true,
@@ -40,7 +40,7 @@ if (urlToken && expectedToken) {
 
 // Check for token in cookie (subsequent visits)
 const cookieToken = Astro.cookies.get(SETUP_TOKEN_COOKIE)?.value;
-const isValidToken = cookieToken && expectedToken && timingSafeEqual(cookieToken, expectedToken);
+const isValidToken = cookieToken && expectedToken && await timingSafeEqual(cookieToken, expectedToken);
 
 if (!isValidToken) {
   return new Response(null, { status: 404, statusText: "Not Found" });
