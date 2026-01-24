@@ -2,17 +2,15 @@ import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { uploadToR2, generateFilename } from "@lib/admin/r2";
 import { checkRateLimit, rateLimitResponse } from "@lib/admin/rate-limit";
+import {
+  MAX_FILE_SIZE,
+  UPLOAD_RATE_LIMIT,
+  createErrorResponse,
+} from "@lib/admin/config";
 
 export const prerender = false;
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-
-// Rate limit: 20 uploads per minute per session
-const UPLOAD_RATE_LIMIT = {
-  limit: 20,
-  windowMs: 60 * 1000, // 1 minute
-};
 
 // Magic bytes signatures for image formats
 const MAGIC_BYTES: Record<string, { bytes: number[]; offset?: number }[]> = {
@@ -62,10 +60,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   // Verify authentication
   const session = await verifySession(cookies, request.headers.get("host"));
   if (!session) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return createErrorResponse("Unauthorized", 401);
   }
 
   // Rate limiting by session ID
@@ -80,18 +75,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return new Response(JSON.stringify({ error: "No file provided" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("No file provided", 400);
     }
 
     // Validate file size first (before reading buffer)
     if (file.size > MAX_FILE_SIZE) {
-      return new Response(
-        JSON.stringify({ error: "File too large. Max size: 10MB" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse("File too large. Max size: 10MB", 400);
     }
 
     // Read file buffer
@@ -100,11 +89,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Detect actual MIME type from magic bytes (don't trust client)
     const detectedType = detectMimeType(buffer);
     if (!detectedType || !ALLOWED_TYPES.includes(detectedType)) {
-      return new Response(
-        JSON.stringify({
-          error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
+      return createErrorResponse(
+        "Invalid file type. Allowed: JPEG, PNG, WebP, GIF",
+        400,
       );
     }
 
@@ -122,24 +109,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const result = await uploadToR2(buffer, filename, detectedType);
 
     if (!result.success) {
-      return new Response(
-        JSON.stringify({ error: result.error || "Upload failed" }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse(result.error || "Upload failed", 500);
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        filename: result.filename,
-      }),
+      JSON.stringify({ success: true, filename: result.filename }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Upload error:", error);
-    return new Response(JSON.stringify({ error: "Upload failed" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return createErrorResponse("Upload failed", 500, error);
   }
 };

@@ -6,31 +6,28 @@ import {
   rateLimitResponse,
   getClientIP,
 } from "@lib/admin/rate-limit";
+import {
+  AUTH_CHALLENGE_COOKIE,
+  AUTH_RATE_LIMIT,
+  createErrorResponse,
+} from "@lib/admin/config";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 
 export const prerender = false;
 
-const CHALLENGE_COOKIE_NAME = "admin_auth_challenge";
-
 export const POST: APIRoute = async ({ request, cookies }) => {
-  // Rate limit by IP: 10 requests per minute
+  // Rate limit by IP
   const clientIP = getClientIP(request);
-  const rateLimit = checkRateLimit(`auth-verify:${clientIP}`, {
-    limit: 10,
-    windowMs: 60 * 1000,
-  });
+  const rateLimit = checkRateLimit(`auth-verify:${clientIP}`, AUTH_RATE_LIMIT);
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit);
   }
 
   try {
     // Get challenge from cookie
-    const expectedChallenge = cookies.get(CHALLENGE_COOKIE_NAME)?.value;
+    const expectedChallenge = cookies.get(AUTH_CHALLENGE_COOKIE)?.value;
     if (!expectedChallenge) {
-      return new Response(
-        JSON.stringify({ error: "Challenge expired or missing" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse("Challenge expired or missing", 400);
     }
 
     // Parse request body
@@ -38,24 +35,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { credential } = body as { credential: AuthenticationResponseJSON };
 
     if (!credential) {
-      return new Response(JSON.stringify({ error: "Missing credential" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("Missing credential", 400);
     }
 
     // Verify the authentication
     const result = await verifyAuthentication(credential, expectedChallenge);
 
     if (!result.success) {
-      return new Response(
-        JSON.stringify({ error: result.error || "Authentication failed" }),
-        { status: 401, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse(result.error || "Authentication failed", 401);
     }
 
     // Clear the challenge cookie
-    cookies.delete(CHALLENGE_COOKIE_NAME, { path: "/" });
+    cookies.delete(AUTH_CHALLENGE_COOKIE, { path: "/" });
 
     // Create a session
     const userAgent = request.headers.get("user-agent") || undefined;
@@ -67,9 +58,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   } catch (error) {
     console.error("Error verifying authentication:", error);
-    return new Response(JSON.stringify({ error: "Authentication failed" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return createErrorResponse("Authentication failed", 500, error);
   }
 };

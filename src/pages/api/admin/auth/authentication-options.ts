@@ -5,19 +5,19 @@ import {
   rateLimitResponse,
   getClientIP,
 } from "@lib/admin/rate-limit";
+import {
+  AUTH_CHALLENGE_COOKIE,
+  CHALLENGE_EXPIRY_MS,
+  AUTH_RATE_LIMIT,
+  createErrorResponse,
+} from "@lib/admin/config";
 
 export const prerender = false;
 
-const CHALLENGE_COOKIE_NAME = "admin_auth_challenge";
-const CHALLENGE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-
 export const POST: APIRoute = async ({ request, cookies }) => {
-  // Rate limit by IP: 10 requests per minute
+  // Rate limit by IP
   const clientIP = getClientIP(request);
-  const rateLimit = checkRateLimit(`auth-options:${clientIP}`, {
-    limit: 10,
-    windowMs: 60 * 1000,
-  });
+  const rateLimit = checkRateLimit(`auth-options:${clientIP}`, AUTH_RATE_LIMIT);
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit);
   }
@@ -26,16 +26,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Check if any credentials exist
     const credentialsExist = await hasCredentials();
     if (!credentialsExist) {
-      return new Response(
-        JSON.stringify({ error: "No credentials registered" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse("No credentials registered", 400);
     }
 
     const options = await getAuthenticationOptions();
 
     // Store challenge in httpOnly cookie for verification
-    cookies.set(CHALLENGE_COOKIE_NAME, options.challenge, {
+    cookies.set(AUTH_CHALLENGE_COOKIE, options.challenge, {
       httpOnly: true,
       secure: import.meta.env.PROD,
       sameSite: "strict",
@@ -49,9 +46,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   } catch (error) {
     console.error("Error generating authentication options:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to generate options" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return createErrorResponse("Failed to generate options", 500, error);
   }
 };

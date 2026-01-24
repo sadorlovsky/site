@@ -2,11 +2,9 @@
 import AdminLayout from "@layouts/AdminLayout.astro";
 import { hasCredentials } from "@lib/admin/webauthn";
 import { timingSafeEqual } from "@lib/admin/crypto";
+import { SETUP_TOKEN_COOKIE, SETUP_TOKEN_EXPIRY_MS } from "@lib/admin/config";
 
 export const prerender = false;
-
-const SETUP_TOKEN_COOKIE = "admin_setup_token";
-const SETUP_TOKEN_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 // Check if setup is allowed
 const credentialsExist = await hasCredentials();

@@ -10,20 +10,20 @@ import {
   rateLimitResponse,
   getClientIP,
 } from "@lib/admin/rate-limit";
+import {
+  SETUP_TOKEN_COOKIE,
+  REG_CHALLENGE_COOKIE,
+  REG_RATE_LIMIT,
+  createErrorResponse,
+} from "@lib/admin/config";
 import type { RegistrationResponseJSON } from "@simplewebauthn/types";
 
 export const prerender = false;
 
-const SETUP_TOKEN_COOKIE = "admin_setup_token";
-const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
-
 export const POST: APIRoute = async ({ request, cookies }) => {
-  // Rate limit by IP: 5 requests per minute (stricter for registration)
+  // Rate limit by IP
   const clientIP = getClientIP(request);
-  const rateLimit = checkRateLimit(`reg-verify:${clientIP}`, {
-    limit: 5,
-    windowMs: 60 * 1000,
-  });
+  const rateLimit = checkRateLimit(`reg-verify:${clientIP}`, REG_RATE_LIMIT);
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit);
   }
@@ -32,10 +32,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();
     if (credentialsExist) {
-      return new Response(JSON.stringify({ error: "Setup already complete" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("Setup already complete", 403);
     }
 
     // Validate setup token from httpOnly cookie
@@ -47,19 +44,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       !expectedToken ||
       !(await timingSafeEqual(token, expectedToken))
     ) {
-      return new Response(JSON.stringify({ error: "Invalid setup token" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("Invalid setup token", 403);
     }
 
     // Get challenge from cookie
-    const expectedChallenge = cookies.get(CHALLENGE_COOKIE_NAME)?.value;
+    const expectedChallenge = cookies.get(REG_CHALLENGE_COOKIE)?.value;
     if (!expectedChallenge) {
-      return new Response(
-        JSON.stringify({ error: "Challenge expired or missing" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse("Challenge expired or missing", 400);
     }
 
     // Parse request body
@@ -70,10 +61,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     };
 
     if (!credential) {
-      return new Response(JSON.stringify({ error: "Missing credential" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("Missing credential", 400);
     }
 
     // Verify and store the credential
@@ -84,14 +72,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
 
     if (!result.success) {
-      return new Response(
-        JSON.stringify({ error: result.error || "Verification failed" }),
-        { status: 400, headers: { "Content-Type": "application/json" } },
-      );
+      return createErrorResponse(result.error || "Verification failed", 400);
     }
 
     // Clear the challenge and setup token cookies (one-time use)
-    cookies.delete(CHALLENGE_COOKIE_NAME, { path: "/" });
+    cookies.delete(REG_CHALLENGE_COOKIE, { path: "/" });
     cookies.delete(SETUP_TOKEN_COOKIE, { path: "/" });
 
     // Create a session
@@ -104,9 +89,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   } catch (error) {
     console.error("Error verifying registration:", error);
-    return new Response(JSON.stringify({ error: "Verification failed" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return createErrorResponse("Verification failed", 500, error);
   }
 };

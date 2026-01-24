@@ -6,20 +6,20 @@ import {
   rateLimitResponse,
   getClientIP,
 } from "@lib/admin/rate-limit";
+import {
+  SETUP_TOKEN_COOKIE,
+  REG_CHALLENGE_COOKIE,
+  CHALLENGE_EXPIRY_MS,
+  REG_RATE_LIMIT,
+  createErrorResponse,
+} from "@lib/admin/config";
 
 export const prerender = false;
 
-const SETUP_TOKEN_COOKIE = "admin_setup_token";
-const CHALLENGE_COOKIE_NAME = "admin_reg_challenge";
-const CHALLENGE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-
 export const POST: APIRoute = async ({ request, cookies }) => {
-  // Rate limit by IP: 5 requests per minute (stricter for registration)
+  // Rate limit by IP
   const clientIP = getClientIP(request);
-  const rateLimit = checkRateLimit(`reg-options:${clientIP}`, {
-    limit: 5,
-    windowMs: 60 * 1000,
-  });
+  const rateLimit = checkRateLimit(`reg-options:${clientIP}`, REG_RATE_LIMIT);
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit);
   }
@@ -28,10 +28,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Only allow registration if no credentials exist yet
     const credentialsExist = await hasCredentials();
     if (credentialsExist) {
-      return new Response(JSON.stringify({ error: "Setup already complete" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("Setup already complete", 403);
     }
 
     // Validate setup token from httpOnly cookie
@@ -43,16 +40,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       !expectedToken ||
       !(await timingSafeEqual(token, expectedToken))
     ) {
-      return new Response(JSON.stringify({ error: "Invalid setup token" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
+      return createErrorResponse("Invalid setup token", 403);
     }
 
     const options = await getRegistrationOptions();
 
     // Store challenge in httpOnly cookie for verification
-    cookies.set(CHALLENGE_COOKIE_NAME, options.challenge, {
+    cookies.set(REG_CHALLENGE_COOKIE, options.challenge, {
       httpOnly: true,
       secure: import.meta.env.PROD,
       sameSite: "strict",
@@ -66,9 +60,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
   } catch (error) {
     console.error("Error generating registration options:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to generate options" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return createErrorResponse("Failed to generate options", 500, error);
   }
 };

@@ -1,9 +1,7 @@
 import { db, AdminSession, eq } from "astro:db";
 import type { AstroCookies } from "astro";
 import { timingSafeEqual, generateSecureId } from "./crypto";
-
-const SESSION_COOKIE_NAME = "admin_session";
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days (reduced from 30)
+import { SESSION_COOKIE_NAME, SESSION_DURATION_MS } from "./config";
 
 export interface Session {
   id: string;
