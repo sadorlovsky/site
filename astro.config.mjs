@@ -32,7 +32,7 @@ export default defineConfig({
       // Bypass token for on-demand revalidation
       bypassToken: VERCEL_ISR_BYPASS_TOKEN,
       // Exclude API routes and admin pages from ISR
-      exclude: [/^\/api\/.*/, /^\/wishlist\/~\/.*/],
+      exclude: [/^\/api\/.*/, /^\/wishlist\/~(\/.*)?$/],
     },
   }),
   image: {
