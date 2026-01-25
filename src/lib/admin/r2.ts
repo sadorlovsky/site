@@ -4,6 +4,12 @@
  */
 
 import { AwsClient } from "aws4fetch";
+import {
+  R2_ACCESS_KEY_ID,
+  R2_SECRET_ACCESS_KEY,
+  R2_ACCOUNT_ID,
+  R2_BUCKET_NAME,
+} from "astro:env/server";
 import { generateSecureId } from "./crypto";
 
 interface UploadResult {
@@ -26,16 +32,13 @@ export function generateFilename(originalName: string): string {
  * Create R2 client instance
  */
 function createR2Client(): AwsClient | null {
-  const accessKeyId = import.meta.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = import.meta.env.R2_SECRET_ACCESS_KEY;
-
-  if (!accessKeyId || !secretAccessKey) {
+  if (!R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
     return null;
   }
 
   return new AwsClient({
-    accessKeyId,
-    secretAccessKey,
+    accessKeyId: R2_ACCESS_KEY_ID,
+    secretAccessKey: R2_SECRET_ACCESS_KEY,
   });
 }
 
@@ -47,17 +50,16 @@ export async function uploadToR2(
   filename: string,
   contentType: string,
 ): Promise<UploadResult> {
-  const accountId = import.meta.env.R2_ACCOUNT_ID;
-  const bucketName = import.meta.env.R2_BUCKET_NAME || "wishlist-images";
+  const bucketName = R2_BUCKET_NAME || "wishlist-images";
 
   const client = createR2Client();
 
-  if (!client || !accountId) {
+  if (!client || !R2_ACCOUNT_ID) {
     return { success: false, error: "R2 credentials not configured" };
   }
 
   try {
-    const url = `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${filename}`;
+    const url = `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucketName}/${filename}`;
 
     const response = await client.fetch(url, {
       method: "PUT",

@@ -3,6 +3,7 @@ import AdminLayout from "@layouts/AdminLayout.astro";
 import { hasCredentials } from "@lib/admin/webauthn";
 import { timingSafeEqual } from "@lib/admin/crypto";
 import { SETUP_TOKEN_COOKIE, SETUP_TOKEN_EXPIRY_MS } from "@lib/admin/config";
+import { ADMIN_SETUP_SECRET } from "astro:env/server";
 
 export const prerender = false;
 
@@ -16,11 +17,10 @@ if (credentialsExist) {
 
 // Check for token in URL (first visit)
 const urlToken = Astro.url.searchParams.get("token");
-const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
-if (urlToken && expectedToken) {
+if (urlToken && ADMIN_SETUP_SECRET) {
   // Validate the token
-  if (await timingSafeEqual(urlToken, expectedToken)) {
+  if (await timingSafeEqual(urlToken, ADMIN_SETUP_SECRET)) {
     // Store token in httpOnly cookie and redirect to clean URL
     Astro.cookies.set(SETUP_TOKEN_COOKIE, urlToken, {
       httpOnly: true,
@@ -38,7 +38,7 @@ if (urlToken && expectedToken) {
 
 // Check for token in cookie (subsequent visits)
 const cookieToken = Astro.cookies.get(SETUP_TOKEN_COOKIE)?.value;
-const isValidToken = cookieToken && expectedToken && await timingSafeEqual(cookieToken, expectedToken);
+const isValidToken = cookieToken && ADMIN_SETUP_SECRET && await timingSafeEqual(cookieToken, ADMIN_SETUP_SECRET);
 
 if (!isValidToken) {
   return new Response(null, { status: 404, statusText: "Not Found" });

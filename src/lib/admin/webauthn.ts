@@ -10,11 +10,12 @@ import type {
   AuthenticatorTransportFuture,
 } from "@simplewebauthn/types";
 import { db, AdminCredential, eq } from "astro:db";
+import { ADMIN_RP_ID, ADMIN_RP_NAME } from "astro:env/server";
 
 // Get RP configuration from environment
 function getRpConfig() {
-  const rpId = import.meta.env.ADMIN_RP_ID || "localhost";
-  const rpName = import.meta.env.ADMIN_RP_NAME || "Wishlist Admin";
+  const rpId = ADMIN_RP_ID || "localhost";
+  const rpName = ADMIN_RP_NAME || "Wishlist Admin";
   const origin = import.meta.env.PROD
     ? `https://${rpId}`
     : "http://localhost:4321";
@@ -179,7 +180,9 @@ export async function verifyAuthentication(
         publicKey: publicKeyBytes,
         counter: credential.counter,
         transports: credential.transports
-          ? (JSON.parse(credential.transports) as AuthenticatorTransportFuture[])
+          ? (JSON.parse(
+              credential.transports,
+            ) as AuthenticatorTransportFuture[])
           : undefined,
       },
     });

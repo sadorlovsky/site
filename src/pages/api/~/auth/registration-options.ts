@@ -13,6 +13,7 @@ import {
   REG_RATE_LIMIT,
   createErrorResponse,
 } from "@lib/admin/config";
+import { ADMIN_SETUP_SECRET } from "astro:env/server";
 
 export const prerender = false;
 
@@ -33,12 +34,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Validate setup token from httpOnly cookie
     const token = cookies.get(SETUP_TOKEN_COOKIE)?.value;
-    const expectedToken = import.meta.env.ADMIN_SETUP_SECRET;
 
     if (
       !token ||
-      !expectedToken ||
-      !(await timingSafeEqual(token, expectedToken))
+      !ADMIN_SETUP_SECRET ||
+      !(await timingSafeEqual(token, ADMIN_SETUP_SECRET))
     ) {
       return createErrorResponse("Invalid setup token", 403);
     }

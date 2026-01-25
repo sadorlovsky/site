@@ -55,19 +55,12 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
-      // ISR Revalidation
-      REVALIDATION_SECRET: envField.string({
-        context: "server",
-        access: "secret",
-        optional: true,
-      }),
       // Admin Panel - Passkey Auth
       ADMIN_SETUP_SECRET: envField.string({
         context: "server",
         access: "secret",
         optional: true,
       }),
-
       ADMIN_SESSION_SECRET: envField.string({
         context: "server",
         access: "secret",

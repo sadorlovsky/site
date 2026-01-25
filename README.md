@@ -94,6 +94,19 @@ DELETE FROM Reservation WHERE itemId = 5;
 wrangler r2 object put bucket-name/wishlist/image.webp --file=./image.webp
 ```
 
+### Admin Panel
+
+Админка доступна по адресу `/wishlist/~` и использует Passkey-аутентификацию.
+
+#### Генерация секретов
+
+```bash
+# ADMIN_SETUP_SECRET (для первоначальной настройки passkey)
+openssl rand -base64 24 | tr '+/' '-_'
+
+# ADMIN_SESSION_SECRET (для подписи session cookies)
+openssl rand -base64 48 | tr '+/' '-_'
+```
 ## License
 
 MIT

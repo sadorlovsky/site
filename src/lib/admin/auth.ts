@@ -1,4 +1,5 @@
 import { db, AdminSession, eq } from "astro:db";
+import { ADMIN_SESSION_SECRET } from "astro:env/server";
 import type { AstroCookies } from "astro";
 import { timingSafeEqual, generateSecureId } from "./crypto";
 import { SESSION_COOKIE_NAME, SESSION_DURATION_MS } from "./config";
@@ -100,14 +101,16 @@ export async function verifySession(
   const signedSessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!signedSessionId) return null;
 
-  const secret = import.meta.env.ADMIN_SESSION_SECRET;
-  if (!secret) {
+  if (!ADMIN_SESSION_SECRET) {
     console.error("ADMIN_SESSION_SECRET not configured");
     return null;
   }
 
   // Verify signature
-  const sessionId = await verifySignedValue(signedSessionId, secret);
+  const sessionId = await verifySignedValue(
+    signedSessionId,
+    ADMIN_SESSION_SECRET,
+  );
   if (!sessionId) return null;
 
   // Check database
@@ -138,8 +141,7 @@ export async function createSession(
   cookies: AstroCookies,
   userAgent?: string,
 ): Promise<string> {
-  const secret = import.meta.env.ADMIN_SESSION_SECRET;
-  if (!secret) {
+  if (!ADMIN_SESSION_SECRET) {
     throw new Error("ADMIN_SESSION_SECRET not configured");
   }
 
@@ -154,7 +156,7 @@ export async function createSession(
     userAgent: userAgent || null,
   });
 
-  const signedSessionId = await signValue(sessionId, secret);
+  const signedSessionId = await signValue(sessionId, ADMIN_SESSION_SECRET);
 
   cookies.set(SESSION_COOKIE_NAME, signedSessionId, {
     httpOnly: true,
@@ -173,13 +175,13 @@ export async function createSession(
 export async function deleteSession(cookies: AstroCookies): Promise<void> {
   const signedSessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
 
-  if (signedSessionId) {
-    const secret = import.meta.env.ADMIN_SESSION_SECRET;
-    if (secret) {
-      const sessionId = await verifySignedValue(signedSessionId, secret);
-      if (sessionId) {
-        await db.delete(AdminSession).where(eq(AdminSession.id, sessionId));
-      }
+  if (signedSessionId && ADMIN_SESSION_SECRET) {
+    const sessionId = await verifySignedValue(
+      signedSessionId,
+      ADMIN_SESSION_SECRET,
+    );
+    if (sessionId) {
+      await db.delete(AdminSession).where(eq(AdminSession.id, sessionId));
     }
   }
 
