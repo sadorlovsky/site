@@ -8,6 +8,8 @@ import { ADMIN_SETUP_SECRET } from "astro:env/server";
 export const prerender = false;
 
 // DEBUG: Log environment state
+console.log("[setup] Full URL:", Astro.url.href);
+console.log("[setup] Search params:", Astro.url.search);
 console.log("[setup] ADMIN_SETUP_SECRET defined:", !!ADMIN_SETUP_SECRET);
 console.log("[setup] ADMIN_SETUP_SECRET length:", ADMIN_SETUP_SECRET?.length ?? 0);
 
