@@ -20,6 +20,8 @@ export async function revalidateWishlist(): Promise<void> {
     return;
   }
 
+  const bypassToken = VERCEL_ISR_BYPASS_TOKEN;
+
   // Revalidate /wishlist and all category pages (/wishlist/<category>)
   const paths = categories.map((c) => c.href);
 
@@ -28,7 +30,7 @@ export async function revalidateWishlist(): Promise<void> {
       fetch(`${siteUrl}${path}`, {
         method: "HEAD",
         headers: {
-          "x-prerender-revalidate": VERCEL_ISR_BYPASS_TOKEN,
+          "x-prerender-revalidate": bypassToken,
         },
       }),
     ),
@@ -39,11 +41,9 @@ export async function revalidateWishlist(): Promise<void> {
     const path = paths[i];
 
     if (result.status === "rejected") {
-      console.error(`[revalidate] Failed for ${path}:`, result.reason);
+      console.error(`Revalidation failed for ${path}:`, result.reason);
     } else if (!result.value.ok) {
-      console.error(`[revalidate] Failed for ${path}: ${result.value.status}`);
-    } else {
-      console.log(`[revalidate] Success for ${path}`);
+      console.error(`Revalidation failed for ${path}: ${result.value.status}`);
     }
   }
 }
