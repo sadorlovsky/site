@@ -23,6 +23,15 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
       ].join("; "),
     );
 
+    // Disable caching for admin pages
+    newResponse.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, private",
+    );
+    newResponse.headers.set("CDN-Cache-Control", "no-store");
+    newResponse.headers.set("Pragma", "no-cache");
+    newResponse.headers.set("Expires", "0");
+
     return newResponse;
   }
 
