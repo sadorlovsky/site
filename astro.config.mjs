@@ -17,7 +17,7 @@ const cdnDomain = isProd ? CDN_DOMAIN : CDN_DEV_DOMAIN;
 
 // https://astro.build/config
 export default defineConfig({
-  output: "static",
+  output: "server",
   vite: {
     optimizeDeps: {
       exclude: ["@simplewebauthn/server"],

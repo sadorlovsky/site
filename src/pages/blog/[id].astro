@@ -4,6 +4,8 @@ import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
   const sortedPosts = posts.sort(
