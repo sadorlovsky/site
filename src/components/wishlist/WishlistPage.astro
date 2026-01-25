@@ -146,7 +146,11 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 
   <MobileFilterBar categories={categories} currentCategory={currentCategory} />
 
-  <script>
-    import("@client/wishlist");
-  </script>
+  {
+    reservationsEnabled && (
+      <script>
+        import("@client/wishlist");
+      </script>
+    )
+  }
 </PageLayout>

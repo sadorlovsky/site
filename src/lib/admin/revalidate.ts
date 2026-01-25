@@ -1,32 +1,47 @@
 /**
  * ISR Revalidation helper for wishlist pages
+ * Uses Vercel's ISR bypass token to revalidate cached pages
  */
+
+import { categories } from "@lib/wishlist";
 
 /**
  * Trigger ISR revalidation for wishlist pages
  * Called after any mutation (create, update, delete)
  */
 export async function revalidateWishlist(): Promise<void> {
-  const secret = import.meta.env.REVALIDATION_SECRET;
+  const bypassToken = import.meta.env.VERCEL_ISR_BYPASS_TOKEN;
   const siteUrl = import.meta.env.SITE;
 
-  if (!secret || !siteUrl) {
-    console.warn("Revalidation skipped: REVALIDATION_SECRET or SITE not set");
+  if (!bypassToken || !siteUrl) {
+    console.warn(
+      "Revalidation skipped: VERCEL_ISR_BYPASS_TOKEN or SITE not set",
+    );
     return;
   }
 
-  try {
-    const response = await fetch(`${siteUrl}/api/revalidate`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-      },
-    });
+  // Revalidate /wishlist and all category pages (/wishlist/<category>)
+  const paths = categories.map((c) => c.href);
 
-    if (!response.ok) {
-      console.error(`Revalidation failed: ${response.status}`);
+  const results = await Promise.allSettled(
+    paths.map((path) =>
+      fetch(`${siteUrl}${path}`, {
+        method: "HEAD",
+        headers: {
+          "x-prerender-revalidate": bypassToken,
+        },
+      }),
+    ),
+  );
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    const path = paths[i];
+
+    if (result.status === "rejected") {
+      console.error(`Revalidation failed for ${path}:`, result.reason);
+    } else if (!result.value.ok) {
+      console.error(`Revalidation failed for ${path}: ${result.value.status}`);
     }
-  } catch (error) {
-    console.error("Failed to revalidate:", error);
   }
 }

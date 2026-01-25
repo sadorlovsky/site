@@ -59,7 +59,7 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
       class="reserved-badge"
       data-en="Reserved"
       data-ru="Зарезервировано"
-      hidden={!item.isReserved || reservationsEnabled}
+      hidden={!item.isReserved}
     >
       <Icon name="check" width={16} height={16} />
       <span>Reserved</span>
