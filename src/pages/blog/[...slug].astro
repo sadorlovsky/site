@@ -7,23 +7,81 @@ import PageHeader from "@components/PageHeader.astro";
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const posts = await getCollection("blog");
-  const sortedPosts = posts.sort(
-    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
-  );
+  // Helper to get URL slug from post ID
+  // en/post-name -> post-name (no prefix for English)
+  // ru/post-name -> ru/post-name (with ru prefix)
+  function getSlugFromId(id: string, lang: "en" | "ru"): string {
+    const name = id.replace(/^(en|ru)\//, "");
+    return lang === "ru" ? `ru/${name}` : name;
+  }
 
-  return sortedPosts.map((post, index) => ({
-    params: { id: post.id },
-    props: {
-      post,
-      prevPost: sortedPosts[index + 1] || null,
-      nextPost: sortedPosts[index - 1] || null,
-    },
-  }));
+  // Helper to get post URL
+  function getPostUrl(id: string, lang: "en" | "ru"): string {
+    return `/blog/${getSlugFromId(id, lang)}`;
+  }
+
+  const posts = await getCollection("blog");
+
+  // Create translation maps
+  const translationMap = new Map<string, string>(); // original ID -> translation ID
+  const originalMap = new Map<string, string>(); // translation ID -> original ID
+
+  posts.forEach((post) => {
+    if (post.data.lang === "ru" && post.data.translationOf) {
+      translationMap.set(post.data.translationOf, post.id);
+      originalMap.set(post.id, post.data.translationOf);
+    }
+  });
+
+  // Sort posts by language for prev/next navigation
+  const enPosts = posts
+    .filter((p) => p.data.lang === "en")
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+  const ruPosts = posts
+    .filter((p) => p.data.lang === "ru")
+    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+  return posts.map((post) => {
+    const isRussian = post.data.lang === "ru";
+    const relevantPosts = isRussian ? ruPosts : enPosts;
+    const index = relevantPosts.findIndex((p) => p.id === post.id);
+
+    // Get translation info
+    const translationId = isRussian
+      ? originalMap.get(post.id)
+      : translationMap.get(post.id);
+
+    const translationPost = translationId
+      ? posts.find((p) => p.id === translationId)
+      : null;
+
+    return {
+      params: { slug: getSlugFromId(post.id, post.data.lang) },
+      props: {
+        post,
+        prevPost: relevantPosts[index + 1] || null,
+        nextPost: relevantPosts[index - 1] || null,
+        translationUrl: translationPost
+          ? getPostUrl(translationPost.id, translationPost.data.lang)
+          : null,
+        isTranslation: isRussian,
+      },
+    };
+  });
 }
 
-const { post, prevPost, nextPost } = Astro.props;
+const { post, prevPost, nextPost, translationUrl, isTranslation } = Astro.props;
 const { Content } = await render(post);
+
+// Format date based on post language
+const dateLocale = post.data.lang === "ru" ? "ru-RU" : "en-US";
+
+// Helper to get post URL for prev/next navigation
+function getNavUrl(p: typeof post): string {
+  const name = p.id.replace(/^(en|ru)\//, "");
+  return p.data.lang === "ru" ? `/blog/ru/${name}` : `/blog/${name}`;
+}
 ---
 
 <PageLayout title={post.data.title}>
@@ -42,13 +100,23 @@ const { Content } = await render(post);
           <div class="post-meta">
             <time datetime={post.data.pubDate.toISOString()}>
               {
-                new Date(post.data.pubDate).toLocaleDateString("en-US", {
+                new Date(post.data.pubDate).toLocaleDateString(dateLocale, {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
                 })
               }
             </time>
+            {
+              translationUrl && (
+                <a
+                  href={translationUrl}
+                  class="translation-link"
+                >
+                  {isTranslation ? "Read in English" : "Читать на русском"}
+                </a>
+              )
+            }
             <button
               id="copy-link"
               class="copy-link"
@@ -80,7 +148,7 @@ const { Content } = await render(post);
           (prevPost || nextPost) && (
             <nav class="post-nav" aria-label="Post navigation">
               {prevPost ? (
-                <a href={`/blog/${prevPost.id}`} class="post-nav-link prev">
+                <a href={getNavUrl(prevPost)} class="post-nav-link prev">
                   <Icon name="arrow-left" width={16} height={16} />
                   <span class="post-nav-title">{prevPost.data.title}</span>
                 </a>
@@ -88,7 +156,7 @@ const { Content } = await render(post);
                 <div />
               )}
               {nextPost ? (
-                <a href={`/blog/${nextPost.id}`} class="post-nav-link next">
+                <a href={getNavUrl(nextPost)} class="post-nav-link next">
                   <span class="post-nav-title">{nextPost.data.title}</span>
                   <Icon name="arrow-right" width={16} height={16} />
                 </a>
@@ -219,6 +287,21 @@ const { Content } = await render(post);
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  .translation-link {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--accent-start);
+    text-decoration: none;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    background: light-dark(rgba(237, 98, 146, 0.1), rgba(237, 98, 146, 0.15));
+    transition: all 0.2s;
+  }
+
+  .translation-link:hover {
+    background: light-dark(rgba(237, 98, 146, 0.2), rgba(237, 98, 146, 0.25));
   }
 
   .copy-link {

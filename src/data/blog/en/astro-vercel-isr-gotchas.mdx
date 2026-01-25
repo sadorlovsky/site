@@ -1,0 +1,66 @@
+---
+title: 'Astro + Vercel ISR: Non-obvious Gotchas'
+pubDate: 2026-01-25
+author: 'Zach Orlovsky'
+tags: ['astro', 'vercel', 'isr']
+lang: en
+---
+
+Today I was working with ISR (Incremental Static Regeneration) in Astro on Vercel and ran into several non-obvious issues. Writing this down for myself and anyone else who encounters the same.
+
+### How prerender Works
+
+**Without ISR:**
+- `prerender = true` — page is generated at build time, static
+- `prerender = false` — SSR on every request
+
+**With ISR:**
+- `prerender = true` — static at build time (ISR doesn't affect it)
+- `prerender = false` — SSR **only once**, then CDN cache
+
+This is the key point: with ISR enabled, pages with `prerender = false` are built at runtime only on the first request, then served as static.
+
+### Clearing ISR Cache
+
+Two methods:
+
+1. **On-demand** — HEAD request with `x-prerender-revalidate: <bypassToken>` header
+2. **By TTL** — automatically, if `expiration` is set in config
+
+```ts
+// src/lib/revalidate.ts
+await fetch(`${siteUrl}/wishlist`, {
+  method: "HEAD",
+  headers: {
+    "x-prerender-revalidate": bypassToken,
+  },
+});
+```
+
+### API Routes Are Not Excluded Automatically
+
+This was unexpected: API routes (`/api/*`) also fall under ISR caching. If you don't add them to `exclude`, a POST request might return a cached response from the first call.
+
+```js
+// astro.config.mjs
+adapter: vercel({
+  isr: {
+    bypassToken: VERCEL_ISR_BYPASS_TOKEN,
+    exclude: [/^\/api\/.*/], // required!
+  },
+}),
+```
+
+### Regex in exclude Must Match Exactly
+
+I had an admin panel at `/wishlist/admin`. Initially, the exclude was:
+
+```js
+exclude: [/^\/wishlist\/admin\/.*/]
+```
+
+But this didn't match `/wishlist/admin` (without trailing slash). Fixed it to:
+
+```js
+exclude: [/^\/wishlist\/admin(\/.*)?$/]
+```

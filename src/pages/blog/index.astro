@@ -5,25 +5,84 @@ import PageHeader from "@components/PageHeader.astro";
 
 export const prerender = true;
 
-const posts = await getCollection("blog");
-const sortedPosts = posts.sort(
-  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
-);
+const allPosts = await getCollection("blog");
 
-// Group posts by year
-const postsByYear = sortedPosts.reduce<Record<number, typeof posts>>(
-  (acc, post) => {
+// Separate posts by language
+const enPosts = allPosts
+  .filter((post) => post.data.lang === "en")
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+const ruPosts = allPosts
+  .filter((post) => post.data.lang === "ru")
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+
+// Create a map of original post ID -> translation for quick lookup
+const translationMap = new Map<string, string>();
+ruPosts.forEach((post) => {
+  if (post.data.translationOf) {
+    translationMap.set(post.data.translationOf, post.id);
+  }
+});
+
+// Group posts by year (for each language)
+function groupByYear(posts: typeof allPosts) {
+  const byYear = posts.reduce<Record<number, typeof posts>>((acc, post) => {
     const year = new Date(post.data.pubDate).getFullYear();
     if (!acc[year]) acc[year] = [];
     acc[year].push(post);
     return acc;
-  },
-  {},
-);
+  }, {});
+  const years = Object.keys(byYear)
+    .map(Number)
+    .sort((a, b) => b - a);
+  return { byYear, years };
+}
 
-const years = Object.keys(postsByYear)
-  .map(Number)
-  .sort((a, b) => b - a);
+const enGrouped = groupByYear(enPosts);
+const ruGrouped = groupByYear(ruPosts);
+
+// Helper to get URL from post ID
+// en/post-name -> /blog/post-name
+// ru/post-name -> /blog/ru/post-name
+function getPostUrl(id: string, lang: "en" | "ru"): string {
+  const name = id.replace(/^(en|ru)\//, "");
+  return lang === "ru" ? `/blog/ru/${name}` : `/blog/${name}`;
+}
+
+// Serialize data for client-side
+const postsData = {
+  en: {
+    byYear: Object.fromEntries(
+      Object.entries(enGrouped.byYear).map(([year, posts]) => [
+        year,
+        posts.map((p) => ({
+          id: p.id,
+          title: p.data.title,
+          description: p.data.description,
+          pubDate: p.data.pubDate.toISOString(),
+          hasTranslation: translationMap.has(p.id),
+          translationId: translationMap.get(p.id),
+        })),
+      ]),
+    ),
+    years: enGrouped.years,
+  },
+  ru: {
+    byYear: Object.fromEntries(
+      Object.entries(ruGrouped.byYear).map(([year, posts]) => [
+        year,
+        posts.map((p) => ({
+          id: p.id,
+          title: p.data.title,
+          description: p.data.description,
+          pubDate: p.data.pubDate.toISOString(),
+          originalId: p.data.translationOf,
+        })),
+      ]),
+    ),
+    years: ruGrouped.years,
+  },
+};
 ---
 
 <PageLayout title="Blog — Zach">
@@ -34,23 +93,66 @@ const years = Object.keys(postsByYear)
     <div class="container">
       <PageHeader
         variant="fancy"
-        pageTitle={{ en: "Blog", ru: "Blog" }}
+        pageTitle={{ en: "Blog", ru: "Блог" }}
         subtitle={{
           en: "Thoughts, ideas, and occasional musings",
-          ru: "Thoughts, ideas, and occasional musings",
+          ru: "Мысли, идеи и заметки",
         }}
+        langSwitcher="lang"
       />
 
-      <div class="posts-list">
+      <!-- English posts -->
+      <div class="posts-list" data-lang="en">
         {
-          years.map((year) => (
+          enGrouped.years.map((year) => (
             <div class="year-group">
               <div class="year-header">{year}</div>
               <div class="year-posts">
-                {postsByYear[year].map((post) => (
-                  <a href={`/blog/${post.id}`} class="post-item">
+                {enGrouped.byYear[year].map((post) => (
+                  <a href={getPostUrl(post.id, "en")} class="post-item">
                     <time datetime={post.data.pubDate.toISOString()}>
                       {new Date(post.data.pubDate).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </time>
+                    <div class="post-content">
+                      <h2 class="post-title">{post.data.title}</h2>
+                      {post.data.description && (
+                        <p class="post-description">{post.data.description}</p>
+                      )}
+                      {translationMap.has(post.id) && (
+                        <span class="translation-badge" title="Available in Russian">
+                          RU
+                        </span>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+        {
+          enPosts.length === 0 && (
+            <div class="empty-state">
+              <p>No posts yet. Check back soon!</p>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Russian posts -->
+      <div class="posts-list" data-lang="ru" hidden>
+        {
+          ruGrouped.years.map((year) => (
+            <div class="year-group">
+              <div class="year-header">{year}</div>
+              <div class="year-posts">
+                {ruGrouped.byYear[year].map((post) => (
+                  <a href={getPostUrl(post.id, "ru")} class="post-item">
+                    <time datetime={post.data.pubDate.toISOString()}>
+                      {new Date(post.data.pubDate).toLocaleDateString("ru-RU", {
                         day: "numeric",
                         month: "short",
                       })}
@@ -67,15 +169,16 @@ const years = Object.keys(postsByYear)
             </div>
           ))
         }
+        {
+          ruPosts.length === 0 && (
+            <div class="empty-state">
+              <p data-en="No Russian posts yet." data-ru="Пока нет постов на русском.">
+                Пока нет постов на русском.
+              </p>
+            </div>
+          )
+        }
       </div>
-
-      {
-        posts.length === 0 && (
-          <div class="empty-state">
-            <p>No posts yet. Check back soon!</p>
-          </div>
-        )
-      }
     </div>
   </main>
 </PageLayout>
@@ -241,6 +344,23 @@ const years = Object.keys(postsByYear)
     margin: 0.5rem 0 0 0;
   }
 
+  .translation-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
+    color: light-dark(#666, #999);
+    margin-top: 0.5rem;
+    cursor: help;
+  }
+
+  /* Hide posts list based on language */
+  .posts-list[hidden] {
+    display: none;
+  }
+
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -309,3 +429,36 @@ const years = Object.keys(postsByYear)
     }
   }
 </style>
+
+<script>
+  import { initLang, applyTranslations } from "@lib/i18n";
+
+  const STORAGE_KEY = "lang";
+
+  function updatePostsList(lang: "en" | "ru") {
+    const enList = document.querySelector('.posts-list[data-lang="en"]');
+    const ruList = document.querySelector('.posts-list[data-lang="ru"]');
+
+    if (enList && ruList) {
+      if (lang === "ru") {
+        enList.setAttribute("hidden", "");
+        ruList.removeAttribute("hidden");
+      } else {
+        ruList.setAttribute("hidden", "");
+        enList.removeAttribute("hidden");
+      }
+    }
+  }
+
+  // Initialize language
+  const lang = initLang(STORAGE_KEY);
+  updatePostsList(lang);
+  applyTranslations(lang);
+
+  // Listen for language changes
+  window.addEventListener("lang-change", ((event: CustomEvent) => {
+    const { lang } = event.detail;
+    updatePostsList(lang);
+    applyTranslations(lang);
+  }) as EventListener);
+</script>

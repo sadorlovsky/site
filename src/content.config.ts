@@ -16,6 +16,9 @@ const blog = defineCollection({
       })
       .optional(),
     tags: z.array(z.string()),
+    // i18n fields
+    lang: z.enum(["en", "ru"]).default("en"),
+    translationOf: z.string().optional(), // ID of the original post (for translations)
   }),
 });
 
