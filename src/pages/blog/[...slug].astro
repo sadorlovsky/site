@@ -97,6 +97,7 @@ function getNavUrl(p: typeof post): string {
       <PageHeader
         variant="minimal"
         pageTitle={{ en: "Blog", ru: "Блог", href: "/blog" }}
+        forceLang={post.data.lang}
       />
 
       <article>

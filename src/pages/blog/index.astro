@@ -93,16 +93,16 @@ const postsData = {
     <div class="container">
       <PageHeader
         variant="fancy"
-        pageTitle={{ en: "Blog", ru: "Блог" }}
+        pageTitle={{ en: "Blog", ru: "Blog" }}
         subtitle={{
           en: "Thoughts, ideas, and occasional musings",
-          ru: "Мысли, идеи и заметки",
+          ru: "Thoughts, ideas, and occasional musings",
         }}
-        langSwitcher="lang"
+        forceLang="en"
       />
 
-      <!-- English posts -->
-      <div class="posts-list" data-lang="en">
+      <!-- Posts -->
+      <div class="posts-list">
         {
           enGrouped.years.map((year) => (
             <div class="year-group">
@@ -137,44 +137,6 @@ const postsData = {
           enPosts.length === 0 && (
             <div class="empty-state">
               <p>No posts yet. Check back soon!</p>
-            </div>
-          )
-        }
-      </div>
-
-      <!-- Russian posts -->
-      <div class="posts-list" data-lang="ru" hidden>
-        {
-          ruGrouped.years.map((year) => (
-            <div class="year-group">
-              <div class="year-header">{year}</div>
-              <div class="year-posts">
-                {ruGrouped.byYear[year].map((post) => (
-                  <a href={getPostUrl(post.id, "ru")} class="post-item">
-                    <time datetime={post.data.pubDate.toISOString()}>
-                      {new Date(post.data.pubDate).toLocaleDateString("ru-RU", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </time>
-                    <div class="post-content">
-                      <h2 class="post-title">{post.data.title}</h2>
-                      {post.data.description && (
-                        <p class="post-description">{post.data.description}</p>
-                      )}
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          ))
-        }
-        {
-          ruPosts.length === 0 && (
-            <div class="empty-state">
-              <p data-en="No Russian posts yet." data-ru="Пока нет постов на русском.">
-                Пока нет постов на русском.
-              </p>
             </div>
           )
         }
@@ -356,11 +318,6 @@ const postsData = {
     cursor: help;
   }
 
-  /* Hide posts list based on language */
-  .posts-list[hidden] {
-    display: none;
-  }
-
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -429,36 +386,3 @@ const postsData = {
     }
   }
 </style>
-
-<script>
-  import { initLang, applyTranslations } from "@lib/i18n";
-
-  const STORAGE_KEY = "lang";
-
-  function updatePostsList(lang: "en" | "ru") {
-    const enList = document.querySelector('.posts-list[data-lang="en"]');
-    const ruList = document.querySelector('.posts-list[data-lang="ru"]');
-
-    if (enList && ruList) {
-      if (lang === "ru") {
-        enList.setAttribute("hidden", "");
-        ruList.removeAttribute("hidden");
-      } else {
-        ruList.setAttribute("hidden", "");
-        enList.removeAttribute("hidden");
-      }
-    }
-  }
-
-  // Initialize language
-  const lang = initLang(STORAGE_KEY);
-  updatePostsList(lang);
-  applyTranslations(lang);
-
-  // Listen for language changes
-  window.addEventListener("lang-change", ((event: CustomEvent) => {
-    const { lang } = event.detail;
-    updatePostsList(lang);
-    applyTranslations(lang);
-  }) as EventListener);
-</script>

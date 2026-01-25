@@ -20,6 +20,7 @@ interface Props {
       ru: string;
     };
   };
+  forceLang?: "en" | "ru";
 }
 
 const {
@@ -28,7 +29,11 @@ const {
   variant = "fancy",
   langSwitcher,
   parentLink,
+  forceLang,
 } = Astro.props;
+
+// Use forceLang if provided, otherwise default to "en" (client-side JS will update)
+const displayLang = forceLang || "en";
 const pageTitleHref = pageTitle.href;
 const isMinimal = variant === "minimal";
 ---
@@ -36,7 +41,7 @@ const isMinimal = variant === "minimal";
 <header class:list={["page-header", { minimal: isMinimal, fancy: !isMinimal }]}>
   <div class="title-row">
     <h1 class="title">
-      <a href="/" class="name-link" data-en="Zach" data-ru="Зак">Zach</a>
+      <a href="/" class="name-link" data-en="Zach" data-ru="Зак">{displayLang === "ru" ? "Зак" : "Zach"}</a>
       <span class="separator">/</span>
       {
         parentLink && (
@@ -47,7 +52,7 @@ const isMinimal = variant === "minimal";
               data-en={parentLink.label.en}
               data-ru={parentLink.label.ru}
             >
-              {parentLink.label.en}
+              {displayLang === "ru" ? parentLink.label.ru : parentLink.label.en}
             </a>
             <span class="separator">/</span>
           </>
@@ -61,11 +66,11 @@ const isMinimal = variant === "minimal";
             data-en={pageTitle.en}
             data-ru={pageTitle.ru}
           >
-            {pageTitle.en}
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
           </a>
         ) : (
           <span class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
-            {pageTitle.en}
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
           </span>
         )
       }
@@ -76,7 +81,7 @@ const isMinimal = variant === "minimal";
   {
     subtitle && (
       <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
-        {subtitle.en}
+        {displayLang === "ru" ? subtitle.ru : subtitle.en}
       </p>
     )
   }
