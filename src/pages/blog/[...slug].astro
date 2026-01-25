@@ -3,6 +3,7 @@ import { getCollection, render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import { getEffectivePubDate } from "@lib/blog";
 
 export const prerender = true;
 
@@ -36,11 +37,11 @@ export async function getStaticPaths() {
   // Sort posts by language for prev/next navigation
   const enPosts = posts
     .filter((p) => p.data.lang === "en")
-    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+    .sort((a, b) => getEffectivePubDate(b, posts).getTime() - getEffectivePubDate(a, posts).getTime());
 
   const ruPosts = posts
     .filter((p) => p.data.lang === "ru")
-    .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+    .sort((a, b) => getEffectivePubDate(b, posts).getTime() - getEffectivePubDate(a, posts).getTime());
 
   return posts.map((post) => {
     const isRussian = post.data.lang === "ru";
@@ -56,10 +57,13 @@ export async function getStaticPaths() {
       ? posts.find((p) => p.id === translationId)
       : null;
 
+    const pubDate = getEffectivePubDate(post, posts);
+
     return {
       params: { slug: getSlugFromId(post.id, post.data.lang) },
       props: {
         post,
+        pubDate,
         prevPost: relevantPosts[index + 1] || null,
         nextPost: relevantPosts[index - 1] || null,
         translationUrl: translationPost
@@ -71,7 +75,7 @@ export async function getStaticPaths() {
   });
 }
 
-const { post, prevPost, nextPost, translationUrl, isTranslation } = Astro.props;
+const { post, pubDate, prevPost, nextPost, translationUrl, isTranslation } = Astro.props;
 const { Content, headings } = await render(post);
 
 // Format date based on post language
@@ -103,9 +107,9 @@ function getNavUrl(p: typeof post): string {
       <article>
         <header class="post-header">
           <div class="post-meta">
-            <time datetime={post.data.pubDate.toISOString()}>
+            <time datetime={pubDate.toISOString()}>
               {
-                new Date(post.data.pubDate).toLocaleDateString(dateLocale, {
+                pubDate.toLocaleDateString(dateLocale, {
                   day: "numeric",
                   month: "long",
                   year: "numeric",

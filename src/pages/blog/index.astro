@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import { getEffectivePubDate } from "@lib/blog";
 
 export const prerender = true;
 
@@ -10,11 +11,11 @@ const allPosts = await getCollection("blog");
 // Separate posts by language
 const enPosts = allPosts
   .filter((post) => post.data.lang === "en")
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+  .sort((a, b) => getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime());
 
 const ruPosts = allPosts
   .filter((post) => post.data.lang === "ru")
-  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+  .sort((a, b) => getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime());
 
 // Create a map of original post ID -> translation for quick lookup
 const translationMap = new Map<string, string>();
@@ -28,7 +29,7 @@ ruPosts.forEach((post) => {
 // Posts are already sorted by pubDate desc, so we preserve that order within each year
 function groupByYear(posts: typeof allPosts) {
   const byYear = posts.reduce<Record<number, typeof posts>>((acc, post) => {
-    const year = new Date(post.data.pubDate).getFullYear();
+    const year = getEffectivePubDate(post, allPosts).getFullYear();
     if (!acc[year]) acc[year] = [];
     acc[year].push(post);
     return acc;
@@ -36,7 +37,7 @@ function groupByYear(posts: typeof allPosts) {
   // Sort posts within each year by pubDate descending, then by title for stable ordering
   for (const year of Object.keys(byYear)) {
     byYear[Number(year)].sort((a, b) => {
-      const dateDiff = b.data.pubDate.getTime() - a.data.pubDate.getTime();
+      const dateDiff = getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime();
       if (dateDiff !== 0) return dateDiff;
       return a.data.title.localeCompare(b.data.title);
     });
@@ -58,40 +59,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   return lang === "ru" ? `/blog/ru/${name}` : `/blog/${name}`;
 }
 
-// Serialize data for client-side
-const postsData = {
-  en: {
-    byYear: Object.fromEntries(
-      Object.entries(enGrouped.byYear).map(([year, posts]) => [
-        year,
-        posts.map((p) => ({
-          id: p.id,
-          title: p.data.title,
-          description: p.data.description,
-          pubDate: p.data.pubDate.toISOString(),
-          hasTranslation: translationMap.has(p.id),
-          translationId: translationMap.get(p.id),
-        })),
-      ]),
-    ),
-    years: enGrouped.years,
-  },
-  ru: {
-    byYear: Object.fromEntries(
-      Object.entries(ruGrouped.byYear).map(([year, posts]) => [
-        year,
-        posts.map((p) => ({
-          id: p.id,
-          title: p.data.title,
-          description: p.data.description,
-          pubDate: p.data.pubDate.toISOString(),
-          originalId: p.data.translationOf,
-        })),
-      ]),
-    ),
-    years: ruGrouped.years,
-  },
-};
 ---
 
 <PageLayout title="Blog — Zach">
@@ -117,10 +84,12 @@ const postsData = {
             <div class="year-group">
               <div class="year-header">{year}</div>
               <div class="year-posts">
-                {enGrouped.byYear[year].map((post) => (
+                {enGrouped.byYear[year].map((post) => {
+                  const pubDate = getEffectivePubDate(post, allPosts);
+                  return (
                   <a href={getPostUrl(post.id, "en")} class="post-item">
-                    <time datetime={post.data.pubDate.toISOString()}>
-                      {new Date(post.data.pubDate).toLocaleDateString("en-US", {
+                    <time datetime={pubDate.toISOString()}>
+                      {pubDate.toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "short",
                       })}
@@ -139,7 +108,7 @@ const postsData = {
                       </div>
                     </div>
                   </a>
-                ))}
+                )})}
               </div>
             </div>
           ))
@@ -385,7 +354,7 @@ const postsData = {
     .post-item {
       flex-direction: column;
       gap: 0.25rem;
-      padding: 0.25rem 0;
+      padding: 0.75rem 0;
     }
 
     .post-item time {
