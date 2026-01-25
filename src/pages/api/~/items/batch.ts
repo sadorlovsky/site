@@ -7,17 +7,20 @@ import { z } from "zod";
 export const prerender = false;
 
 const batchUpdateSchema = z.object({
-  updates: z.array(
-    z.object({
-      id: z.number(),
-      weight: z.number(),
-    })
-  ).min(1).max(100), // Limit batch size
+  updates: z
+    .array(
+      z.object({
+        id: z.number(),
+        weight: z.number(),
+      }),
+    )
+    .min(1)
+    .max(100), // Limit batch size
 });
 
 /**
  * Batch update item weights
- * POST /api/admin/items/batch
+ * POST /api/~/items/batch
  */
 export const POST: APIRoute = async ({ request, cookies }) => {
   const session = await verifySession(cookies, request.headers.get("host"));
@@ -43,7 +46,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Get all item IDs to verify they exist
     const itemIds = updates.map((u) => u.id);
-    const existingItems = await db.select({ id: WishlistItem.id }).from(WishlistItem);
+    const existingItems = await db
+      .select({ id: WishlistItem.id })
+      .from(WishlistItem);
     const existingIds = new Set(existingItems.map((i) => i.id));
 
     // Check for non-existent items
@@ -58,11 +63,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Perform batch update
     const results = await Promise.all(
       updates.map(({ id, weight }) =>
-        db
-          .update(WishlistItem)
-          .set({ weight })
-          .where(eq(WishlistItem.id, id))
-      )
+        db.update(WishlistItem).set({ weight }).where(eq(WishlistItem.id, id)),
+      ),
     );
 
     // Revalidate ISR once after all updates

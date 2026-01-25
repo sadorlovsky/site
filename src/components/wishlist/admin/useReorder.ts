@@ -18,12 +18,12 @@ interface UseReorderResult {
 export function useReorder(
   items: WishlistItem[],
   setItems: React.Dispatch<React.SetStateAction<WishlistItem[]>>,
-  options: UseReorderOptions = {}
+  options: UseReorderOptions = {},
 ): UseReorderResult {
   const { onSuccess, onError } = options;
 
   const [reorderedItems, setReorderedItems] = useState<WishlistItem[] | null>(
-    null
+    null,
   );
   const [isSavingWeights, setIsSavingWeights] = useState(false);
 
@@ -72,7 +72,7 @@ export function useReorder(
 
     try {
       // Use batch endpoint for efficient update
-      const response = await fetch("/api/admin/items/batch", {
+      const response = await fetch("/api/~/items/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ updates: weightChanges }),
@@ -89,14 +89,16 @@ export function useReorder(
         prev.map((item) => {
           const change = weightChanges.find((c) => c.id === item.id);
           return change ? { ...item, weight: change.weight } : item;
-        })
+        }),
       );
 
       setReorderedItems(null);
       onSuccess?.();
     } catch (error) {
       console.error("Failed to save weights:", error);
-      onError?.(error instanceof Error ? error.message : "Failed to save order");
+      onError?.(
+        error instanceof Error ? error.message : "Failed to save order",
+      );
     } finally {
       setIsSavingWeights(false);
     }

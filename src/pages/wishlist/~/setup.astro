@@ -94,7 +94,7 @@ if (!isValidToken) {
 
     try {
       // Get registration options from server (token is in httpOnly cookie)
-      const optionsRes = await fetch("/api/admin/auth/registration-options", {
+      const optionsRes = await fetch("/api/~/auth/registration-options", {
         method: "POST",
         credentials: "same-origin",
       });
@@ -110,7 +110,7 @@ if (!isValidToken) {
       const credential = await startRegistration({ optionsJSON: options });
 
       // Verify with server (token is in httpOnly cookie)
-      const verifyRes = await fetch("/api/admin/auth/registration-verify", {
+      const verifyRes = await fetch("/api/~/auth/registration-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",

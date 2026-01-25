@@ -107,7 +107,7 @@ function AdminPanelInner({
   const handleSave = useCallback(
     async (data: ItemFormData, id?: number) => {
       const isEdit = id !== undefined;
-      const url = isEdit ? `/api/admin/items/${id}` : "/api/admin/items";
+      const url = isEdit ? `/api/~/items/${id}` : "/api/~/items";
       const method = isEdit ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -176,7 +176,7 @@ function AdminPanelInner({
         onConfirm: async () => {
           setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
           try {
-            const response = await fetch(`/api/admin/items/${id}`, {
+            const response = await fetch(`/api/~/items/${id}`, {
               method: "DELETE",
             });
 
@@ -204,7 +204,7 @@ function AdminPanelInner({
   const handleToggleReceived = useCallback(
     async (id: number, currentReceived: boolean) => {
       try {
-        const response = await fetch(`/api/admin/items/${id}`, {
+        const response = await fetch(`/api/~/items/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ received: !currentReceived }),
@@ -239,7 +239,7 @@ function AdminPanelInner({
   const handleToggleReserved = useCallback(
     async (id: number, currentlyReserved: boolean) => {
       try {
-        const response = await fetch(`/api/admin/items/${id}`, {
+        const response = await fetch(`/api/~/items/${id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reserved: !currentlyReserved }),
