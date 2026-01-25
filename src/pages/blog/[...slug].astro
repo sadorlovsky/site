@@ -72,10 +72,14 @@ export async function getStaticPaths() {
 }
 
 const { post, prevPost, nextPost, translationUrl, isTranslation } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 
 // Format date based on post language
 const dateLocale = post.data.lang === "ru" ? "ru-RU" : "en-US";
+
+// Filter headings for TOC (h2 and h3 only)
+const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const showToc = tocHeadings.length >= 2;
 
 // Helper to get post URL for prev/next navigation
 function getNavUrl(p: typeof post): string {
@@ -135,10 +139,22 @@ function getNavUrl(p: typeof post): string {
           }
         </header>
 
-        <nav id="toc" class="toc" aria-label="Table of contents" hidden>
-          <h2 class="toc-title">Contents</h2>
-          <ol id="toc-list"></ol>
-        </nav>
+        {
+          showToc && (
+            <nav class="toc" aria-label="Table of contents">
+              <h2 class="toc-title" data-en="Contents" data-ru="Содержание">
+                {post.data.lang === "ru" ? "Содержание" : "Contents"}
+              </h2>
+              <ol>
+                {tocHeadings.map((heading) => (
+                  <li class={heading.depth === 3 ? "toc-item toc-h3" : "toc-item"}>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )
+        }
 
         <div class="content">
           <Content />
@@ -350,42 +366,77 @@ function getNavUrl(p: typeof post): string {
   /* Table of Contents */
   .toc {
     margin-bottom: 2rem;
-    padding: 1rem 0 1rem 1.25rem;
-    border-left: 2px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+    padding: 1.25rem 1.5rem;
+    border-radius: 12px;
+    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
+    border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
   }
 
   .toc-title {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0 0 0.75rem 0;
-    color: light-dark(#666, #888);
+    letter-spacing: 0.08em;
+    margin: 0 0 1rem 0;
+    color: light-dark(#888, #666);
   }
 
   .toc ol {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .toc-item {
-    margin-bottom: 0.4rem;
-  }
-
-  .toc-h3 {
+    margin: 0;
+    position: relative;
     padding-left: 1rem;
   }
 
+  .toc-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.2));
+    transition: background 0.2s;
+  }
+
+  .toc-item:hover::before {
+    background: var(--accent-start);
+  }
+
+  .toc-h3 {
+    padding-left: 2rem;
+  }
+
+  .toc-h3::before {
+    left: 1rem;
+  }
+
   .toc a {
-    color: light-dark(#555, #aaa);
+    color: light-dark(#666, #999);
     text-decoration: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     transition: color 0.2s;
+  }
+
+  .toc a:visited {
+    color: light-dark(#666, #999);
   }
 
   .toc a:hover {
     color: var(--accent-start);
+  }
+
+  .toc a:active {
+    color: var(--accent-end);
   }
 
   .toc a:focus-visible {
@@ -530,6 +581,10 @@ function getNavUrl(p: typeof post): string {
     transition: color 0.2s ease;
   }
 
+  .content :global(a:visited) {
+    color: var(--accent-start);
+  }
+
   .content :global(a:hover) {
     color: var(--accent-end);
   }
@@ -557,6 +612,11 @@ function getNavUrl(p: typeof post): string {
     line-height: 1.6;
   }
 
+  /* Remove italic from syntax highlighting (catppuccin theme uses italic for some tokens) */
+  .content :global(pre code .line span) {
+    font-style: normal !important;
+  }
+
   .content :global(ul),
   .content :global(ol) {
     margin: 0 0 1.5rem 0;
@@ -570,9 +630,20 @@ function getNavUrl(p: typeof post): string {
   .content :global(blockquote) {
     border-left: 3px solid var(--accent-start);
     margin: 1.5rem 0;
-    padding: 0.5rem 0 0.5rem 1.25rem;
+    padding: 0.75rem 0 0.75rem 1.25rem;
     color: light-dark(#555, #aaa);
-    font-style: italic;
+    font-style: normal;
+    background: light-dark(rgba(237, 98, 146, 0.05), rgba(237, 98, 146, 0.08));
+    border-radius: 0 8px 8px 0;
+  }
+
+  .content :global(blockquote h3) {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .content :global(blockquote p:last-child) {
+    margin-bottom: 0;
   }
 
   .content :global(img) {
@@ -710,33 +781,4 @@ function getNavUrl(p: typeof post): string {
     });
   }
 
-  // Table of Contents
-  const content = document.querySelector(".content");
-  const toc = document.getElementById("toc");
-  const tocList = document.getElementById("toc-list");
-
-  if (content && toc && tocList) {
-    const headings = content.querySelectorAll("h2, h3");
-
-    if (headings.length >= 2) {
-      toc.hidden = false;
-
-      headings.forEach((heading, index) => {
-        if (!heading.id) {
-          heading.id = `heading-${index}`;
-        }
-
-        const li = document.createElement("li");
-        li.className =
-          heading.tagName === "H3" ? "toc-item toc-h3" : "toc-item";
-
-        const a = document.createElement("a");
-        a.href = `#${heading.id}`;
-        a.textContent = heading.textContent;
-
-        li.appendChild(a);
-        tocList.appendChild(li);
-      });
-    }
-  }
 </script>
