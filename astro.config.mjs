@@ -55,6 +55,12 @@ export default defineConfig({
         access: "secret",
         optional: true,
       }),
+      // ISR Revalidation
+      VERCEL_ISR_BYPASS_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
       // Admin Panel - Passkey Auth
       ADMIN_SETUP_SECRET: envField.string({
         context: "server",

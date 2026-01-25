@@ -7,44 +7,18 @@ import { ADMIN_SETUP_SECRET } from "astro:env/server";
 
 export const prerender = false;
 
-// DEBUG: Log environment state
-console.log("[setup] Full URL:", Astro.url.href);
-console.log("[setup] Search params:", Astro.url.search);
-console.log("[setup] ADMIN_SETUP_SECRET defined:", !!ADMIN_SETUP_SECRET);
-console.log("[setup] ADMIN_SETUP_SECRET length:", ADMIN_SETUP_SECRET?.length ?? 0);
-
 // Check if setup is allowed
-let credentialsExist = false;
-try {
-  credentialsExist = await hasCredentials();
-  console.log("[setup] credentialsExist:", credentialsExist);
-} catch (error) {
-  console.error("[setup] hasCredentials error:", error);
-  // Return 500 with debug info if DB fails
-  return new Response(JSON.stringify({ error: "DB error", details: String(error) }), {
-    status: 500,
-    headers: { "Content-Type": "application/json" }
-  });
-}
-
+const credentialsExist = await hasCredentials();
 if (credentialsExist) {
-  console.log("[setup] Redirecting to login - credentials exist");
   Astro.cookies.delete(SETUP_TOKEN_COOKIE, { path: "/" });
   return Astro.redirect("/wishlist/~/login");
 }
 
 // Check for token in URL (first visit)
 const urlToken = Astro.url.searchParams.get("token");
-console.log("[setup] urlToken present:", !!urlToken);
-console.log("[setup] urlToken length:", urlToken?.length ?? 0);
 
 if (urlToken && ADMIN_SETUP_SECRET) {
-  // Validate the token
-  const tokenMatch = await timingSafeEqual(urlToken, ADMIN_SETUP_SECRET);
-  console.log("[setup] Token match:", tokenMatch);
-
-  if (tokenMatch) {
-    // Store token in httpOnly cookie and redirect to clean URL
+  if (await timingSafeEqual(urlToken, ADMIN_SETUP_SECRET)) {
     Astro.cookies.set(SETUP_TOKEN_COOKIE, urlToken, {
       httpOnly: true,
       secure: import.meta.env.PROD,
@@ -52,28 +26,19 @@ if (urlToken && ADMIN_SETUP_SECRET) {
       path: "/",
       maxAge: SETUP_TOKEN_EXPIRY_MS / 1000,
     });
-    console.log("[setup] Token valid, redirecting to clean URL");
     return Astro.redirect("/wishlist/~/setup");
   } else {
-    // Invalid token in URL
-    console.log("[setup] Token mismatch, returning 404");
     return new Response(null, { status: 404, statusText: "Not Found" });
   }
 }
 
 // Check for token in cookie (subsequent visits)
 const cookieToken = Astro.cookies.get(SETUP_TOKEN_COOKIE)?.value;
-console.log("[setup] cookieToken present:", !!cookieToken);
-
 const isValidToken = cookieToken && ADMIN_SETUP_SECRET && await timingSafeEqual(cookieToken, ADMIN_SETUP_SECRET);
-console.log("[setup] isValidToken:", isValidToken);
 
 if (!isValidToken) {
-  console.log("[setup] No valid token, returning 404");
   return new Response(null, { status: 404, statusText: "Not Found" });
 }
-
-console.log("[setup] Rendering setup page");
 ---
 
 <AdminLayout title="Setup - Wishlist Admin">
