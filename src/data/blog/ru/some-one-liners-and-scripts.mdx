@@ -1,0 +1,191 @@
+---
+title: 'Полезные однострочники и скрипты'
+pubDate: 2025-05-09
+author: 'Zach Orlovsky'
+tags: ['bash', 'git', 'macos', 'cli']
+lang: ru
+translationOf: en/some-one-liners-and-scripts
+---
+
+Коллекция команд и скриптов, к которым я постоянно возвращаюсь. Ничего революционного, но избавляет от необходимости гуглить одно и то же снова и снова.
+
+### Сделать подстроку заглавной
+
+Нужно найти паттерн и сделать его uppercase? Модификатор `\U` справится:
+
+```bash
+gsed -i.bak -E 's/(example)/\U\1/g' /path/to/file
+```
+
+Нюанс: встроенный `sed` в macOS не поддерживает `\U`. Нужен GNU sed:
+
+```bash
+brew install gnu-sed
+```
+
+### Исправить автора коммитов
+
+Знакомая ситуация — запушил кучу коммитов и понял, что они от имени не того аккаунта. Забыл настроить локальный конфиг для рабочего репозитория.
+
+`git-filter-repo` поможет:
+
+```bash
+git filter-repo --force --commit-callback '
+if commit.author_name == b"<OLD_AUTHOR_NAME>":
+    commit.author_name = b"<NEW_AUTHOR_NAME>"
+    commit.author_email = b"<NEW_AUTHOR_EMAIL>"
+    commit.committer_name = b"<NEW_AUTHOR_NAME>"
+    commit.committer_email = b"<NEW_AUTHOR_EMAIL>"
+'
+```
+
+Сначала установи:
+
+```bash
+brew install git-filter-repo
+```
+
+**Осторожно:** это переписывает историю. Не делай так на shared-ветках без согласования с командой.
+
+> **Совет:** Избежать этого можно, если всегда настраивать конфиг для конкретного репозитория:
+>
+> ```bash
+> git config user.name "Work Username"
+> git config user.email "work@company.com"
+> ```
+
+### Добавить в stage только отслеживаемые файлы
+
+Иногда есть новые файлы, которые пока не готовы к коммиту. Эта команда добавит только изменённые и удалённые:
+
+```bash
+git add -u
+```
+
+Работает и с путями: `git add -u src/`
+
+### Посмотреть stash перед применением
+
+Я не доверяю `git stash pop`. А вдруг это не тот stash? А вдруг конфликты?
+
+Сначала смотрю изменения:
+
+```bash
+git stash show -p           # полный diff
+git stash show -p stash@{2} # конкретный stash
+git stash show              # только имена файлов
+```
+
+Потом apply (не pop!) и проверяю:
+
+```bash
+git stash apply
+```
+
+И только убедившись, что всё ок:
+
+```bash
+git stash drop stash@{0}
+```
+
+Или если нужно удалить все stash'и: `git stash clear`
+
+### Удалить ветку локально и на remote
+
+Танец из двух шагов:
+
+```bash
+git branch -d feature-branch
+git push origin --delete feature-branch
+```
+
+Используй `-D` вместо `-d`, если ветка не полностью слита.
+
+Надоело набирать обе команды, добавил в `.gitconfig`:
+
+```ini
+[alias]
+    nuke = "!f() { git branch -d $1 && git push origin --delete $1; }; f"
+```
+
+Теперь просто `git nuke feature-branch`.
+
+### Генерация случайных секретов
+
+Тут часто путают: «32-символьный секрет» и «32-битный секрет» — это совсем разные вещи.
+
+```bash
+openssl rand -hex 4   # 32-bit  = 8 hex-символов
+openssl rand -hex 8   # 64-bit  = 16 hex-символов
+openssl rand -hex 16  # 128-bit = 32 hex-символа
+openssl rand -hex 32  # 256-bit = 64 hex-символа
+```
+
+Каждый hex-символ кодирует 4 бита. Так что «32-символьный hex-секрет» — это на самом деле 128 бит. Это 2^128 комбинаций против 2^32. Большая разница.
+
+То же самое на Python:
+
+```python
+import secrets
+secrets.token_hex(16)  # 32 hex-символа = 128 бит
+```
+
+Или на Node:
+
+```javascript
+require('crypto').randomBytes(16).toString('hex')
+```
+
+### Починить Colima после краша
+
+Классика: ноутбук сдох от разряда батареи, включаешь — а Colima не стартует. Сетевой сокет завис в сломанном состоянии.
+
+```bash
+pkill -9 -f "colima|lima|socket_vmnet|vde_vmnet" 2>/dev/null
+rm -rf ~/.colima/_lima/_networks/
+rm -f ~/.colima/_lima/colima/*.sock ~/.colima/_lima/colima/*.pid
+colima start
+```
+
+Это случается достаточно часто, так что у меня есть алиас:
+
+```bash
+alias colima-fix='pkill -9 -f "colima|lima" 2>/dev/null; rm -rf ~/.colima/_lima/_networks/ ~/.colima/_lima/colima/*.sock ~/.colima/_lima/colima/*.pid; colima start'
+```
+
+### Починить PostgreSQL после краша
+
+Та же история с Postgres через Homebrew — stale pidfile блокирует запуск.
+
+Быстрый фикс, который все знают:
+
+```bash
+rm -f /usr/local/var/postgresql@14/postmaster.pid
+brew services restart postgresql@14
+```
+
+Но что если Postgres на самом деле работает? Удалять pidfile было бы плохой идеей. Вот более безопасная версия:
+
+```bash
+pg-fix() {
+  local pidfile="/usr/local/var/postgresql@14/postmaster.pid"
+  
+  if [[ ! -f "$pidfile" ]]; then
+    echo "No stale pidfile found"
+    brew services restart postgresql@14
+    return
+  fi
+  
+  local pid=$(head -1 "$pidfile")
+  if ps -p "$pid" > /dev/null 2>&1; then
+    echo "PostgreSQL is actually running (PID $pid)"
+    return 1
+  fi
+  
+  echo "Removing stale pidfile..."
+  rm -f "$pidfile"
+  brew services restart postgresql@14
+}
+```
+
+Проверяет, существует ли процесс, прежде чем что-то трогать.

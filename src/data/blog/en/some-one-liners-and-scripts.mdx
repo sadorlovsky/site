@@ -2,40 +2,35 @@
 title: 'Some one-liners and other useful scripts'
 pubDate: 2025-05-09
 author: 'Zach Orlovsky'
-tags: []
+tags: ['bash', 'git', 'macos', 'cli']
 lang: en
 ---
 
-## Find substring in file and make it uppercased
+A collection of commands and scripts I keep coming back to. Nothing groundbreaking, but saves me from Googling the same things over and over.
 
-Finds matched substring captured to a group and makes it upercased with `\U` before that group `\1`.
+### Uppercase a substring in a file
 
-```bash
-gsed -i.bak -E 's/(<PATTERN_TO_MATCH>)/\U\1/g' /path/to/file
-```
+Need to find a pattern and make it uppercase? The `\U` modifier does the trick:
 
 ```bash
-# Example: Convert all lowercase "example" words to uppercase
 gsed -i.bak -E 's/(example)/\U\1/g' /path/to/file
 ```
 
-Default `sed` installed in macOS doesn't support `\U` so `gsed` used here. It can be installed via brew
+One catch: macOS's built-in `sed` doesn't support `\U`. You'll need GNU sed:
 
 ```bash
 brew install gnu-sed
 ```
 
-## Change Git commit author information
+### Fix wrong Git commit author
 
-This command uses `git-filter-repo` to change the author and committer information for all commits not made by a specific author.
+We've all been there — you push a bunch of commits only to realize they're attributed to the wrong account. Maybe you forgot to set up the local config for a work repo.
 
-It's particularly useful when you've accidentally committed and pushed using your global Git config with one set of author details, but the repository needed a different local Git config with project-specific author settings.
+`git-filter-repo` can fix this:
 
 ```bash
 git filter-repo --force --commit-callback '
-if commit.author_name != b"<OLD_AUTHOR_NAME>":
-    new_name = b"<NEW_AUTHOR_NAME>"
-    new_email = b"<NEW_AUTHOR_EMAIL>"
+if commit.author_name == b"<OLD_AUTHOR_NAME>":
     commit.author_name = b"<NEW_AUTHOR_NAME>"
     commit.author_email = b"<NEW_AUTHOR_EMAIL>"
     commit.committer_name = b"<NEW_AUTHOR_NAME>"
@@ -43,24 +38,153 @@ if commit.author_name != b"<OLD_AUTHOR_NAME>":
 '
 ```
 
-To use this, you'll need to install `git-filter-repo` first:
+Install it first:
 
 ```bash
 brew install git-filter-repo
 ```
 
-**⚠️ Warning: This rewrites repository history, so use with caution on shared repositories!**
+**Warning:** This rewrites history. Don't do this on shared branches without coordinating with your team.
 
-> ### 💡 Pro Tip
->
-> If you frequently work across different GitHub accounts or organizations, consider setting repository-specific Git configs to prevent this issue:
+> **Pro Tip:** Prevent this by always setting repo-specific configs:
 >
 > ```bash
-> # Set local repo-specific author details
 > git config user.name "Work Username"
-> git config user.email "work-email@company.com"
->
-> # Check your current git config
-> git config user.name
-> git config user.email
+> git config user.email "work@company.com"
 > ```
+
+### Stage only tracked files
+
+Sometimes you have new files you're not ready to commit yet. This stages only modified and deleted files:
+
+```bash
+git add -u
+```
+
+Works with paths too: `git add -u src/`
+
+### Preview stash before applying
+
+I never trust `git stash pop`. What if it's the wrong stash? What if there are conflicts?
+
+First, preview the changes:
+
+```bash
+git stash show -p           # full diff
+git stash show -p stash@{2} # specific stash
+git stash show              # just file names
+```
+
+Then apply (not pop!) and verify:
+
+```bash
+git stash apply
+```
+
+Only after confirming everything looks good:
+
+```bash
+git stash drop stash@{0}
+```
+
+Or if you want to nuke all stashes: `git stash clear`
+
+### Delete branch locally and remotely
+
+The two-step dance:
+
+```bash
+git branch -d feature-branch
+git push origin --delete feature-branch
+```
+
+Use `-D` instead of `-d` if the branch isn't fully merged.
+
+I got tired of typing both, so I added this to `.gitconfig`:
+
+```ini
+[alias]
+    nuke = "!f() { git branch -d $1 && git push origin --delete $1; }; f"
+```
+
+Now it's just `git nuke feature-branch`.
+
+### Generate random secrets
+
+This trips people up: "32-character secret" and "32-bit secret" are very different things.
+
+```bash
+openssl rand -hex 4   # 32-bit  = 8 hex chars
+openssl rand -hex 8   # 64-bit  = 16 hex chars
+openssl rand -hex 16  # 128-bit = 32 hex chars
+openssl rand -hex 32  # 256-bit = 64 hex chars
+```
+
+Each hex character encodes 4 bits. So a "32-character hex secret" is actually 128 bits — that's 2^128 combinations vs 2^32. Big difference.
+
+Same thing in Python:
+
+```python
+import secrets
+secrets.token_hex(16)  # 32 hex chars = 128 bits
+```
+
+Or Node:
+
+```javascript
+require('crypto').randomBytes(16).toString('hex')
+```
+
+### Fix Colima after crash
+
+Classic scenario: laptop dies from low battery, you plug it in, and Colima refuses to start. The network socket is stuck in a broken state.
+
+```bash
+pkill -9 -f "colima|lima|socket_vmnet|vde_vmnet" 2>/dev/null
+rm -rf ~/.colima/_lima/_networks/
+rm -f ~/.colima/_lima/colima/*.sock ~/.colima/_lima/colima/*.pid
+colima start
+```
+
+This happens often enough that I have an alias:
+
+```bash
+alias colima-fix='pkill -9 -f "colima|lima" 2>/dev/null; rm -rf ~/.colima/_lima/_networks/ ~/.colima/_lima/colima/*.sock ~/.colima/_lima/colima/*.pid; colima start'
+```
+
+### Fix PostgreSQL after crash
+
+Same story with Postgres via Homebrew — a stale pidfile blocks startup.
+
+The quick fix everyone knows:
+
+```bash
+rm -f /usr/local/var/postgresql@14/postmaster.pid
+brew services restart postgresql@14
+```
+
+But what if Postgres is actually running? Deleting the pidfile would be bad. Here's a safer version I use:
+
+```bash
+pg-fix() {
+  local pidfile="/usr/local/var/postgresql@14/postmaster.pid"
+
+  if [[ ! -f "$pidfile" ]]; then
+    echo "No stale pidfile found"
+    brew services restart postgresql@14
+    return
+  fi
+
+  local pid=$(head -1 "$pidfile")
+  if ps -p "$pid" > /dev/null 2>&1; then
+    echo "PostgreSQL is actually running (PID $pid)"
+    return 1
+  fi
+
+  echo "Removing stale pidfile..."
+  rm -f "$pidfile"
+  brew services restart postgresql@14
+}
+```
+
+Checks if the process exists before touching anything.
