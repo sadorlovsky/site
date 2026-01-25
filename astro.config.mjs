@@ -41,7 +41,10 @@ export default defineConfig({
   integrations: [icon(), mdx(), react(), db()],
   markdown: {
     shikiConfig: {
-      theme: "catppuccin-macchiato",
+      themes: {
+        light: "catppuccin-latte",
+        dark: "catppuccin-frappe",
+      },
     },
   },
   env: {
