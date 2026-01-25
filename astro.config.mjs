@@ -17,6 +17,7 @@ const cdnDomain = isProd ? CDN_DOMAIN : CDN_DEV_DOMAIN;
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://orlovsky.dev",
   output: "server",
   vite: {
     optimizeDeps: {
