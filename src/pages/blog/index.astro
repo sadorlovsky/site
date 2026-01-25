@@ -25,6 +25,7 @@ ruPosts.forEach((post) => {
 });
 
 // Group posts by year (for each language)
+// Posts are already sorted by pubDate desc, so we preserve that order within each year
 function groupByYear(posts: typeof allPosts) {
   const byYear = posts.reduce<Record<number, typeof posts>>((acc, post) => {
     const year = new Date(post.data.pubDate).getFullYear();
@@ -32,6 +33,14 @@ function groupByYear(posts: typeof allPosts) {
     acc[year].push(post);
     return acc;
   }, {});
+  // Sort posts within each year by pubDate descending, then by title for stable ordering
+  for (const year of Object.keys(byYear)) {
+    byYear[Number(year)].sort((a, b) => {
+      const dateDiff = b.data.pubDate.getTime() - a.data.pubDate.getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return a.data.title.localeCompare(b.data.title);
+    });
+  }
   const years = Object.keys(byYear)
     .map(Number)
     .sort((a, b) => b - a);
@@ -118,14 +127,16 @@ const postsData = {
                     </time>
                     <div class="post-content">
                       <h2 class="post-title">{post.data.title}</h2>
-                      {post.data.description && (
-                        <p class="post-description">{post.data.description}</p>
-                      )}
-                      {translationMap.has(post.id) && (
-                        <span class="translation-badge" title="Available in Russian">
-                          RU
-                        </span>
-                      )}
+                      <div class="post-meta">
+                        {post.data.tags?.map((tag: string) => (
+                          <span class="tag">{tag}</span>
+                        ))}
+                        {translationMap.has(post.id) && (
+                          <span class="translation-badge" title="Available in Russian">
+                            RU
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </a>
                 ))}
@@ -255,14 +266,8 @@ const postsData = {
     align-items: flex-start;
     text-decoration: none;
     color: inherit;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid
-      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+    padding: 0.75rem 0;
     transition: opacity 0.2s ease;
-  }
-
-  .year-posts .post-item:last-child {
-    border-bottom: none;
   }
 
   .post-item:hover {
@@ -299,11 +304,23 @@ const postsData = {
     transition: all 0.2s ease;
   }
 
-  .post-description {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: light-dark(#555, #999);
-    margin: 0.5rem 0 0 0;
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    color: light-dark(#666, #888);
+  }
+
+  .tag:not(:last-of-type)::after {
+    content: "·";
+    margin-left: 0.5rem;
+    color: light-dark(#999, #555);
   }
 
   .translation-badge {
@@ -314,7 +331,6 @@ const postsData = {
     border-radius: 4px;
     background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
     color: light-dark(#666, #999);
-    margin-top: 0.5rem;
     cursor: help;
   }
 
