@@ -112,6 +112,25 @@ function getNavUrl(p: typeof post): string {
               }
             </time>
             {
+              post.data.updatedDate && (
+                <span class="updated-date">
+                  <span data-en="Updated" data-ru="Обновлено">
+                    {post.data.lang === "ru" ? "Обновлено" : "Updated"}
+                  </span>
+                  {" "}
+                  <time datetime={post.data.updatedDate.toISOString()}>
+                    {
+                      new Date(post.data.updatedDate).toLocaleDateString(dateLocale, {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    }
+                  </time>
+                </span>
+              )
+            }
+            {
               translationUrl && (
                 <a
                   href={translationUrl}
@@ -277,6 +296,20 @@ function getNavUrl(p: typeof post): string {
     color: light-dark(#888, #777);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+  }
+
+  .updated-date {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: light-dark(#888, #777);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-left: 0.75rem;
+    border-left: 1px solid light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.15));
+  }
+
+  .updated-date time {
+    color: var(--accent-start);
   }
 
   .post-header h1 {

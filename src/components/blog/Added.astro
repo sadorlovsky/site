@@ -1,0 +1,45 @@
+---
+interface Props {
+  date?: string;
+}
+
+const { date } = Astro.props;
+---
+
+<div class="change-marker added">
+  {date && <span class="change-date">{date}</span>}
+  <slot />
+</div>
+
+<style>
+  .change-marker.added {
+    position: relative;
+    margin: 1.5rem 0;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid #22c55e;
+    background: linear-gradient(to right, rgba(34, 197, 94, 0.08), transparent 50%);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .change-date {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.15);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .change-marker.added :global(h3:first-of-type) {
+    margin-top: 0;
+  }
+
+  .change-marker.added :global(p:last-child),
+  .change-marker.added :global(pre:last-child) {
+    margin-bottom: 0;
+  }
+</style>
