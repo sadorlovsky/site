@@ -12,15 +12,15 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
       "Content-Security-Policy",
       [
         "default-src 'self'",
-        "script-src 'self'",
-        "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Astro
+        "script-src 'self' 'unsafe-inline'", // unsafe-inline needed for Astro hydration
+        "style-src 'self' 'unsafe-inline'",
         "img-src 'self' data: blob: https:",
         "connect-src 'self'",
         "font-src 'self'",
         "frame-ancestors 'none'",
         "base-uri 'self'",
         "form-action 'self'",
-      ].join("; ")
+      ].join("; "),
     );
 
     return newResponse;
