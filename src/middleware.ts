@@ -2,12 +2,15 @@ import { defineMiddleware } from "astro:middleware";
 
 export const onRequest = defineMiddleware(async ({ request, url }, next) => {
   const response = await next();
+  const newResponse = new Response(response.body, response);
 
-  // Add CSP header for admin panel pages
+  // Security headers for all pages
+  newResponse.headers.set("X-Content-Type-Options", "nosniff");
+  newResponse.headers.set("X-Frame-Options", "DENY");
+  newResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+
+  // Additional headers for admin panel
   if (url.pathname.startsWith("/wishlist/~")) {
-    // Clone response to modify headers
-    const newResponse = new Response(response.body, response);
-
     newResponse.headers.set(
       "Content-Security-Policy",
       [
@@ -31,9 +34,7 @@ export const onRequest = defineMiddleware(async ({ request, url }, next) => {
     newResponse.headers.set("CDN-Cache-Control", "no-store");
     newResponse.headers.set("Pragma", "no-cache");
     newResponse.headers.set("Expires", "0");
-
-    return newResponse;
   }
 
-  return response;
+  return newResponse;
 });

@@ -92,7 +92,7 @@ function getNavUrl(p: typeof post): string {
 }
 ---
 
-<PageLayout title={post.data.title}>
+<PageLayout title={post.data.title} description={post.data.description} image={post.data.image?.url}>
   <main>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>

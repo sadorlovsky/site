@@ -6,17 +6,42 @@ import { SEO } from "astro-seo";
 interface Props {
   title: string;
   description?: string;
+  image?: string;
 }
 
-const { title, description = "Software engineer & traveler" } = Astro.props;
+const { title, description = "Software engineer & traveler", image } = Astro.props;
 const cdnDomain = import.meta.env.PROD ? "cdn.orlovsky.dev" : null;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImage = image ?? "https://orlovsky.dev/og-image.png";
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <SEO title={title} description={description} />
+    <SEO
+      title={title}
+      description={description}
+      canonical={canonicalURL.href}
+      openGraph={{
+        basic: {
+          title,
+          type: "website",
+          image: ogImage,
+          url: canonicalURL.href,
+        },
+        optional: {
+          description,
+          siteName: "Zach",
+        },
+      }}
+      twitter={{
+        card: "summary_large_image",
+        title,
+        description,
+        image: ogImage,
+      }}
+    />
     <link rel="icon" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#000000" />
     <meta

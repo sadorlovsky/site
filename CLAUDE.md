@@ -99,8 +99,8 @@ db/
 ## AI Assistant Hints
 
 ### Documentation
-- Use WebSearch for Astro 5 docs when unsure about APIs or patterns
-- Astro DB docs: search "Astro DB" for ORM and query patterns
+- Use `mcp__Astro_docs__search_astro_docs` tool for Astro documentation queries
+- This MCP tool provides direct access to official Astro docs
 
 ### Available Skills
 - `/review` - Review a pull request

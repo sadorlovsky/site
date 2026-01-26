@@ -3,6 +3,7 @@ import icon from "astro-icon";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
+import sitemap from "@astrojs/sitemap";
 import db from "@astrojs/db";
 import { loadEnv } from "vite";
 
@@ -38,7 +39,15 @@ export default defineConfig({
   image: {
     domains: [cdnDomain],
   },
-  integrations: [icon(), mdx(), react(), db()],
+  integrations: [
+    icon(),
+    mdx(),
+    react(),
+    db(),
+    sitemap({
+      filter: (page) => !page.includes("/wishlist/~"),
+    }),
+  ],
   markdown: {
     shikiConfig: {
       themes: {

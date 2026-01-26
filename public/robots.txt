@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Disallow: /wishlist/~
+Disallow: /api/
+
+Sitemap: https://orlovsky.dev/sitemap-index.xml
