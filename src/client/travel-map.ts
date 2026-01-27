@@ -29,10 +29,13 @@ async function initMap(): Promise<void> {
     return isMobile ? 1 : 2;
   };
 
+  // For globe mode, start further west so rotation immediately shows Western Europe
+  const initialCenter: [number, number] = isGlobe ? [-10, 50] : [43, 55];
+
   const map = new MapLibre({
     container: "map",
     style: "https://tiles.openfreemap.org/styles/positron",
-    center: [43, 55],
+    center: initialCenter,
     zoom: getInitialZoom(),
     minZoom: 1,
     attributionControl: false,
