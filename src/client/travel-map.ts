@@ -12,6 +12,32 @@ const LIGHT_WATER = "#cad8e6";
 const DARK_WATER = "#2a3a4a";
 const LIGHT_TEXT = "#333333";
 const DARK_TEXT = "#e0e0e0";
+const GLOBE_PADDING_DESKTOP = 50;
+const GLOBE_PADDING_MOBILE = 0;
+
+function getGlobePadding(containerWidth: number): number {
+  return containerWidth <= MOBILE_BREAKPOINT
+    ? GLOBE_PADDING_MOBILE
+    : GLOBE_PADDING_DESKTOP;
+}
+
+// Calculate zoom level to fit globe in container
+// MapLibre globe visual size ≈ 512 * 2^zoom / 2.7 (empirically determined)
+// So: visualDiameter = 512 * 2^zoom / 2.7
+// Solving for zoom: zoom = log2(visualDiameter * 2.7 / 512)
+const GLOBE_SCALE_FACTOR = 2.7;
+
+function getZoomForGlobe(
+  containerWidth: number,
+  containerHeight: number,
+  padding: number,
+): number {
+  const targetDiameter = Math.min(
+    containerWidth,
+    containerHeight - padding * 2,
+  );
+  return Math.log2((targetDiameter * GLOBE_SCALE_FACTOR) / 512);
+}
 
 async function initMap(): Promise<void> {
   const container = document.getElementById("map");
@@ -21,10 +47,15 @@ async function initMap(): Promise<void> {
   const isGlobe = mode === "globe";
   const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
 
-  // For globe mode, use lower zoom to fit the globe in container
+  // For globe mode, calculate zoom to fit globe in container with padding
   const getInitialZoom = (): number => {
     if (isGlobe) {
-      return isMobile ? 0.5 : 1;
+      const padding = getGlobePadding(container.clientWidth);
+      return getZoomForGlobe(
+        container.clientWidth,
+        container.clientHeight,
+        padding,
+      );
     }
     return isMobile ? 1 : 2;
   };
@@ -32,19 +63,58 @@ async function initMap(): Promise<void> {
   // For globe mode, start further west so rotation immediately shows Western Europe
   const initialCenter: [number, number] = isGlobe ? [-10, 50] : [43, 55];
 
+  const initialZoom = getInitialZoom();
+
   const map = new MapLibre({
     container: "map",
     style: "https://tiles.openfreemap.org/styles/positron",
     center: initialCenter,
-    zoom: getInitialZoom(),
-    minZoom: 1,
+    zoom: initialZoom,
+    minZoom: isGlobe ? initialZoom : 1,
     attributionControl: false,
   });
 
   await new Promise<void>((resolve) => map.on("load", resolve));
 
+  // Mode toggle functionality (exposed globally for future use)
+  let currentMode: "globe" | "normal" = isGlobe ? "globe" : "normal";
+
+  function setProjectionMode(mode: "globe" | "normal") {
+    currentMode = mode;
+    if (mode === "globe") {
+      map.setProjection({ type: "globe" });
+      const padding = getGlobePadding(container.clientWidth);
+      const newZoom = getZoomForGlobe(
+        container.clientWidth,
+        container.clientHeight,
+        padding,
+      );
+      map.setMinZoom(newZoom);
+      map.setZoom(newZoom);
+    } else {
+      map.setProjection({ type: "mercator" });
+      map.setMinZoom(1);
+      map.setZoom(isMobile ? 1 : 2);
+    }
+  }
+
+  // Expose for external use: window.setMapMode("globe") or window.setMapMode("normal")
+  (window as unknown as { setMapMode: typeof setProjectionMode }).setMapMode =
+    setProjectionMode;
+
   if (isGlobe) {
     map.setProjection({ type: "globe" });
+
+    // Recalculate zoom on container resize
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      if (width === 0 || height === 0) return;
+      const padding = getGlobePadding(width);
+      const newZoom = getZoomForGlobe(width, height, padding);
+      map.setMinZoom(newZoom);
+      map.setZoom(newZoom);
+    });
+    resizeObserver.observe(container);
 
     // Auto-rotation for globe mode
     let isRotating = true;
