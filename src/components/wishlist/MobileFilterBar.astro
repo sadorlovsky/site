@@ -36,29 +36,7 @@ const { categories, currentCategory } = Astro.props;
             ))}
           </div>
         </div>
-        <div
-          class="mobile-lang-switcher"
-          role="group"
-          aria-label="Language"
-          data-storage-key="wishlist-lang"
-        >
-          <button
-            class="mobile-lang-btn"
-            data-lang="en"
-            aria-pressed="true"
-            aria-label="English"
-          >
-            ENG
-          </button>
-          <button
-            class="mobile-lang-btn"
-            data-lang="ru"
-            aria-pressed="false"
-            aria-label="Русский"
-          >
-            РУС
-          </button>
-        </div>
+
       </div>
     </div>
   )
@@ -220,55 +198,7 @@ const { categories, currentCategory } = Astro.props;
     box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
   }
 
-  .mobile-lang-switcher {
-    display: flex;
-    gap: 0.25rem;
-    flex-shrink: 0;
-    padding: 0.25rem;
-    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
-    border-radius: 8px;
-  }
 
-  .mobile-lang-btn {
-    padding: 0.4rem 0.5rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: light-dark(#666, #888);
-    background: transparent;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .mobile-lang-btn:active {
-    transform: scale(0.95);
-  }
-
-  .mobile-lang-btn[aria-pressed="true"] {
-    color: light-dark(#111, #fff);
-    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
-    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
-  }
-
-  /* Sync with html.lang-ru */
-  html.lang-ru .mobile-lang-btn[data-lang="en"] {
-    color: light-dark(#666, #888);
-    background: transparent;
-    box-shadow: none;
-  }
-
-  html.lang-ru .mobile-lang-btn[data-lang="en"][aria-pressed="true"] {
-    color: light-dark(#666, #888);
-    background: transparent;
-    box-shadow: none;
-  }
-
-  html.lang-ru .mobile-lang-btn[data-lang="ru"] {
-    color: light-dark(#111, #fff);
-    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
-    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
-  }
 
   /* Accessibility - Reduced motion */
   @media (prefers-reduced-motion: reduce) {
@@ -297,14 +227,6 @@ const { categories, currentCategory } = Astro.props;
       color: light-dark(#333, #ddd);
       background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
       border: 2px solid light-dark(#999, #666);
-    }
-
-    .mobile-lang-switcher {
-      border: 1px solid light-dark(#999, #666);
-    }
-
-    .mobile-lang-btn {
-      color: light-dark(#333, #ddd);
     }
   }
 </style>
@@ -474,72 +396,6 @@ const { categories, currentCategory } = Astro.props;
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
       categoriesScroller.addEventListener("click", onClickCapture, true);
-    }
-
-    // Setup language switcher
-    const langSwitcher = barEl.querySelector(".mobile-lang-switcher");
-    if (langSwitcher) {
-      const storageKey =
-        langSwitcher.getAttribute("data-storage-key") || "wishlist-lang";
-      const buttons =
-        langSwitcher.querySelectorAll<HTMLButtonElement>(".mobile-lang-btn");
-
-      // Sync initial state
-      const currentLang = localStorage.getItem(storageKey) || "en";
-      buttons.forEach((btn) => {
-        btn.setAttribute(
-          "aria-pressed",
-          btn.dataset.lang === currentLang ? "true" : "false",
-        );
-      });
-
-      buttons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const lang = btn.dataset.lang;
-          if (!lang) return;
-
-          localStorage.setItem(storageKey, lang);
-
-          if (lang === "ru") {
-            document.documentElement.classList.add("lang-ru");
-          } else {
-            document.documentElement.classList.remove("lang-ru");
-          }
-
-          buttons.forEach((b) => {
-            b.setAttribute("aria-pressed", b === btn ? "true" : "false");
-          });
-
-          // Apply translations
-          document
-            .querySelectorAll<HTMLElement>("[data-en][data-ru]")
-            .forEach((el) => {
-              const text = el.getAttribute("data-" + lang);
-              if (text) el.textContent = text;
-            });
-
-          // Dispatch event for other components
-          window.dispatchEvent(
-            new CustomEvent("lang-change", {
-              detail: { lang, storageKey },
-            }),
-          );
-        });
-      });
-
-      // Listen for lang changes from other switchers
-      window.addEventListener("lang-change", ((
-        e: CustomEvent<{ lang: string; storageKey: string }>,
-      ) => {
-        if (e.detail.storageKey === storageKey) {
-          buttons.forEach((btn) => {
-            btn.setAttribute(
-              "aria-pressed",
-              btn.dataset.lang === e.detail.lang ? "true" : "false",
-            );
-          });
-        }
-      }) as EventListener);
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
