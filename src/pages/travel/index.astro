@@ -67,6 +67,7 @@ export const prerender = true;
 <PageLayout title="Travel — Zach">
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
+  <!-- <div class="stars" id="stars"></div> -->
 
   <main>
     <PageHeader
@@ -79,6 +80,33 @@ export const prerender = true;
     <TravelTripList />
   </main>
 </PageLayout>
+
+<script>
+  const stars = document.getElementById("stars");
+  const tripList = document.querySelector("[class*='tripList']");
+
+  if (stars && tripList) {
+    // Get base opacity from CSS custom property
+    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const baseOpacity = isDark ? 0.4 : 0.15;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Fade out stars as trip list comes into view
+          const ratio = entry.intersectionRatio;
+          const newOpacity = baseOpacity * (1 - ratio);
+          stars.style.setProperty("--stars-opacity", String(newOpacity));
+        });
+      },
+      {
+        threshold: Array.from({ length: 21 }, (_, i) => i / 20), // 0, 0.05, 0.1, ... 1
+      }
+    );
+
+    observer.observe(tripList);
+  }
+</script>
 
 <style>
   :root {
@@ -157,10 +185,59 @@ export const prerender = true;
     gap: 1.25rem;
   }
 
+  /* Starfield background */
+  .stars {
+    --stars-opacity: light-dark(0.15, 0.4);
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      radial-gradient(2px 2px at 20px 30px, white, transparent),
+      radial-gradient(
+        2px 2px at 40px 70px,
+        rgba(255, 255, 255, 0.8),
+        transparent
+      ),
+      radial-gradient(1px 1px at 90px 40px, white, transparent),
+      radial-gradient(
+        2px 2px at 160px 120px,
+        rgba(255, 255, 255, 0.9),
+        transparent
+      ),
+      radial-gradient(1px 1px at 230px 80px, white, transparent),
+      radial-gradient(
+        2px 2px at 300px 150px,
+        rgba(255, 255, 255, 0.7),
+        transparent
+      ),
+      radial-gradient(1px 1px at 370px 50px, white, transparent),
+      radial-gradient(
+        2px 2px at 450px 180px,
+        rgba(255, 255, 255, 0.8),
+        transparent
+      ),
+      radial-gradient(1px 1px at 520px 90px, white, transparent),
+      radial-gradient(2px 2px at 600px 200px, white, transparent);
+    background-size: 650px 250px;
+    animation: twinkle 5s ease-in-out infinite;
+    transition: opacity 0.3s ease-out;
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: var(--stars-opacity);
+    }
+    50% {
+      opacity: calc(var(--stars-opacity) * 0.6);
+    }
+  }
+
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .blob-1,
-    .blob-2 {
+    .blob-2,
+    .stars {
       animation: none;
     }
   }

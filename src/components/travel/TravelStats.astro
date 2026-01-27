@@ -185,22 +185,16 @@ const continentsPercent = Math.floor(
 
   @media (max-width: 480px) {
     .stats {
-      grid-template-columns: 1fr;
-      gap: 0;
-      border-radius: 5px;
-      overflow: hidden;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
     }
 
     .card {
-      border-radius: 0;
+      padding: 0.75em;
     }
 
-    .card:first-child {
-      border-radius: 5px 5px 0 0;
-    }
-
-    .card:last-child {
-      border-radius: 0 0 5px 5px;
+    .value {
+      font-size: 1.1rem;
     }
   }
 

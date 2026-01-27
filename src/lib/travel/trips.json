@@ -143,6 +143,16 @@
   {
     "year": null,
     "month": null,
+    "destinations": [
+      {
+        "country": ["rs", "srb"],
+        "cities": ["Belgrade"]
+      }
+    ]
+  },
+  {
+    "year": null,
+    "month": null,
     "endMonth": null,
     "description": "Thailand and Vietnam",
     "destinations": [
