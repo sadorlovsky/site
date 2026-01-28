@@ -363,7 +363,7 @@
     "destinations": [
       {
         "country": ["ru", "rus"],
-        "cities": ["Yaroslavl", "Rostov", "Rybinsk", "Anapa"]
+        "cities": ["Yaroslavl", "Rostov Veliky", "Rybinsk", "Anapa"]
       }
     ]
   },
@@ -386,7 +386,8 @@
           "Kaliningrad",
           "Svetlogorsk",
           "Zelenogradsk",
-          "Sochi"
+          "Sochi",
+          "Krasnaya Polyana"
         ]
       }
     ]

@@ -124,11 +124,14 @@ export function getSortedYears(tripsByYear: Record<number, Trip[]>): number[] {
     .sort((a, b) => b - a);
 }
 
+// Cities where I lived (not part of trips)
+const homeCities = ["Moscow", "Murom"];
+
 export const trips = tripsData as Trip[];
 export const datedTrips = getDatedTrips(trips);
 export const tripsCount = datedTrips.length;
 export const countries = getCountries(datedTrips);
-export const cities = getCities(datedTrips);
+export const cities = new Set([...getCities(datedTrips), ...homeCities]);
 export const cityCoordinates = citiesData as unknown as Record<
   string,
   [number, number]

@@ -72,8 +72,10 @@ export const cityNamesRu: Record<string, string> = {
 
   // Russia
   "Saint Petersburg": "Санкт-Петербург",
+  Moscow: "Москва",
+  Murom: "Муром",
   Yaroslavl: "Ярославль",
-  Rostov: "Ростов",
+  "Rostov Veliky": "Ростов Великий",
   Rybinsk: "Рыбинск",
   Anapa: "Анапа",
   Vyborg: "Выборг",
@@ -81,6 +83,7 @@ export const cityNamesRu: Record<string, string> = {
   Svetlogorsk: "Светлогорск",
   Zelenogradsk: "Зеленоградск",
   Sochi: "Сочи",
+  "Krasnaya Polyana": "Красная Поляна",
   Krasnodar: "Краснодар",
   Kazan: "Казань",
   Vladimir: "Владимир",
