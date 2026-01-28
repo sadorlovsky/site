@@ -27,11 +27,15 @@ const continentsPercent = Math.floor(
       <a
         href="/travel/countries"
         class="info-link"
+        target="_blank"
         aria-label="Why this number? View country list"
         data-aria-label-en="Why this number? View country list"
         data-aria-label-ru="Почему такое число? Посмотреть список стран"
+        title="Why this number? View country list"
+        data-title-en="Why this number? View country list"
+        data-title-ru="Почему такое число? Посмотреть список стран"
       >
-        <Icon name="info" class="info-icon" aria-hidden="true" />
+        <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
     <div class="progress-row">
@@ -54,7 +58,23 @@ const continentsPercent = Math.floor(
   </div>
   <div class="card">
     <h3 data-en="Continents" data-ru="Континенты">Continents</h3>
-    <div class="value">{continentsVisited} / {continentsTotal}</div>
+    <div class="with-info">
+      <span class="value">{continentsVisited} / {continentsTotal}</span>
+      <a
+        href="https://education.nationalgeographic.org/resource/Continent/"
+        class="info-link"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Why 7 continents? National Geographic definition"
+        data-aria-label-en="Why 7 continents? National Geographic definition"
+        data-aria-label-ru="Почему 7 континентов? Определение National Geographic"
+        title="Why 7 continents? National Geographic definition"
+        data-title-en="Why 7 continents? National Geographic definition"
+        data-title-ru="Почему 7 континентов? Определение National Geographic"
+      >
+        <Icon name="question" class="info-icon" aria-hidden="true" />
+      </a>
+    </div>
     <div class="progress-row">
       <div
         class="progress-bar"
@@ -107,14 +127,13 @@ const continentsPercent = Math.floor(
   }
 
   .with-info {
-    display: flex;
-    gap: 0.5em;
-    align-items: center;
+    display: inline;
   }
 
   .info-link {
     display: inline-flex;
-    padding: 0.2rem;
+    vertical-align: super;
+    padding: 0.1rem;
     border-radius: 4px;
     transition: color 0.2s ease;
   }
@@ -130,8 +149,8 @@ const continentsPercent = Math.floor(
 
   .info-icon {
     color: #666;
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     transition: color 0.2s ease;
   }
 

@@ -120,7 +120,7 @@ openssl rand -hex 16  # 128-bit = 32 hex chars
 openssl rand -hex 32  # 256-bit = 64 hex chars
 ```
 
-Each hex character encodes 4 bits. So a "32-character hex secret" is actually 128 bits — that's 2^128 combinations vs 2^32. Big difference.
+Each hex character encodes 4 bits. So a "32-character hex secret" is actually 128 bits — that's 2¹²⁸ combinations vs 2³². Big difference.
 
 Same thing in Python:
 
