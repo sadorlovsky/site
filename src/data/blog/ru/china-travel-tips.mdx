@@ -6,7 +6,8 @@ lang: ru
 translationOf: en/china-travel-tips
 ---
 
-import { PaymentMethods } from "../_components/china-travel-tips/PaymentMethods";
+import { Image } from "astro:assets";
+import paymentMethodsImage from "@assets/blog/china-travel-tips/payment-methods.webp";
 
 Перед поездкой в Китай я потратил кучу времени на ресёрч. Вот что реально пригодилось, проверено на себе.
 
@@ -20,7 +21,10 @@ import { PaymentMethods } from "../_components/china-travel-tips/PaymentMethods"
 
 ### Способы оплаты
 
-<PaymentMethods lang="ru" />
+<figure>
+  <Image src={paymentMethodsImage} alt="Платёжные системы Alipay и WeChat Pay" />
+  <figcaption>Две используемые в Китае платежные системы — Alipay (слева) и WeChat Pay (справа), также известная как Weixin Pay</figcaption>
+</figure>
 
 Я переживал насчёт платежей — начитался историй про то, что в Китае только наличные или карты UnionPay. Реальность оказалась проще.
 

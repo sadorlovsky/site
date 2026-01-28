@@ -610,6 +610,8 @@ function getNavUrl(p: typeof post): string {
 
   .content :global(p) {
     margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    line-height: 1.8;
   }
 
   .content :global(a) {
@@ -686,9 +688,26 @@ function getNavUrl(p: typeof post): string {
 
   .content :global(img) {
     max-width: 100%;
+    width: 100%;
     height: auto;
     border-radius: 12px;
     margin: 1.5rem 0;
+  }
+
+  .content :global(figure) {
+    margin: 1.5rem 0;
+  }
+
+  .content :global(figure img) {
+    margin: 0;
+  }
+
+  .content :global(figcaption) {
+    font-size: 0.9rem;
+    color: light-dark(#666, #999);
+    text-align: center;
+    margin-top: 0.75rem;
+    font-style: italic;
   }
 
   .content :global(hr) {
@@ -746,6 +765,10 @@ function getNavUrl(p: typeof post): string {
     }
 
     .content {
+      font-size: 1rem;
+    }
+
+    .content :global(p) {
       font-size: 1rem;
     }
 

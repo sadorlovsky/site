@@ -6,7 +6,8 @@ tags: ["travel", "china"]
 lang: en
 ---
 
-import { PaymentMethods } from "../_components/china-travel-tips/PaymentMethods";
+import { Image } from "astro:assets";
+import paymentMethodsImage from "@assets/blog/china-travel-tips/payment-methods.webp";
 
 Before my trip to China, I spent a lot of time researching. Here's what actually helped, tested firsthand.
 
@@ -20,7 +21,10 @@ A note on ChatGPT: it doesn't work in China due to geo-restrictions. Even with a
 
 ### Paying for Things
 
-<PaymentMethods />
+<figure>
+  <Image src={paymentMethodsImage} alt="Alipay and WeChat Pay payment systems" />
+  <figcaption>Two payment systems used in China — Alipay (left) and WeChat Pay (right), also known as Weixin Pay</figcaption>
+</figure>
 
 I was nervous about payments — heard stories about China being cash-only or only accepting UnionPay cards. Reality was much simpler.
 
