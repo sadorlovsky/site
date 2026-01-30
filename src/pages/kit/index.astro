@@ -5,6 +5,7 @@ import ToggleGroup from "@components/kit/ToggleGroup.astro";
 import Select from "@components/kit/Select.astro";
 import Input from "@components/kit/Input.astro";
 import Badge from "@components/kit/Badge.astro";
+import ProgressBar from "@components/kit/ProgressBar.astro";
 import "@styles/kit/modal.css";
 import "@styles/kit/toast.css";
 import { Icon } from "astro-icon/components";
@@ -30,6 +31,7 @@ import { Icon } from "astro-icon/components";
             <li><a href="#select">Select</a></li>
             <li><a href="#input">Input</a></li>
             <li><a href="#badge">Badge</a></li>
+            <li><a href="#progress-bar">ProgressBar</a></li>
             <li><a href="#modal">Modal</a></li>
             <li><a href="#toast">Toast</a></li>
           </ul>
@@ -464,6 +466,42 @@ import { Icon } from "astro-icon/components";
       </section>
 
       <!-- ================================================================
+           PROGRESS BAR
+           ================================================================ -->
+      <section id="progress-bar">
+        <h2>ProgressBar</h2>
+        <p class="component-import">
+          <code>import ProgressBar from "@components/kit/ProgressBar.astro"</code>
+        </p>
+
+        <h3>Basic</h3>
+        <div class="progress-demo">
+          <ProgressBar value={25} max={100} label="25% complete" />
+          <ProgressBar value={50} max={100} label="50% complete" />
+          <ProgressBar value={75} max={100} label="75% complete" />
+          <ProgressBar value={100} max={100} label="100% complete" />
+        </div>
+
+        <h3>Accent Variant</h3>
+        <p>Use <code>accent</code> prop for gradient fill.</p>
+        <div class="progress-demo">
+          <ProgressBar value={42} max={195} label="Countries visited" accent />
+        </div>
+
+        <h3>Without Percent</h3>
+        <div class="progress-demo">
+          <ProgressBar value={3} max={10} label="Steps completed" showPercent={false} />
+        </div>
+
+        <h3>Custom Values</h3>
+        <p>Pass <code>value</code> and <code>max</code> — percent is calculated automatically.</p>
+        <div class="progress-demo">
+          <ProgressBar value={42} max={195} label="42 of 195 countries" />
+          <ProgressBar value={5} max={7} label="5 of 7 continents" />
+        </div>
+      </section>
+
+      <!-- ================================================================
            MODAL
            ================================================================ -->
       <section id="modal">
@@ -757,6 +795,14 @@ import { Icon } from "astro-icon/components";
     flex-direction: column;
     gap: 0.75rem;
     max-width: 300px;
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 400px;
     margin-bottom: 1.5rem;
   }
 

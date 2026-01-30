@@ -1,5 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
+import ProgressBar from "@components/kit/ProgressBar.astro";
 import {
   countries,
   countryListSize,
@@ -8,11 +9,6 @@ import {
   continentsVisited,
   continentsTotal,
 } from "@lib/travel";
-
-const countriesPercent = Math.floor((countries.size / countryListSize) * 100);
-const continentsPercent = Math.floor(
-  (continentsVisited / continentsTotal) * 100,
-);
 ---
 
 <div class="stats">
@@ -38,19 +34,7 @@ const continentsPercent = Math.floor(
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
-    <div class="progress-row">
-      <div
-        class="progress-bar"
-        role="progressbar"
-        aria-valuenow={countriesPercent}
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-label="Countries visited progress"
-      >
-        <div class="progress-fill" style={`width: ${countriesPercent}%`}></div>
-      </div>
-      <span class="percent" aria-hidden="true">{countriesPercent}%</span>
-    </div>
+    <ProgressBar value={countries.size} max={countryListSize} label="Countries visited progress" accent />
   </div>
   <div class="card">
     <h3 data-en="Cities" data-ru="Города">Cities</h3>
@@ -75,19 +59,7 @@ const continentsPercent = Math.floor(
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
-    <div class="progress-row">
-      <div
-        class="progress-bar"
-        role="progressbar"
-        aria-valuenow={continentsPercent}
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-label="Continents visited progress"
-      >
-        <div class="progress-fill" style={`width: ${continentsPercent}%`}></div>
-      </div>
-      <span class="percent" aria-hidden="true">{continentsPercent}%</span>
-    </div>
+    <ProgressBar value={continentsVisited} max={continentsTotal} label="Continents visited progress" />
   </div>
 </div>
 
@@ -154,48 +126,6 @@ const continentsPercent = Math.floor(
     transition: color 0.2s ease;
   }
 
-  .progress-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-  }
-
-  .progress-bar {
-    flex: 1;
-    height: 6px;
-    min-height: 6px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  @media (prefers-color-scheme: light) {
-    .progress-bar {
-      background-color: rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  .progress-fill {
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-    min-width: 2px;
-  }
-
-  @media (prefers-color-scheme: light) {
-    .progress-fill {
-      background-color: rgba(0, 0, 0, 0.4);
-    }
-  }
-
-  .percent {
-    font-size: 0.75rem;
-    color: #888;
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-  }
-
   @media (max-width: 640px) {
     .stats {
       grid-template-columns: repeat(2, 1fr);
@@ -219,8 +149,7 @@ const continentsPercent = Math.floor(
 
   @media (prefers-reduced-motion: reduce) {
     .info-link,
-    .info-icon,
-    .progress-fill {
+    .info-icon {
       transition: none;
     }
   }

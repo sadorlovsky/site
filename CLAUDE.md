@@ -90,6 +90,11 @@ db/
 - Prefer Astro components; use React only for interactivity
 - Keep components small and focused
 
+### UI Kit
+- Reusable components live in `src/components/kit/`
+- When creating, modifying, or deleting UI kit components, update the `/kit` page (`src/pages/kit/index.astro`) to reflect changes
+- The `/kit` page serves as documentation and visual reference for all UI components
+
 ## Important Files
 
 - `astro.config.mjs` - Framework config, ISR settings

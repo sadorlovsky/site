@@ -1,0 +1,69 @@
+---
+interface Props {
+  value: number;
+  max?: number;
+  label?: string;
+  showPercent?: boolean;
+  accent?: boolean;
+  class?: string;
+}
+
+const { value, max = 100, label, showPercent = true, accent = false, class: className } = Astro.props;
+const percent = Math.floor((value / max) * 100);
+---
+
+<div class:list={["progress-row", className]}>
+  <div
+    class="progress-bar"
+    role="progressbar"
+    aria-valuenow={percent}
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label={label}
+  >
+    <div class:list={["progress-fill", { accent }]} style={`width: ${percent}%`}></div>
+  </div>
+  {showPercent && <span class="percent" aria-hidden="true">{percent}%</span>}
+</div>
+
+<style>
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 6px;
+    min-height: 6px;
+    background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background-color: light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.6));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    min-width: 2px;
+  }
+
+  .progress-fill.accent {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  }
+
+  .percent {
+    font-size: 0.75rem;
+    color: #888;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .progress-fill {
+      transition: none;
+    }
+  }
+</style>
