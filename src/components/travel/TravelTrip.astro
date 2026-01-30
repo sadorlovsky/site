@@ -3,6 +3,7 @@ import "flag-icons/css/flag-icons.min.css";
 import type { Trip } from "@lib/travel";
 import { formatTripDate } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
+import ListItem from "@components/ListItem.astro";
 import styles from "./TravelTripList.module.css";
 
 interface Props {
@@ -31,10 +32,10 @@ const dateEn = isTba ? "TBA" : formatTripDate(trip, "en");
 const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
 ---
 
-<div class={styles.trip}>
-  <div class={styles.date} data-en={dateEn} data-ru={dateRu}>
+<ListItem interactive={false}>
+  <span slot="date" data-en={dateEn} data-ru={dateRu}>
     {dateEn}
-  </div>
+  </span>
   <div class={styles.destination}>
     {
       trip.destinations.map((destination, destIndex) => {
@@ -81,4 +82,4 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
       })
     }
   </div>
-</div>
+</ListItem>

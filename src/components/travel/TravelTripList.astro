@@ -6,6 +6,7 @@ import {
   getTbaTrips,
 } from "@lib/travel";
 import TravelTrip from "./TravelTrip.astro";
+import YearGroup from "@components/YearGroup.astro";
 import styles from "./TravelTripList.module.css";
 
 const tripsByYear = groupTripsByYear(trips);
@@ -16,26 +17,20 @@ const years = getSortedYears(tripsByYear);
 <div class={styles.tripList}>
   <!-- {
     tbaTrips.length > 0 && (
-      <div class={styles.yearGroup}>
-        <div class={styles.yearHeader}>TBA</div>
-        <div class={styles.yearTrips}>
-          {tbaTrips.map((trip) => (
-            <TravelTrip trip={trip} />
-          ))}
-        </div>
-      </div>
+      <YearGroup year="TBA">
+        {tbaTrips.map((trip) => (
+          <TravelTrip trip={trip} />
+        ))}
+      </YearGroup>
     )
   } -->
   {
     years.map((year) => (
-      <div class={styles.yearGroup}>
-        <div class={styles.yearHeader}>{year}</div>
-        <div class={styles.yearTrips}>
-          {tripsByYear[year].map((trip) => (
-            <TravelTrip trip={trip} />
-          ))}
-        </div>
-      </div>
+      <YearGroup year={year}>
+        {tripsByYear[year].map((trip) => (
+          <TravelTrip trip={trip} />
+        ))}
+      </YearGroup>
     ))
   }
 </div>

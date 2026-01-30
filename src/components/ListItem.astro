@@ -1,0 +1,100 @@
+---
+interface Props {
+  href?: string;
+  interactive?: boolean;
+  class?: string;
+}
+
+const { href, interactive = true, class: className } = Astro.props;
+const Element = href ? "a" : "div";
+---
+
+<Element
+  class:list={["list-item", { interactive }, className]}
+  href={href}
+>
+  <span class="list-item-date">
+    <slot name="date" />
+  </span>
+  <div class="list-item-content">
+    <span class="list-item-title">
+      <slot name="title" />
+    </span>
+    <slot />
+  </div>
+</Element>
+
+<style>
+  .list-item {
+    --accent-start: rgb(237, 98, 146);
+    --accent-end: rgb(237, 87, 96);
+
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.5rem 0;
+  }
+
+  a.list-item {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .list-item.interactive {
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+  }
+
+  .list-item.interactive:hover {
+    background-color: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
+  }
+
+  .list-item-date {
+    font-size: 0.9rem;
+    color: light-dark(#888, #666);
+  }
+
+  .list-item-title {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: light-dark(#111, #fafafa);
+    line-height: 1.4;
+    transition: all 0.2s ease;
+  }
+
+  .list-item-title:empty {
+    display: none;
+  }
+
+  a.list-item:hover .list-item-title {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .list-item-content {
+    min-width: 0;
+  }
+
+  @media (max-width: 480px) {
+    .list-item {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+
+    .list-item-title {
+      font-size: 1.15rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .list-item.interactive,
+    .list-item-title {
+      transition: none;
+    }
+  }
+</style>

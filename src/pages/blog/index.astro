@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import YearGroup from "@components/YearGroup.astro";
+import ListItem from "@components/ListItem.astro";
 import Badge from "@components/kit/Badge.astro";
 import { Icon } from "astro-icon/components";
 import { getEffectivePubDate } from "@lib/blog";
@@ -83,37 +85,33 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
       <div class="posts-list">
         {
           enGrouped.years.map((year) => (
-            <div class="year-group">
-              <div class="year-header">{year}</div>
-              <div class="year-posts">
-                {enGrouped.byYear[year].map((post) => {
-                  const pubDate = getEffectivePubDate(post, allPosts);
-                  return (
-                  <a href={getPostUrl(post.id, "en")} class="post-item">
-                    <time datetime={pubDate.toISOString()}>
+            <YearGroup year={year}>
+              {enGrouped.byYear[year].map((post) => {
+                const pubDate = getEffectivePubDate(post, allPosts);
+                return (
+                  <ListItem href={getPostUrl(post.id, "en")} interactive={false}>
+                    <time slot="date" datetime={pubDate.toISOString()}>
                       {pubDate.toLocaleDateString("en-US", {
                         day: "numeric",
                         month: "short",
                       })}
                     </time>
-                    <div class="post-content">
-                      <h2 class="post-title">{post.data.title}</h2>
-                      <div class="post-meta">
-                        {post.data.tags?.map((tag: string) => (
-                          <Badge size="sm">{tag}</Badge>
-                        ))}
-                        {translationMap.has(post.id) && (
-                          <span class="translation-badge" title="Available in Russian">
-                            <Icon name="globe" width={12} height={12} />
-                            RU
-                          </span>
-                        )}
-                      </div>
+                    <span slot="title">{post.data.title}</span>
+                    <div class="post-meta">
+                      {post.data.tags?.map((tag: string) => (
+                        <Badge size="sm">{tag}</Badge>
+                      ))}
+                      {translationMap.has(post.id) && (
+                        <span class="translation-badge" title="Available in Russian">
+                          <Icon name="globe" width={12} height={12} />
+                          RU
+                        </span>
+                      )}
                     </div>
-                  </a>
-                )})}
-              </div>
-            </div>
+                  </ListItem>
+                );
+              })}
+            </YearGroup>
           ))
         }
         {
@@ -204,77 +202,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     flex-direction: column;
   }
 
-  .year-group {
-    margin-bottom: 1.5rem;
-  }
-
-  .year-group:last-child {
-    margin-bottom: 0;
-  }
-
-  .year-header {
-    position: sticky;
-    top: 0;
-    background-color: light-dark(
-      rgba(248, 248, 255, 0.85),
-      rgba(25, 25, 25, 0.85)
-    );
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    font-weight: 600;
-    font-size: 1.25rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid
-      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
-    margin-bottom: 0.5rem;
-    z-index: 10;
-    color: light-dark(#333, #fafafa);
-  }
-
-  .year-posts {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .post-item {
-    display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
-    text-decoration: none;
-    color: inherit;
-    padding: 0.75rem 0;
-  }
-
-  .post-item:hover .post-title {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .post-item time {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: light-dark(#888, #666);
-    white-space: nowrap;
-    min-width: 70px;
-    padding-top: 0.15rem;
-  }
-
-  .post-content {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .post-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin: 0;
-    color: light-dark(#111, #fafafa);
-    line-height: 1.4;
-    transition: all 0.2s ease;
-  }
-
   .post-meta {
     display: flex;
     flex-wrap: wrap;
@@ -322,7 +249,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
       animation: none;
     }
 
-    .post-title,
     .translation-badge {
       transition: none;
     }
@@ -346,25 +272,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
 
     .container {
       padding: 1.5rem 1rem 3rem;
-    }
-
-    .year-header {
-      font-size: 1.1rem;
-    }
-
-    .post-item {
-      flex-direction: column;
-      gap: 0.25rem;
-      padding: 0.75rem 0;
-    }
-
-    .post-item time {
-      min-width: auto;
-      padding-top: 0;
-    }
-
-    .post-title {
-      font-size: 1.15rem;
     }
   }
 </style>

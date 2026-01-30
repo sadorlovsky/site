@@ -2,65 +2,6 @@
   margin-top: 12px;
 }
 
-.yearGroup {
-  margin-bottom: 1.5rem;
-}
-
-.yearGroup:last-child {
-  margin-bottom: 0;
-}
-
-.yearHeader {
-  position: sticky;
-  top: 0;
-  background-color: rgba(25, 25, 25, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  font-weight: 600;
-  font-size: 1.25rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  margin-bottom: 0.5rem;
-  z-index: 10;
-}
-
-@media (prefers-color-scheme: light) {
-  .yearHeader {
-    background-color: rgba(248, 248, 255, 0.8);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  }
-}
-
-.yearTrips {
-  display: flex;
-  flex-direction: column;
-}
-
-.trip {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 0.5rem;
-  align-items: baseline;
-  padding: 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.15s ease;
-}
-
-.trip:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-@media (prefers-color-scheme: light) {
-  .trip:hover {
-    background-color: rgba(0, 0, 0, 0.03);
-  }
-}
-
-.date {
-  color: #888;
-  font-size: 0.9rem;
-}
-
 .destination {
   display: flex;
   flex-wrap: wrap;
@@ -98,19 +39,4 @@
   color: #666;
   margin: 0 3px 0 0;
   font-size: 0.7rem;
-}
-
-@media (max-width: 480px) {
-  .trip {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
-  }
-
-  .date {
-    font-size: 0.85rem;
-  }
-
-  .yearHeader {
-    font-size: 1.1rem;
-  }
 }

@@ -1,0 +1,55 @@
+---
+interface Props {
+  year: number | string;
+  class?: string;
+}
+
+const { year, class: className } = Astro.props;
+---
+
+<div class:list={["year-group", className]}>
+  <div class="year-header">{year}</div>
+  <div class="year-items">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .year-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .year-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .year-header {
+    position: sticky;
+    top: 0;
+    background-color: light-dark(
+      rgba(248, 248, 255, 0.85),
+      rgba(25, 25, 25, 0.85)
+    );
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-weight: 600;
+    font-size: 1.25rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid
+      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+    margin-bottom: 0.5rem;
+    z-index: 10;
+    color: light-dark(#333, #fafafa);
+  }
+
+  .year-items {
+    display: flex;
+    flex-direction: column;
+  }
+
+  @media (max-width: 480px) {
+    .year-header {
+      font-size: 1.1rem;
+    }
+  }
+</style>
