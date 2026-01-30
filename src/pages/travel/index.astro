@@ -1,6 +1,7 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import LangInit from "@components/LangInit.astro";
 import TravelMap from "@components/travel/TravelMap.astro";
 import TravelStats from "@components/travel/TravelStats.astro";
 import TravelTripList from "@components/travel/TravelTripList.astro";
@@ -8,68 +9,13 @@ import TravelTripList from "@components/travel/TravelTripList.astro";
 export const prerender = true;
 ---
 
-<script is:inline>
-  (() => {
-    const LANG_KEY = "lang";
-    let lang = localStorage.getItem(LANG_KEY);
-
-    // Migration: check old keys if no unified lang exists
-    if (!lang) {
-      lang = localStorage.getItem("wishlist-lang") || localStorage.getItem("travel-lang");
-      if (lang) {
-        localStorage.setItem(LANG_KEY, lang);
-        localStorage.removeItem("wishlist-lang");
-        localStorage.removeItem("travel-lang");
-      }
-    }
-
-    // Detect from browser if still no lang
-    if (!lang) {
-      const browserLangs = navigator.languages || [navigator.language];
-      const isRussian = browserLangs.some((l) =>
-        l.toLowerCase().startsWith("ru"),
-      );
-      lang = isRussian ? "ru" : "en";
-      localStorage.setItem(LANG_KEY, lang);
-    }
-
-    if (lang === "ru") {
-      document.documentElement.classList.add("lang-ru");
-    }
-
-    // Apply translations immediately to prevent FOUC
-    function applyTranslations() {
-      document.querySelectorAll("[data-en][data-ru]").forEach((el) => {
-        const text = el.getAttribute("data-" + lang);
-        if (text) el.textContent = text;
-      });
-      document
-        .querySelectorAll("[data-title-en][data-title-ru]")
-        .forEach((el) => {
-          const title = el.getAttribute("data-title-" + lang);
-          if (title) el.setAttribute("title", title);
-        });
-    }
-
-    // Apply when DOM is ready
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => {
-        applyTranslations();
-        document.documentElement.classList.add("lang-ready");
-      });
-    } else {
-      applyTranslations();
-      document.documentElement.classList.add("lang-ready");
-    }
-  })();
-</script>
-
 <PageLayout title="Travel — Zach">
+  <LangInit />
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <!-- <div class="stars" id="stars"></div> -->
 
-  <main>
+  <main class="lang-content">
     <PageHeader
       variant="minimal"
       pageTitle={{ en: "Travel", ru: "Путешествия" }}
@@ -161,15 +107,6 @@ export const prerender = true;
     50% {
       transform: translate(30px, -30px) scale(1.05);
     }
-  }
-
-  /* Hide content until language is applied to prevent FOUC */
-  main {
-    opacity: 0;
-  }
-
-  html.lang-ready main {
-    opacity: 1;
   }
 
   main {

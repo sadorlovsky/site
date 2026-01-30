@@ -5,15 +5,6 @@
   --glass-border-dark: rgba(255, 255, 255, 0.1);
 }
 
-/* Initial hidden state for FOUC prevention */
-.wishlist-container {
-  opacity: 0;
-}
-
-html.lang-ready .wishlist-container {
-  opacity: 1;
-}
-
 .wishlist-container {
   max-width: 1200px;
   margin: 0 auto;

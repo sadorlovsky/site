@@ -1,0 +1,91 @@
+---
+/**
+ * LangInit - Initialize language detection and prevent FOUC on multilingual pages.
+ *
+ * Usage:
+ *   1. Add <LangInit /> at the top of your page (inside <PageLayout>)
+ *   2. Wrap translatable content in an element with class "lang-content"
+ *   3. Use data-en/data-ru attributes for translated text
+ *
+ * Example:
+ *   <PageLayout title="My Page">
+ *     <LangInit />
+ *     <main class="lang-content">
+ *       <h1 data-en="Hello" data-ru="Привет">Hello</h1>
+ *     </main>
+ *   </PageLayout>
+ */
+---
+
+<script is:inline>
+  (() => {
+    const LANG_KEY = "lang";
+    let lang = localStorage.getItem(LANG_KEY);
+
+    // Migration: check old keys if no unified lang exists
+    if (!lang) {
+      lang = localStorage.getItem("wishlist-lang") || localStorage.getItem("travel-lang");
+      if (lang) {
+        localStorage.setItem(LANG_KEY, lang);
+        localStorage.removeItem("wishlist-lang");
+        localStorage.removeItem("travel-lang");
+      }
+    }
+
+    // Detect from browser if still no lang
+    if (!lang) {
+      const browserLangs = navigator.languages || [navigator.language];
+      const isRussian = browserLangs.some((l) =>
+        l.toLowerCase().startsWith("ru"),
+      );
+      lang = isRussian ? "ru" : "en";
+      localStorage.setItem(LANG_KEY, lang);
+    }
+
+    if (lang === "ru") {
+      document.documentElement.classList.add("lang-ru");
+    }
+
+    // Apply translations immediately to prevent FOUC
+    function applyTranslations() {
+      document.querySelectorAll("[data-en][data-ru]").forEach((el) => {
+        const text = el.getAttribute("data-" + lang);
+        if (text) el.textContent = text;
+      });
+      document
+        .querySelectorAll("[data-title-en][data-title-ru]")
+        .forEach((el) => {
+          const title = el.getAttribute("data-title-" + lang);
+          if (title) el.setAttribute("title", title);
+        });
+      document
+        .querySelectorAll("[data-aria-label-en][data-aria-label-ru]")
+        .forEach((el) => {
+          const label = el.getAttribute("data-aria-label-" + lang);
+          if (label) el.setAttribute("aria-label", label);
+        });
+    }
+
+    // Apply when DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        applyTranslations();
+        document.documentElement.classList.add("lang-ready");
+      });
+    } else {
+      applyTranslations();
+      document.documentElement.classList.add("lang-ready");
+    }
+  })();
+</script>
+
+<style is:global>
+  /* Hide content with .lang-content class until language is applied */
+  .lang-content {
+    opacity: 0;
+  }
+
+  html.lang-ready .lang-content {
+    opacity: 1;
+  }
+</style>

@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import LangInit from "@components/LangInit.astro";
 import YearGroup from "@components/YearGroup.astro";
 import ListItem from "@components/ListItem.astro";
 import Badge from "@components/kit/Badge.astro";
@@ -21,11 +22,13 @@ const ruPosts = allPosts
   .filter((post) => post.data.lang === "ru")
   .sort((a, b) => getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime());
 
-// Create a map of original post ID -> translation for quick lookup
-const translationMap = new Map<string, string>();
+// Create maps for translation lookups
+const enToRuMap = new Map<string, string>();
+const ruToEnMap = new Map<string, string>();
 ruPosts.forEach((post) => {
   if (post.data.translationOf) {
-    translationMap.set(post.data.translationOf, post.id);
+    enToRuMap.set(post.data.translationOf, post.id);
+    ruToEnMap.set(post.id, post.data.translationOf);
   }
 });
 
@@ -66,23 +69,25 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
 ---
 
 <PageLayout title="Blog — Zach">
+  <LangInit />
+
   <main class="blog-page">
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
-    <div class="container">
+    <div class="container lang-content">
       <PageHeader
         variant="minimal"
-        pageTitle={{ en: "Blog", ru: "Blog" }}
+        pageTitle={{ en: "Blog", ru: "Блог" }}
         subtitle={{
           en: "Thoughts, ideas, and occasional musings",
-          ru: "Thoughts, ideas, and occasional musings",
+          ru: "Мысли, идеи и размышления",
         }}
-        forceLang="en"
+        langSwitcher="lang"
       />
 
-      <!-- Posts -->
-      <div class="posts-list">
+      <!-- English Posts -->
+      <div class="posts-list posts-list--en">
         {
           enGrouped.years.map((year) => (
             <YearGroup year={year}>
@@ -101,8 +106,8 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                       {post.data.tags?.map((tag: string) => (
                         <Badge size="sm">{tag}</Badge>
                       ))}
-                      {translationMap.has(post.id) && (
-                        <span class="translation-badge" title="Available in Russian">
+                      {enToRuMap.has(post.id) && (
+                        <span class="translation-badge" title="Available in Russian" data-title-en="Available in Russian" data-title-ru="Доступно на русском">
                           <Icon name="globe" width={12} height={12} />
                           RU
                         </span>
@@ -118,6 +123,50 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
           enPosts.length === 0 && (
             <div class="empty-state">
               <p>No posts yet. Check back soon!</p>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Russian Posts -->
+      <div class="posts-list posts-list--ru">
+        {
+          ruGrouped.years.map((year) => (
+            <YearGroup year={year}>
+              {ruGrouped.byYear[year].map((post) => {
+                const pubDate = getEffectivePubDate(post, allPosts);
+                return (
+                  <ListItem href={getPostUrl(post.id, "ru")} interactive>
+                    <time slot="date" datetime={pubDate.toISOString()}>
+                      {pubDate.toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </time>
+                    <span slot="title">{post.data.title}</span>
+                    <div class="post-meta">
+                      {post.data.tags?.map((tag: string) => (
+                        <Badge size="sm">{tag}</Badge>
+                      ))}
+                      {ruToEnMap.has(post.id) && (
+                        <span class="translation-badge" title="Available in English" data-title-en="Available in English" data-title-ru="Доступно на английском">
+                          <Icon name="globe" width={12} height={12} />
+                          EN
+                        </span>
+                      )}
+                    </div>
+                  </ListItem>
+                );
+              })}
+            </YearGroup>
+          ))
+        }
+        {
+          ruPosts.length === 0 && (
+            <div class="empty-state">
+              <p data-en="No posts yet. Check back soon!" data-ru="Постов пока нет. Загляните позже!">
+                Постов пока нет. Загляните позже!
+              </p>
             </div>
           )
         }
@@ -200,6 +249,19 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   .posts-list {
     display: flex;
     flex-direction: column;
+  }
+
+  /* Language-based visibility */
+  .posts-list--ru {
+    display: none;
+  }
+
+  html.lang-ru .posts-list--en {
+    display: none;
+  }
+
+  html.lang-ru .posts-list--ru {
+    display: flex;
   }
 
   .post-meta {

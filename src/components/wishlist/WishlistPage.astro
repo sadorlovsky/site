@@ -1,6 +1,7 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import LangInit from "@components/LangInit.astro";
 import WishlistItem from "@components/wishlist/WishlistItem.astro";
 import WishlistFilters from "@components/wishlist/WishlistFilters.astro";
 import MobileFilterBar from "@components/wishlist/MobileFilterBar.astro";
@@ -18,35 +19,10 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 ---
 
 <PageLayout title="Wishlist — Zach">
+  <LangInit />
+
   <script is:inline>
     (() => {
-      const LANG_KEY = "lang";
-      let lang = localStorage.getItem(LANG_KEY);
-
-      // Migration: check old keys if no unified lang exists
-      if (!lang) {
-        lang = localStorage.getItem("wishlist-lang") || localStorage.getItem("travel-lang");
-        if (lang) {
-          localStorage.setItem(LANG_KEY, lang);
-          localStorage.removeItem("wishlist-lang");
-          localStorage.removeItem("travel-lang");
-        }
-      }
-
-      // Detect from browser if still no lang
-      if (!lang) {
-        const browserLangs = navigator.languages || [navigator.language];
-        const isRussian = browserLangs.some((l) =>
-          l.toLowerCase().startsWith("ru"),
-        );
-        lang = isRussian ? "ru" : "en";
-        localStorage.setItem(LANG_KEY, lang);
-      }
-
-      if (lang === "ru") {
-        document.documentElement.classList.add("lang-ru");
-      }
-
       // Generate visitorId if not exists
       if (!localStorage.getItem("wishlist-visitor-id")) {
         const id =
@@ -55,26 +31,9 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
         localStorage.setItem("wishlist-visitor-id", id);
       }
 
-      // Apply translations immediately to prevent FOUC
-      function applyTranslations() {
-        document.querySelectorAll("[data-en][data-ru]").forEach((el) => {
-          const text = el.getAttribute("data-" + lang);
-          if (text) el.textContent = text;
-        });
-        document
-          .querySelectorAll("[data-title-en][data-title-ru]")
-          .forEach((el) => {
-            const title = el.getAttribute("data-title-" + lang);
-            if (title) el.setAttribute("title", title);
-          });
-        document
-          .querySelectorAll("[data-aria-label-en][data-aria-label-ru]")
-          .forEach((el) => {
-            const label = el.getAttribute("data-aria-label-" + lang);
-            if (label) el.setAttribute("aria-label", label);
-          });
-
-        // Apply prices based on language
+      // Apply prices based on language
+      function applyPrices() {
+        const lang = localStorage.getItem("lang") || "en";
         document.querySelectorAll(".item-price").forEach((el) => {
           const originalPrice = el.getAttribute("data-price-original") || "";
           const priceRub = el.getAttribute("data-price-rub");
@@ -96,19 +55,18 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 
       // Apply when DOM is ready
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => {
-          applyTranslations();
-          document.documentElement.classList.add("lang-ready");
-        });
+        document.addEventListener("DOMContentLoaded", applyPrices);
       } else {
-        applyTranslations();
-        document.documentElement.classList.add("lang-ready");
+        applyPrices();
       }
+
+      // Re-apply prices on language change
+      window.addEventListener("lang-change", applyPrices);
     })();
   </script>
 
   <main>
-    <div class="wishlist-container">
+    <div class="wishlist-container lang-content">
       <PageHeader
         variant="fancy"
         pageTitle={{ en: "Wishlist", ru: "Вишлист" }}
