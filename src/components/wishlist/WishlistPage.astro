@@ -68,18 +68,19 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
   <main>
     <div class="wishlist-container lang-content">
       <PageHeader
-        variant="fancy"
+        variant="minimal"
         pageTitle={{ en: "Wishlist", ru: "Вишлист" }}
         subtitle={{
           en: "Things I'd love to have",
           ru: "Вещи, которые я хотел бы получить",
         }}
+        langSwitcher="lang"
       />
 
       <WishlistFilters
         categories={categories}
         currentCategory={currentCategory}
-        showLangSwitcher={true}
+        showLangSwitcher={false}
       />
 
       <div
