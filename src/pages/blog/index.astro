@@ -89,7 +89,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
               {enGrouped.byYear[year].map((post) => {
                 const pubDate = getEffectivePubDate(post, allPosts);
                 return (
-                  <ListItem href={getPostUrl(post.id, "en")} interactive={false}>
+                  <ListItem href={getPostUrl(post.id, "en")} interactive>
                     <time slot="date" datetime={pubDate.toISOString()}>
                       {pubDate.toLocaleDateString("en-US", {
                         day: "numeric",

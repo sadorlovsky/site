@@ -32,7 +32,7 @@ const dateEn = isTba ? "TBA" : formatTripDate(trip, "en");
 const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
 ---
 
-<ListItem interactive={false}>
+<ListItem interactive>
   <span slot="date" data-en={dateEn} data-ru={dateRu}>
     {dateEn}
   </span>
