@@ -11,7 +11,6 @@ interface Props {
     en: string;
     ru: string;
   };
-  variant?: "minimal" | "fancy";
   langSwitcher?: string;
   parentLink?: {
     href: string;
@@ -26,7 +25,6 @@ interface Props {
 const {
   pageTitle,
   subtitle,
-  variant = "fancy",
   langSwitcher,
   parentLink,
   forceLang,
@@ -35,10 +33,9 @@ const {
 // Use forceLang if provided, otherwise default to "en" (client-side JS will update)
 const displayLang = forceLang || "en";
 const pageTitleHref = pageTitle.href;
-const isMinimal = variant === "minimal";
 ---
 
-<header class:list={["page-header", { minimal: isMinimal, fancy: !isMinimal }]}>
+<header class="page-header">
   <div class="title-row">
     <h1 class="title">
       <a href="/" class="name-link" data-en="Zach" data-ru="Зак">{displayLang === "ru" ? "Зак" : "Zach"}</a>
@@ -89,55 +86,38 @@ const isMinimal = variant === "minimal";
 </header>
 
 <style>
-  /* Base styles */
   .page-header {
-    text-align: center;
-    margin-bottom: 2rem;
+    text-align: left;
+    margin: 0;
   }
 
   .title-row {
     display: flex;
-    align-items: baseline;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .title {
     display: flex;
     align-items: baseline;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.35em;
     font-weight: 700;
+    font-size: 24px;
     letter-spacing: -0.03em;
     margin: 0;
+    min-width: 0;
+    flex-wrap: wrap;
   }
 
   .name-link {
     text-decoration: none;
+    color: light-dark(#666, #888);
+    -webkit-text-fill-color: light-dark(#666, #888);
     transition: opacity 0.2s ease;
   }
 
-  .separator {
-    color: light-dark(#666, #888);
-  }
-
-  /* Fancy variant name-link - dim */
-  .fancy .name-link {
-    color: light-dark(#666, #888);
-    -webkit-text-fill-color: light-dark(#666, #888);
-  }
-
-  .fancy .name-link:hover {
-    color: light-dark(#444, #bbb);
-    -webkit-text-fill-color: light-dark(#444, #bbb);
-  }
-
-  /* Minimal variant name-link - dim */
-  .minimal .name-link {
-    color: light-dark(#666, #888);
-    -webkit-text-fill-color: light-dark(#666, #888);
-  }
-
-  .minimal .name-link:hover {
+  .name-link:hover {
     color: light-dark(#444, #bbb);
     -webkit-text-fill-color: light-dark(#444, #bbb);
   }
@@ -149,70 +129,21 @@ const isMinimal = variant === "minimal";
     border-radius: 2px;
   }
 
-  /* Parent link (breadcrumb middle segment) */
-  .parent-link {
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .minimal .parent-link {
-    color: light-dark(#666, #999);
-  }
-
-  .minimal .parent-link:hover {
-    color: light-dark(#444, #bbb);
-  }
-
-  .fancy .parent-link {
+  .separator {
     color: light-dark(#666, #888);
   }
 
-  .fancy .parent-link:hover {
+  .parent-link {
+    text-decoration: none;
+    color: light-dark(#666, #999);
+    transition: opacity 0.2s ease;
+  }
+
+  .parent-link:hover {
     color: light-dark(#444, #bbb);
   }
 
-  .subtitle {
-    color: light-dark(#666, #999);
-    margin: 0;
-    font-weight: 400;
-  }
-
-  /* Fancy variant (default) */
-  .fancy .title {
-    font-size: clamp(2rem, 6vw, 3rem);
-  }
-
-  .fancy .page-title {
-    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .fancy .subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-  }
-
-  /* Minimal variant */
-  .minimal {
-    text-align: left;
-    margin: 0;
-  }
-
-  .minimal .title-row {
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .minimal .title {
-    justify-content: flex-start;
-    font-size: 24px;
-    min-width: 0;
-    flex-wrap: wrap;
-  }
-
-  .minimal .page-title {
+  .page-title {
     background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -223,7 +154,7 @@ const isMinimal = variant === "minimal";
     max-width: 100%;
   }
 
-  .minimal .page-title-link {
+  .page-title-link {
     background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -232,20 +163,7 @@ const isMinimal = variant === "minimal";
     transition: opacity 0.2s ease;
   }
 
-  .minimal .page-title-link:hover {
-    opacity: 0.7;
-  }
-
-  .fancy .page-title-link {
-    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .fancy .page-title-link:hover {
+  .page-title-link:hover {
     opacity: 0.7;
   }
 
@@ -255,9 +173,12 @@ const isMinimal = variant === "minimal";
     border-radius: 2px;
   }
 
-  .minimal .subtitle {
-    font-size: 0.95rem;
+  .subtitle {
+    color: light-dark(#666, #999);
+    margin: 0;
     margin-top: 0.5rem;
+    font-weight: 400;
+    font-size: 0.95rem;
   }
 
   @media (prefers-reduced-motion: reduce) {
