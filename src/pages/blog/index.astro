@@ -70,7 +70,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
 
     <div class="container">
       <PageHeader
-        variant="fancy"
+        variant="minimal"
         pageTitle={{ en: "Blog", ru: "Blog" }}
         subtitle={{
           en: "Thoughts, ideas, and occasional musings",
@@ -192,7 +192,11 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     z-index: 1;
     max-width: 720px;
     margin: 0 auto;
-    padding: 3rem 1.5rem 4rem;
+    padding: 2rem 1.5rem 4rem;
+
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
   .posts-list {
@@ -341,7 +345,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     }
 
     .container {
-      padding: 2rem 1rem 3rem;
+      padding: 1.5rem 1rem 3rem;
     }
 
     .year-header {
