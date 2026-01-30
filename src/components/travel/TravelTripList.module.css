@@ -39,6 +39,7 @@
 .trip {
   display: grid;
   grid-template-columns: 80px 1fr;
+  gap: 0.5rem;
   align-items: baseline;
   padding: 0.5rem;
   border-radius: 4px;
@@ -87,6 +88,10 @@
   display: inline-flex;
   align-items: center;
   margin-right: 4px;
+}
+
+.flagGroup .flag:last-child {
+  margin-right: 0;
 }
 
 .flagDivider {

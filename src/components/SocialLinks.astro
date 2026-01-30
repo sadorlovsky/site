@@ -1,0 +1,74 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={["social-links", className]}>
+  <a
+    href="https://instagram.com/sadorlovsky"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Instagram"
+  >
+    <Icon name="instagram" />
+  </a>
+  <a
+    href="https://t.me/sadorlovsky"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Telegram"
+  >
+    <Icon name="telegram" />
+  </a>
+  <a
+    href="https://github.com/sadorlovsky"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="GitHub"
+  >
+    <Icon name="github" />
+  </a>
+</div>
+
+<style>
+  .social-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: light-dark(#666, #888);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .social-links a:hover {
+    color: white;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(237, 87, 96, 0.4);
+  }
+
+  .social-links :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .social-links a {
+      transition: none;
+    }
+  }
+</style>

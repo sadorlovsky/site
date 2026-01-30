@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import Badge from "@components/kit/Badge.astro";
 import { Icon } from "astro-icon/components";
 import { getEffectivePubDate } from "@lib/blog";
 
@@ -99,7 +100,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                       <h2 class="post-title">{post.data.title}</h2>
                       <div class="post-meta">
                         {post.data.tags?.map((tag: string) => (
-                          <span class="tag">{tag}</span>
+                          <Badge size="sm">{tag}</Badge>
                         ))}
                         {translationMap.has(post.id) && (
                           <span class="translation-badge" title="Available in Russian">
@@ -278,22 +279,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     margin-top: 0.4rem;
   }
 
-  .tag {
-    font-size: 0.7rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    color: light-dark(#555, #999);
-    padding: 0.2rem 0.55rem;
-    background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
-    border-radius: 4px;
-    transition: background 0.2s ease, color 0.2s ease;
-  }
-
-  .post-item:hover .tag {
-    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
-    color: light-dark(#444, #aaa);
-  }
-
   .translation-badge {
     display: inline-flex;
     align-items: center;
@@ -334,7 +319,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     }
 
     .post-title,
-    .tag,
     .translation-badge {
       transition: none;
     }

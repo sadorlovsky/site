@@ -1,6 +1,7 @@
 ---
 import PageLayout from "@layouts/PageLayout.astro";
 import Avatar from "@components/Avatar.astro";
+// import SocialLinks from "@components/SocialLinks.astro";
 
 export const prerender = true;
 ---
@@ -24,6 +25,7 @@ export const prerender = true;
           <a href="/blog">/Blog</a>
           <a href="/wishlist">/Wishlist</a>
         </nav>
+        <!-- <SocialLinks class="social-links" /> -->
       </div>
     </div>
   </main>
@@ -180,6 +182,10 @@ export const prerender = true;
     opacity: 0.7;
   }
 
+  .social-links {
+    margin-top: 1.25rem;
+  }
+
   @keyframes fadeInUp {
     from {
       opacity: 0;
@@ -233,6 +239,10 @@ export const prerender = true;
       animation: none;
       border-radius: 50%;
     }
+
+    .nav-links a {
+      transition: none;
+    }
   }
 
   /* Mobile adjustments */
@@ -258,6 +268,10 @@ export const prerender = true;
 
     .content {
       gap: 1.5rem;
+    }
+
+    .social-links {
+      margin-top: 1rem;
     }
   }
 </style>
