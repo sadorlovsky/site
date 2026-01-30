@@ -1,0 +1,74 @@
+---
+import "@styles/kit/button.css";
+
+export interface Props {
+  /** Button variant */
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "success";
+  /** Button size */
+  size?: "xs" | "sm" | "md" | "lg";
+  /** Render as a link */
+  href?: string;
+  /** Active/pressed state (for toggle buttons) */
+  active?: boolean;
+  /** Disabled state */
+  disabled?: boolean;
+  /** Loading state */
+  loading?: boolean;
+  /** Icon-only button (square aspect ratio) */
+  icon?: boolean;
+  /** Full width button */
+  full?: boolean;
+  /** Button type (for form buttons) */
+  type?: "button" | "submit" | "reset";
+  /** Additional CSS classes */
+  class?: string;
+  /** Any other HTML attributes */
+  [key: string]: any;
+}
+
+const {
+  variant = "secondary",
+  size = "md",
+  href,
+  active = false,
+  disabled = false,
+  loading = false,
+  icon = false,
+  full = false,
+  type = "button",
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = [
+  "kit-btn",
+  `kit-btn--${variant}`,
+  `kit-btn--${size}`,
+  active && "is-active",
+  loading && "kit-btn--loading",
+  icon && "kit-btn--icon",
+  full && "kit-btn--full",
+  className,
+].filter(Boolean).join(" ");
+---
+
+{href ? (
+  <a
+    href={disabled ? undefined : href}
+    class={classes}
+    aria-disabled={disabled || undefined}
+    {...rest}
+  >
+    <slot />
+  </a>
+) : (
+  <button
+    type={type}
+    class={classes}
+    disabled={disabled}
+    aria-pressed={active || undefined}
+    {...rest}
+  >
+    <slot />
+  </button>
+)}

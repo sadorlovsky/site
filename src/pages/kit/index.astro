@@ -1,0 +1,895 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Button from "@components/kit/Button.astro";
+import ToggleGroup from "@components/kit/ToggleGroup.astro";
+import Select from "@components/kit/Select.astro";
+import Input from "@components/kit/Input.astro";
+import Badge from "@components/kit/Badge.astro";
+import "@styles/kit/modal.css";
+import "@styles/kit/toast.css";
+import { Icon } from "astro-icon/components";
+---
+
+<PageLayout title="UI Kit">
+  <div class="kit-layout">
+    <aside class="kit-sidebar">
+      <nav class="kit-nav">
+        <div class="kit-nav-section">
+          <h3>Foundations</h3>
+          <ul>
+            <li><a href="#colors">Colors</a></li>
+            <li><a href="#typography">Typography</a></li>
+            <li><a href="#links">Links</a></li>
+          </ul>
+        </div>
+        <div class="kit-nav-section">
+          <h3>Components</h3>
+          <ul>
+            <li><a href="#button">Button</a></li>
+            <li><a href="#toggle-group">ToggleGroup</a></li>
+            <li><a href="#select">Select</a></li>
+            <li><a href="#input">Input</a></li>
+            <li><a href="#badge">Badge</a></li>
+            <li><a href="#modal">Modal</a></li>
+            <li><a href="#toast">Toast</a></li>
+          </ul>
+        </div>
+        <div class="kit-nav-section">
+          <h3>Utilities</h3>
+          <ul>
+            <li><a href="#tooltips">Tooltips</a></li>
+          </ul>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="kit-content">
+      <h1>UI Kit</h1>
+      <p class="kit-intro">Design system for this site. Colors, typography, and reusable components.</p>
+
+      <!-- ================================================================
+           COLORS
+           ================================================================ -->
+      <section id="colors">
+        <h2>Colors</h2>
+
+        <h3>Background</h3>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="swatch" style="background: #191919;"></div>
+            <div class="color-info">
+              <code>--dark-bg</code>
+              <span class="color-value">#191919</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #f8f8ff;"></div>
+            <div class="color-info">
+              <code>--light-bg</code>
+              <span class="color-value">#f8f8ff</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Accent</h3>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="swatch" style="background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));"></div>
+            <div class="color-info">
+              <code>--accent-start / end</code>
+              <span class="color-value">Gradient</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Text</h3>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="swatch" style="background: #fafafa;"></div>
+            <div class="color-info">
+              <span class="color-label">Heading (dark)</span>
+              <span class="color-value">#fafafa</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #111;"></div>
+            <div class="color-info">
+              <span class="color-label">Heading (light)</span>
+              <span class="color-value">#111111</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #e0e0e0;"></div>
+            <div class="color-info">
+              <span class="color-label">Body (dark)</span>
+              <span class="color-value">#e0e0e0</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #333;"></div>
+            <div class="color-info">
+              <span class="color-label">Body (light)</span>
+              <span class="color-value">#333333</span>
+            </div>
+          </div>
+        </div>
+
+        <h3>Semantic</h3>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="swatch" style="background: #10b981;"></div>
+            <div class="color-info">
+              <span class="color-label">Success</span>
+              <span class="color-value">#10b981</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #f59e0b;"></div>
+            <div class="color-info">
+              <span class="color-label">Warning</span>
+              <span class="color-value">#f59e0b</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #ef4444;"></div>
+            <div class="color-info">
+              <span class="color-label">Danger</span>
+              <span class="color-value">#ef4444</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: #6366f1;"></div>
+            <div class="color-info">
+              <span class="color-label">Info</span>
+              <span class="color-value">#6366f1</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TYPOGRAPHY
+           ================================================================ -->
+      <section id="typography">
+        <h2>Typography</h2>
+
+        <h3>Headings</h3>
+        <div class="typography-demo">
+          <h1>Heading Level 1</h1>
+          <h2>Heading Level 2</h2>
+          <h3>Heading Level 3</h3>
+          <h4>Heading Level 4</h4>
+          <h5>Heading Level 5</h5>
+          <h6>Heading Level 6</h6>
+        </div>
+
+        <h3>Body Text</h3>
+        <p>
+          This is a standard paragraph with <strong>strong text</strong> and <em>emphasized text</em>.
+          The line height is set to 1.75 for optimal readability. You can also use <code>inline code</code>.
+        </p>
+
+        <h3>Lists</h3>
+        <div class="columns-2">
+          <div>
+            <h4>Unordered</h4>
+            <ul>
+              <li>First item</li>
+              <li>Second item</li>
+              <li>Third item</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Ordered</h4>
+            <ol>
+              <li>First item</li>
+              <li>Second item</li>
+              <li>Third item</li>
+            </ol>
+          </div>
+        </div>
+
+        <h3>Blockquote</h3>
+        <blockquote>
+          <p>This is a blockquote with a left border and subtle background.</p>
+        </blockquote>
+      </section>
+
+      <!-- ================================================================
+           LINKS
+           ================================================================ -->
+      <section id="links">
+        <h2>Links</h2>
+
+        <h3>Default (Accent)</h3>
+        <p>Links use accent color: <a href="#">regular link</a>. No visited state by default.</p>
+
+        <h3>Navigation Links</h3>
+        <p>Class: <code>.link-nav</code></p>
+        <p>
+          <a href="#" class="link-nav">Home</a> ·
+          <a href="#" class="link-nav">Blog</a> ·
+          <a href="#" class="link-nav">About</a>
+        </p>
+
+        <h3>Muted Links</h3>
+        <p>Class: <code>.link-muted</code></p>
+        <p>
+          <a href="#" class="link-muted">View source</a> ·
+          <a href="#" class="link-muted">Edit on GitHub</a>
+        </p>
+      </section>
+
+      <!-- ================================================================
+           BUTTON
+           ================================================================ -->
+      <section id="button">
+        <h2>Button</h2>
+        <p class="component-import">
+          <code>import Button from "@components/kit/Button.astro"</code>
+        </p>
+
+        <h3>Variants</h3>
+        <div class="component-row">
+          <Button variant="primary">Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="success">Success</Button>
+          <Button variant="danger">Danger</Button>
+        </div>
+
+        <h3>Sizes</h3>
+        <div class="component-row">
+          <Button variant="primary" size="xs">XS (28px)</Button>
+          <Button variant="primary" size="sm">SM (32px)</Button>
+          <Button variant="primary" size="md">MD (38px)</Button>
+          <Button variant="primary" size="lg">LG (44px)</Button>
+        </div>
+
+        <h3>States</h3>
+        <div class="component-row">
+          <Button variant="primary" disabled>Disabled</Button>
+          <Button variant="primary" loading>Loading</Button>
+          <Button variant="ghost" active>Active</Button>
+        </div>
+
+        <h3>With Icons</h3>
+        <div class="component-row">
+          <Button variant="primary" size="sm">
+            <Icon name="globe" width={14} height={14} />
+            With Icon
+          </Button>
+          <Button variant="ghost" size="md" icon aria-label="Check">
+            <Icon name="check" width={18} height={18} />
+          </Button>
+        </div>
+
+        <h3>As Link</h3>
+        <div class="component-row">
+          <Button variant="primary" href="/blog">Go to Blog</Button>
+          <Button variant="secondary" href="/wishlist">Wishlist</Button>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           TOGGLE GROUP
+           ================================================================ -->
+      <section id="toggle-group">
+        <h2>ToggleGroup</h2>
+        <p class="component-import">
+          <code>import ToggleGroup from "@components/kit/ToggleGroup.astro"</code>
+        </p>
+
+        <h3>Pill Variant</h3>
+        <p>For language switchers and compact toggles.</p>
+        <div class="component-row">
+          <ToggleGroup
+            items={[
+              { id: "en", label: "ENG" },
+              { id: "ru", label: "RUS" },
+            ]}
+            value="en"
+            size="sm"
+          />
+        </div>
+
+        <h3>Separated Variant</h3>
+        <p>For filter categories with bordered buttons.</p>
+        <div class="component-row" style="flex-wrap: wrap;">
+          <ToggleGroup
+            variant="separated"
+            size="sm"
+            items={[
+              { id: "all", label: "All", href: "#" },
+              { id: "tech", label: "Tech", href: "#" },
+              { id: "home", label: "Home", href: "#" },
+            ]}
+            value="all"
+          />
+        </div>
+      </section>
+
+      <!-- ================================================================
+           SELECT
+           ================================================================ -->
+      <section id="select">
+        <h2>Select</h2>
+        <p class="component-import">
+          <code>import Select from "@components/kit/Select.astro"</code>
+        </p>
+
+        <h3>Sizes</h3>
+        <div class="component-row">
+          <Select
+            size="sm"
+            options={[
+              { value: "1", label: "SM (32px)" },
+              { value: "2", label: "Option 2" },
+            ]}
+            value="1"
+          />
+          <Select
+            size="md"
+            options={[
+              { value: "1", label: "MD (38px)" },
+              { value: "2", label: "Option 2" },
+            ]}
+            value="1"
+          />
+          <Select
+            size="lg"
+            options={[
+              { value: "1", label: "LG (44px)" },
+              { value: "2", label: "Option 2" },
+            ]}
+            value="1"
+          />
+        </div>
+
+        <h3>With Placeholder</h3>
+        <div class="component-row">
+          <Select
+            size="md"
+            placeholder="Select an option..."
+            options={[
+              { value: "react", label: "React" },
+              { value: "vue", label: "Vue" },
+              { value: "astro", label: "Astro" },
+            ]}
+          />
+        </div>
+      </section>
+
+      <!-- ================================================================
+           INPUT
+           ================================================================ -->
+      <section id="input">
+        <h2>Input</h2>
+        <p class="component-import">
+          <code>import Input from "@components/kit/Input.astro"</code>
+        </p>
+
+        <h3>Sizes</h3>
+        <div class="input-demo-grid">
+          <Input size="sm" placeholder="SM (32px)" />
+          <Input size="md" placeholder="MD (38px)" />
+          <Input size="lg" placeholder="LG (44px)" />
+        </div>
+
+        <h3>States</h3>
+        <div class="input-demo-grid">
+          <Input placeholder="Default" />
+          <Input placeholder="Disabled" disabled />
+          <Input placeholder="Error state" error />
+        </div>
+
+        <h3>Form Group</h3>
+        <div class="kit-form-group" style="max-width: 300px;">
+          <label class="kit-form-label kit-form-label--required">Email</label>
+          <Input type="email" placeholder="you@example.com" />
+          <span class="kit-form-hint">We'll never share your email.</span>
+        </div>
+
+        <h3>Form Row</h3>
+        <div class="kit-form-row" style="max-width: 500px;">
+          <div class="kit-form-group">
+            <label class="kit-form-label">First Name</label>
+            <Input placeholder="John" />
+          </div>
+          <div class="kit-form-group">
+            <label class="kit-form-label">Last Name</label>
+            <Input placeholder="Doe" />
+          </div>
+        </div>
+
+        <h3>Textarea</h3>
+        <div style="max-width: 400px;">
+          <textarea class="kit-input kit-input--md" placeholder="Enter description..." rows="3"></textarea>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           BADGE
+           ================================================================ -->
+      <section id="badge">
+        <h2>Badge</h2>
+        <p class="component-import">
+          <code>import Badge from "@components/kit/Badge.astro"</code>
+        </p>
+
+        <h3>Subtle Variants</h3>
+        <p>Transparent background, colored text. For inline labels.</p>
+        <div class="component-row">
+          <Badge variant="default">Default</Badge>
+          <Badge variant="primary">Primary</Badge>
+          <Badge variant="success">Success</Badge>
+          <Badge variant="warning">Warning</Badge>
+          <Badge variant="danger">Danger</Badge>
+          <Badge variant="info">Info</Badge>
+        </div>
+
+        <h3>Solid Variants</h3>
+        <p>Gradient background, white text. For status overlays.</p>
+        <div class="component-row">
+          <Badge variant="solid-success">Received</Badge>
+          <Badge variant="solid-primary">Reserved</Badge>
+          <Badge variant="solid-info">Info</Badge>
+          <Badge variant="solid-warning">Warning</Badge>
+          <Badge variant="solid-danger">Error</Badge>
+        </div>
+
+        <h3>Sizes</h3>
+        <div class="component-row">
+          <Badge variant="solid-success" size="sm">Small</Badge>
+          <Badge variant="solid-success" size="md">Medium</Badge>
+        </div>
+
+        <h3>With Icon</h3>
+        <div class="component-row">
+          <Badge variant="solid-success">
+            <Icon name="check" width={12} height={12} />
+            Received
+          </Badge>
+          <Badge variant="solid-primary">
+            <Icon name="check" width={12} height={12} />
+            Reserved
+          </Badge>
+        </div>
+
+        <h3>With Dot</h3>
+        <div class="component-row">
+          <Badge variant="success" dot>Online</Badge>
+          <Badge variant="danger" dot>Offline</Badge>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           MODAL
+           ================================================================ -->
+      <section id="modal">
+        <h2>Modal</h2>
+        <p class="component-import">
+          CSS: <code>@import "@styles/kit/modal.css"</code>
+        </p>
+
+        <h3>Demo</h3>
+        <div class="component-row">
+          <Button variant="primary" id="open-modal-btn">Open Modal</Button>
+        </div>
+
+        <h3>Structure</h3>
+        <pre><code>{`<div class="kit-modal-overlay is-open">
+  <div class="kit-modal">
+    <div class="kit-modal-header">
+      <h2 class="kit-modal-title">Title</h2>
+      <button class="kit-modal-close">&times;</button>
+    </div>
+    <div class="kit-modal-body">
+      Content here...
+    </div>
+    <div class="kit-modal-footer">
+      <Button variant="secondary">Cancel</Button>
+      <Button variant="primary">Save</Button>
+    </div>
+  </div>
+</div>`}</code></pre>
+
+        <h3>Sizes</h3>
+        <p>Add class: <code>.kit-modal--sm</code>, <code>.kit-modal--lg</code>, or <code>.kit-modal--full</code></p>
+      </section>
+
+      <!-- Modal Demo -->
+      <div class="kit-modal-overlay" id="demo-modal">
+        <div class="kit-modal">
+          <div class="kit-modal-header">
+            <h2 class="kit-modal-title">Modal Title</h2>
+            <button class="kit-modal-close" id="close-modal-btn">&times;</button>
+          </div>
+          <div class="kit-modal-body">
+            <p>This is an example modal. You can put any content here.</p>
+            <div class="kit-form-group">
+              <label class="kit-form-label">Example Input</label>
+              <Input placeholder="Type something..." />
+            </div>
+          </div>
+          <div class="kit-modal-footer">
+            <Button variant="secondary" class="close-modal-btn">Cancel</Button>
+            <Button variant="primary" class="close-modal-btn">Save</Button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           TOAST
+           ================================================================ -->
+      <section id="toast">
+        <h2>Toast</h2>
+        <p class="component-import">
+          CSS: <code>@import "@styles/kit/toast.css"</code>
+        </p>
+
+        <h3>Demo</h3>
+        <div class="component-row">
+          <Button variant="success" size="sm" class="toast-trigger" data-variant="success">Success Toast</Button>
+          <Button variant="danger" size="sm" class="toast-trigger" data-variant="error">Error Toast</Button>
+          <Button variant="secondary" size="sm" class="toast-trigger" data-variant="warning">Warning Toast</Button>
+          <Button variant="ghost" size="sm" class="toast-trigger" data-variant="info">Info Toast</Button>
+        </div>
+
+        <h3>Structure</h3>
+        <pre><code>{`<div class="kit-toast-container">
+  <div class="kit-toast kit-toast--success">
+    <span class="kit-toast-icon">✓</span>
+    <div class="kit-toast-content">
+      <p class="kit-toast-title">Success</p>
+      <p class="kit-toast-message">Item saved.</p>
+    </div>
+    <button class="kit-toast-dismiss">&times;</button>
+  </div>
+</div>`}</code></pre>
+
+        <h3>Variants</h3>
+        <p><code>.kit-toast--success</code>, <code>.kit-toast--error</code>, <code>.kit-toast--warning</code>, <code>.kit-toast--info</code></p>
+      </section>
+
+      <!-- Toast Container -->
+      <div class="kit-toast-container" id="toast-container"></div>
+
+      <!-- ================================================================
+           TOOLTIPS
+           ================================================================ -->
+      <section id="tooltips">
+        <h2>Tooltips</h2>
+
+        <h3>Usage</h3>
+        <p>Add <code>data-tooltip</code> attribute to any element.</p>
+
+        <div class="component-row">
+          <Button variant="secondary" data-tooltip="This is a tooltip">
+            Hover me
+          </Button>
+          <span class="tooltip-demo" data-tooltip="Tooltips work on any element">
+            Any element
+          </span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</PageLayout>
+
+<style is:global>
+  /* Layout */
+  .kit-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .kit-sidebar {
+    position: sticky;
+    top: 0;
+    width: 200px;
+    height: 100vh;
+    padding: 2rem 1rem 2rem 1.5rem;
+    border-right: 1px solid light-dark(#eee, #333);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .kit-nav-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .kit-nav-section h3 {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: light-dark(#888, #666);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .kit-nav-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .kit-nav-section li {
+    margin: 0;
+  }
+
+  .kit-nav-section a {
+    display: block;
+    padding: 0.35rem 0;
+    font-size: 0.85rem;
+    color: light-dark(#555, #aaa);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .kit-nav-section a:hover {
+    color: var(--accent-start);
+  }
+
+  /* Content */
+  .kit-content {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    max-width: 800px;
+  }
+
+  .kit-content h1 {
+    margin-bottom: 0.5rem;
+  }
+
+  .kit-intro {
+    color: light-dark(#666, #999);
+    margin-bottom: 3rem;
+  }
+
+  .kit-content section {
+    margin-bottom: 4rem;
+  }
+
+  .kit-content h2 {
+    padding-top: 1rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid light-dark(#eee, #333);
+  }
+
+  .kit-content h3 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .component-import {
+    margin-bottom: 1.5rem;
+  }
+
+  .component-import code {
+    font-size: 0.8rem;
+  }
+
+  /* Color swatches */
+  .color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .color-swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .swatch {
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid light-dark(#e0e0e0, #333);
+  }
+
+  .color-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .color-info code {
+    font-size: 0.7rem;
+  }
+
+  .color-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: light-dark(#333, #e0e0e0);
+  }
+
+  .color-value {
+    font-size: 0.65rem;
+    font-family: "Firacode", monospace;
+    color: light-dark(#888, #666);
+  }
+
+  /* Typography demo */
+  .typography-demo {
+    padding: 1.5rem;
+    background: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.02));
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .typography-demo h1,
+  .typography-demo h2,
+  .typography-demo h3,
+  .typography-demo h4,
+  .typography-demo h5,
+  .typography-demo h6 {
+    margin: 0.5rem 0;
+  }
+
+  .columns-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Components */
+  .component-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .input-demo-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 300px;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Tooltip demo */
+  .tooltip-demo {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: light-dark(#333, #ccc);
+    cursor: default;
+  }
+
+  /* Code blocks */
+  .kit-content pre {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem;
+    background: light-dark(#1e1e1e, #0d0d0d);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+
+  .kit-content pre code {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: light-dark(#d4d4d4, #d4d4d4);
+  }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .kit-layout {
+      flex-direction: column;
+    }
+
+    .kit-sidebar {
+      position: relative;
+      width: 100%;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid light-dark(#eee, #333);
+      padding: 1.5rem 1rem;
+    }
+
+    .kit-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .kit-nav-section {
+      margin-bottom: 0;
+    }
+
+    .kit-content {
+      padding: 1.5rem 1rem;
+    }
+
+    .columns-2 {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+</style>
+
+<script>
+  // Modal demo
+  const openModalBtn = document.getElementById('open-modal-btn');
+  const closeModalBtns = document.querySelectorAll('.close-modal-btn, #close-modal-btn');
+  const modal = document.getElementById('demo-modal');
+
+  openModalBtn?.addEventListener('click', () => {
+    modal?.classList.add('is-open');
+  });
+
+  closeModalBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modal?.classList.remove('is-open');
+    });
+  });
+
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.remove('is-open');
+    }
+  });
+
+  // Toast demo
+  const toastContainer = document.getElementById('toast-container');
+  const toastTriggers = document.querySelectorAll('.toast-trigger');
+
+  const toastMessages = {
+    success: { title: 'Success', message: 'Action completed successfully.' },
+    error: { title: 'Error', message: 'Something went wrong.' },
+    warning: { title: 'Warning', message: 'Please review your input.' },
+    info: { title: 'Info', message: 'Here is some information.' },
+  };
+
+  const toastIcons = {
+    success: '✓',
+    error: '✕',
+    warning: '⚠',
+    info: 'ℹ',
+  };
+
+  toastTriggers.forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const variant = trigger.dataset.variant as keyof typeof toastMessages;
+      const { title, message } = toastMessages[variant];
+      const icon = toastIcons[variant];
+
+      const toast = document.createElement('div');
+      toast.className = `kit-toast kit-toast--${variant}`;
+      toast.innerHTML = `
+        <span class="kit-toast-icon">${icon}</span>
+        <div class="kit-toast-content">
+          <p class="kit-toast-title">${title}</p>
+          <p class="kit-toast-message">${message}</p>
+        </div>
+        <button class="kit-toast-dismiss">&times;</button>
+      `;
+
+      toastContainer?.appendChild(toast);
+
+      const dismiss = toast.querySelector('.kit-toast-dismiss');
+      const removeToast = () => {
+        toast.classList.add('is-leaving');
+        setTimeout(() => toast.remove(), 200);
+      };
+
+      dismiss?.addEventListener('click', removeToast);
+      setTimeout(removeToast, 4000);
+    });
+  });
+</script>

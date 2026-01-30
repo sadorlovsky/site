@@ -63,35 +63,8 @@ html.lang-ready .wishlist-container {
 }
 
 .filter-categories {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.filter-btn,
-.filter-btn:visited {
-  padding: 0.5rem 1.1rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: light-dark(#666, #aaa);
-  background: transparent;
-  border: 2px solid light-dark(#ddd, #444);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  text-decoration: none;
-}
-
-.filter-btn:hover {
-  color: light-dark(#111, #fff);
-  border-color: light-dark(#bbb, #666);
-}
-
-.filter-btn.active {
-  color: white;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  border-color: transparent;
-  box-shadow: 0 2px 10px rgba(237, 87, 96, 0.35);
+  flex: 1;
+  min-width: 0;
 }
 
 /* Grid */
@@ -219,41 +192,14 @@ html.lang-ready .wishlist-container {
 }
 
 /* Badges */
-.received-badge,
-.own-reservation-badge,
-.reserved-badge {
+.wishlist-badge {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  padding: 0.4rem 0.75rem;
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
-.reserved-badge {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.4);
-}
-
-.received-badge svg,
-.own-reservation-badge svg,
-.reserved-badge svg {
-  width: 12px;
-  height: 12px;
-}
-
-.own-reservation-badge[hidden],
-.reserved-badge[hidden] {
+.wishlist-badge[hidden] {
   display: none;
 }
 
@@ -406,7 +352,6 @@ html.lang-ready .wishlist-container {
 }
 
 /* Accessibility - Focus styles */
-.filter-btn:focus-visible,
 .reserve-btn:focus-visible,
 .item-url:focus-visible {
   outline: 2px solid var(--accent-start);
@@ -423,17 +368,6 @@ html.lang-ready .wishlist-container {
   /* Subtitle — darker */
   .subtitle {
     color: light-dark(#444, #ccc);
-  }
-
-  /* Filter buttons — stronger borders */
-  .filter-btn,
-  .filter-btn:visited {
-    color: light-dark(#333, #ddd);
-    border-color: light-dark(#999, #666);
-  }
-
-  .filter-btn:hover {
-    border-color: light-dark(#666, #999);
   }
 
   /* Card borders — visible */
@@ -488,11 +422,6 @@ html.lang-ready .wishlist-container {
   .wishlist-container::before,
   .wishlist-container::after {
     display: none;
-  }
-
-  /* Filter button active shadow */
-  .filter-btn.active {
-    box-shadow: 0 2px 10px rgba(237, 87, 96, 0.5);
   }
 
   /* Card shadows — more contrast */
@@ -633,16 +562,6 @@ html.lang-ready .wishlist-container {
   .filter-categories.at-start.at-end {
     mask-image: none;
     -webkit-mask-image: none;
-  }
-
-  .filter-btn {
-    flex-shrink: 0;
-    padding: 0.4rem 0.85rem;
-    font-size: 0.75rem;
-  }
-
-  .lang-switcher {
-    flex-shrink: 0;
   }
 
   .wishlist-grid {

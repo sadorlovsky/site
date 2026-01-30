@@ -1,4 +1,5 @@
 ---
+import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
 import LangSwitcher from "@components/LangSwitcher.astro";
 
@@ -13,7 +14,7 @@ const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
 
 <div class="filters">
   <nav
-    class="filter-categories"
+    class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm filter-categories"
     role="navigation"
     aria-label="Filter by category"
     data-aria-label-en="Filter by category"
@@ -23,7 +24,7 @@ const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
       categories.map((cat) => (
         <a
           href={cat.href}
-          class={`filter-btn ${cat.id === currentCategory ? "active" : ""}`}
+          class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
           data-category={cat.id}
           data-en={cat.label}
           data-ru={cat.labelRu}
@@ -36,7 +37,7 @@ const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
   </nav>
   {
     showLangSwitcher && (
-      <LangSwitcher storageKey="lang" variant="accent" />
+      <LangSwitcher storageKey="lang" size="sm" />
     )
   }
 </div>
@@ -50,7 +51,7 @@ const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
     const categoriesEl: HTMLElement = el;
 
     const activeBtn =
-      categoriesEl.querySelector<HTMLElement>(".filter-btn.active");
+      categoriesEl.querySelector<HTMLElement>(".kit-toggle-item.is-active");
 
     function updateEdgeFades() {
       const { scrollLeft, scrollWidth, clientWidth } = categoriesEl;

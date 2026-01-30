@@ -1,0 +1,160 @@
+/* =============================================================================
+   Modal Component Styles
+   ============================================================================= */
+
+.kit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: light-dark(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.kit-modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.kit-modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  background: light-dark(#fff, #222);
+  border-radius: 16px;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kit-modal-overlay.is-open .kit-modal {
+  transform: scale(1) translateY(0);
+}
+
+/* Sizes */
+.kit-modal--sm {
+  max-width: 400px;
+}
+
+.kit-modal--lg {
+  max-width: 700px;
+}
+
+.kit-modal--full {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 2rem);
+}
+
+/* =============================================================================
+   Modal Parts
+   ============================================================================= */
+
+.kit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid light-dark(#eee, #333);
+}
+
+.kit-modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: light-dark(#111, #fafafa);
+  margin: 0;
+}
+
+.kit-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: light-dark(#666, #999);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.kit-modal-close:hover {
+  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
+  color: light-dark(#111, #fff);
+}
+
+.kit-modal-close:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+.kit-modal-body {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.kit-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid light-dark(#eee, #333);
+}
+
+/* =============================================================================
+   Accessibility
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-modal-overlay,
+  .kit-modal {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .kit-modal-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: light-dark(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.9));
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+  .kit-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .kit-modal {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .kit-modal-header {
+    padding: 1rem 1.25rem;
+  }
+
+  .kit-modal-body {
+    padding: 1.25rem;
+  }
+
+  .kit-modal-footer {
+    padding: 1rem 1.25rem;
+  }
+}

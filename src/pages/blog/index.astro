@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import { Icon } from "astro-icon/components";
 import { getEffectivePubDate } from "@lib/blog";
 
 export const prerender = true;
@@ -102,6 +103,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                         ))}
                         {translationMap.has(post.id) && (
                           <span class="translation-badge" title="Available in Russian">
+                            <Icon name="globe" width={12} height={12} />
                             RU
                           </span>
                         )}
@@ -236,11 +238,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     text-decoration: none;
     color: inherit;
     padding: 0.75rem 0;
-    transition: opacity 0.2s ease;
-  }
-
-  .post-item:hover {
-    opacity: 0.7;
   }
 
   .post-item:hover .post-title {
@@ -282,25 +279,40 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   }
 
   .tag {
-    font-size: 0.75rem;
-    color: light-dark(#666, #888);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: light-dark(#555, #999);
+    padding: 0.2rem 0.55rem;
+    background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
+    border-radius: 4px;
+    transition: background 0.2s ease, color 0.2s ease;
   }
 
-  .tag:not(:last-of-type)::after {
-    content: "·";
-    margin-left: 0.5rem;
-    color: light-dark(#999, #555);
+  .post-item:hover .tag {
+    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
+    color: light-dark(#444, #aaa);
   }
 
   .translation-badge {
-    display: inline-block;
-    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.65rem;
     font-weight: 600;
-    padding: 0.15rem 0.4rem;
+    letter-spacing: 0.02em;
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
-    color: light-dark(#666, #999);
+    background: light-dark(rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.15));
+    border: 1px solid light-dark(rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.25));
+    color: light-dark(#6366f1, #a78bfa);
     cursor: help;
+    transition: all 0.2s ease;
+  }
+
+  .translation-badge:hover {
+    background: light-dark(rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.22));
+    border-color: light-dark(rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.4));
   }
 
   .empty-state {
@@ -321,8 +333,9 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
       animation: none;
     }
 
-    .post-item,
-    .post-title {
+    .post-title,
+    .tag,
+    .translation-badge {
       transition: none;
     }
   }
@@ -364,10 +377,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
 
     .post-title {
       font-size: 1.15rem;
-    }
-
-    .post-description {
-      font-size: 0.9rem;
     }
   }
 </style>

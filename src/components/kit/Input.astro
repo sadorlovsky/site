@@ -1,0 +1,55 @@
+---
+import "@styles/kit/input.css";
+
+interface Props {
+  type?: "text" | "email" | "password" | "url" | "number" | "tel" | "search";
+  name?: string;
+  id?: string;
+  value?: string;
+  placeholder?: string;
+  size?: "sm" | "md" | "lg";
+  disabled?: boolean;
+  required?: boolean;
+  readonly?: boolean;
+  error?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  type = "text",
+  name,
+  id,
+  value,
+  placeholder,
+  size = "md",
+  disabled = false,
+  required = false,
+  readonly = false,
+  error = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = [
+  "kit-input",
+  `kit-input--${size}`,
+  error && "kit-input--error",
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<input
+  type={type}
+  name={name}
+  id={id}
+  value={value}
+  placeholder={placeholder}
+  disabled={disabled}
+  required={required}
+  readonly={readonly}
+  class={classes}
+  {...rest}
+/>

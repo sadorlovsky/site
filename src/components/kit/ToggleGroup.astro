@@ -1,0 +1,109 @@
+---
+import "@styles/kit/toggle-group.css";
+
+export interface ToggleItem {
+  /** Unique identifier */
+  id: string;
+  /** Display label */
+  label: string;
+  /** Optional label for Russian locale */
+  labelRu?: string;
+  /** Link href (makes it an anchor instead of button) */
+  href?: string;
+  /** Disabled state */
+  disabled?: boolean;
+}
+
+export interface Props {
+  /** Toggle items */
+  items: ToggleItem[];
+  /** Currently active item id */
+  value?: string;
+  /** Size variant */
+  size?: "sm" | "md";
+  /** Visual variant */
+  variant?: "pill" | "separated";
+  /** Enable horizontal scrolling */
+  scrollable?: boolean;
+  /** ARIA label for the group */
+  ariaLabel?: string;
+  /** Localized ARIA labels */
+  ariaLabelEn?: string;
+  ariaLabelRu?: string;
+  /** Additional CSS classes */
+  class?: string;
+  /** Name for form submission (only for button variant) */
+  name?: string;
+}
+
+const {
+  items,
+  value,
+  size = "md",
+  variant = "pill",
+  scrollable = false,
+  ariaLabel,
+  ariaLabelEn,
+  ariaLabelRu,
+  class: className,
+  name,
+} = Astro.props;
+
+const classes = [
+  "kit-toggle-group",
+  `kit-toggle-group--${size}`,
+  variant === "separated" && "kit-toggle-group--separated",
+  scrollable && "kit-toggle-group--scrollable",
+  className,
+].filter(Boolean).join(" ");
+---
+
+<div
+  class={classes}
+  role="group"
+  aria-label={ariaLabel}
+  data-aria-label-en={ariaLabelEn}
+  data-aria-label-ru={ariaLabelRu}
+>
+  <slot name="before" />
+
+  {items.map((item) => {
+    const isActive = item.id === value;
+
+    if (item.href) {
+      return (
+        <a
+          href={item.disabled ? undefined : item.href}
+          class="kit-toggle-item"
+          class:list={[{ "is-active": isActive }]}
+          data-id={item.id}
+          data-en={item.label}
+          data-ru={item.labelRu}
+          aria-current={isActive ? "page" : undefined}
+          aria-disabled={item.disabled || undefined}
+        >
+          {item.label}
+        </a>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        class="kit-toggle-item"
+        class:list={[{ "is-active": isActive }]}
+        data-id={item.id}
+        data-en={item.label}
+        data-ru={item.labelRu}
+        aria-pressed={isActive}
+        disabled={item.disabled}
+        name={name}
+        value={item.id}
+      >
+        {item.label}
+      </button>
+    );
+  })}
+
+  <slot name="after" />
+</div>

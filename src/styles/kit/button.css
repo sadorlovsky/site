@@ -1,0 +1,336 @@
+/* =============================================================================
+   Button Component Styles
+
+   Sizes (height):
+   - xs: 28px
+   - sm: 32px
+   - md: 38px (default)
+   - lg: 44px
+
+   Variants:
+   - primary: Gradient accent, for main actions
+   - secondary: Subtle background, for secondary actions
+   - ghost: Transparent with border, for tertiary actions
+   - danger: Red tones, for destructive actions
+   - success: Green gradient, for confirmations
+   ============================================================================= */
+
+.kit-btn {
+  /* Reset */
+  appearance: none;
+  border: none;
+  background: none;
+  font-family: inherit;
+
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+
+  /* Typography */
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+
+  /* Animation */
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Reset link styles when used as anchor */
+a.kit-btn,
+a.kit-btn:hover,
+a.kit-btn:visited,
+a.kit-btn:active {
+  text-decoration: none;
+}
+
+/* Explicit colors for link buttons (override global link styles) */
+a.kit-btn--primary,
+a.kit-btn--primary:hover,
+a.kit-btn--primary:visited,
+a.kit-btn--primary:active,
+a.kit-btn--success,
+a.kit-btn--success:hover,
+a.kit-btn--success:visited,
+a.kit-btn--success:active {
+  color: white;
+}
+
+a.kit-btn--secondary,
+a.kit-btn--secondary:hover,
+a.kit-btn--secondary:visited,
+a.kit-btn--secondary:active {
+  color: light-dark(#333, #ddd);
+}
+
+a.kit-btn--ghost,
+a.kit-btn--ghost:visited {
+  color: light-dark(#666, #aaa);
+}
+
+a.kit-btn--ghost:hover,
+a.kit-btn--ghost:active {
+  color: light-dark(#111, #fff);
+}
+
+a.kit-btn--ghost.is-active,
+a.kit-btn--ghost.is-active:visited,
+a.kit-btn--ghost[aria-pressed="true"],
+a.kit-btn--ghost[aria-pressed="true"]:visited {
+  color: white;
+}
+
+a.kit-btn--danger,
+a.kit-btn--danger:hover,
+a.kit-btn--danger:visited,
+a.kit-btn--danger:active {
+  color: light-dark(#dc2626, #f87171);
+}
+
+.kit-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+.kit-btn:disabled,
+.kit-btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =============================================================================
+   Sizes
+   ============================================================================= */
+
+.kit-btn--xs {
+  height: 28px;
+  padding: 0 0.65rem;
+  font-size: 0.7rem;
+  border-radius: 6px;
+}
+
+.kit-btn--sm {
+  height: 32px;
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+  border-radius: 8px;
+}
+
+.kit-btn--md {
+  height: 38px;
+  padding: 0 1.1rem;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}
+
+.kit-btn--lg {
+  height: 44px;
+  padding: 0 1.5rem;
+  font-size: 0.9rem;
+  border-radius: 12px;
+}
+
+/* =============================================================================
+   Variants
+   ============================================================================= */
+
+/* Primary - Gradient accent button */
+.kit-btn--primary {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: white;
+  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.3);
+}
+
+.kit-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(237, 87, 96, 0.4);
+  transform: translateY(-1px);
+}
+
+.kit-btn--primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(237, 87, 96, 0.3);
+}
+
+/* Secondary - Subtle background */
+.kit-btn--secondary {
+  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+  color: light-dark(#333, #ddd);
+}
+
+.kit-btn--secondary:hover:not(:disabled) {
+  background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
+  color: light-dark(#111, #fff);
+}
+
+.kit-btn--secondary:active:not(:disabled) {
+  background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+}
+
+/* Ghost - Transparent with border */
+.kit-btn--ghost {
+  background: transparent;
+  color: light-dark(#666, #aaa);
+  box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
+}
+
+.kit-btn--ghost:hover:not(:disabled) {
+  color: light-dark(#111, #fff);
+  box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
+}
+
+.kit-btn--ghost:active:not(:disabled) {
+  background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
+}
+
+.kit-btn--ghost[aria-pressed="true"],
+.kit-btn--ghost.is-active {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: white;
+  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+}
+
+/* Danger - Destructive actions */
+.kit-btn--danger {
+  background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.15));
+  color: light-dark(#dc2626, #f87171);
+  box-shadow: inset 0 0 0 1px
+    light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.25));
+}
+
+.kit-btn--danger:hover:not(:disabled) {
+  background: light-dark(rgba(220, 38, 38, 0.15), rgba(239, 68, 68, 0.22));
+  box-shadow: inset 0 0 0 1px
+    light-dark(rgba(220, 38, 38, 0.3), rgba(239, 68, 68, 0.35));
+}
+
+.kit-btn--danger:active:not(:disabled) {
+  background: light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.28));
+}
+
+/* Success - Confirmation actions */
+.kit-btn--success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.kit-btn--success:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+.kit-btn--success:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+}
+
+/* =============================================================================
+   Icon-only variant
+   ============================================================================= */
+
+.kit-btn--icon {
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+.kit-btn--icon.kit-btn--xs {
+  width: 28px;
+}
+.kit-btn--icon.kit-btn--sm {
+  width: 32px;
+}
+.kit-btn--icon.kit-btn--md {
+  width: 38px;
+}
+.kit-btn--icon.kit-btn--lg {
+  width: 44px;
+}
+
+/* =============================================================================
+   Full width
+   ============================================================================= */
+
+.kit-btn--full {
+  width: 100%;
+}
+
+/* =============================================================================
+   Loading state
+   ============================================================================= */
+
+.kit-btn--loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.kit-btn--loading::after {
+  content: "";
+  position: absolute;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: kit-btn-spin 0.6s linear infinite;
+  opacity: 0.7;
+}
+
+/* Restore color for spinner visibility */
+.kit-btn--primary.kit-btn--loading::after,
+.kit-btn--success.kit-btn--loading::after {
+  border-color: white;
+  border-right-color: transparent;
+}
+
+.kit-btn--secondary.kit-btn--loading::after,
+.kit-btn--ghost.kit-btn--loading::after {
+  border-color: light-dark(#333, #ddd);
+  border-right-color: transparent;
+}
+
+.kit-btn--danger.kit-btn--loading::after {
+  border-color: light-dark(#dc2626, #f87171);
+  border-right-color: transparent;
+}
+
+@keyframes kit-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =============================================================================
+   Accessibility
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-btn {
+    transition: none;
+  }
+
+  .kit-btn:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .kit-btn--loading::after {
+    animation: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .kit-btn--ghost {
+    box-shadow: inset 0 0 0 2px light-dark(#999, #777);
+  }
+
+  .kit-btn--secondary {
+    box-shadow: inset 0 0 0 1px light-dark(#ccc, #555);
+  }
+}

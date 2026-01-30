@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "@layouts/AdminLayout.astro";
+import Button from "@components/kit/Button.astro";
 import { hasCredentials } from "@lib/admin/webauthn";
 import { timingSafeEqual } from "@lib/admin/crypto";
 import { SETUP_TOKEN_COOKIE, SETUP_TOKEN_EXPIRY_MS } from "@lib/admin/config";
@@ -57,9 +58,9 @@ if (!isValidToken) {
         />
       </div>
 
-      <button id="register-btn" class="btn btn-primary" type="button">
+      <Button id="register-btn" variant="primary" size="md">
         Register Passkey
-      </button>
+      </Button>
 
       <div id="error-message" class="error-message" hidden></div>
       <div id="success-message" class="success-message" hidden>

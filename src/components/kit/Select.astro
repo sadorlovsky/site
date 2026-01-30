@@ -1,0 +1,70 @@
+---
+import "@styles/kit/select.css";
+
+interface Option {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+interface Props {
+  options: Option[];
+  value?: string;
+  name?: string;
+  id?: string;
+  size?: "xs" | "sm" | "md" | "lg";
+  disabled?: boolean;
+  required?: boolean;
+  full?: boolean;
+  placeholder?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  options,
+  value,
+  name,
+  id,
+  size = "md",
+  disabled = false,
+  required = false,
+  full = false,
+  placeholder,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = [
+  "kit-select",
+  `kit-select--${size}`,
+  full && "kit-select--full",
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<select
+  class={classes}
+  name={name}
+  id={id}
+  disabled={disabled}
+  required={required}
+  {...rest}
+>
+  {placeholder && (
+    <option value="" disabled selected={!value}>
+      {placeholder}
+    </option>
+  )}
+  {options.map((option) => (
+    <option
+      value={option.value}
+      selected={option.value === value}
+      disabled={option.disabled}
+    >
+      {option.label}
+    </option>
+  ))}
+</select>

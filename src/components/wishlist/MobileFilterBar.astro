@@ -1,4 +1,5 @@
 ---
+import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
 
 interface Props {
@@ -21,11 +22,11 @@ const { categories, currentCategory } = Astro.props;
     >
       <div class="mobile-filter-bar-inner">
         <div class="mobile-filter-categories-wrapper">
-          <div class="mobile-filter-categories">
+          <div class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm mobile-filter-categories">
             {categories.map((cat) => (
               <a
                 href={cat.href}
-                class={`mobile-filter-btn ${cat.id === currentCategory ? "active" : ""}`}
+                class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
                 data-category={cat.id}
                 data-en={cat.label}
                 data-ru={cat.labelRu}
@@ -148,14 +149,12 @@ const { categories, currentCategory } = Astro.props;
   }
 
   .mobile-filter-categories {
-    display: flex;
-    gap: 0.4rem;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 0.25rem 0;
+    flex-wrap: nowrap;
   }
 
   /* Drag-to-scroll cursor for desktop (only when scrollable) */
@@ -173,29 +172,8 @@ const { categories, currentCategory } = Astro.props;
     display: none;
   }
 
-  .mobile-filter-btn,
-  .mobile-filter-btn:visited {
-    flex-shrink: 0;
-    padding: 0.5rem 0.85rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: light-dark(#555, #aaa);
-    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
-    border: none;
-    border-radius: 10px;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: all 0.2s ease;
-  }
-
-  .mobile-filter-btn:active {
+  .mobile-filter-categories .kit-toggle-item:active {
     transform: scale(0.95);
-  }
-
-  .mobile-filter-btn.active {
-    color: white;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
   }
 
 
@@ -221,13 +199,6 @@ const { categories, currentCategory } = Astro.props;
     .mobile-filter-bar {
       border-top: 2px solid light-dark(#999, #666);
     }
-
-    .mobile-filter-btn,
-    .mobile-filter-btn:visited {
-      color: light-dark(#333, #ddd);
-      background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
-      border: 2px solid light-dark(#999, #666);
-    }
   }
 </style>
 
@@ -249,7 +220,7 @@ const { categories, currentCategory } = Astro.props;
       ".mobile-filter-categories",
     );
     const activeBtn = categoriesScroller?.querySelector<HTMLElement>(
-      ".mobile-filter-btn.active",
+      ".kit-toggle-item.is-active",
     );
 
     // Check if we're on a narrow screen

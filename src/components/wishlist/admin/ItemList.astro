@@ -1,4 +1,5 @@
 ---
+import "@styles/kit/button.css";
 import { getCdnImageUrl, type Category } from "@lib/wishlist";
 
 interface WishlistItem {
@@ -79,7 +80,7 @@ function getCategoryLabel(categoryId: string): string {
             </div>
             <div class="item-actions">
               <button
-                class="btn btn-secondary btn-edit"
+                class="kit-btn kit-btn--secondary kit-btn--sm btn-edit"
                 data-item-id={item.id}
                 data-item={JSON.stringify(item)}
                 title="Edit"
@@ -87,7 +88,7 @@ function getCategoryLabel(categoryId: string): string {
                 Edit
               </button>
               <button
-                class="btn btn-success btn-toggle-received"
+                class="kit-btn kit-btn--success kit-btn--sm kit-btn--icon btn-toggle-received"
                 data-item-id={item.id}
                 data-received={item.received}
                 title={
@@ -97,7 +98,7 @@ function getCategoryLabel(categoryId: string): string {
                 {item.received ? "✓" : "○"}
               </button>
               <button
-                class="btn btn-danger btn-delete"
+                class="kit-btn kit-btn--danger kit-btn--sm kit-btn--icon btn-delete"
                 data-item-id={item.id}
                 title="Delete"
               >

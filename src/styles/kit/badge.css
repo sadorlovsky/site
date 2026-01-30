@@ -1,0 +1,142 @@
+/* =============================================================================
+   Badge Component Styles
+
+   Sizes:
+   - sm: Small badges for inline use
+   - md: Default size (default)
+
+   Variants (subtle - transparent background):
+   - default: Subtle gray background
+   - primary: Accent colored
+   - success: Green for positive states
+   - warning: Yellow/orange for warnings
+   - danger: Red for errors/destructive
+   - info: Blue/indigo for informational
+
+   Variants (solid - gradient background, white text):
+   - solid-success: Green gradient
+   - solid-primary: Accent gradient
+   - solid-info: Indigo gradient
+   ============================================================================= */
+
+.kit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* =============================================================================
+   Sizes
+   ============================================================================= */
+
+.kit-badge--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.6rem;
+  border-radius: 6px;
+}
+
+.kit-badge--md {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.65rem;
+  border-radius: 8px;
+}
+
+/* =============================================================================
+   Variants
+   ============================================================================= */
+
+/* Default - subtle gray */
+.kit-badge--default {
+  background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
+  color: light-dark(#666, #aaa);
+}
+
+/* Primary - accent */
+.kit-badge--primary {
+  background: light-dark(rgba(237, 98, 146, 0.15), rgba(237, 98, 146, 0.2));
+  color: light-dark(#c2185b, #f48fb1);
+}
+
+/* Success - green */
+.kit-badge--success {
+  background: light-dark(rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.2));
+  color: light-dark(#047857, #6ee7b7);
+}
+
+/* Warning - yellow/orange */
+.kit-badge--warning {
+  background: light-dark(rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.2));
+  color: light-dark(#b45309, #fcd34d);
+}
+
+/* Danger - red */
+.kit-badge--danger {
+  background: light-dark(rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.2));
+  color: light-dark(#dc2626, #fca5a5);
+}
+
+/* Info - indigo/blue */
+.kit-badge--info {
+  background: light-dark(rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.2));
+  color: light-dark(#4338ca, #a5b4fc);
+}
+
+/* =============================================================================
+   Solid Variants (gradient background, white text)
+   ============================================================================= */
+
+.kit-badge--solid-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.kit-badge--solid-primary {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: white;
+  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.4);
+}
+
+.kit-badge--solid-info {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+}
+
+.kit-badge--solid-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.kit-badge--solid-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+}
+
+/* =============================================================================
+   With dot indicator
+   ============================================================================= */
+
+.kit-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* =============================================================================
+   Accessibility
+   ============================================================================= */
+
+@media (prefers-contrast: more) {
+  .kit-badge {
+    border: 1px solid currentColor;
+  }
+}

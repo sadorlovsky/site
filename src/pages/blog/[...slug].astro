@@ -141,6 +141,7 @@ function getNavUrl(p: typeof post): string {
                   href={translationUrl}
                   class="translation-link"
                 >
+                  <Icon name="globe" width={14} height={14} />
                   {isTranslation ? "Read in English" : "Читать на русском"}
                 </a>
               )
@@ -151,8 +152,10 @@ function getNavUrl(p: typeof post): string {
               aria-label="Copy link to post"
               title="Copy link"
             >
-              <Icon name="link" width={16} height={16} class="icon-link" />
-              <Icon name="check" width={16} height={16} class="icon-check" />
+              <span class="copy-link-icons">
+                <Icon name="link" width={16} height={16} class="icon-link" />
+                <Icon name="check" width={16} height={16} class="icon-check" />
+              </span>
             </button>
           </div>
           <h1>{post.data.title}</h1>
@@ -340,22 +343,35 @@ function getNavUrl(p: typeof post): string {
   .post-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .post-meta time {
+    line-height: 1;
   }
 
   .translation-link {
-    font-size: 0.85rem;
-    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--accent-start);
     text-decoration: none;
-    padding: 0.25rem 0.6rem;
-    border-radius: 6px;
+    height: 32px;
+    padding: 0 0.75rem;
+    border-radius: 8px;
     background: light-dark(rgba(237, 98, 146, 0.1), rgba(237, 98, 146, 0.15));
     transition: all 0.2s;
   }
 
   .translation-link:hover {
-    background: light-dark(rgba(237, 98, 146, 0.2), rgba(237, 98, 146, 0.25));
+    background: light-dark(rgba(237, 98, 146, 0.18), rgba(237, 98, 146, 0.25));
+  }
+
+  .translation-link:visited {
+    color: var(--accent-start);
   }
 
   .copy-link {
@@ -364,10 +380,10 @@ function getNavUrl(p: typeof post): string {
     justify-content: center;
     width: 32px;
     height: 32px;
-    border: none;
+    border: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
     border-radius: 8px;
-    background: transparent;
-    color: light-dark(#888, #666);
+    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+    color: light-dark(#888, #777);
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -379,8 +395,9 @@ function getNavUrl(p: typeof post): string {
   }
 
   .copy-link:hover {
-    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-    color: var(--accent-start);
+    color: light-dark(#333, #fff);
+    background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
+    border-color: light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.18));
   }
 
   .copy-link:focus-visible {
@@ -388,35 +405,65 @@ function getNavUrl(p: typeof post): string {
     outline-offset: 2px;
   }
 
+  .copy-link-icons {
+    position: relative;
+    width: 16px;
+    height: 16px;
+  }
+
+  .copy-link .icon-link,
   .copy-link .icon-check {
-    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+  }
+
+  .copy-link .icon-check {
+    opacity: 0;
+    transform: scale(0.5);
+    color: var(--accent-start);
   }
 
   .copy-link.copied .icon-link {
-    display: none;
+    opacity: 0;
+    transform: scale(0.5);
   }
 
   .copy-link.copied .icon-check {
-    display: block;
-    color: #22c55e;
+    opacity: 1;
+    transform: scale(1);
   }
 
   /* Table of Contents */
   .toc {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     padding: 1.25rem 1.5rem;
     border-radius: 12px;
-    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.03));
+    background: light-dark(rgba(0, 0, 0, 0.025), rgba(255, 255, 255, 0.03));
     border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+    position: relative;
+  }
+
+  .toc::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 1.25rem;
+    bottom: 1.25rem;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: linear-gradient(180deg, var(--accent-start), var(--accent-end));
+    opacity: 0.6;
   }
 
   .toc-title {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin: 0 0 1rem 0;
-    color: light-dark(#888, #666);
+    color: light-dark(#666, #888);
   }
 
   .toc ol {
@@ -431,42 +478,22 @@ function getNavUrl(p: typeof post): string {
   .toc-item {
     margin: 0;
     position: relative;
-    padding-left: 1rem;
-  }
-
-  .toc-item::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.6em;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.2));
-    transition: background 0.2s;
-  }
-
-  .toc-item:hover::before {
-    background: var(--accent-start);
   }
 
   .toc-h3 {
-    padding-left: 2rem;
-  }
-
-  .toc-h3::before {
-    left: 1rem;
+    padding-left: 1rem;
   }
 
   .toc a {
-    color: light-dark(#666, #999);
+    color: light-dark(#555, #aaa);
     text-decoration: none;
     font-size: 0.9rem;
-    transition: color 0.2s;
+    line-height: 1.5;
+    transition: color 0.15s;
   }
 
   .toc a:visited {
-    color: light-dark(#666, #999);
+    color: light-dark(#555, #aaa);
   }
 
   .toc a:hover {
@@ -617,16 +644,23 @@ function getNavUrl(p: typeof post): string {
   .content :global(a) {
     color: var(--accent-start);
     text-decoration: underline;
-    text-underline-offset: 2px;
-    transition: color 0.2s ease;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(237, 98, 146, 0.4);
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
   }
 
   .content :global(a:visited) {
-    color: var(--accent-start);
+    color: light-dark(#8b5a7c, #d4a5c9);
+    text-decoration-color: light-dark(
+      rgba(139, 90, 124, 0.4),
+      rgba(212, 165, 201, 0.4)
+    );
   }
 
   .content :global(a:hover) {
     color: var(--accent-end);
+    text-decoration-color: currentColor;
   }
 
   .content :global(code) {
@@ -683,6 +717,15 @@ function getNavUrl(p: typeof post): string {
   }
 
   .content :global(blockquote p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .content :global(blockquote pre) {
+    margin: 1rem 0 0.5rem;
+    border-radius: 8px;
+  }
+
+  .content :global(blockquote pre:last-child) {
     margin-bottom: 0;
   }
 
@@ -788,7 +831,12 @@ function getNavUrl(p: typeof post): string {
     }
 
     .toc {
-      padding: 0.75rem 0 0.75rem 1rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .toc::before {
+      top: 1rem;
+      bottom: 1rem;
     }
 
     .post-nav {

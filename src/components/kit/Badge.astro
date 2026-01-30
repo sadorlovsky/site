@@ -1,0 +1,36 @@
+---
+import "@styles/kit/badge.css";
+
+type SubtleVariant = "default" | "primary" | "success" | "warning" | "danger" | "info";
+type SolidVariant = "solid-success" | "solid-primary" | "solid-info" | "solid-warning" | "solid-danger";
+
+interface Props {
+  variant?: SubtleVariant | SolidVariant;
+  size?: "sm" | "md";
+  dot?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const {
+  variant = "default",
+  size = "md",
+  dot = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = [
+  "kit-badge",
+  `kit-badge--${variant}`,
+  `kit-badge--${size}`,
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<span class={classes} {...rest}>
+  {dot && <span class="kit-badge__dot" />}
+  <slot />
+</span>

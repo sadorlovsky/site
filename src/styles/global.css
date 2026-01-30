@@ -188,24 +188,83 @@ p {
   color: light-dark(#333, #e0e0e0);
 }
 
-/* Links */
+/* =============================================================================
+   Links
+
+   Types:
+   - Content links: In paragraphs, lists, etc. Use accent gradient on hover
+   - Navigation links: Headers, footers, menus. No visited state, subtle hover
+   - Button links: Use .kit-btn classes, fully reset
+   ============================================================================= */
+
+/* Base link styles - accent colored */
 a {
-  color: light-dark(#0066cc, #66b3ff);
+  color: light-dark(var(--accent-end), var(--accent-start));
   text-decoration: underline;
   text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: light-dark(
+    rgba(237, 87, 96, 0.4),
+    rgba(237, 98, 146, 0.4)
+  );
   transition:
-    color 0.1s ease,
-    text-decoration-color 0.1s ease;
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
 }
 
 a:hover {
-  color: light-dark(#0052a3, #4da3ff);
+  color: light-dark(var(--accent-start), #ff9eae);
   text-decoration-color: currentColor;
 }
 
+/* No visited state for links by default -
+   content links opt-in via .link-content class */
 a:visited {
-  color: light-dark(#551a8b, #b19cd9);
+  color: light-dark(var(--accent-end), var(--accent-start));
+}
+
+/* Content links - used in blog posts, prose content */
+/* These show visited state for user orientation */
+.link-content:visited,
+article a:visited,
+.prose a:visited {
+  color: light-dark(#8b5a7c, #d4a5c9);
+  text-decoration-color: light-dark(
+    rgba(139, 90, 124, 0.4),
+    rgba(212, 165, 201, 0.4)
+  );
+}
+
+/* Navigation links - no underline, subtle color */
+.link-nav {
+  color: light-dark(#666, #aaa);
+  text-decoration: none;
+}
+
+.link-nav:hover {
+  color: light-dark(#111, #fff);
+}
+
+.link-nav:visited {
+  color: light-dark(#666, #aaa);
+}
+
+/* Muted/subtle links */
+.link-muted {
+  color: light-dark(#666, #888);
+  text-decoration-color: light-dark(
+    rgba(102, 102, 102, 0.3),
+    rgba(136, 136, 136, 0.3)
+  );
+}
+
+.link-muted:hover {
+  color: light-dark(#333, #ccc);
+  text-decoration-color: currentColor;
+}
+
+.link-muted:visited {
+  color: light-dark(#666, #888);
 }
 
 /* Lists */
@@ -424,6 +483,54 @@ sub {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+}
+
+/* Reset link styles for button links */
+a.btn,
+a.btn:hover,
+a.btn:visited,
+a.btn:active {
+  text-decoration: none;
+}
+
+a.btn-primary,
+a.btn-primary:hover,
+a.btn-primary:visited,
+a.btn-primary:active,
+a.btn-success,
+a.btn-success:hover,
+a.btn-success:visited,
+a.btn-success:active {
+  color: white;
+}
+
+a.btn-secondary,
+a.btn-secondary:hover,
+a.btn-secondary:visited,
+a.btn-secondary:active {
+  color: light-dark(#333, #eee);
+}
+
+a.btn-ghost,
+a.btn-ghost:visited {
+  color: light-dark(#666, #aaa);
+}
+
+a.btn-ghost:hover,
+a.btn-ghost:active {
+  color: light-dark(#111, #fff);
+}
+
+a.btn-ghost.active,
+a.btn-ghost.active:visited {
+  color: white;
+}
+
+a.btn-danger,
+a.btn-danger:hover,
+a.btn-danger:visited,
+a.btn-danger:active {
+  color: light-dark(#dc2626, #f87171);
 }
 
 .btn:disabled {

@@ -1,6 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
+import Badge from "@components/kit/Badge.astro";
 import {
   getCdnImageUrl,
   type WishlistItemWithReservation,
@@ -40,30 +41,37 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
     />
     {
       item.received && (
-        <div class="received-badge" data-en="Received" data-ru="Получено">
-          <Icon name="check" width={16} height={16} />
+        <Badge
+          variant="solid-success"
+          class="wishlist-badge"
+          data-en="Received"
+          data-ru="Получено"
+        >
+          <Icon name="check" width={12} height={12} />
           <span>Received</span>
-        </div>
+        </Badge>
       )
     }
-    <div
-      class="own-reservation-badge"
+    <Badge
+      variant="solid-success"
+      class="wishlist-badge own-reservation-badge"
       data-en="Reserved by you"
       data-ru="Вы зарезервировали"
       hidden
     >
-      <Icon name="check" width={16} height={16} />
+      <Icon name="check" width={12} height={12} />
       <span>Reserved by you</span>
-    </div>
-    <div
-      class="reserved-badge"
+    </Badge>
+    <Badge
+      variant="solid-primary"
+      class="wishlist-badge reserved-badge"
       data-en="Reserved"
       data-ru="Зарезервировано"
       hidden={!item.isReserved}
     >
-      <Icon name="check" width={16} height={16} />
+      <Icon name="check" width={12} height={12} />
       <span>Reserved</span>
-    </div>
+    </Badge>
   </div>
   <div class="item-content">
     <h2

@@ -1,4 +1,6 @@
 ---
+import Button from "@components/kit/Button.astro";
+import "@styles/kit/select.css";
 import { categories } from "@lib/wishlist";
 
 // Filter out "all" category for the dropdown
@@ -78,7 +80,7 @@ const itemCategories = categories.filter((c) => c.id !== "all");
         <div class="form-row">
           <div class="form-group">
             <label for="category">Category *</label>
-            <select id="category" name="category" required>
+            <select id="category" name="category" class="kit-select kit-select--md kit-select--full" required>
               {
                 itemCategories.map((cat) => (
                   <option value={cat.id}>{cat.label}</option>
@@ -88,7 +90,7 @@ const itemCategories = categories.filter((c) => c.id !== "all");
           </div>
           <div class="form-group">
             <label for="priority">Priority</label>
-            <select id="priority" name="priority">
+            <select id="priority" name="priority" class="kit-select kit-select--md kit-select--full">
               <option value="">None</option>
               <option value="high">High</option>
               <option value="medium">Medium</option>
@@ -106,17 +108,18 @@ const itemCategories = categories.filter((c) => c.id !== "all");
       </form>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary modal-cancel"
-        >Cancel</button
-      >
-      <button
+      <Button type="button" variant="secondary" size="md" class="modal-cancel">
+        Cancel
+      </Button>
+      <Button
         type="submit"
         form="item-form"
-        class="btn btn-primary"
+        variant="primary"
+        size="md"
         id="modal-submit"
       >
         Save Item
-      </button>
+      </Button>
     </div>
   </div>
 </div>

@@ -1,6 +1,7 @@
 ---
 import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
+import Button from "@components/kit/Button.astro";
 
 export const prerender = true;
 ---
@@ -22,10 +23,10 @@ export const prerender = true;
         The page you're looking for has drifted into the void
       </p>
 
-      <a href="/" class="home-btn">
-        <span>Take me home</span>
+      <Button variant="primary" size="lg" href="/" class="home-btn">
+        Take me home
         <Icon name="arrow-right" width={20} height={20} />
-      </a>
+      </Button>
     </div>
 
     <div class="stars"></div>
@@ -221,23 +222,12 @@ export const prerender = true;
     line-height: 1.5;
   }
 
-  /* Home button */
+  /* Home button overrides for enhanced effect */
   .home-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.9rem 1.75rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: white;
-    text-decoration: none;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    border-radius: 12px;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 4px 20px rgba(237, 87, 96, 0.35);
   }
 
-  .home-btn svg {
+  .home-btn :global(svg) {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -246,7 +236,7 @@ export const prerender = true;
     box-shadow: 0 8px 30px rgba(237, 87, 96, 0.45);
   }
 
-  .home-btn:hover svg {
+  .home-btn:hover :global(svg) {
     transform: translateX(4px);
   }
 
@@ -274,7 +264,7 @@ export const prerender = true;
     }
 
     .home-btn,
-    .home-btn svg {
+    .home-btn :global(svg) {
       transition: none;
     }
   }
