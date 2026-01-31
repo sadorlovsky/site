@@ -87,7 +87,7 @@ const allCategory = categories.find((c) => c.id === "all")!;
       >
         <Button
           slot="start"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           href={allCategory.href}
           class:list={["filter-all-btn", { "is-active": allCategory.id === currentCategory }]}
@@ -138,7 +138,7 @@ const allCategory = categories.find((c) => c.id === "all")!;
   <MobileFilterBar categories={categories} currentCategory={currentCategory}>
     <Button
       slot="start"
-      variant="secondary"
+      variant="ghost"
       size="sm"
       href={allCategory.href}
       class:list={["mobile-filter-all-btn", { "is-active": allCategory.id === currentCategory }]}
