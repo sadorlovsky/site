@@ -268,8 +268,8 @@ import { Icon } from "astro-icon/components";
 
         <h3>As Link</h3>
         <div class="component-row">
-          <Button variant="primary" href="/blog">Go to Blog</Button>
-          <Button variant="secondary" href="/wishlist">Wishlist</Button>
+          <Button variant="primary" href="#">Go to Blog</Button>
+          <Button variant="secondary" href="#">Wishlist</Button>
         </div>
       </section>
 
@@ -284,7 +284,7 @@ import { Icon } from "astro-icon/components";
 
         <h3>Pill Variant</h3>
         <p>For language switchers and compact toggles.</p>
-        <div class="component-row">
+        <div class="component-row" id="toggle-pill-demo">
           <ToggleGroup
             items={[
               { id: "en", label: "ENG" },
@@ -297,14 +297,14 @@ import { Icon } from "astro-icon/components";
 
         <h3>Separated Variant</h3>
         <p>For filter categories with bordered buttons.</p>
-        <div class="component-row" style="flex-wrap: wrap;">
+        <div class="component-row" id="toggle-separated-demo">
           <ToggleGroup
             variant="separated"
             size="sm"
             items={[
-              { id: "all", label: "All", href: "#" },
-              { id: "tech", label: "Tech", href: "#" },
-              { id: "home", label: "Home", href: "#" },
+              { id: "all", label: "All" },
+              { id: "tech", label: "Tech" },
+              { id: "home", label: "Home" },
             ]}
             value="all"
           />
@@ -568,10 +568,28 @@ import { Icon } from "astro-icon/components";
 
         <h3>Demo</h3>
         <div class="component-row">
-          <Button variant="success" size="sm" class="toast-trigger" data-variant="success">Success Toast</Button>
-          <Button variant="danger" size="sm" class="toast-trigger" data-variant="error">Error Toast</Button>
-          <Button variant="secondary" size="sm" class="toast-trigger" data-variant="warning">Warning Toast</Button>
-          <Button variant="ghost" size="sm" class="toast-trigger" data-variant="info">Info Toast</Button>
+          <Button variant="success" size="sm" class="toast-trigger" data-variant="success">Success</Button>
+          <Button variant="danger" size="sm" class="toast-trigger" data-variant="error">Error</Button>
+          <Button variant="secondary" size="sm" class="toast-trigger" data-variant="warning">Warning</Button>
+          <Button variant="ghost" size="sm" class="toast-trigger" data-variant="info">Info</Button>
+        </div>
+
+        <h3>Positions</h3>
+        <p>Default is bottom-center. Add position class to container.</p>
+        <div class="component-row">
+          <Select
+            size="sm"
+            id="toast-position-select"
+            options={[
+              { value: "", label: "bottom-center (default)" },
+              { value: "kit-toast-container--top-center", label: "top-center" },
+              { value: "kit-toast-container--top-right", label: "top-right" },
+              { value: "kit-toast-container--top-left", label: "top-left" },
+              { value: "kit-toast-container--bottom-right", label: "bottom-right" },
+              { value: "kit-toast-container--bottom-left", label: "bottom-left" },
+            ]}
+            value=""
+          />
         </div>
 
         <h3>Structure</h3>
@@ -586,8 +604,11 @@ import { Icon } from "astro-icon/components";
   </div>
 </div>`}</code></pre>
 
-        <h3>Variants</h3>
+        <h3>Type Variants</h3>
         <p><code>.kit-toast--success</code>, <code>.kit-toast--error</code>, <code>.kit-toast--warning</code>, <code>.kit-toast--info</code></p>
+
+        <h3>Position Variants</h3>
+        <p><code>.kit-toast-container--top-center</code>, <code>.kit-toast-container--top-right</code>, <code>.kit-toast-container--top-left</code>, <code>.kit-toast-container--bottom-right</code>, <code>.kit-toast-container--bottom-left</code></p>
       </section>
 
       <!-- Toast Container -->
@@ -891,9 +912,33 @@ import { Icon } from "astro-icon/components";
     }
   });
 
+  // ToggleGroup demo
+  function initToggleGroup(containerId: string) {
+    const container = document.getElementById(containerId);
+    const buttons = container?.querySelectorAll('.kit-toggle-item');
+
+    buttons?.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Update active state
+        buttons.forEach(b => {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+  }
+
+  initToggleGroup('toggle-pill-demo');
+  initToggleGroup('toggle-separated-demo');
+
   // Toast demo
   const toastContainer = document.getElementById('toast-container');
   const toastTriggers = document.querySelectorAll('.toast-trigger');
+  const positionSelect = document.getElementById('toast-position-select') as HTMLSelectElement;
 
   const toastMessages = {
     success: { title: 'Success', message: 'Action completed successfully.' },
@@ -905,9 +950,20 @@ import { Icon } from "astro-icon/components";
   const toastIcons = {
     success: '✓',
     error: '✕',
-    warning: '⚠',
-    info: 'ℹ',
+    warning: '!',
+    info: 'i',
   };
+
+  // Position change handler
+  positionSelect?.addEventListener('change', () => {
+    if (!toastContainer) return;
+    // Remove all position classes
+    toastContainer.className = 'kit-toast-container';
+    // Add selected position class
+    if (positionSelect.value) {
+      toastContainer.classList.add(positionSelect.value);
+    }
+  });
 
   toastTriggers.forEach(trigger => {
     trigger.addEventListener('click', () => {
