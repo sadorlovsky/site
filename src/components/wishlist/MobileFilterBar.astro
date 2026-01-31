@@ -149,12 +149,21 @@ const { categories, currentCategory } = Astro.props;
   }
 
   .mobile-filter-categories {
+    display: flex;
+    gap: 0.4rem;
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
     flex-wrap: nowrap !important;
+    padding: 0.25rem 0;
+    /* Reset kit-toggle-group styles */
+    background: transparent !important;
+  }
+
+  .mobile-filter-categories :global(.kit-toggle-item) {
+    flex-shrink: 0;
   }
 
   /* Drag-to-scroll cursor for desktop (only when scrollable) */
