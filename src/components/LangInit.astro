@@ -42,6 +42,9 @@
       localStorage.setItem(LANG_KEY, lang);
     }
 
+    // Set lang attribute on html element for accessibility
+    document.documentElement.lang = lang;
+
     if (lang === "ru") {
       document.documentElement.classList.add("lang-ru");
     }

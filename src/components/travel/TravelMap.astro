@@ -1,5 +1,6 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 interface Props {
   mode?: "normal" | "globe";
@@ -7,11 +8,6 @@ interface Props {
 
 const { mode = "globe" } = Astro.props;
 ---
-
-<link
-  href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"
-  rel="stylesheet"
-/>
 
 <div id="map" class="map" data-testid="map" data-mode={mode}>
   <div id="placeholder" class="placeholder"></div>

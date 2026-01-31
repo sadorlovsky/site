@@ -4,9 +4,22 @@ import Avatar from "@components/Avatar.astro";
 // import SocialLinks from "@components/SocialLinks.astro";
 
 export const prerender = true;
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Zach Orlovsky",
+  url: "https://orlovsky.dev",
+  image: "https://orlovsky.dev/og-image.png",
+  jobTitle: "Software Engineer",
+  sameAs: [
+    "https://github.com/sadorlovsky",
+  ],
+};
 ---
 
 <PageLayout title="Zach">
+  <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <main>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>

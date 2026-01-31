@@ -3,22 +3,38 @@ import "@styles/global.css";
 import { Font } from "astro:assets";
 import { SEO } from "astro-seo";
 
+interface AlternateLink {
+  lang: string;
+  href: string;
+}
+
 interface Props {
   title: string;
   description?: string;
   image?: string;
+  lang?: "en" | "ru";
+  alternates?: AlternateLink[];
 }
 
-const { title, description = "Software engineer & traveler", image } = Astro.props;
+const {
+  title,
+  description = "Software engineer & traveler",
+  image,
+  lang = "en",
+  alternates = [],
+} = Astro.props;
 const cdnDomain = import.meta.env.PROD ? "cdn.orlovsky.dev" : null;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ?? "https://orlovsky.dev/og-image.png";
 ---
 
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    {alternates.map((alt) => (
+      <link rel="alternate" hreflang={alt.lang} href={alt.href} />
+    ))}
     <SEO
       title={title}
       description={description}
@@ -55,6 +71,7 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
       media="(prefers-color-scheme: dark)"
     />
     {cdnDomain && <link rel="preconnect" href={`https://${cdnDomain}`} />}
+    <link rel="dns-prefetch" href="https://static.cloudflareinsights.com" />
     <Font cssVariable="--font-inter" preload />
   </head>
   <body>

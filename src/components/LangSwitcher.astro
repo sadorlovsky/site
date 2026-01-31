@@ -80,6 +80,8 @@ const { storageKey, size = "sm" } = Astro.props;
   (function () {
     function setLang(storageKey, lang) {
       localStorage.setItem(storageKey, lang);
+      // Update html lang attribute for accessibility
+      document.documentElement.lang = lang;
       if (lang === "ru") {
         document.documentElement.classList.add("lang-ru");
       } else {

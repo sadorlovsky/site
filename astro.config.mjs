@@ -144,6 +144,21 @@ export default defineConfig({
           ],
         },
       },
+      {
+        provider: fontProviders.local(),
+        name: "Fira Code",
+        cssVariable: "--font-fira-code",
+        fallbacks: ["ui-monospace", "monospace"],
+        options: {
+          variants: [
+            {
+              weight: "300 700",
+              style: "normal",
+              src: ["./src/assets/fonts/FiraCode-Variable.woff2"],
+            },
+          ],
+        },
+      },
     ],
   },
 });

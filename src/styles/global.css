@@ -1,13 +1,3 @@
-@font-face {
-  font-family: "Firacode";
-  src: url(/fonts/FiraCode-Regular.ttf);
-}
-
-@font-face {
-  font-family: "FiracodeVariable";
-  src: url(/fonts/FiraCode-Variable.ttf);
-}
-
 :root {
   font-family: var(--font-inter);
   font-feature-settings:
@@ -24,13 +14,6 @@
   --accent-end: rgb(237, 87, 96);
 }
 
-@supports (font-variation-settings: normal) {
-  pre,
-  code {
-    font-family: "FiracodeVariable", monospace;
-  }
-}
-
 html,
 body {
   padding: 0;
@@ -45,7 +28,7 @@ body {
 
 pre,
 code {
-  font-family: "Firacode", monospace;
+  font-family: var(--font-fira-code);
 }
 
 @media (prefers-color-scheme: light) {
