@@ -13,18 +13,18 @@ export interface Session {
 }
 
 /**
- * Check if dev bypass is enabled (skips passkey auth in development)
- * Only allows bypass on localhost to prevent accidental exposure on staging/preview
+ * Check if dev bypass is allowed
+ * Only true when:
+ * 1. Running in development mode (import.meta.env.DEV) - determined at build time
+ * 2. Request is from localhost (additional check, though DEV is the secure gate)
  */
-export function isDevBypassEnabled(requestHost?: string | null): boolean {
-  // Never in production
-  if (import.meta.env.PROD) return false;
+export function isLocalhost(requestHost?: string | null): boolean {
+  // Primary security gate: never in production build
+  if (!import.meta.env.DEV) return false;
 
-  // Require host for security - no bypass without knowing the host
+  // Secondary check: only on localhost
   if (!requestHost) return false;
-
-  // Only allow bypass on localhost
-  const host = requestHost.split(":")[0]; // Remove port if present
+  const host = requestHost.split(":")[0];
   const localHosts = ["localhost", "127.0.0.1", "::1"];
   return localHosts.includes(host);
 }
@@ -84,18 +84,25 @@ async function verifySignedValue(
   return (await timingSafeEqual(signedValue, expectedSigned)) ? value : null;
 }
 
+const DEV_SESSION_COOKIE = "dev-admin-session";
+
 /**
  * Verify session from cookies and return session data if valid
  * @param cookies - Astro cookies object
- * @param requestHost - Optional host header for dev bypass validation
+ * @param requestHost - Optional host header for localhost check
  */
 export async function verifySession(
   cookies: AstroCookies,
   requestHost?: string | null,
 ): Promise<Session | null> {
-  // Dev bypass - skip authentication in development (only on localhost)
-  if (isDevBypassEnabled(requestHost)) {
-    return createDevSession();
+  // Dev mode on localhost - use simple cookie-based auth
+  if (isLocalhost(requestHost)) {
+    const devSession = cookies.get(DEV_SESSION_COOKIE)?.value;
+    if (devSession === "true") {
+      return createDevSession();
+    }
+    // No dev session cookie = not logged in
+    return null;
   }
 
   const signedSessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
@@ -172,7 +179,16 @@ export async function createSession(
 /**
  * Delete the current session and clear the cookie
  */
-export async function deleteSession(cookies: AstroCookies): Promise<void> {
+export async function deleteSession(
+  cookies: AstroCookies,
+  requestHost?: string | null,
+): Promise<void> {
+  // Dev mode on localhost - just clear the dev cookie
+  if (isLocalhost(requestHost)) {
+    cookies.delete(DEV_SESSION_COOKIE, { path: "/" });
+    return;
+  }
+
   const signedSessionId = cookies.get(SESSION_COOKIE_NAME)?.value;
 
   if (signedSessionId && ADMIN_SESSION_SECRET) {
@@ -186,6 +202,20 @@ export async function deleteSession(cookies: AstroCookies): Promise<void> {
   }
 
   cookies.delete(SESSION_COOKIE_NAME, { path: "/" });
+}
+
+/**
+ * Create a dev session cookie
+ * Caller must verify isLocalhost() before calling this
+ */
+export function createDevSessionCookie(cookies: AstroCookies): void {
+  cookies.set(DEV_SESSION_COOKIE, "true", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    path: "/",
+    maxAge: SESSION_DURATION_MS / 1000,
+  });
 }
 
 /**

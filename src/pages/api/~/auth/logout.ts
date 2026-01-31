@@ -18,6 +18,6 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     }
   }
 
-  await deleteSession(cookies);
+  await deleteSession(cookies, host);
   return redirect("/wishlist/~/login");
 };
