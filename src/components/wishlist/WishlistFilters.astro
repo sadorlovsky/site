@@ -10,9 +10,22 @@ interface Props {
 }
 
 const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
+
+const allCategory = categories[0];
+const otherCategories = categories.slice(1);
 ---
 
 <div class="filters">
+  <a
+    href={allCategory.href}
+    class:list={["kit-toggle-item", "filter-all", { "is-active": allCategory.id === currentCategory }]}
+    data-category={allCategory.id}
+    data-en={allCategory.label}
+    data-ru={allCategory.labelRu}
+    aria-current={allCategory.id === currentCategory ? "page" : undefined}
+  >
+    {allCategory.label}
+  </a>
   <nav
     class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm filter-categories"
     role="navigation"
@@ -21,7 +34,7 @@ const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
     data-aria-label-ru="Фильтр по категории"
   >
     {
-      categories.map((cat) => (
+      otherCategories.map((cat) => (
         <a
           href={cat.href}
           class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
@@ -43,110 +56,19 @@ const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
 </div>
 
 <script>
+  import { initScrollableCategories } from "@client/scrollable-categories";
+
   function initFilterCategories() {
-    const el = document.querySelector<HTMLElement>(".filter-categories");
-    if (!el) return;
+    const scroller = document.querySelector<HTMLElement>(".filter-categories");
+    if (!scroller) return;
 
-    // Store reference after null check for use in closures
-    const categoriesEl: HTMLElement = el;
+    const instance = initScrollableCategories({ scroller });
 
-    const activeBtn =
-      categoriesEl.querySelector<HTMLElement>(".kit-toggle-item.is-active");
-
-    function updateEdgeFades() {
-      const { scrollLeft, scrollWidth, clientWidth } = categoriesEl;
-      const threshold = 5;
-
-      const atStart = scrollLeft <= threshold;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - threshold;
-      const isScrollable = scrollWidth > clientWidth + threshold;
-
-      categoriesEl.classList.toggle("at-start", atStart);
-      categoriesEl.classList.toggle("at-end", atEnd);
-      categoriesEl.classList.toggle("is-scrollable", isScrollable);
-    }
-
-    // Scroll active category to center
-    function scrollToActiveCategory() {
-      if (!activeBtn) return;
-
-      const scrollLeft =
-        activeBtn.offsetLeft -
-        categoriesEl.offsetWidth / 2 +
-        activeBtn.offsetWidth / 2;
-
-      categoriesEl.scrollTo({
-        left: Math.max(0, scrollLeft),
-        behavior: "instant",
-      });
-
-      updateEdgeFades();
-    }
-
-    // Drag-to-scroll for desktop (non-touch devices)
-    let isDragging = false;
-    let startX = 0;
-    let scrollStart = 0;
-    let hasDragged = false;
-
-    function onMouseDown(e: MouseEvent) {
-      // Only enable drag on devices with mouse (not touch)
-      if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
-        return;
-
-      // Only enable drag if content is scrollable
-      if (categoriesEl.scrollWidth <= categoriesEl.clientWidth) return;
-
-      // Prevent native link drag
-      e.preventDefault();
-
-      isDragging = true;
-      hasDragged = false;
-      startX = e.pageX;
-      scrollStart = categoriesEl.scrollLeft;
-      categoriesEl.style.cursor = "grabbing";
-      categoriesEl.style.userSelect = "none";
-    }
-
-    function onMouseMove(e: MouseEvent) {
-      if (!isDragging) return;
-
-      const dx = e.pageX - startX;
-      if (Math.abs(dx) > 3) {
-        hasDragged = true;
-      }
-      categoriesEl.scrollLeft = scrollStart - dx;
-    }
-
-    function onMouseUp() {
-      if (!isDragging) return;
-      isDragging = false;
-      categoriesEl.style.cursor = "";
-      categoriesEl.style.userSelect = "";
-    }
-
-    function onClickCapture(e: MouseEvent) {
-      // Prevent click on links if we were dragging
-      if (hasDragged) {
-        e.preventDefault();
-        e.stopPropagation();
-        hasDragged = false;
-      }
-    }
-
-    categoriesEl.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-    categoriesEl.addEventListener("click", onClickCapture, true);
-
-    categoriesEl.addEventListener("scroll", updateEdgeFades, { passive: true });
-
-    // Initial scroll to active and check edges
-    scrollToActiveCategory();
-    updateEdgeFades();
+    // Initial scroll to active
+    instance.scrollToActive();
 
     // Re-check on resize
-    window.addEventListener("resize", updateEdgeFades, { passive: true });
+    window.addEventListener("resize", instance.updateEdgeFades, { passive: true });
   }
 
   initFilterCategories();

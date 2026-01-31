@@ -8,6 +8,9 @@ interface Props {
 }
 
 const { categories, currentCategory } = Astro.props;
+
+const allCategory = categories[0];
+const otherCategories = categories.slice(1);
 ---
 
 {
@@ -21,9 +24,19 @@ const { categories, currentCategory } = Astro.props;
       hidden
     >
       <div class="mobile-filter-bar-inner">
+        <a
+          href={allCategory.href}
+          class:list={["kit-toggle-item", "mobile-filter-all", { "is-active": allCategory.id === currentCategory }]}
+          data-category={allCategory.id}
+          data-en={allCategory.label}
+          data-ru={allCategory.labelRu}
+          aria-current={allCategory.id === currentCategory ? "page" : undefined}
+        >
+          {allCategory.label}
+        </a>
         <div class="mobile-filter-categories-wrapper">
           <div class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm mobile-filter-categories">
-            {categories.map((cat) => (
+            {otherCategories.map((cat) => (
               <a
                 href={cat.href}
                 class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
@@ -37,7 +50,6 @@ const { categories, currentCategory } = Astro.props;
             ))}
           </div>
         </div>
-
       </div>
     </div>
   )
@@ -87,8 +99,40 @@ const { categories, currentCategory } = Astro.props;
   .mobile-filter-bar-inner {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     max-width: 100%;
+  }
+
+  /* Fixed "All" button */
+  .mobile-filter-all {
+    flex-shrink: 0;
+    height: 32px;
+    padding: 0 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: light-dark(#666, #aaa);
+    background: transparent;
+    box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
+    transition: all 0.2s ease;
+  }
+
+  .mobile-filter-all:visited {
+    color: light-dark(#666, #aaa);
+  }
+
+  .mobile-filter-all:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-filter-all.is-active {
+    color: white;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
   }
 
   .mobile-filter-categories-wrapper {
@@ -97,26 +141,8 @@ const { categories, currentCategory } = Astro.props;
     min-width: 0;
   }
 
-  /* Edge fade using mask - fades content at edges */
+  /* Edge fade using mask - only fade right edge since "All" is fixed on left */
   .mobile-filter-categories {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 24px,
-      black calc(100% - 24px),
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 24px,
-      black calc(100% - 24px),
-      transparent
-    );
-  }
-
-  /* Show full content when scrolled to start */
-  .mobile-filter-categories-wrapper.at-start .mobile-filter-categories {
     mask-image: linear-gradient(
       to right,
       black,
@@ -133,13 +159,8 @@ const { categories, currentCategory } = Astro.props;
 
   /* Show full content when scrolled to end */
   .mobile-filter-categories-wrapper.at-end .mobile-filter-categories {
-    mask-image: linear-gradient(to right, transparent, black 24px, black);
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 24px,
-      black
-    );
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 
   /* Show full content when scrolled to both edges (no scroll needed) */
@@ -212,69 +233,26 @@ const { categories, currentCategory } = Astro.props;
 </style>
 
 <script>
+  import { initScrollableCategories } from "@client/scrollable-categories";
+
   function initMobileFilterBar() {
-    const barQuery = document.querySelector<HTMLElement>(".mobile-filter-bar");
-    const topFiltersQuery = document.querySelector<HTMLElement>(".filters");
+    const barEl = document.querySelector<HTMLElement>(".mobile-filter-bar");
+    const topFiltersEl = document.querySelector<HTMLElement>(".filters");
 
-    if (!barQuery || !topFiltersQuery) return;
+    if (!barEl || !topFiltersEl) return;
 
-    // Store references after null check for use in closures
-    const barEl: HTMLElement = barQuery;
-    const topFiltersEl: HTMLElement = topFiltersQuery;
+    const wrapper = barEl.querySelector<HTMLElement>(".mobile-filter-categories-wrapper");
+    const scroller = barEl.querySelector<HTMLElement>(".mobile-filter-categories");
 
-    const categoriesWrapper = barEl.querySelector<HTMLElement>(
-      ".mobile-filter-categories-wrapper",
-    );
-    const categoriesScroller = barEl.querySelector<HTMLElement>(
-      ".mobile-filter-categories",
-    );
-    const activeBtn = categoriesScroller?.querySelector<HTMLElement>(
-      ".kit-toggle-item.is-active",
-    );
+    if (!wrapper || !scroller) return;
 
-    // Check if we're on a narrow screen
+    // Initialize shared scrollable logic
+    const scrollable = initScrollableCategories({ scroller, wrapper });
+
+    // Mobile-specific visibility logic
     const mediaQuery = window.matchMedia("(max-width: 600px)");
-
     let isVisible = false;
     let hasScrolledToActive = false;
-
-    // Update edge fade classes based on scroll position
-    function updateEdgeFades() {
-      if (!categoriesScroller || !categoriesWrapper) return;
-
-      const { scrollLeft, scrollWidth, clientWidth } = categoriesScroller;
-      const threshold = 5;
-
-      const atStart = scrollLeft <= threshold;
-      const atEnd = scrollLeft + clientWidth >= scrollWidth - threshold;
-      const isScrollable = scrollWidth > clientWidth + threshold;
-
-      categoriesWrapper.classList.toggle("at-start", atStart);
-      categoriesWrapper.classList.toggle("at-end", atEnd);
-      categoriesScroller.classList.toggle("is-scrollable", isScrollable);
-    }
-
-    // Scroll active category to center
-    function scrollToActiveCategory() {
-      if (!categoriesScroller || !activeBtn || hasScrolledToActive) return;
-
-      const scrollerRect = categoriesScroller.getBoundingClientRect();
-      const btnRect = activeBtn.getBoundingClientRect();
-
-      // Calculate scroll position to center the active button
-      const scrollLeft =
-        activeBtn.offsetLeft -
-        categoriesScroller.offsetWidth / 2 +
-        activeBtn.offsetWidth / 2;
-
-      categoriesScroller.scrollTo({
-        left: Math.max(0, scrollLeft),
-        behavior: "instant",
-      });
-
-      hasScrolledToActive = true;
-      updateEdgeFades();
-    }
 
     function updateVisibility() {
       if (!mediaQuery.matches) {
@@ -284,7 +262,6 @@ const { categories, currentCategory } = Astro.props;
       }
 
       const filtersRect = topFiltersEl.getBoundingClientRect();
-      // Show bar when top filters are scrolled out of view
       const shouldShow = filtersRect.bottom < 0;
 
       if (shouldShow !== isVisible) {
@@ -292,10 +269,9 @@ const { categories, currentCategory } = Astro.props;
         barEl.hidden = !shouldShow;
 
         // Scroll to active category when bar becomes visible
-        if (shouldShow) {
-          requestAnimationFrame(() => {
-            scrollToActiveCategory();
-          });
+        if (shouldShow && !hasScrolledToActive) {
+          scrollable.scrollToActive();
+          hasScrolledToActive = true;
         }
       }
     }
@@ -310,72 +286,6 @@ const { categories, currentCategory } = Astro.props;
         });
         ticking = true;
       }
-    }
-
-    // Listen for horizontal scroll on categories
-    if (categoriesScroller) {
-      categoriesScroller.addEventListener("scroll", updateEdgeFades, {
-        passive: true,
-      });
-      // Initial edge fade state
-      updateEdgeFades();
-
-      // Drag-to-scroll for desktop (non-touch devices)
-      let isDragging = false;
-      let startX = 0;
-      let scrollStart = 0;
-      let hasDragged = false;
-
-      function onMouseDown(e: MouseEvent) {
-        // Only enable drag on devices with mouse (not touch)
-        if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches)
-          return;
-
-        // Only enable drag if content is scrollable
-        if (categoriesScroller!.scrollWidth <= categoriesScroller!.clientWidth)
-          return;
-
-        // Prevent native link drag
-        e.preventDefault();
-
-        isDragging = true;
-        hasDragged = false;
-        startX = e.pageX;
-        scrollStart = categoriesScroller!.scrollLeft;
-        categoriesScroller!.style.cursor = "grabbing";
-        categoriesScroller!.style.userSelect = "none";
-      }
-
-      function onMouseMove(e: MouseEvent) {
-        if (!isDragging) return;
-
-        const dx = e.pageX - startX;
-        if (Math.abs(dx) > 3) {
-          hasDragged = true;
-        }
-        categoriesScroller!.scrollLeft = scrollStart - dx;
-      }
-
-      function onMouseUp() {
-        if (!isDragging) return;
-        isDragging = false;
-        categoriesScroller!.style.cursor = "";
-        categoriesScroller!.style.userSelect = "";
-      }
-
-      function onClickCapture(e: MouseEvent) {
-        // Prevent click on links if we were dragging
-        if (hasDragged) {
-          e.preventDefault();
-          e.stopPropagation();
-          hasDragged = false;
-        }
-      }
-
-      categoriesScroller.addEventListener("mousedown", onMouseDown);
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-      categoriesScroller.addEventListener("click", onClickCapture, true);
     }
 
     window.addEventListener("scroll", onScroll, { passive: true });
