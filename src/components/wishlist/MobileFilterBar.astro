@@ -1,7 +1,6 @@
 ---
 import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
-import Button from "@components/kit/Button.astro";
 
 interface Props {
   categories: Category[];
@@ -10,69 +9,52 @@ interface Props {
 
 const { categories, currentCategory } = Astro.props;
 
-const allCategory = categories[0];
-const otherCategories = categories.slice(1);
+const otherCategories = categories.filter((c) => c.id !== "all");
+
+// Check if slots are provided
+const hasStartSlot = Astro.slots.has("start");
+const hasEndSlot = Astro.slots.has("end");
 ---
 
-{
-  (
-    <div
-      class="mobile-filter-bar"
-      role="navigation"
-      aria-label="Quick category filter"
-      data-aria-label-en="Quick category filter"
-      data-aria-label-ru="Быстрый фильтр по категории"
-      hidden
-    >
-      <div class="mobile-filter-bar-inner">
-        <a
-          href={allCategory.href}
-          class:list={["kit-toggle-item", "mobile-filter-all", { "is-active": allCategory.id === currentCategory }]}
-          data-category={allCategory.id}
-          data-en={allCategory.label}
-          data-ru={allCategory.labelRu}
-          aria-current={allCategory.id === currentCategory ? "page" : undefined}
-        >
-          {allCategory.label}
-        </a>
-        <div class="mobile-filter-categories-wrapper">
-          <div class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm mobile-filter-categories">
-            {otherCategories.map((cat) => (
-              <a
-                href={cat.href}
-                class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
-                data-category={cat.id}
-                data-en={cat.label}
-                data-ru={cat.labelRu}
-                aria-current={cat.id === currentCategory ? "page" : undefined}
-              >
-                {cat.label}
-              </a>
-            ))}
-          </div>
-        </div>
-        <Button
-          variant="secondary"
-          size="sm"
-          icon
-          class="mobile-filter-random"
-          aria-label="Random item"
-          data-aria-label-en="Random item"
-          data-aria-label-ru="Случайный подарок"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="4" y="4" width="16" height="16" rx="2" />
-            <circle cx="9" cy="9" r="1" fill="currentColor" />
-            <circle cx="15" cy="9" r="1" fill="currentColor" />
-            <circle cx="9" cy="15" r="1" fill="currentColor" />
-            <circle cx="15" cy="15" r="1" fill="currentColor" />
-            <circle cx="12" cy="12" r="1" fill="currentColor" />
-          </svg>
-        </Button>
+<div
+  class="mobile-filter-bar"
+  role="navigation"
+  aria-label="Quick category filter"
+  data-aria-label-en="Quick category filter"
+  data-aria-label-ru="Быстрый фильтр по категории"
+  data-has-start={hasStartSlot ? "true" : undefined}
+  data-has-end={hasEndSlot ? "true" : undefined}
+  hidden
+>
+  <div class="mobile-filter-bar-inner">
+    {hasStartSlot && (
+      <div class="mobile-filter-start">
+        <slot name="start" />
+      </div>
+    )}
+    <div class="mobile-filter-categories-wrapper">
+      <div class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm mobile-filter-categories">
+        {otherCategories.map((cat) => (
+          <a
+            href={cat.href}
+            class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
+            data-category={cat.id}
+            data-en={cat.label}
+            data-ru={cat.labelRu}
+            aria-current={cat.id === currentCategory ? "page" : undefined}
+          >
+            {cat.label}
+          </a>
+        ))}
       </div>
     </div>
-  )
-}
+    {hasEndSlot && (
+      <div class="mobile-filter-end">
+        <slot name="end" />
+      </div>
+    )}
+  </div>
+</div>
 
 <style>
   .mobile-filter-bar {
@@ -122,41 +104,13 @@ const otherCategories = categories.slice(1);
     max-width: 100%;
   }
 
-  /* Fixed "All" button */
-  .mobile-filter-all {
+  /* Fixed slot containers */
+  .mobile-filter-start,
+  .mobile-filter-end {
     flex-shrink: 0;
-    height: 32px;
-    padding: 0 0.85rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 8px;
-    text-decoration: none;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    color: light-dark(#666, #aaa);
-    background: transparent;
-    box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
-    transition: all 0.2s ease;
-  }
-
-  .mobile-filter-all:visited {
-    color: light-dark(#666, #aaa);
-  }
-
-  .mobile-filter-all:active {
-    transform: scale(0.95);
-  }
-
-  .mobile-filter-all.is-active {
-    color: white;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
-  }
-
-  /* Fixed "Random" button */
-  .mobile-filter-random {
-    flex-shrink: 0;
+    gap: 0.5rem;
   }
 
   .mobile-filter-categories-wrapper {
@@ -165,7 +119,7 @@ const otherCategories = categories.slice(1);
     min-width: 0;
   }
 
-  /* Edge fade using mask - both edges (left under "All", right edge) */
+  /* Edge fade using mask - both edges by default */
   .mobile-filter-categories {
     mask-image: linear-gradient(
       to right,
@@ -183,7 +137,7 @@ const otherCategories = categories.slice(1);
     );
   }
 
-  /* At start - no left fade, only right */
+  /* At start position - remove left fade */
   .mobile-filter-categories-wrapper.at-start .mobile-filter-categories {
     mask-image: linear-gradient(
       to right,
@@ -199,14 +153,9 @@ const otherCategories = categories.slice(1);
     );
   }
 
-  /* At end - no right fade, only left */
+  /* At end position - remove right fade */
   .mobile-filter-categories-wrapper.at-end .mobile-filter-categories {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black
-    );
+    mask-image: linear-gradient(to right, transparent, black 16px, black);
     -webkit-mask-image: linear-gradient(
       to right,
       transparent,
@@ -215,7 +164,7 @@ const otherCategories = categories.slice(1);
     );
   }
 
-  /* At both edges - no fade (content fits without scroll) */
+  /* At both ends - no fade */
   .mobile-filter-categories-wrapper.at-start.at-end .mobile-filter-categories {
     mask-image: none;
     -webkit-mask-image: none;
@@ -286,7 +235,6 @@ const otherCategories = categories.slice(1);
 
 <script>
   import { initScrollableCategories, type ScrollableCategoriesInstance } from "@client/scrollable-categories";
-  import { initRandomButton } from "@client/wishlist-random";
 
   let scrollable: ScrollableCategoriesInstance | null = null;
   let scrollHandler: (() => void) | null = null;
@@ -368,9 +316,6 @@ const otherCategories = categories.slice(1);
 
     // Initial check
     updateVisibility();
-
-    // Initialize random button
-    initRandomButton(".mobile-filter-random");
   }
 
   initMobileFilterBar();

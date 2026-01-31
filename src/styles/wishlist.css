@@ -56,48 +56,18 @@
   gap: 0.5rem;
 }
 
-/* Fixed "All" button */
-.filter-all {
+/* Fixed slot containers */
+.filters-start,
+.filters-end {
   flex-shrink: 0;
-  height: 32px;
-  padding: 0 0.85rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: 8px;
-  text-decoration: none;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  color: light-dark(#666, #aaa);
-  background: transparent;
-  box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
-  transition: all 0.2s ease;
-}
-
-.filter-all:visited {
-  color: light-dark(#666, #aaa);
-}
-
-.filter-all:hover {
-  color: light-dark(#111, #fff);
-  box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
-}
-
-.filter-all.is-active,
-.filter-all.is-active:visited {
-  color: white;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  gap: 0.5rem;
 }
 
 .filter-categories {
   flex: 1;
   min-width: 0;
-}
-
-/* Fixed "Random" button */
-.filter-random {
-  flex-shrink: 0;
 }
 
 /* Grid */
@@ -566,7 +536,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     gap: 0.4rem;
-    /* Fade both edges - left (under "All" button) and right */
+    /* Fade both edges by default */
     mask-image: linear-gradient(
       to right,
       transparent,
@@ -587,7 +557,7 @@
     display: none;
   }
 
-  /* At start - no left fade, only right */
+  /* At start position - remove left fade */
   .filter-categories.at-start {
     mask-image: linear-gradient(
       to right,
@@ -603,7 +573,7 @@
     );
   }
 
-  /* At end - no right fade, only left */
+  /* At end position - remove right fade */
   .filter-categories.at-end {
     mask-image: linear-gradient(to right, transparent, black 16px, black);
     -webkit-mask-image: linear-gradient(

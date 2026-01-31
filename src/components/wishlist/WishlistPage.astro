@@ -5,6 +5,8 @@ import LangInit from "@components/LangInit.astro";
 import WishlistItem from "@components/wishlist/WishlistItem.astro";
 import WishlistFilters from "@components/wishlist/WishlistFilters.astro";
 import MobileFilterBar from "@components/wishlist/MobileFilterBar.astro";
+import Button from "@components/kit/Button.astro";
+import { Icon } from "astro-icon/components";
 import type { WishlistItemWithReservation, Category } from "@lib/wishlist";
 import "@styles/wishlist.css";
 
@@ -16,6 +18,8 @@ interface Props {
 }
 
 const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
+
+const allCategory = categories.find((c) => c.id === "all")!;
 ---
 
 <PageLayout title="Wishlist — Zach">
@@ -80,7 +84,33 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
         categories={categories}
         currentCategory={currentCategory}
         showLangSwitcher={false}
-      />
+      >
+        <Button
+          slot="start"
+          variant="secondary"
+          size="sm"
+          href={allCategory.href}
+          class:list={["filter-all-btn", { "is-active": allCategory.id === currentCategory }]}
+          data-category={allCategory.id}
+          data-en={allCategory.label}
+          data-ru={allCategory.labelRu}
+          aria-current={allCategory.id === currentCategory ? "page" : undefined}
+        >
+          {allCategory.label}
+        </Button>
+        <Button
+          slot="end"
+          variant="secondary"
+          size="sm"
+          icon
+          class="filter-random"
+          aria-label="Random item"
+          data-aria-label-en="Random item"
+          data-aria-label-ru="Случайный подарок"
+        >
+          <Icon name="random" width={16} height={16} />
+        </Button>
+      </WishlistFilters>
 
       <div
         class="wishlist-grid"
@@ -102,7 +132,33 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
     </div>
   </main>
 
-  <MobileFilterBar categories={categories} currentCategory={currentCategory} />
+  <MobileFilterBar categories={categories} currentCategory={currentCategory}>
+    <Button
+      slot="start"
+      variant="secondary"
+      size="sm"
+      href={allCategory.href}
+      class:list={["mobile-filter-all-btn", { "is-active": allCategory.id === currentCategory }]}
+      data-category={allCategory.id}
+      data-en={allCategory.label}
+      data-ru={allCategory.labelRu}
+      aria-current={allCategory.id === currentCategory ? "page" : undefined}
+    >
+      {allCategory.label}
+    </Button>
+    <Button
+      slot="end"
+      variant="secondary"
+      size="sm"
+      icon
+      class="mobile-filter-random"
+      aria-label="Random item"
+      data-aria-label-en="Random item"
+      data-aria-label-ru="Случайный подарок"
+    >
+      <Icon name="random" width={16} height={16} />
+    </Button>
+  </MobileFilterBar>
 
   {
     reservationsEnabled && (
@@ -111,4 +167,16 @@ const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
       </script>
     )
   }
+
+  <script>
+    import { initRandomButton } from "@client/wishlist-random";
+
+    function init() {
+      initRandomButton(".filter-random");
+      initRandomButton(".mobile-filter-random");
+    }
+
+    init();
+    document.addEventListener("astro:page-load", init);
+  </script>
 </PageLayout>
