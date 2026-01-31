@@ -23,6 +23,12 @@ export default defineConfig({
   vite: {
     optimizeDeps: {
       exclude: ["@simplewebauthn/server"],
+      esbuildOptions: {
+        target: "esnext",
+      },
+    },
+    build: {
+      target: "esnext",
     },
     ssr: {
       noExternal: ["@simplewebauthn/server"],
