@@ -44,25 +44,12 @@
   }
 }
 
-/* Admin Header */
-.admin-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* Admin Header (PageHeader) */
+.admin-container .page-header {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid
     light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
-}
-
-.admin-header h1 {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 /* Admin Sections */
@@ -81,11 +68,5 @@
 @media (max-width: 600px) {
   .admin-container {
     padding: 1.5rem 1rem 3rem;
-  }
-
-  .admin-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
   }
 }

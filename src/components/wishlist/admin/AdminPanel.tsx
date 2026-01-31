@@ -1,4 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
+import { Input } from "@components/kit/Input";
+import { Select } from "@components/kit/Select";
+import { ToggleGroup } from "@components/kit/ToggleGroup";
+import { Button } from "@components/kit/Button";
 import { ItemList } from "./ItemList";
 import { ItemModal } from "./ItemModal";
 import { ToastProvider, useToast } from "./Toast";
@@ -281,130 +285,102 @@ function AdminPanelInner({
     [showToast],
   );
 
+  // Prepare options for Select
+  const categoryOptions = [
+    { value: "all", label: "All Categories" },
+    ...filterCategories.map((cat) => ({ value: cat.id, label: cat.label })),
+  ];
+
+  // Prepare items for ToggleGroups
+  const statusItems = [
+    { id: "all", label: "All" },
+    { id: "reserved", label: "Reserved" },
+    { id: "received", label: "Received" },
+  ];
+
+  const sortItems = [
+    { id: "admin", label: "Admin" },
+    { id: "public", label: "Public" },
+  ];
+
   return (
     <>
       <div className="admin-section">
         <div className="admin-toolbar">
           <div className="toolbar-actions">
-            <button className="btn btn-primary" onClick={openAddModal}>
+            <Button variant="primary" onClick={openAddModal}>
               + Add Item
-            </button>
+            </Button>
             {reservations.size > 0 && (
-              <button
-                className="btn btn-secondary"
+              <Button
+                variant="secondary"
                 onClick={() => setShowReservationsModal(true)}
               >
                 Reservations ({reservations.size})
-              </button>
+              </Button>
             )}
           </div>
 
           <div className="admin-filters">
-            <input
+            <Input
               type="text"
-              className="filter-search"
               placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <select
-              className="select"
+            <Select
+              options={categoryOptions}
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="all">All Categories</option>
-              {filterCategories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+              full
+            />
 
-            <div
-              className="status-toggle"
-              role="group"
-              aria-label="Filter by status"
-            >
-              <button
-                type="button"
-                className={`status-toggle-btn${selectedStatus === "all" ? " active" : ""}`}
-                onClick={() => setSelectedStatus("all")}
-                aria-pressed={selectedStatus === "all"}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                className={`status-toggle-btn${selectedStatus === "reserved" ? " active" : ""}`}
-                onClick={() => setSelectedStatus("reserved")}
-                aria-pressed={selectedStatus === "reserved"}
-              >
-                Reserved
-              </button>
-              <button
-                type="button"
-                className={`status-toggle-btn${selectedStatus === "received" ? " active" : ""}`}
-                onClick={() => setSelectedStatus("received")}
-                aria-pressed={selectedStatus === "received"}
-              >
-                Received
-              </button>
-            </div>
+            <ToggleGroup
+              items={statusItems}
+              value={selectedStatus}
+              onChange={(value) =>
+                setSelectedStatus(value as "all" | "reserved" | "received")
+              }
+              ariaLabel="Filter by status"
+            />
 
-            <div className="sort-toggle" role="group" aria-label="Sort mode">
-              <button
-                type="button"
-                className={`sort-toggle-btn${sortMode === "admin" ? " active" : ""}`}
-                onClick={() => setSortMode("admin")}
-                aria-pressed={sortMode === "admin"}
-                title="Reserved first, then newest"
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                className={`sort-toggle-btn${sortMode === "public" ? " active" : ""}`}
-                onClick={() => setSortMode("public")}
-                aria-pressed={sortMode === "public"}
-                title="Priority → Weight → Newest (as on public page)"
-              >
-                Public
-              </button>
-            </div>
+            <ToggleGroup
+              items={sortItems}
+              value={sortMode}
+              onChange={(value) => setSortMode(value as "admin" | "public")}
+              ariaLabel="Sort mode"
+              className="admin-sort-toggle"
+            />
           </div>
         </div>
 
         <div className="filter-header">
           <h2>{filterDescription}</h2>
           {hasActiveFilters && (
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm"
-              onClick={clearFilters}
-            >
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
               Clear filters
-            </button>
+            </Button>
           )}
           {reorderedItems && (
             <div className="weight-actions">
               <span className="weight-hint">Drag to reorder, then save</span>
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={handleDiscardWeights}
                 disabled={isSavingWeights}
               >
                 Discard
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
                 onClick={handleSaveWeights}
                 disabled={isSavingWeights}
               >
                 {isSavingWeights ? "Saving..." : "Save Order"}
-              </button>
+              </Button>
             </div>
           )}
         </div>

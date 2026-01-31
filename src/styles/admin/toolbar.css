@@ -17,99 +17,16 @@
   flex: 1;
 }
 
-.filter-search {
-  flex: 1;
-  min-width: 200px;
-  max-width: 300px;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
-  border: 2px solid light-dark(#ddd, #444);
-  border-radius: 10px;
-  background: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.filter-search:focus {
-  outline: none;
-  border-color: var(--accent-start);
-  box-shadow: 0 0 0 3px rgba(237, 98, 146, 0.15);
-}
-
-.filter-search::placeholder {
-  color: light-dark(#999, #666);
-}
-
-/* Status Toggle */
-.status-toggle {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem;
-  background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.06));
-  border-radius: 10px;
-}
-
-.status-toggle-btn {
-  padding: 0.4rem 0.7rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: light-dark(#555, #aaa);
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.status-toggle-btn:hover {
-  color: light-dark(#111, #fff);
-}
-
-.status-toggle-btn.active {
-  color: light-dark(#111, #fff);
-  background: light-dark(#fff, rgba(255, 255, 255, 0.15));
-  box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
-}
-
-.status-toggle-btn:focus-visible {
-  outline: 2px solid var(--accent-start);
-  outline-offset: 2px;
-}
-
-/* Sort Toggle */
-.sort-toggle {
-  display: flex;
-  align-items: center;
-  padding: 0.25rem;
+/* Sort toggle variant (indigo/violet gradient for active) */
+.admin-sort-toggle {
   background: light-dark(rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.15));
-  border-radius: 10px;
 }
 
-.sort-toggle-btn {
-  padding: 0.4rem 0.7rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: light-dark(#555, #aaa);
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.sort-toggle-btn:hover {
-  color: light-dark(#111, #fff);
-}
-
-.sort-toggle-btn.active {
+.admin-sort-toggle .kit-toggle-item.is-active,
+.admin-sort-toggle .kit-toggle-item[aria-pressed="true"] {
   color: white;
   background: linear-gradient(135deg, var(--color-indigo), var(--color-violet));
   box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35));
-}
-
-.sort-toggle-btn:focus-visible {
-  outline: 2px solid var(--accent-start);
-  outline-offset: 2px;
 }
 
 /* Filter Header */
@@ -149,13 +66,18 @@
   flex-wrap: wrap;
 }
 
+/* Mobile styles */
 @media (max-width: 600px) {
   .admin-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .admin-toolbar .btn {
+  .toolbar-actions {
+    flex-direction: column;
+  }
+
+  .toolbar-actions .kit-btn {
     width: 100%;
   }
 
@@ -163,11 +85,20 @@
     flex-direction: column;
   }
 
-  .filter-search {
-    max-width: none;
+  .admin-filters .kit-input {
+    width: 100%;
   }
 
-  .select {
+  .admin-filters .kit-select {
     width: 100%;
+  }
+
+  .admin-filters .kit-toggle-group {
+    width: 100%;
+  }
+
+  .admin-filters .kit-toggle-group .kit-toggle-item {
+    flex: 1;
+    justify-content: center;
   }
 }

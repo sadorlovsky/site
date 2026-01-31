@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "@layouts/AdminLayout.astro";
+import PageHeader from "@components/PageHeader.astro";
 import Button from "@components/kit/Button.astro";
 import { AdminPanel } from "@components/wishlist/admin";
 import { verifySession } from "@lib/admin/auth";
@@ -59,12 +60,15 @@ const reservationsArray = Array.from(reservationMap.entries());
 ---
 
 <AdminLayout title="Wishlist Admin">
-  <header class="admin-header">
-    <h1>Wishlist Admin</h1>
-    <form method="POST" action="/api/~/auth/logout">
+  <PageHeader
+    pageTitle={{ en: "Dashboard", ru: "Панель управления" }}
+    parentLink={{ href: "/wishlist", label: { en: "Wishlist", ru: "Вишлист" } }}
+    forceLang="en"
+  >
+    <form slot="actions" method="POST" action="/api/~/auth/logout">
       <Button type="submit" variant="secondary" size="sm">Logout</Button>
     </form>
-  </header>
+  </PageHeader>
 
   <AdminPanel
     client:load

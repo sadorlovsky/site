@@ -279,7 +279,8 @@ import { Icon } from "astro-icon/components";
       <section id="toggle-group">
         <h2>ToggleGroup</h2>
         <p class="component-import">
-          <code>import ToggleGroup from "@components/kit/ToggleGroup.astro"</code>
+          <code>import ToggleGroup from "@components/kit/ToggleGroup.astro"</code><br />
+          <code>import {`{ ToggleGroup }`} from "@components/kit/ToggleGroup"</code> (React)
         </p>
 
         <h3>Pill Variant</h3>
@@ -317,7 +318,8 @@ import { Icon } from "astro-icon/components";
       <section id="select">
         <h2>Select</h2>
         <p class="component-import">
-          <code>import Select from "@components/kit/Select.astro"</code>
+          <code>import Select from "@components/kit/Select.astro"</code><br />
+          <code>import {`{ Select }`} from "@components/kit/Select"</code> (React)
         </p>
 
         <h3>Sizes</h3>
@@ -368,7 +370,8 @@ import { Icon } from "astro-icon/components";
       <section id="input">
         <h2>Input</h2>
         <p class="component-import">
-          <code>import Input from "@components/kit/Input.astro"</code>
+          <code>import Input from "@components/kit/Input.astro"</code><br />
+          <code>import {`{ Input }`} from "@components/kit/Input"</code> (React)
         </p>
 
         <h3>Sizes</h3>
@@ -967,7 +970,7 @@ import { Icon } from "astro-icon/components";
 
   toastTriggers.forEach(trigger => {
     trigger.addEventListener('click', () => {
-      const variant = trigger.dataset.variant as keyof typeof toastMessages;
+      const variant = (trigger as HTMLElement).dataset.variant as keyof typeof toastMessages;
       const { title, message } = toastMessages[variant];
       const icon = toastIcons[variant];
 
