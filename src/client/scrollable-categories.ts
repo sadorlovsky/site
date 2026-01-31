@@ -3,6 +3,15 @@
  * Used by both WishlistFilters and MobileFilterBar.
  */
 
+/**
+ * Scroll positioning mode for active element:
+ * - "center": Center the active element in the visible area
+ * - "minimal": Only scroll if element is not visible, show with small padding from edge
+ * - "minimal-peek": Like minimal, but always ensures peek of prev/next elements
+ * - "start": Always align active element to the left edge
+ */
+export type ScrollMode = "center" | "minimal" | "minimal-peek" | "start";
+
 export interface ScrollableCategoriesOptions {
   /** The scrollable container element */
   scroller: HTMLElement;
@@ -10,6 +19,8 @@ export interface ScrollableCategoriesOptions {
   wrapper?: HTMLElement;
   /** Selector for active item */
   activeSelector?: string;
+  /** Scroll positioning mode (default: "center") */
+  scrollMode?: ScrollMode;
 }
 
 export interface ScrollableCategoriesInstance {
@@ -28,6 +39,7 @@ export function initScrollableCategories(
     scroller,
     wrapper = scroller,
     activeSelector = ".kit-toggle-item.is-active",
+    scrollMode = "center",
   } = options;
 
   // Drag-to-scroll state
@@ -50,7 +62,7 @@ export function initScrollableCategories(
   }
 
   /**
-   * Scroll to center the active category in the visible area.
+   * Scroll to show the active category based on scrollMode.
    * Uses requestAnimationFrame to ensure DOM is ready.
    */
   function scrollToActive() {
@@ -68,16 +80,77 @@ export function initScrollableCategories(
         return;
       }
 
-      // Calculate the center position for the active element
-      const activeLeft = activeBtn.offsetLeft;
-      const activeWidth = activeBtn.offsetWidth;
-      const activeCenterX = activeLeft + activeWidth / 2;
+      // Get position relative to scroller (not offsetParent)
+      const scrollerRect = scroller.getBoundingClientRect();
+      const activeRect = activeBtn.getBoundingClientRect();
 
-      // Target scroll position to center the active element
-      const targetScrollLeft = activeCenterX - scrollerWidth / 2;
+      // Position relative to scroller's content (accounting for current scroll)
+      const activeLeft =
+        activeRect.left - scrollerRect.left + scroller.scrollLeft;
+      const activeWidth = activeRect.width;
+      const activeRight = activeLeft + activeWidth;
+      const maxScrollLeft = scrollerScrollWidth - scrollerWidth;
+      const currentScrollLeft = scroller.scrollLeft;
+
+      let targetScrollLeft: number;
+
+      switch (scrollMode) {
+        case "start": {
+          // Always align active element to the left edge (with offset for fade zone)
+          const fadeOffset = 20; // offset to avoid left edge fade
+          targetScrollLeft = activeLeft - fadeOffset;
+          break;
+        }
+
+        case "minimal": {
+          // Only scroll if element is not fully visible
+          const padding = 16; // pixels from edge for visibility check
+          const visibleLeft = currentScrollLeft;
+          const visibleRight = currentScrollLeft + scrollerWidth;
+
+          if (activeLeft < visibleLeft + padding) {
+            // Element is cut off on the left
+            targetScrollLeft = activeLeft - padding;
+          } else if (activeRight > visibleRight - padding) {
+            // Element is cut off on the right
+            targetScrollLeft = activeRight - scrollerWidth + padding;
+          } else {
+            // Element is fully visible - don't scroll
+            targetScrollLeft = currentScrollLeft;
+          }
+          break;
+        }
+
+        case "minimal-peek": {
+          // Always position with peek of neighboring elements
+          const peekAmount = 48; // pixels to show of prev/next element
+          const padding = 16;
+
+          // Determine if element is more towards left or right of scroller
+          const activeCenterX = activeLeft + activeWidth / 2;
+          const scrollerCenterX = scrollerScrollWidth / 2;
+
+          if (activeCenterX <= scrollerCenterX) {
+            // Element is in left half - show peek on left, align towards left
+            targetScrollLeft = activeLeft - padding - peekAmount;
+          } else {
+            // Element is in right half - show peek on right, align towards right
+            targetScrollLeft =
+              activeRight - scrollerWidth + padding + peekAmount;
+          }
+          break;
+        }
+
+        case "center":
+        default: {
+          // Center the active element in the visible area
+          const activeCenterX = activeLeft + activeWidth / 2;
+          targetScrollLeft = activeCenterX - scrollerWidth / 2;
+          break;
+        }
+      }
 
       // Clamp to valid scroll range
-      const maxScrollLeft = scrollerScrollWidth - scrollerWidth;
       const clampedScrollLeft = Math.max(
         0,
         Math.min(targetScrollLeft, maxScrollLeft),
