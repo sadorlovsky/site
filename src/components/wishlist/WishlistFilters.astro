@@ -56,19 +56,33 @@ const otherCategories = categories.slice(1);
 </div>
 
 <script>
-  import { initScrollableCategories } from "@client/scrollable-categories";
+  import { initScrollableCategories, type ScrollableCategoriesInstance } from "@client/scrollable-categories";
+
+  let instance: ScrollableCategoriesInstance | null = null;
+  let resizeHandler: (() => void) | null = null;
 
   function initFilterCategories() {
+    // Clean up previous instance
+    if (instance) {
+      instance.destroy();
+      instance = null;
+    }
+    if (resizeHandler) {
+      window.removeEventListener("resize", resizeHandler);
+      resizeHandler = null;
+    }
+
     const scroller = document.querySelector<HTMLElement>(".filter-categories");
     if (!scroller) return;
 
-    const instance = initScrollableCategories({ scroller });
+    instance = initScrollableCategories({ scroller });
 
-    // Initial scroll to active
+    // Scroll to active category (centered)
     instance.scrollToActive();
 
-    // Re-check on resize
-    window.addEventListener("resize", instance.updateEdgeFades, { passive: true });
+    // Re-check edge fades on resize
+    resizeHandler = instance.updateEdgeFades;
+    window.addEventListener("resize", resizeHandler, { passive: true });
   }
 
   initFilterCategories();

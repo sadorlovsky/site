@@ -141,8 +141,26 @@ const otherCategories = categories.slice(1);
     min-width: 0;
   }
 
-  /* Edge fade using mask - only fade right edge since "All" is fixed on left */
+  /* Edge fade using mask - both edges (left under "All", right edge) */
   .mobile-filter-categories {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black calc(100% - 24px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black calc(100% - 24px),
+      transparent
+    );
+  }
+
+  /* At start - no left fade, only right */
+  .mobile-filter-categories-wrapper.at-start .mobile-filter-categories {
     mask-image: linear-gradient(
       to right,
       black,
@@ -157,13 +175,23 @@ const otherCategories = categories.slice(1);
     );
   }
 
-  /* Show full content when scrolled to end */
+  /* At end - no right fade, only left */
   .mobile-filter-categories-wrapper.at-end .mobile-filter-categories {
-    mask-image: none;
-    -webkit-mask-image: none;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black
+    );
   }
 
-  /* Show full content when scrolled to both edges (no scroll needed) */
+  /* At both edges - no fade (content fits without scroll) */
   .mobile-filter-categories-wrapper.at-start.at-end .mobile-filter-categories {
     mask-image: none;
     -webkit-mask-image: none;
@@ -233,9 +261,29 @@ const otherCategories = categories.slice(1);
 </style>
 
 <script>
-  import { initScrollableCategories } from "@client/scrollable-categories";
+  import { initScrollableCategories, type ScrollableCategoriesInstance } from "@client/scrollable-categories";
+
+  let scrollable: ScrollableCategoriesInstance | null = null;
+  let scrollHandler: (() => void) | null = null;
+  let mediaQueryHandler: (() => void) | null = null;
+  let currentMediaQuery: MediaQueryList | null = null;
 
   function initMobileFilterBar() {
+    // Clean up previous instance
+    if (scrollable) {
+      scrollable.destroy();
+      scrollable = null;
+    }
+    if (scrollHandler) {
+      window.removeEventListener("scroll", scrollHandler);
+      scrollHandler = null;
+    }
+    if (currentMediaQuery && mediaQueryHandler) {
+      currentMediaQuery.removeEventListener("change", mediaQueryHandler);
+      mediaQueryHandler = null;
+      currentMediaQuery = null;
+    }
+
     const barEl = document.querySelector<HTMLElement>(".mobile-filter-bar");
     const topFiltersEl = document.querySelector<HTMLElement>(".filters");
 
@@ -247,16 +295,16 @@ const otherCategories = categories.slice(1);
     if (!wrapper || !scroller) return;
 
     // Initialize shared scrollable logic
-    const scrollable = initScrollableCategories({ scroller, wrapper });
+    scrollable = initScrollableCategories({ scroller, wrapper });
 
     // Mobile-specific visibility logic
-    const mediaQuery = window.matchMedia("(max-width: 600px)");
+    currentMediaQuery = window.matchMedia("(max-width: 600px)");
     let isVisible = false;
     let hasScrolledToActive = false;
 
     function updateVisibility() {
-      if (!mediaQuery.matches) {
-        barEl.hidden = true;
+      if (!currentMediaQuery?.matches || !barEl || !topFiltersEl) {
+        if (barEl) barEl.hidden = true;
         isVisible = false;
         return;
       }
@@ -270,7 +318,7 @@ const otherCategories = categories.slice(1);
 
         // Scroll to active category when bar becomes visible
         if (shouldShow && !hasScrolledToActive) {
-          scrollable.scrollToActive();
+          scrollable?.scrollToActive();
           hasScrolledToActive = true;
         }
       }
@@ -278,7 +326,7 @@ const otherCategories = categories.slice(1);
 
     // Throttled scroll handler
     let ticking = false;
-    function onScroll() {
+    scrollHandler = function onScroll() {
       if (!ticking) {
         requestAnimationFrame(() => {
           updateVisibility();
@@ -286,10 +334,12 @@ const otherCategories = categories.slice(1);
         });
         ticking = true;
       }
-    }
+    };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    mediaQuery.addEventListener("change", updateVisibility);
+    mediaQueryHandler = updateVisibility;
+
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    currentMediaQuery.addEventListener("change", mediaQueryHandler);
 
     // Initial check
     updateVisibility();

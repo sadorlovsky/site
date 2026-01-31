@@ -15,7 +15,7 @@ export interface ScrollableCategoriesOptions {
 export interface ScrollableCategoriesInstance {
   /** Update edge fade classes based on scroll position */
   updateEdgeFades: () => void;
-  /** Scroll to show active category */
+  /** Scroll to show active category (centered in view) */
   scrollToActive: () => void;
   /** Clean up event listeners */
   destroy: () => void;
@@ -49,16 +49,43 @@ export function initScrollableCategories(
     scroller.classList.toggle("is-scrollable", isScrollable);
   }
 
+  /**
+   * Scroll to center the active category in the visible area.
+   * Uses requestAnimationFrame to ensure DOM is ready.
+   */
   function scrollToActive() {
-    // Find active button at call time (not at init time)
-    // This is important for elements that are hidden at init
-    const activeBtn = scroller.querySelector<HTMLElement>(activeSelector);
-    if (!activeBtn) return;
+    // Use rAF to ensure element positions are calculated after layout
+    requestAnimationFrame(() => {
+      const activeBtn = scroller.querySelector<HTMLElement>(activeSelector);
+      if (!activeBtn) return;
 
-    // Use offsetLeft for reliable positioning (works even with transforms)
-    scroller.scrollLeft = activeBtn.offsetLeft;
+      const scrollerWidth = scroller.clientWidth;
+      const scrollerScrollWidth = scroller.scrollWidth;
 
-    updateEdgeFades();
+      // If content doesn't overflow, no scrolling needed
+      if (scrollerScrollWidth <= scrollerWidth) {
+        updateEdgeFades();
+        return;
+      }
+
+      // Calculate the center position for the active element
+      const activeLeft = activeBtn.offsetLeft;
+      const activeWidth = activeBtn.offsetWidth;
+      const activeCenterX = activeLeft + activeWidth / 2;
+
+      // Target scroll position to center the active element
+      const targetScrollLeft = activeCenterX - scrollerWidth / 2;
+
+      // Clamp to valid scroll range
+      const maxScrollLeft = scrollerScrollWidth - scrollerWidth;
+      const clampedScrollLeft = Math.max(
+        0,
+        Math.min(targetScrollLeft, maxScrollLeft),
+      );
+
+      scroller.scrollLeft = clampedScrollLeft;
+      updateEdgeFades();
+    });
   }
 
   // Drag-to-scroll handlers
