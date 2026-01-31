@@ -46,7 +46,7 @@ let targetPositions = {
 // Animation state
 let isAnimating = false;
 
-// Check for reduced motion preference
+// Check for reduced motion preference - disable eye tracking completely
 const prefersReducedMotion = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
 ).matches;
@@ -180,22 +180,25 @@ function throttle<T extends (...args: never[]) => void>(
   };
 }
 
-// Throttled handler - updates every 16ms (~60fps)
-const throttledHandler = throttle(handlePointerMove, 16);
+// Only add event listeners if user doesn't prefer reduced motion
+if (!prefersReducedMotion) {
+  // Throttled handler - updates every 16ms (~60fps)
+  const throttledHandler = throttle(handlePointerMove, 16);
 
-// Event listeners
-document.addEventListener("mousemove", throttledHandler);
-document.addEventListener("touchmove", throttledHandler, { passive: true });
+  // Event listeners
+  document.addEventListener("mousemove", throttledHandler);
+  document.addEventListener("touchmove", throttledHandler, { passive: true });
 
-// Reset eyes when pointer leaves the window
-document.addEventListener("mouseleave", () => {
-  targetPositions = {
-    left: { x: 0, y: 0 },
-    right: { x: 0, y: 0 },
-  };
+  // Reset eyes when pointer leaves the window
+  document.addEventListener("mouseleave", () => {
+    targetPositions = {
+      left: { x: 0, y: 0 },
+      right: { x: 0, y: 0 },
+    };
 
-  if (!isAnimating) {
-    isAnimating = true;
-    requestAnimationFrame(animate);
-  }
-});
+    if (!isAnimating) {
+      isAnimating = true;
+      requestAnimationFrame(animate);
+    }
+  });
+}

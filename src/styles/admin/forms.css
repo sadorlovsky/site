@@ -161,7 +161,7 @@
 }
 
 .image-upload p {
-  color: light-dark(#666, #999);
+  color: light-dark(#666, #aaa);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -192,7 +192,7 @@
 .image-preview span {
   flex: 1;
   font-size: 0.75rem;
-  color: light-dark(#666, #999);
+  color: light-dark(#666, #aaa);
   word-break: break-all;
 }
 

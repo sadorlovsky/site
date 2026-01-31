@@ -198,7 +198,7 @@
 
 .kit-toast-message {
   font-size: 0.75rem;
-  color: light-dark(#666, #999);
+  color: light-dark(#666, #aaa);
   margin: 0.125rem 0 0 0;
   line-height: 1.4;
 }
