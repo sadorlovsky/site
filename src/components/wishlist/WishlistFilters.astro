@@ -2,6 +2,7 @@
 import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
 import LangSwitcher from "@components/LangSwitcher.astro";
+import Button from "@components/kit/Button.astro";
 
 interface Props {
   categories: Category[];
@@ -48,6 +49,24 @@ const otherCategories = categories.slice(1);
       ))
     }
   </nav>
+  <Button
+    variant="secondary"
+    size="sm"
+    icon
+    class="filter-random"
+    aria-label="Random item"
+    data-aria-label-en="Random item"
+    data-aria-label-ru="Случайный подарок"
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="4" width="16" height="16" rx="2" />
+      <circle cx="9" cy="9" r="1" fill="currentColor" />
+      <circle cx="15" cy="9" r="1" fill="currentColor" />
+      <circle cx="9" cy="15" r="1" fill="currentColor" />
+      <circle cx="15" cy="15" r="1" fill="currentColor" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+    </svg>
+  </Button>
   {
     showLangSwitcher && (
       <LangSwitcher storageKey="lang" size="sm" />
@@ -57,6 +76,7 @@ const otherCategories = categories.slice(1);
 
 <script>
   import { initScrollableCategories, type ScrollableCategoriesInstance } from "@client/scrollable-categories";
+  import { initRandomButton } from "@client/wishlist-random";
 
   let instance: ScrollableCategoriesInstance | null = null;
   let resizeHandler: (() => void) | null = null;
@@ -83,6 +103,9 @@ const otherCategories = categories.slice(1);
     // Re-check edge fades on resize
     resizeHandler = instance.updateEdgeFades;
     window.addEventListener("resize", resizeHandler, { passive: true });
+
+    // Initialize random button
+    initRandomButton(".filter-random");
   }
 
   initFilterCategories();

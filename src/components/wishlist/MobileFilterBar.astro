@@ -1,6 +1,7 @@
 ---
 import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
+import Button from "@components/kit/Button.astro";
 
 interface Props {
   categories: Category[];
@@ -50,6 +51,24 @@ const otherCategories = categories.slice(1);
             ))}
           </div>
         </div>
+        <Button
+          variant="secondary"
+          size="sm"
+          icon
+          class="mobile-filter-random"
+          aria-label="Random item"
+          data-aria-label-en="Random item"
+          data-aria-label-ru="Случайный подарок"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2" />
+            <circle cx="9" cy="9" r="1" fill="currentColor" />
+            <circle cx="15" cy="9" r="1" fill="currentColor" />
+            <circle cx="9" cy="15" r="1" fill="currentColor" />
+            <circle cx="15" cy="15" r="1" fill="currentColor" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+          </svg>
+        </Button>
       </div>
     </div>
   )
@@ -133,6 +152,11 @@ const otherCategories = categories.slice(1);
     color: white;
     background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
     box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  }
+
+  /* Fixed "Random" button */
+  .mobile-filter-random {
+    flex-shrink: 0;
   }
 
   .mobile-filter-categories-wrapper {
@@ -262,6 +286,7 @@ const otherCategories = categories.slice(1);
 
 <script>
   import { initScrollableCategories, type ScrollableCategoriesInstance } from "@client/scrollable-categories";
+  import { initRandomButton } from "@client/wishlist-random";
 
   let scrollable: ScrollableCategoriesInstance | null = null;
   let scrollHandler: (() => void) | null = null;
@@ -343,6 +368,9 @@ const otherCategories = categories.slice(1);
 
     // Initial check
     updateVisibility();
+
+    // Initialize random button
+    initRandomButton(".mobile-filter-random");
   }
 
   initMobileFilterBar();
