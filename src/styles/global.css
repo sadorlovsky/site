@@ -676,18 +676,12 @@ a.btn-danger:active {
   background-position: right 0.85rem center;
 }
 
-/* Tooltips */
-[data-tooltip] {
-  position: relative;
-}
-
-[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
+/* Floating UI Tooltips */
+.floating-tooltip {
+  display: none;
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 6px;
+  top: 0;
+  left: 0;
   padding: 0.4rem 0.65rem;
   font-size: 0.75rem;
   font-weight: 600;
@@ -696,20 +690,31 @@ a.btn-danger:active {
   background: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 10;
+  z-index: 1000;
   pointer-events: none;
 }
 
-[data-tooltip]:hover::before {
-  content: "";
+.floating-tooltip-arrow {
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 0;
+  height: 0;
   border: 5px solid transparent;
+}
+
+.floating-tooltip-arrow--bottom {
   border-top-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-  z-index: 10;
-  pointer-events: none;
+}
+
+.floating-tooltip-arrow--top {
+  border-bottom-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
+}
+
+.floating-tooltip-arrow--left {
+  border-right-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
+}
+
+.floating-tooltip-arrow--right {
+  border-left-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
 }
 
 /* Accessibility - Reduced motion */

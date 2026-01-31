@@ -58,23 +58,50 @@ function prioritizeImageLoading(item: HTMLElement) {
   }
 }
 
+/**
+ * Check if an item is reserved (by anyone)
+ */
+function isItemReserved(item: HTMLElement): boolean {
+  // Check if reserved badge is visible
+  const reservedBadge = item.querySelector<HTMLElement>(".reserved-badge");
+  if (reservedBadge && !reservedBadge.hidden) {
+    return true;
+  }
+
+  // Check if own reservation badge is visible
+  const ownBadge = item.querySelector<HTMLElement>(".own-reservation-badge");
+  if (ownBadge && !ownBadge.hidden) {
+    return true;
+  }
+
+  // Check reserve button data attribute
+  const reserveBtn = item.querySelector<HTMLElement>(".reserve-btn");
+  if (reserveBtn && reserveBtn.dataset.reservedBy) {
+    return true;
+  }
+
+  return false;
+}
+
 export function scrollToRandomItem() {
-  // Get all visible (non-received) wishlist items
-  const items = document.querySelectorAll<HTMLElement>(
+  // Get all non-received wishlist items
+  const allNonReceived = document.querySelectorAll<HTMLElement>(
     ".wishlist-item:not(.item-received)",
   );
 
-  if (items.length === 0) {
-    // Fallback to all items if no unreceived items
-    const allItems = document.querySelectorAll<HTMLElement>(".wishlist-item");
-    if (allItems.length === 0) return;
-    scrollToItem(allItems[Math.floor(Math.random() * allItems.length)]);
+  // Filter out reserved items
+  const availableItems = Array.from(allNonReceived).filter(
+    (item) => !isItemReserved(item),
+  );
+
+  if (availableItems.length === 0) {
+    // No available items - don't scroll
     return;
   }
 
   // Pick a random item
-  const randomIndex = Math.floor(Math.random() * items.length);
-  const randomItem = items[randomIndex];
+  const randomIndex = Math.floor(Math.random() * availableItems.length);
+  const randomItem = availableItems[randomIndex];
 
   scrollToItem(randomItem);
 }

@@ -1,5 +1,6 @@
 import { actions } from "astro:actions";
 import type { Lang } from "@lib/i18n";
+import { initTooltips } from "./tooltip";
 
 const VISITOR_ID_KEY = "wishlist-visitor-id";
 let currentLang: Lang = "en";
@@ -359,6 +360,18 @@ function updateLanguage(lang: "en" | "ru") {
     }
   });
 
+  // Update tooltip translations
+  const tooltipElements = document.querySelectorAll<HTMLElement>(
+    "[data-tooltip-en][data-tooltip-ru]",
+  );
+
+  tooltipElements.forEach((el) => {
+    const tooltip = lang === "ru" ? el.dataset.tooltipRu : el.dataset.tooltipEn;
+    if (tooltip) {
+      el.setAttribute("data-tooltip", tooltip);
+    }
+  });
+
   // Update reserve buttons based on their state
   const reserveButtons =
     document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
@@ -450,3 +463,4 @@ function updateAriaLabels(lang: "en" | "ru") {
 
 // Initialize immediately - module is dynamically imported after DOMContentLoaded
 initializeWishlist();
+initTooltips();
