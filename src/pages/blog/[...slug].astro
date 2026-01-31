@@ -183,7 +183,7 @@ const breadcrumbSchema = {
         forceLang={post.data.lang}
       />
 
-      <article>
+      <article data-lang={post.data.lang}>
         <header class="post-header">
           <div class="post-meta">
             <time datetime={pubDate.toISOString()}>
@@ -920,11 +920,59 @@ const breadcrumbSchema = {
 
     .post-nav {
       grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .post-nav-link {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 1rem;
+      border-radius: 12px;
+      background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
+      border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+    }
+
+    .post-nav-link::before {
+      content: attr(data-label);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: light-dark(#888, #666);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .post-nav-link.prev::before {
+      content: "← Older";
+    }
+
+    .post-nav-link.next::before {
+      content: "Newer →";
+    }
+
+    article[data-lang="ru"] .post-nav-link.prev::before {
+      content: "← Раньше";
+    }
+
+    article[data-lang="ru"] .post-nav-link.next::before {
+      content: "Позже →";
+    }
+
+    .post-nav-link svg {
+      display: none;
     }
 
     .post-nav-link.next {
-      justify-content: flex-start;
+      align-items: flex-start;
       text-align: left;
+    }
+
+    .post-nav-title {
+      white-space: normal;
+      line-height: 1.4;
     }
 
     .back-to-top {
