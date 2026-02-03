@@ -41,7 +41,7 @@ function getZoomForGlobe(
 }
 
 async function initMap(): Promise<void> {
-  const container = document.getElementById("map");
+  const container = document.getElementById("map")!;
   if (!container) return;
 
   const mode = (container.dataset.mode || "normal") as "normal" | "globe";
@@ -77,11 +77,7 @@ async function initMap(): Promise<void> {
 
   await new Promise<void>((resolve) => map.on("load", resolve));
 
-  // Mode toggle functionality (exposed globally for future use)
-  let currentMode: "globe" | "normal" = isGlobe ? "globe" : "normal";
-
   function setProjectionMode(mode: "globe" | "normal") {
-    currentMode = mode;
     if (mode === "globe") {
       map.setProjection({ type: "globe" });
       const padding = getGlobePadding(container.clientWidth);
@@ -379,9 +375,9 @@ async function initMap(): Promise<void> {
   // Find the closest city feature to a screen point
   function getClosestCity(point: { x: number; y: number }) {
     const pad = 14;
-    const bbox: [{ x: number; y: number }, { x: number; y: number }] = [
-      { x: point.x - pad, y: point.y - pad },
-      { x: point.x + pad, y: point.y + pad },
+    const bbox: [[number, number], [number, number]] = [
+      [point.x - pad, point.y - pad],
+      [point.x + pad, point.y + pad],
     ];
     const features = map.queryRenderedFeatures(bbox, {
       layers: ["visited-cities"],
