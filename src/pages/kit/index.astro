@@ -310,6 +310,21 @@ import { Icon } from "astro-icon/components";
             value="all"
           />
         </div>
+
+        <h3>With Icons</h3>
+        <p>Pass <code>icon</code> to items. Icon size adjusts to toggle size (14px for sm, 16px for md).</p>
+        <div class="component-row" id="toggle-icons-demo">
+          <ToggleGroup
+            variant="separated"
+            size="sm"
+            items={[
+              { id: "timeline", label: "Timeline", icon: "timeline" },
+              { id: "countries", label: "Countries", icon: "flag" },
+              { id: "checklist", label: "Checklist", icon: "checklist" },
+            ]}
+            value="timeline"
+          />
+        </div>
       </section>
 
       <!-- ================================================================
@@ -937,6 +952,7 @@ import { Icon } from "astro-icon/components";
 
   initToggleGroup('toggle-pill-demo');
   initToggleGroup('toggle-separated-demo');
+  initToggleGroup('toggle-icons-demo');
 
   // Toast demo
   const toastContainer = document.getElementById('toast-container');

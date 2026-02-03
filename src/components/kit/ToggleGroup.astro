@@ -1,5 +1,6 @@
 ---
 import "@styles/kit/toggle-group.css";
+import { Icon } from "astro-icon/components";
 
 export interface ToggleItem {
   /** Unique identifier */
@@ -8,6 +9,8 @@ export interface ToggleItem {
   label: string;
   /** Optional label for Russian locale */
   labelRu?: string;
+  /** Icon name (from src/icons/) */
+  icon?: string;
   /** Link href (makes it an anchor instead of button) */
   href?: string;
   /** Disabled state */
@@ -70,6 +73,8 @@ const classes = [
   {items.map((item) => {
     const isActive = item.id === value;
 
+    const iconSize = size === "sm" ? 14 : 16;
+
     if (item.href) {
       return (
         <a
@@ -77,12 +82,11 @@ const classes = [
           class="kit-toggle-item"
           class:list={[{ "is-active": isActive }]}
           data-id={item.id}
-          data-en={item.label}
-          data-ru={item.labelRu}
           aria-current={isActive ? "page" : undefined}
           aria-disabled={item.disabled || undefined}
         >
-          {item.label}
+          {item.icon && <Icon name={item.icon} width={iconSize} height={iconSize} class="kit-toggle-group__icon" />}
+          <span data-en={item.label} data-ru={item.labelRu}>{item.label}</span>
         </a>
       );
     }
@@ -93,14 +97,13 @@ const classes = [
         class="kit-toggle-item"
         class:list={[{ "is-active": isActive }]}
         data-id={item.id}
-        data-en={item.label}
-        data-ru={item.labelRu}
         aria-pressed={isActive}
         disabled={item.disabled}
         name={name}
         value={item.id}
       >
-        {item.label}
+        {item.icon && <Icon name={item.icon} width={iconSize} height={iconSize} class="kit-toggle-group__icon" />}
+        <span data-en={item.label} data-ru={item.labelRu}>{item.label}</span>
       </button>
     );
   })}

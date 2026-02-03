@@ -127,6 +127,85 @@ export function getSortedYears(tripsByYear: Record<number, Trip[]>): number[] {
 // Cities where I lived (not part of trips)
 const homeCities = ["Moscow", "Murom"];
 
+// Country names for display
+const COUNTRY_NAMES: Record<string, { en: string; ru: string }> = {
+  RUS: { en: "Russia", ru: "Россия" },
+  ESP: { en: "Spain", ru: "Испания" },
+  FRA: { en: "France", ru: "Франция" },
+  DEU: { en: "Germany", ru: "Германия" },
+  ITA: { en: "Italy", ru: "Италия" },
+  PRT: { en: "Portugal", ru: "Португалия" },
+  AUT: { en: "Austria", ru: "Австрия" },
+  CHE: { en: "Switzerland", ru: "Швейцария" },
+  NLD: { en: "Netherlands", ru: "Нидерланды" },
+  BEL: { en: "Belgium", ru: "Бельгия" },
+  POL: { en: "Poland", ru: "Польша" },
+  CZE: { en: "Czechia", ru: "Чехия" },
+  SVK: { en: "Slovakia", ru: "Словакия" },
+  HUN: { en: "Hungary", ru: "Венгрия" },
+  GBR: { en: "United Kingdom", ru: "Великобритания" },
+  FIN: { en: "Finland", ru: "Финляндия" },
+  SWE: { en: "Sweden", ru: "Швеция" },
+  EST: { en: "Estonia", ru: "Эстония" },
+  LVA: { en: "Latvia", ru: "Латвия" },
+  LTU: { en: "Lithuania", ru: "Литва" },
+  BLR: { en: "Belarus", ru: "Беларусь" },
+  MDA: { en: "Moldova", ru: "Молдова" },
+  TUR: { en: "Türkiye", ru: "Турция" },
+  ARE: { en: "UAE", ru: "ОАЭ" },
+  KAZ: { en: "Kazakhstan", ru: "Казахстан" },
+  UZB: { en: "Uzbekistan", ru: "Узбекистан" },
+  CHN: { en: "China", ru: "Китай" },
+  VAT: { en: "Vatican", ru: "Ватикан" },
+  HKG: { en: "Hong Kong", ru: "Гонконг" },
+  MAC: { en: "Macao", ru: "Макао" },
+  SJM: { en: "Svalbard", ru: "Шпицберген" },
+};
+
+export interface CountryWithCities {
+  code: string;
+  a2: string;
+  name: { en: string; ru: string };
+  cities: string[];
+  tripCount: number;
+}
+
+// Get visited countries with their cities
+export function getCountriesWithCities(data: Trip[]): CountryWithCities[] {
+  const countryMap = new Map<
+    string,
+    { a2: string; cities: Set<string>; tripCount: number }
+  >();
+
+  for (const trip of data) {
+    for (const dest of trip.destinations) {
+      const [a2, a3] = dest.country;
+      const code = a3.toUpperCase();
+
+      if (!countryMap.has(code)) {
+        countryMap.set(code, { a2, cities: new Set(), tripCount: 0 });
+      }
+
+      const entry = countryMap.get(code)!;
+      entry.tripCount++;
+      for (const city of dest.cities) {
+        entry.cities.add(city);
+      }
+    }
+  }
+
+  // Convert to array and sort by city count (descending)
+  return Array.from(countryMap.entries())
+    .map(([code, data]) => ({
+      code,
+      a2: data.a2,
+      name: COUNTRY_NAMES[code] || { en: code, ru: code },
+      cities: Array.from(data.cities).sort(),
+      tripCount: data.tripCount,
+    }))
+    .sort((a, b) => b.cities.length - a.cities.length);
+}
+
 export const trips = tripsData as Trip[];
 export const datedTrips = getDatedTrips(trips);
 export const tripsCount = datedTrips.length;

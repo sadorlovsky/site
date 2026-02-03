@@ -1,0 +1,84 @@
+---
+import { datedTrips, getCountriesWithCities } from "@lib/travel";
+import { getCityName } from "@lib/travel/cities-i18n";
+import "flag-icons/css/flag-icons.min.css";
+
+const countriesWithCities = getCountriesWithCities(datedTrips);
+---
+
+<div class="countries-view">
+  {
+    countriesWithCities.map((country) => (
+      <div class="country-row">
+        <span
+          class={`flag fi fi-${country.a2}`}
+          role="img"
+          aria-label={`${country.name.en} flag`}
+        /><span
+          class="country-name"
+          data-en={country.name.en}
+          data-ru={country.name.ru}
+        >{country.name.en}</span>
+        <span class="separator" aria-hidden="true">—</span>
+        {country.cities.map((city, i) => (
+          <>
+            <span
+              class="city"
+              data-en={`${city}${i < country.cities.length - 1 ? "," : ""}`}
+              data-ru={`${getCityName(city, "ru")}${i < country.cities.length - 1 ? "," : ""}`}
+            >{city}{i < country.cities.length - 1 ? "," : ""}</span>{" "}
+          </>
+        ))}
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .countries-view {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .country-row {
+    padding: 0.4rem 0.5rem;
+    border-radius: 6px;
+    line-height: 1.7;
+    color: light-dark(#666, #888);
+    font-size: 0.85rem;
+    transition: background-color 0.15s ease;
+  }
+
+  .country-row:hover {
+    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
+  }
+
+  .flag {
+    font-size: 0.9rem;
+    border-radius: 2px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+  }
+
+  .country-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: light-dark(#111, #fff);
+    white-space: nowrap;
+  }
+
+  .separator {
+    color: light-dark(#ccc, #444);
+    margin: 0 0.3rem;
+  }
+
+  .city {
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .country-row {
+      transition: none;
+    }
+  }
+</style>

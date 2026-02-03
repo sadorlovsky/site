@@ -1,0 +1,111 @@
+---
+import ToggleGroup from "@components/kit/ToggleGroup.astro";
+
+interface Props {
+  currentView: string;
+}
+
+const { currentView } = Astro.props;
+
+const items = [
+  {
+    id: "timeline",
+    label: "Timeline",
+    labelRu: "Хронология",
+    icon: "timeline",
+  },
+  {
+    id: "countries",
+    label: "Countries",
+    labelRu: "Страны",
+    icon: "flag",
+  },
+  {
+    id: "checklist",
+    label: "Checklist",
+    labelRu: "Чеклист",
+    icon: "checklist",
+  },
+];
+---
+
+<nav class="view-switcher" data-current={currentView}>
+  <ToggleGroup
+    items={items}
+    value={currentView}
+    variant="separated"
+    size="sm"
+    ariaLabelEn="Travel view mode"
+    ariaLabelRu="Режим просмотра"
+  />
+</nav>
+
+<script>
+  function initViewSwitcher() {
+    const switcher = document.querySelector(".view-switcher");
+    if (!switcher) return;
+
+    const buttons = switcher.querySelectorAll(".kit-toggle-item");
+    const views = document.querySelectorAll(".travel-view");
+
+    // Get initial view from URL hash or default
+    const hash = window.location.hash.slice(1);
+    const validViews = ["timeline", "countries", "checklist"];
+    const initialView = validViews.includes(hash) ? hash : "timeline";
+
+    function setView(viewId: string) {
+      // Update buttons
+      buttons.forEach((btn) => {
+        const id = btn.getAttribute("data-id");
+        const isActive = id === viewId;
+        btn.classList.toggle("is-active", isActive);
+        btn.setAttribute("aria-pressed", String(isActive));
+      });
+
+      // Update views
+      views.forEach((view) => {
+        const id = view.getAttribute("data-view");
+        if (id === viewId) {
+          view.removeAttribute("hidden");
+        } else {
+          view.setAttribute("hidden", "");
+        }
+      });
+
+      // Update URL hash without scrolling
+      history.replaceState(null, "", viewId === "timeline" ? "/travel" : `/travel#${viewId}`);
+    }
+
+    // Set initial view
+    setView(initialView);
+
+    // Handle clicks
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const viewId = btn.getAttribute("data-id");
+        if (viewId) setView(viewId);
+      });
+    });
+
+    // Handle hash changes
+    window.addEventListener("hashchange", () => {
+      const hash = window.location.hash.slice(1);
+      const viewId = validViews.includes(hash) ? hash : "timeline";
+      setView(viewId);
+    });
+  }
+
+  // Initialize on DOM ready
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initViewSwitcher);
+  } else {
+    initViewSwitcher();
+  }
+</script>
+
+<style>
+  .view-switcher {
+    display: flex;
+  }
+</style>

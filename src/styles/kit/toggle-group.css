@@ -193,6 +193,12 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group__icon {
   flex-shrink: 0;
   color: light-dark(#888, #777);
+  transition: color 0.2s ease;
+}
+
+.kit-toggle-item.is-active .kit-toggle-group__icon,
+.kit-toggle-item[aria-pressed="true"] .kit-toggle-group__icon {
+  color: inherit;
 }
 
 .kit-toggle-group--sm .kit-toggle-group__icon {
