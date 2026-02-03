@@ -1,5 +1,6 @@
 import { Map as MapLibre } from "maplibre-gl";
 import { countries, cities, cityCoordinates } from "@lib/travel";
+import { getCityName } from "@lib/travel/cities-i18n";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
 const MOBILE_BREAKPOINT = 480;
@@ -305,11 +306,12 @@ async function initMap(): Promise<void> {
     );
   });
 
-  // Add visited cities source
+  // Add visited cities source (with numeric ids for feature-state)
   const cityFeatures = Array.from(cities)
     .filter((city) => cityCoordinates[city])
-    .map((city) => ({
+    .map((city, i) => ({
       type: "Feature" as const,
+      id: i,
       geometry: {
         type: "Point" as const,
         coordinates: cityCoordinates[city],
@@ -325,7 +327,7 @@ async function initMap(): Promise<void> {
     },
   });
 
-  // Add visited cities layer with blur effect (before labels)
+  // Add visited cities layer with feature-state driven hover
   map.addLayer(
     {
       id: "visited-cities",
@@ -338,20 +340,109 @@ async function initMap(): Promise<void> {
           ["linear"],
           ["zoom"],
           1,
+          ["case", ["boolean", ["feature-state", "hover"], false], 5, 3],
           3,
-          3,
+          ["case", ["boolean", ["feature-state", "hover"], false], 8, 5],
           5,
-          5,
+          ["case", ["boolean", ["feature-state", "hover"], false], 12, 8],
           8,
-          8,
-          8,
+          ["case", ["boolean", ["feature-state", "hover"], false], 12, 8],
         ],
-        "circle-blur": 0.25,
-        "circle-opacity": 0.45,
+        "circle-radius-transition": { duration: 150 },
+        "circle-blur": [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          0.15,
+          0.25,
+        ],
+        "circle-blur-transition": { duration: 150 },
+        "circle-opacity": [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          0.9,
+          0.45,
+        ],
+        "circle-opacity-transition": { duration: 150 },
       },
     },
     "label_other",
   );
+
+  // City hover: track hovered feature and show label tooltip
+  const cityLabel = document.createElement("div");
+  cityLabel.className = "city-label-overlay";
+  cityLabel.style.display = "none";
+  container.appendChild(cityLabel);
+
+  let hoveredCityId: number | null = null;
+
+  // Find the closest city feature to a screen point
+  function getClosestCity(point: { x: number; y: number }) {
+    const pad = 14;
+    const bbox: [{ x: number; y: number }, { x: number; y: number }] = [
+      { x: point.x - pad, y: point.y - pad },
+      { x: point.x + pad, y: point.y + pad },
+    ];
+    const features = map.queryRenderedFeatures(bbox, {
+      layers: ["visited-cities"],
+    });
+    if (features.length === 0) return null;
+
+    // Find closest to cursor
+    let closest = features[0];
+    let minDist = Infinity;
+    for (const f of features) {
+      const projected = map.project(
+        (f.geometry as GeoJSON.Point).coordinates as [number, number],
+      );
+      const dx = projected.x - point.x;
+      const dy = projected.y - point.y;
+      const dist = dx * dx + dy * dy;
+      if (dist < minDist) {
+        minDist = dist;
+        closest = f;
+      }
+    }
+    return closest;
+  }
+
+  map.on("mousemove", (e) => {
+    const feature = getClosestCity(e.point);
+
+    if (feature) {
+      const newId = feature.id as number;
+
+      if (hoveredCityId !== null && hoveredCityId !== newId) {
+        map.setFeatureState(
+          { source: "visited-cities", id: hoveredCityId },
+          { hover: false },
+        );
+      }
+
+      if (hoveredCityId !== newId) {
+        hoveredCityId = newId;
+        map.setFeatureState(
+          { source: "visited-cities", id: newId },
+          { hover: true },
+        );
+        const lang = (localStorage.getItem("lang") as "en" | "ru") || "en";
+        cityLabel.textContent = getCityName(feature.properties!.name, lang);
+      }
+
+      map.getCanvas().style.cursor = "pointer";
+      cityLabel.style.display = "flex";
+      cityLabel.style.left = `${e.point.x}px`;
+      cityLabel.style.top = `${e.point.y - 30}px`;
+    } else if (hoveredCityId !== null) {
+      map.setFeatureState(
+        { source: "visited-cities", id: hoveredCityId },
+        { hover: false },
+      );
+      hoveredCityId = null;
+      map.getCanvas().style.cursor = "";
+      cityLabel.style.display = "none";
+    }
+  });
 
   // Hide placeholder when map is fully rendered
   map.once("idle", () => {
