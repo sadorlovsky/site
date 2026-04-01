@@ -135,6 +135,20 @@ Or Node:
 require('crypto').randomBytes(16).toString('hex')
 ```
 
+### Kill process on a port
+
+Need to free up a port that some process is hogging? This one-liner finds it and kills it:
+
+```bash
+lsof -ti :PORT | xargs kill -9
+```
+
+For example, to kill whatever's running on port 3000:
+
+```bash
+lsof -ti :3000 | xargs kill -9
+```
+
 ### Fix Colima after crash
 
 Classic scenario: laptop dies from low battery, you plug it in, and Colima refuses to start. The network socket is stuck in a broken state.
@@ -156,7 +170,7 @@ alias colima-fix='pkill -9 -f "colima|lima" 2>/dev/null; rm -rf ~/.colima/_lima/
 
 Same story with Postgres via Homebrew — a stale pidfile blocks startup.
 
-The quick fix everyone knows:
+The quick fix:
 
 ```bash
 rm -f /usr/local/var/postgresql@14/postmaster.pid

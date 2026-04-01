@@ -135,6 +135,20 @@ secrets.token_hex(16)  # 32 hex-символа = 128 бит
 require('crypto').randomBytes(16).toString('hex')
 ```
 
+### Завершить процесс на порту
+
+Нужно освободить порт, который занял какой-то процесс? Этот однострочник найдёт и убьёт его:
+
+```bash
+lsof -ti :PORT | xargs kill -9
+```
+
+Например, чтобы завершить всё, что работает на порту 3000:
+
+```bash
+lsof -ti :3000 | xargs kill -9
+```
+
 ### Починить Colima после краша
 
 Классика: ноутбук сдох от разряда батареи, включаешь — а Colima не стартует. Сетевой сокет завис в сломанном состоянии.
@@ -156,7 +170,7 @@ alias colima-fix='pkill -9 -f "colima|lima" 2>/dev/null; rm -rf ~/.colima/_lima/
 
 Та же история с Postgres через Homebrew — stale pidfile блокирует запуск.
 
-Быстрый фикс, который все знают:
+Быстрый фикс:
 
 ```bash
 rm -f /usr/local/var/postgresql@14/postmaster.pid
@@ -168,19 +182,19 @@ brew services restart postgresql@14
 ```bash
 pg-fix() {
   local pidfile="/usr/local/var/postgresql@14/postmaster.pid"
-  
+
   if [[ ! -f "$pidfile" ]]; then
     echo "No stale pidfile found"
     brew services restart postgresql@14
     return
   fi
-  
+
   local pid=$(head -1 "$pidfile")
   if ps -p "$pid" > /dev/null 2>&1; then
     echo "PostgreSQL is actually running (PID $pid)"
     return 1
   fi
-  
+
   echo "Removing stale pidfile..."
   rm -f "$pidfile"
   brew services restart postgresql@14
