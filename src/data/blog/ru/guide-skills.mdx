@@ -1,0 +1,400 @@
+---
+title: 'Как писать свои Skills'
+author: 'Zach Orlovsky'
+tags: ['claude', 'claude-code', 'ai', 'tools']
+lang: ru
+translationOf: en/guide-skills
+---
+
+## Что такое Skills
+
+Skill = markdown файл с инструкциями который Claude добавляет в свой арсенал. Можно вызвать явно через `/skill-name` или Claude загрузит сам когда посчитает нужным.
+
+**Отличие от CLAUDE.md:** CLAUDE.md загружается всегда и полностью. Skills загружаются по необходимости — экономит контекст.
+
+**Отличие от slash команд (`.claude/commands/`):** команды по-прежнему работают, но Skills — рекомендуемый формат. Оба создают `/команду`, но Skills поддерживают больше возможностей: папка с файлами, frontmatter, автозапуск.
+
+---
+
+## Где хранить
+
+| Расположение | Scope |
+|---|---|
+| `~/.claude/skills/<name>/SKILL.md` | Все твои проекты (личные) |
+| `.claude/skills/<name>/SKILL.md` | Только этот проект (в git) |
+| Плагин `skills/<name>/SKILL.md` | Где установлен плагин |
+
+При конфликте имён: личные > проектные > плагины.
+
+---
+
+## Минимальный skill
+
+```
+mkdir -p ~/.claude/skills/explain-code
+```
+
+`~/.claude/skills/explain-code/SKILL.md`:
+
+```markdown
+---
+name: explain-code
+description: Explains code with visual diagrams and analogies. Use when explaining how code works or when asked "how does this work?"
+---
+
+When explaining code, always:
+
+1. **Start with an analogy** — сравни с чем-то из реальной жизни
+2. **Draw a diagram** — ASCII art для структуры или flow
+3. **Walk through step-by-step** — что происходит по шагам
+4. **Highlight a gotcha** — частая ошибка или заблуждение
+```
+
+Вызов: `/explain-code` или Claude загрузит сам когда ты спросишь "как это работает?"
+
+---
+
+## Структура SKILL.md
+
+```markdown
+---
+name: имя-команды          # становится /имя-команды
+description: Что делает и когда использовать. Claude читает это для автозапуска.
+---
+
+# Содержимое
+
+Инструкции для Claude что делать когда skill активирован.
+```
+
+---
+
+## Все frontmatter поля
+
+| Поле | Описание |
+|---|---|
+| `name` | Имя команды. Буквы, цифры, дефисы. Макс 64 символа. |
+| `description` | Когда использовать. **Рекомендуется всегда.** Макс 250 символов — front-load главное. |
+| `argument-hint` | Подсказка в autocomplete. Например: `[issue-number]` |
+| `disable-model-invocation` | `true` — только ты можешь вызвать, Claude не будет загружать автоматически |
+| `user-invocable` | `false` — скрыть из `/` меню, только Claude может использовать |
+| `allowed-tools` | Инструменты доступные без запроса разрешения. Пробел-separated: `Read Grep Glob` |
+| `model` | Модель для этого skill: `haiku`, `sonnet`, `opus` |
+| `effort` | Уровень размышления: `low`, `medium`, `high`, `max` |
+| `context` | `fork` — запустить в изолированном subagent |
+| `agent` | Какой subagent использовать при `context: fork` |
+| `paths` | Glob паттерны — загружать только для matching файлов |
+| `hooks` | Hooks для lifecycle этого skill |
+
+---
+
+## Три типа контента
+
+### 1. Reference — знания которые Claude применяет
+
+Загружается inline, Claude использует рядом с разговором:
+
+```markdown
+---
+name: api-conventions
+description: API design patterns for this codebase
+---
+
+When writing API endpoints:
+- RESTful naming conventions
+- Consistent error format: { error, code, message }
+- Input validation on all endpoints
+- JSDoc comments for all public routes
+```
+
+### 2. Task — пошаговая инструкция для конкретного действия
+
+Для действий которые хочешь контролировать сам — добавь `disable-model-invocation: true`:
+
+```markdown
+---
+name: deploy
+description: Deploy the application to production
+disable-model-invocation: true
+context: fork
+---
+
+Deploy to production:
+1. Run test suite — `bun test`
+2. Build — `bun run build`
+3. Push to deployment target
+4. Verify deployment succeeded
+```
+
+### 3. Context — фоновые знания только для Claude
+
+Скрыт из меню, Claude использует когда нужно:
+
+```markdown
+---
+name: legacy-system-context
+description: Context about the legacy billing system. Load when working with src/billing/legacy/
+user-invocable: false
+paths:
+  - "src/billing/legacy/**"
+---
+
+# Legacy Billing System
+
+Эта система написана в 2015 году и использует...
+Никогда не трогай файл legacy-core.js напрямую...
+```
+
+---
+
+## Аргументы
+
+```markdown
+---
+name: fix-issue
+description: Fix a GitHub issue by number
+disable-model-invocation: true
+argument-hint: [issue-number]
+---
+
+Fix GitHub issue #$ARGUMENTS:
+
+1. Read the issue description
+2. Find relevant code
+3. Implement the fix
+4. Write tests
+5. Create a commit
+```
+
+Вызов: `/fix-issue 123`
+
+**Позиционные аргументы:**
+
+```markdown
+---
+name: migrate-component
+---
+
+Migrate the $0 component from $1 to $2.
+# /migrate-component SearchBar React Vue
+# $0 = SearchBar, $1 = React, $2 = Vue
+```
+
+**Все аргументы:** `$ARGUMENTS` — всё что после имени команды.
+
+---
+
+## Динамический контент через bash
+
+Префикс `!` — выполнить команду и вставить результат до того как Claude увидит prompt:
+
+```markdown
+---
+name: pr-summary
+description: Summarize the current pull request
+allowed-tools: Bash(gh *)
+context: fork
+agent: Explore
+---
+
+## Pull Request Context
+- Diff: !`gh pr diff`
+- Comments: !`gh pr view --comments`
+- Changed files: !`gh pr diff --name-only`
+
+## Task
+Summarize this pull request: what changed, why, and what to review carefully.
+```
+
+Команды выполняются **до** отправки Claude — он получает уже готовые данные.
+
+---
+
+## Path-specific skills
+
+Загружаются только когда Claude работает с matching файлами:
+
+```markdown
+---
+name: react-patterns
+description: React component patterns for this codebase
+paths:
+  - "src/components/**/*.tsx"
+  - "src/pages/**/*.tsx"
+---
+
+When writing React components:
+- Functional components only, no class components
+- Custom hooks в src/hooks/
+- Стили через CSS modules
+```
+
+---
+
+## Запуск в subagent (context: fork)
+
+Skill выполняется в изолированном контексте — не засоряет основной разговор:
+
+```markdown
+---
+name: deep-research
+description: Research a topic thoroughly in the codebase
+context: fork
+agent: Explore
+---
+
+Research $ARGUMENTS thoroughly:
+
+1. Find relevant files using Glob and Grep
+2. Read and analyze the code
+3. Return a summary with specific file references
+```
+
+Какой `agent` указывать:
+- `Explore` — read-only, haiku, быстрый поиск
+- `Plan` — read-only, для планирования
+- `general-purpose` — все инструменты
+- Или любой свой subagent из `.claude/agents/`
+
+---
+
+## Папка с дополнительными файлами
+
+Для сложных skills — держи SKILL.md компактным, детали в отдельных файлах:
+
+```
+.claude/skills/deploy/
+├── SKILL.md              # основные инструкции + навигация
+├── checklist.md          # детальный чеклист
+├── rollback-guide.md     # инструкции на случай проблем
+└── scripts/
+    └── health-check.sh   # скрипт проверки
+```
+
+В SKILL.md ссылайся на файлы явно:
+
+```markdown
+---
+name: deploy
+description: Deploy to production with full checklist
+---
+
+Follow the deployment checklist in [checklist.md](checklist.md).
+If something goes wrong, see [rollback-guide.md](rollback-guide.md).
+
+After deployment run: !`./scripts/health-check.sh`
+```
+
+SKILL.md держи до 500 строк. Детали — в отдельные файлы.
+
+---
+
+## Контроль вызова
+
+| Frontmatter | Ты вызываешь | Claude вызывает | В контексте |
+|---|---|---|---|
+| (дефолт) | ✅ | ✅ | Описание всегда, контент по вызову |
+| `disable-model-invocation: true` | ✅ | ❌ | Не загружается автоматически |
+| `user-invocable: false` | ❌ | ✅ | Описание в контексте, скрыт из меню |
+
+**Когда что:**
+- `/deploy`, `/commit`, `/send-message` → `disable-model-invocation: true` (ты контролируешь когда)
+- Фоновые знания о legacy системе → `user-invocable: false` (Claude решает когда нужно)
+
+---
+
+## Встроенные skills (бесплатно из коробки)
+
+| Skill | Что делает |
+|---|---|
+| `/batch <instruction>` | Параллельный рефакторинг — разбивает на задачи, запускает агентов в worktrees |
+| `/simplify [focus]` | Code review + исправление — 3 агента параллельно |
+| `/debug [description]` | Включает debug logging и анализирует проблему |
+| `/loop [interval] <prompt>` | Запускает prompt по расписанию |
+| `/claude-api` | Загружает reference по Claude API |
+
+---
+
+## Практические примеры
+
+### Commit helper
+
+```markdown
+---
+name: commit
+description: Create a well-formatted git commit
+disable-model-invocation: true
+allowed-tools: Bash(git *)
+---
+
+Create a git commit:
+1. Run `git diff --staged` to see changes
+2. Write commit message in format: `type(scope): description`
+   Types: feat, fix, docs, style, refactor, test, chore
+3. Keep subject under 72 characters
+4. Add body if changes are complex
+
+$ARGUMENTS
+```
+
+### Code review
+
+```markdown
+---
+name: review
+description: Review code changes for quality, security, and best practices
+context: fork
+agent: Explore
+allowed-tools: Read, Grep, Glob, Bash(git *)
+---
+
+Review the recent changes:
+
+## Changes to review
+!`git diff HEAD~1`
+
+## Review checklist
+- [ ] Code quality and readability
+- [ ] Security issues (injections, exposed secrets)
+- [ ] Error handling
+- [ ] Test coverage
+- [ ] Performance implications
+
+Provide feedback organized by: Critical → Warnings → Suggestions
+```
+
+### Session logger
+
+```markdown
+---
+name: session-log
+description: Log this session's activity
+disable-model-invocation: true
+---
+
+Append a summary of this session to logs/${CLAUDE_SESSION_ID}.log:
+
+- What was accomplished
+- Files changed
+- Decisions made
+- Next steps
+
+$ARGUMENTS
+```
+
+---
+
+## Troubleshooting
+
+**Skill не триггерится автоматически:**
+- Проверь что `description` содержит ключевые слова которые ты используешь
+- Спроси Claude "what skills are available?" — проверь что skill в списке
+- Вызови вручную `/skill-name` чтобы убедиться что работает
+
+**Skill триггерится слишком часто:**
+- Сделай `description` конкретнее
+- Добавь `disable-model-invocation: true`
+
+**Описание обрезается:**
+- Front-load главное — первые 250 символов самые важные
+- Бюджет на все descriptions: 1% контекста или 8000 символов
