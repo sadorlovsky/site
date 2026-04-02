@@ -1,0 +1,291 @@
+---
+title: 'How to write an effective CLAUDE.md'
+pubDate: 2026-04-02
+author: 'Zach Orlovsky'
+tags: ['claude', 'claude-code', 'ai', 'tools']
+lang: en
+---
+
+> Up to date as of April 2026.
+
+---
+
+## What is CLAUDE.md
+
+A markdown file with instructions for Claude that gets loaded at the start of every session. It's not a config — it's context. Claude reads it and tries to follow, but there's no hard enforcement.
+
+**Key principle:** the more specific and concise — the better it follows.
+
+---
+
+## CLAUDE.md and auto memory
+
+CLAUDE.md is the primary tool. You write the rules, Claude reads them every session in full.
+
+Auto memory is supplementary. Claude writes notes on its own as it works (build commands, debugging insights, your preferences). The first 200 lines of `MEMORY.md` are loaded at session start. More details in the [Auto memory](#auto-memory) section.
+
+---
+
+## Where to place it
+
+| File | Scope | Who sees it |
+|---|---|---|
+| `./CLAUDE.md` or `./.claude/CLAUDE.md` | Project | Team via git |
+| `~/.claude/CLAUDE.md` | All projects | Only you |
+
+CLAUDE.md loads up the directory tree from the current folder. If you launch Claude in `foo/bar/` — both `foo/bar/CLAUDE.md` and `foo/CLAUDE.md` will be loaded.
+
+---
+
+## Structure of a good CLAUDE.md
+
+```markdown
+# Project Overview
+Short description of what this project is and why.
+One or two sentences.
+
+# Tech Stack
+- Runtime: Bun (not Node.js)
+- ORM: Drizzle
+- Linter: Biome (not ESLint/Prettier)
+- Testing: Vitest
+
+# Project Structure
+src/
+├── api/        # API handlers
+├── db/         # database schema and migrations
+└── utils/      # shared utilities
+
+# Commands
+- `bun run dev` — start dev server
+- `bun test` — tests
+- `bun run lint` — linting
+- `bun run build` — production build
+
+# Coding Conventions
+- 2-space indentation
+- Name files kebab-case
+- Prefer named exports over default
+- Strict typing required, no `any`
+
+# Workflow
+- Create a feature branch before making changes
+- Run tests before committing
+- Don't commit directly to main
+- Commit messages in English
+```
+
+---
+
+## Writing principles
+
+### Be specific, not vague
+
+```markdown
+❌ "Format code properly"
+✅ "Use 2-space indentation, no semicolons"
+
+❌ "Test your changes"
+✅ "Run `bun test` before every commit"
+
+❌ "Keep files organized"
+✅ "API handlers live in src/api/handlers/"
+
+❌ "Write good commit messages"
+✅ "Commit messages: type(scope): description — e.g. feat(auth): add JWT refresh"
+```
+
+### Keep it under 200 lines
+
+Longer = less adherence + more tokens. If your CLAUDE.md is growing — split it into `.claude/rules/` or use imports.
+
+### No contradictions
+
+If two rules conflict — Claude will pick one arbitrarily. Review the file periodically for conflicts.
+
+### Markdown structure
+
+Use headings and bullets — not walls of text. Claude scans structure the same way a person does.
+
+---
+
+## What to write, what to skip
+
+**Write:**
+- Build, test, and lint commands
+- Non-obvious decisions ("we use Bun, not Node")
+- Project structure — what lives where
+- Project-specific coding conventions
+- Architectural decisions and why they were made
+- Things Claude can't discover from the code alone
+
+**Skip:**
+- What Claude will figure out by reading the code
+- General best practices (Claude already knows them)
+- Details that change frequently
+- Personal preferences (those go in `~/.claude/CLAUDE.md`)
+
+---
+
+## Imports for modularity
+
+Use the `@path` syntax to avoid duplicating content:
+
+```markdown
+# Project Overview
+@README.md
+
+# Available Commands
+@package.json
+
+# Git Workflow
+@docs/git-workflow.md
+
+# Personal preferences (won't end up in git)
+@~/.claude/my-preferences.md
+```
+
+Imports are expanded and loaded into context at startup. Nesting depth — up to 5 levels.
+
+**Watch out for large files:** `@package.json` will pull the entire file into context. For large files this wastes tokens — only import what Claude actually needs to see every session.
+
+---
+
+## `.claude/rules/` — modular rules
+
+For larger projects instead of one monolithic file:
+
+```
+.claude/rules/
+├── testing.md       # testing rules
+├── api-design.md    # API rules
+├── security.md      # security requirements
+└── frontend.md      # frontend rules
+```
+
+### Path-specific rules
+
+Rules load only when Claude is working with matching files — saves context:
+
+```markdown
+---
+paths:
+  - "src/api/**/*.ts"
+---
+
+# API Rules
+- Input validation is mandatory
+- Standard error format: { error, code, message }
+- Document all endpoints with JSDoc
+```
+
+```markdown
+---
+paths:
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+---
+
+# Testing Rules
+- One describe block per file
+- Test names: should + action
+- Only mock external dependencies
+```
+
+Glob patterns:
+
+| Pattern | What it matches |
+|---|---|
+| `**/*.ts` | All TypeScript files |
+| `src/**/*` | Everything in src/ |
+| `src/**/*.{ts,tsx}` | TS and TSX in src/ |
+| `*.md` | Markdown in root |
+
+---
+
+## Global CLAUDE.md for personal preferences
+
+`~/.claude/CLAUDE.md` — loaded in all projects. A good place for personal preferences you don't need to share with the team:
+
+```markdown
+# My Working Style
+- Explain what you're about to do before doing it
+- Prefer small atomic commits
+- If a task is ambiguous — ask before starting
+- Show full stack trace on errors
+
+# Code Preferences
+- Prefer functional style over OOP
+- Explicit types everywhere, no any
+- Comments only for non-obvious logic
+
+# Workflow
+- Always run the linter after changes
+- Commit messages in English using conventional commits format
+```
+
+---
+
+## Auto memory
+
+Claude writes notes on its own as it works. Stored in:
+
+```
+~/.claude/projects/<project>/memory/
+├── MEMORY.md          # index, loaded every session
+├── debugging.md       # debugging patterns
+└── ...
+```
+
+**Management:**
+```
+/memory    # view, edit, toggle on/off
+```
+
+Tell Claude "remember that..." → saves to auto memory.
+Tell Claude "add this to CLAUDE.md" → writes to the file.
+
+**Important:** memory is local, not synced between machines. All worktrees of the same repo share one memory folder.
+
+---
+
+## Quick start
+
+```bash
+/init    # Claude will analyze the codebase and generate CLAUDE.md
+```
+
+After `/init` — edit the result: remove the unnecessary parts, add what Claude didn't find automatically.
+
+---
+
+## After `/compact`
+
+CLAUDE.md fully survives compaction — it's re-read from disk and re-injected into the session. If an instruction "disappeared" after `/compact` — it means you gave it only in conversation, not in CLAUDE.md.
+
+---
+
+## Debugging
+
+If Claude isn't following your CLAUDE.md:
+
+```
+/memory    # check that the file is actually loaded
+```
+
+If the file isn't in the list — Claude can't see it. Check the location.
+
+For detailed logging of which files load and when — use the `InstructionsLoaded` hook in `settings.json`.
+
+---
+
+## AGENTS.md compatibility
+
+If your repo already has an `AGENTS.md` for other AI tools — import it into CLAUDE.md:
+
+```markdown
+@AGENTS.md
+
+## Claude-specific
+- Use plan mode for changes in src/billing/
+```
