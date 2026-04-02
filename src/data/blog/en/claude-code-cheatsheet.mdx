@@ -1,0 +1,1085 @@
+---
+title: 'My Claude Code Cheat Sheet'
+pubDate: 2026-04-02
+author: 'Zach Orlovsky'
+tags: ['claude', 'claude-code', 'ai', 'tools']
+lang: en
+---
+
+> Up to date as of April 2026.
+
+---
+
+## 1. Desktop App: Chat vs Code (vs Cowork)
+
+| | **Chat** | **Code** | **Cowork** |
+|---|---|---|---|
+| What is it | Regular conversation with Claude | Claude Code with GUI (diff, PR preview) | Agentic tasks on files |
+| For whom | Everyone | Developers | Everyone (knowledge work) |
+| File access | No (upload only) | Yes (entire project folder) | Yes (selected folder) |
+| Works on iOS/web | ✅ | Only via Remote Control | Dispatch from mobile |
+| MCP | ✅ | ✅ | ✅ |
+
+**In short:** Chat is claude.ai in a native window. Code is the Claude Code CLI, but with a nice UI instead of a terminal.
+
+---
+
+## 2. Chat Sync Across Devices
+
+| Surface | Sync |
+|---|---|
+| **Chat** (desktop/iOS/web) | ✅ Full — same chat list everywhere |
+| **Code tab** | ❌ No auto-sync. Sessions stored locally in `~/.claude/` |
+| **Code → mobile** | Only via **Remote Control** (`/remote-control` in terminal) — a window into your local session, not the cloud |
+
+> Remote Control (Feb 2026, preview): start it in CLI, get a link/QR, open on your phone — conversation syncs, but Claude Code still runs on your machine. Terminal must stay open.
+
+---
+
+## 3. MCP and Context — The Token Truth
+
+**Yes, MCP always eats context** — this is not a myth.
+
+Every connected MCP server injects its tool definitions into every request:
+- 1 tool ≈ 550–1,400 tokens (name + JSON schema + description)
+- GitHub MCP (~66 tools) → +46k tokens before you've typed your first message
+- 3 servers (GitHub + Slack + Sentry, ~40 tools) → ~55k tokens consumed immediately
+
+**See usage:** the `/context` command inside a Claude Code session — shows a breakdown by category.
+
+**Why are people "leaving MCP"?** They're not, but there are real problems:
+- Context bloat with a large number of tools
+- 28% failure rate on some servers (per benchmarks)
+
+
+**Alternatives / mitigation:**
+- Only connect the servers you need (disable unused ones via `/mcp`)
+- Use **Tool Search** (Anthropic feature — lazy-loading tool definitions)
+- Use `claude mcp serve` instead of heavy servers
+- Just `bash` + `gh` CLI instead of GitHub MCP for simple operations
+
+---
+
+## 4. MCP on iOS/web
+
+**There are no native MCP on iOS/web.**
+
+| Platform | MCP |
+|---|---|
+| Claude Desktop | ✅ (local desktop extensions) |
+| Claude Code CLI | ✅ |
+| Claude Code in Zed/VS Code | ✅ |
+| claude.ai (web) | ⚠️ Only **web connectors** (Slack, Notion, Gmail, etc.) — not MCP in the full sense, these are cloud integrations |
+| iOS / Android | ⚠️ Same web connectors via account. Local MCP — only through Remote Control (proxy through your computer) |
+
+---
+
+## 5. MCP Isolation Between Environments — It's NOT a Bug
+
+**Each environment is a separate MCP client with its own config.**
+
+| Environment | Where MCP config lives |
+|---|---|
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Claude Code CLI | `~/.claude.json` (user scope) and `.mcp.json` in project (project scope) |
+| Claude Code in VS Code | `.vscode/mcp.json` or VS Code user profile |
+| Claude Code in **Zed** | Zed uses its own **vendored** Claude Code CLI — a separate process with its own settings |
+
+### Specifically: Figma MCP in Zed ≠ Figma MCP in Terminal
+
+**Zed maintains its own copy of Claude Code CLI** and doesn't read your `~/.claude.json` automatically. It's a separate process.
+
+**How to share config:**
+```bash
+# Import Claude Desktop servers into Claude Code CLI:
+claude mcp add-from-claude-desktop
+
+# See what's connected in CLI:
+claude mcp list
+
+# Add a server globally (user scope):
+claude mcp add figma --scope user
+```
+
+**For Zed** — by default uses the vendored copy, but you can switch to global:
+
+```json
+// ~/Library/Application Support/Zed/settings.json
+{
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry",
+      "env": {
+        "CLAUDE_CODE_EXECUTABLE": "/path/to/claude"  // find out: which claude
+      }
+    }
+  }
+}
+```
+
+This gives access to MCP from `~/.claude.json` and global settings.
+
+### Scopes in Claude Code CLI:
+
+| Scope | Flag | Where stored | Who sees it | In git? |
+|---|---|---|---|---|
+| `local` | default | `~/.claude.json` → under project path | Only you, only this project | ❌ |
+| `project` | `--scope project` | `.mcp.json` in project root | Entire team | ✅ |
+| `user` | `--scope user` | `~/.claude.json` globally | Only you, all projects | ❌ |
+
+**Priority on name conflict:** local > project > user
+
+**When to use which:**
+- `user` — tools needed everywhere (Figma, GitHub, personal utilities)
+- `project` — team standard (shared DB, project Sentry)
+- `local` (default) — trying something / keeping secrets / don't want to commit
+
+```bash
+claude mcp add figma --scope user ...       # everywhere, just for you
+claude mcp add sentry --scope project ...  # in .mcp.json → in git → everyone sees
+claude mcp add my-db                       # local by default
+```
+
+> ⚠️ Secrets in `--scope project` end up in `.mcp.json` → in git. Use `--env KEY=value` instead of hardcoding values.
+
+---
+
+## 6. MCP vs Plugin
+
+**MCP** — a server with tools, added via `claude mcp add`.
+
+**Plugin** — a package that can contain MCP + skills + hooks. Added via `claude plugin install`. Shows up in `/mcp` as `plugin:name:name` in the Built-in MCPs section.
+
+```bash
+# MCP directly
+claude mcp add my-server --scope local -- uvx my-server
+
+# Via plugin (includes MCP + skills)
+claude plugin install figma@claude-plugins-official --scope local
+```
+
+> ⚠️ Plugins with `--scope local` show up in Built-in MCPs (always available) — this is a visual bug. They're actually only available in the project where installed.
+
+Remove: `claude mcp remove <n>` / `claude plugin uninstall <n>`
+
+---
+
+## 7. Installing Claude Code
+
+| Method | Status | Auto-update |
+|---|---|---|
+| `curl -fsSL https://claude.ai/install.sh \| bash` | ✅ Recommended | ✅ Automatic |
+| `brew install --cask claude-code` | ✅ Official | ❌ `brew upgrade claude-code` manually |
+| `npm install -g @anthropic-ai/claude-code` | ⚠️ Deprecated | ❌ Manual |
+
+---
+
+## 8. Claude Code Config Files
+
+| File | Who writes it | What it stores |
+|---|---|---|
+| `~/.claude/settings.json` | **You** | permissions, hooks, env vars, model |
+| `~/.claude.json` | **Claude Code** (don't touch) | MCP user/local scope, OAuth, caches, UI settings |
+| `.mcp.json` in project | You / team | MCP project scope (in git) |
+| `~/.claude/CLAUDE.md` | You | Global instructions for Claude |
+
+---
+
+## 9. CLAUDE.md vs .claude/settings.json
+
+| | `CLAUDE.md` | `.claude/settings.json` |
+|---|---|---|
+| Format | Markdown, free text | JSON, strict structure |
+| Who reads it | Claude (as context) | Claude Code (as runtime config) |
+| What it sets | Instructions, conventions, style | Permissions, hooks, env vars |
+| In git | ✅ Yes | ✅ Yes (no secrets) |
+
+**`CLAUDE.md`** — an onboarding doc for AI. Claude reads it and follows what's written:
+```markdown
+# Project conventions
+- Always use TypeScript strict mode
+- Run `npm test` before committing
+- API endpoints follow REST conventions
+```
+
+**`.claude/settings.json`** — machine-readable runtime config. Claude Code applies it mechanically:
+```json
+{
+  "permissions": {
+    "allow": ["Bash(npm run test)", "Bash(npm run lint)"],
+    "deny": ["Bash(rm -rf *)"]
+  }
+}
+```
+
+**Analogy:** `CLAUDE.md` — a README for AI. `.claude/settings.json` — tool settings.
+
+---
+
+## 10. Permissions
+
+The system that controls what Claude Code can do without asking.
+
+### Modes
+
+| Mode | Behavior |
+|---|---|
+| `default` | Asks before each new type of action |
+| `acceptEdits` | Auto-accepts file changes, asks about bash |
+| `auto` | AI classifier decides what to ask about |
+| `bypassPermissions` | Skips everything ⚠️ CI/sandbox only |
+| `plan` | Read-only, only reads and plans |
+
+### Configuring in settings.json
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git *)",
+      "Read(~/.zshrc)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "Read(.env)"
+    ],
+    "ask": [
+      "Bash(git push *)"
+    ]
+  }
+}
+```
+
+### Three arrays
+
+- **`allow`** — execute without asking
+- **`deny`** — always block (takes priority over allow)
+- **`ask`** — always ask even if in allow
+
+### Pattern syntax
+
+```
+Bash(npm run *)           # any npm run command
+Read(.env*)               # any .env file
+WebFetch(domain:github.com)  # specific domain only
+mcp__github__*            # all tools from a specific MCP server
+Agent(Explore)            # specific subagent
+```
+
+### In-session management
+
+```bash
+/permissions              # view current
+/config                   # change mode
+claude --permission-mode acceptEdits  # from CLI
+```
+
+> ⚠️ `deny` from any scope blocks the action regardless of other settings.
+
+---
+
+## 11. Tools vs Skills
+
+**Tools** — specific actions Claude performs. Built into Claude Code:
+
+- `Read`, `Write`, `Edit` — file operations
+- `Bash` — command execution
+- `Glob`, `Grep`, `LS` — search
+- `WebFetch`, `WebSearch` — internet
+- MCP tools appear as `mcp__servername__toolname`
+
+Permissions in `settings.json` control tools:
+```json
+{ "permissions": { "allow": ["Bash(npm run test)"], "deny": ["Bash(rm -rf *)"] } }
+```
+
+**Skills** — instructions on _how_ to work, not _what_ to do. A Markdown file that gets loaded into context.
+
+- Actively: invoked via `/skill-name`
+- Passively: Claude pulls them in based on `description` in frontmatter
+
+```markdown
+---
+description: Use when working with React components
+---
+# React Guidelines...
+```
+
+Skills ≠ tools. Skills are knowledge, tools are hands.
+
+Skill format: a single `SKILL.md` file (simple) or a folder with `SKILL.md` as entry point (complex, with templates/scripts).
+
+---
+
+## 12. Custom Slash Commands
+
+Markdown file = command. Filename = command name.
+
+> `.claude/commands/` — legacy format, but works. Recommended — Skills (`.claude/skills/`).
+
+### Create a command
+
+```bash
+# For the project (in git, everyone sees)
+mkdir -p .claude/commands
+echo "Review for security vulnerabilities:" > .claude/commands/security.md
+
+# For yourself (all projects)
+mkdir -p ~/.claude/commands
+echo "Analyze performance, suggest 3 optimizations:" > ~/.claude/commands/optimize.md
+```
+
+Usage: `/security`, `/optimize`
+
+### With arguments and frontmatter
+
+```markdown
+---
+description: Fix a GitHub issue
+argument-hint: [issue-number]
+allowed-tools: Bash(git *), Read, Write
+---
+
+Fix issue #$ARGUMENTS. Steps:
+1. Read the issue description
+2. Find relevant code
+3. Implement the fix
+4. Run tests
+```
+
+Usage: `/fix-issue 123`
+
+`$1`, `$2` — positional arguments, `$ARGUMENTS` — everything at once.
+
+### Dynamic content (bash inside commands)
+
+`!` prefix — execute bash and insert the result:
+
+```markdown
+---
+allowed-tools: Bash(git diff:*), Bash(git log:*)
+---
+
+Explain these changes:
+!`git diff HEAD~1`
+!`git log --oneline -5`
+```
+
+### Namespacing via folders
+
+```
+.claude/commands/
+├── review.md          → /review
+├── security/
+│   ├── audit.md       → /security:audit
+│   └── deps.md        → /security:deps
+└── deploy/
+    └── prod.md        → /deploy:prod
+```
+
+### Commands vs Skills
+
+| | Commands (legacy) | Skills (recommended) |
+|---|---|---|
+| Invocation | Explicit `/command` only | Explicit + automatically by Claude |
+| Structure | Single `.md` file | Folder with `SKILL.md` |
+| Location | `.claude/commands/` | `.claude/skills/` |
+
+---
+
+## 13. Subagents and Agent Teams
+
+### Subagents
+
+Specialized versions of Claude in **their own separate context**. Results return to the main conversation.
+
+**Built-in:**
+- `Explore` (haiku) — codebase exploration, read-only, fast
+- `Plan` (inherit) — analysis without changes, for plan mode
+- `general-purpose` (inherit) — universal
+
+**Create your own** (`~/.claude/agents/my-agent.md` — for all projects, `.claude/agents/` — for project):
+```markdown
+---
+name: code-reviewer
+description: Reviews code for quality. Use proactively after code changes.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+
+You are a code reviewer. Check for quality, security, best practices.
+```
+
+**Ways to launch:**
+
+| Method | How |
+|---|---|
+| Automatically | Claude decides based on `description` |
+| By text | `Use the code-reviewer agent to check my changes` |
+| @-mention | `@"code-reviewer (agent)" look at auth module` |
+| Multiple at once | `Research auth, DB, and API in parallel using separate subagents` |
+| Entire session | `claude --agent code-reviewer` |
+
+**Key frontmatter fields:**
+- `model` — `haiku` / `sonnet` / `opus` / `inherit`
+- `tools` — allowlist tools (e.g. `Read, Grep, Glob`)
+- `disallowedTools` — denylist (e.g. `Write, Edit`)
+- `memory` — `user` / `project` / `local` — persistent memory across sessions (file `~/.claude/memory.md` or `.claude/memory.md`)
+- `background: true` — always run in background
+- `permissionMode` — `default` / `acceptEdits` / `bypassPermissions` / `plan`
+
+---
+
+### Agent Teams (experimental)
+
+Multiple independent Claude sessions working in parallel and communicating with each other. One is the lead, the rest are teammates.
+
+**Enable:**
+```json
+// ~/.claude/settings.json
+{ "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }
+```
+
+**Launch by text:**
+```
+Create an agent team to review this PR: one focused on security,
+one on performance, one on test coverage.
+```
+
+| | Subagents | Agent Teams |
+|---|---|---|
+| Context | Own, result → main | Own, fully independent |
+| Communication | Only with main | Teammates communicate directly |
+| Tokens | Less | Significantly more |
+| When | Task → result | Need discussion between agents |
+
+> ⚠️ Experimental feature. Lots of tokens. Doesn't support session resumption.
+
+---
+
+## 14. Remote Control
+
+Lets you control a local Claude Code session from your phone or browser. Claude runs on your machine — only chat messages go out.
+
+### Three ways to start
+
+```bash
+# Server mode — terminal waits for connections, supports multiple sessions
+claude remote-control
+
+# Interactive session + remote access simultaneously
+claude --remote-control "Project name"
+
+# Enable on the fly from a running session
+/remote-control
+```
+
+### How to connect from another device
+- Open the URL from the terminal
+- Scan the QR code (space in server mode)
+- Go to `claude.ai/code` → find session by name (green dot = online)
+
+### Limitations
+- Terminal must be open — close it, session dies
+- Network gone for 10+ minutes → timeout
+- Requires claude.ai subscription (Pro/Max/Team/Enterprise) — API key doesn't work
+
+### Remote Control vs Claude Code on the web
+
+| | Remote Control | Claude Code on web |
+|---|---|---|
+| Where it runs | Your machine | Anthropic's servers |
+| Local files | ✅ | ❌ |
+| Local MCP | ✅ | ❌ |
+| Terminal open | Required | Not required |
+| Parallel tasks | Via `--spawn worktree` | ✅ Native |
+
+Auto-enable for all sessions: `/config` → Enable Remote Control for all sessions → true
+
+---
+
+## 15. Claude Code on the Web
+
+Claude Code on Anthropic's servers — no local machine needed. Available at `claude.ai/code`.
+
+**When to use:**
+- No access to your machine (phone, someone else's computer)
+- Parallel async tasks without loading your local machine
+- Working with GitHub repos without cloning — Claude clones itself
+- CI/CD and automation without a local process
+
+**Limitations:** no access to local files and MCP servers, fresh environment each time, only works with GitHub repos.
+
+---
+
+## 16. SSH Remote
+
+Two ways to run Claude Code on a remote machine.
+
+### 1. SSH sessions in Desktop app (official)
+
+Environment dropdown → **+ Add SSH connection** → specify host, user, identity file. Claude runs on the remote machine, Desktop app is the interface. Claude Code must be installed on the remote machine. Supports permissions, connectors, plugins, MCP.
+
+### 2. SSH manually via terminal
+
+```bash
+ssh user@remote-server
+cd /my/project
+claude
+```
+
+**Problem:** connection drops → session dies. Solution — tmux:
+
+```bash
+ssh user@server
+tmux new -s claude-session   # create session
+claude
+# Ctrl+B, D — detach (disconnect, session lives on)
+# Later: tmux attach -t claude-session
+```
+
+### SSH + Remote Control = best of both worlds
+
+Start on server → enable Remote Control → manage from phone:
+
+```bash
+ssh user@server
+tmux new -s work
+claude --remote-control "my project"
+# Open claude.ai/code on your phone
+```
+
+---
+
+## 17. Dispatch
+
+Delegate a task to Claude from your phone while away from the computer. Claude executes on desktop (Cowork), sends a notification when done.
+
+| | Dispatch | Remote Control |
+|---|---|---|
+| You control | ❌ Delegate | ✅ Real-time |
+| Where it runs | Desktop app (Cowork) | CLI on your machine |
+| Scenario | "Do this while I'm on the go" | "Continue session from the couch" |
+
+Setup: Cowork tab → Dispatch → Get started.
+
+---
+
+## 18. Channels
+
+Pushes external events into an already running local Claude Code session. Claude reacts and responds back through the same channel.
+
+**Scenarios:** message from your phone via Telegram → Claude responds there, working with local files. Or: CI failed → webhook arrives in session → Claude reacts.
+
+### Telegram Setup (example)
+
+```bash
+# 1. Create a bot via @BotFather in Telegram → get token
+
+# 2. Install the plugin
+/plugin install telegram@claude-plugins-official
+
+# 3. Configure the token
+/telegram:configure <token>
+
+# 4. Launch with channel
+claude --channels plugin:telegram@claude-plugins-official
+
+# 5. Message the bot in Telegram → get code → pair
+/telegram:access pair <code>
+
+# 6. Restrict access to yourself only
+/telegram:access policy allowlist
+```
+
+Multiple channels: `claude --channels plugin:telegram@... plugin:discord@...`
+
+| | Channels | Remote Control | MCP |
+|---|---|---|---|
+| Who initiates | External system pushes | You control | Claude requests |
+| Session | Running local | Running local | Any |
+
+**Requirements:** Bun (`bun --version`), claude.ai subscription, session must be open.
+
+---
+
+## 19. Claude in Chrome
+
+Browser automation straight from CLI via a Chrome extension.
+
+**Requirements:** Chrome or Edge, "Claude in Chrome" extension from Chrome Web Store, Claude Code v2.0.73+, claude.ai subscription (Pro/Max/Team/Enterprise). Doesn't work in WSL, Brave, Arc.
+
+### Enable
+
+```bash
+claude --chrome          # one-time
+/chrome                  # from current session
+# /chrome → "Enabled by default" — always on
+```
+
+### What it can do
+
+- **Live debugging** — reads console errors and DOM, then fixes code
+- **Testing** — opens localhost, clicks, checks forms and flows
+- **Authenticated sites** — Google Docs, Gmail, Notion without API — uses your session
+- **Data extraction** — parses pages, saves to CSV/JSON
+- **Form automation** — fills data from a file into web interface
+- **GIF recording** — records browser flow as a demo
+
+### Examples
+
+```
+Open localhost:3000, submit the login form with invalid data,
+check if error messages appear correctly
+
+Go to docs.google.com/document/d/abc123 and draft a project
+update based on recent git commits
+
+Extract product names and prices from this page, save as CSV
+```
+
+### Claude in Chrome vs Chrome DevTools MCP vs Playwright MCP
+
+| | `/chrome` | Chrome DevTools MCP | Playwright MCP |
+|---|---|---|---|
+| Browser | Your Chrome | Your Chrome | Separate process |
+| Your sessions/cookies | ✅ | ✅ | ❌ |
+| Level | High (DOM/clicks) | Low (CDP/JS/network) | Full programmatic |
+| Headless | ❌ | ❌/✅ | ✅ |
+| CI/CD | ❌ | ❌ | ✅ |
+| Installation | Chrome Web Store extension | MCP server | MCP server |
+
+**When to use what:**
+- Testing localhost or working with authenticated services → `/chrome`
+- Intercepting network requests, running JS programmatically → Chrome DevTools MCP
+- Automated tests in CI, cross-browser → Playwright
+
+### vs Computer use
+
+| | Claude in Chrome | Computer use |
+|---|---|---|
+| What it controls | Browser only | Entire screen / any applications |
+| Accuracy | High (DOM level) | Pixel-level (screenshots) |
+| Speed | Faster | Slower |
+| Platform | Chrome / Edge, all OSes | macOS only |
+
+Claude always tries the Chrome extension first if the task is browser-related. Computer use is the last resort.
+
+---
+
+## 20. Computer Use
+
+Claude controls the computer directly: opens apps, clicks, types, sees the screen.
+
+**Requirements:** macOS, Pro or Max plan, Claude Code v2.1.85+, interactive session (not `-p`)
+
+### Enable
+
+```
+/mcp → computer-use → Enable
+```
+Then macOS will ask for two permissions: **Accessibility** and **Screen Recording**.
+
+### How Claude chooses a tool (priority)
+
+1. MCP server (if one exists for the service)
+2. Bash (if the task is terminal-based)
+3. Claude in Chrome (if browser-based)
+4. **Computer use** — only if nothing else fits
+
+### What it can do
+
+- Build and test a native app (Swift/Xcode)
+- Reproduce a visual bug at a specific window size
+- Test iOS Simulator without XCTest
+- Control GUI-only tools without an API
+
+### Important details
+
+- One session at a time — machine-wide lock
+- **Esc** — instantly stops from anywhere
+- While Claude works — other apps are hidden, terminal stays
+- Terminal never appears in screenshots — Claude doesn't see its own output
+- Each app is approved separately at session start
+
+### Example
+
+```
+Build the MenuBarStats target, launch it, open preferences,
+verify the interval slider updates the label. Screenshot when done.
+```
+
+---
+
+## 21. Hooks
+
+Shell commands that run automatically at specific moments during Claude Code's work. Like git hooks, but for Claude Code events.
+
+Configured in `~/.claude/settings.json` (global) or `.claude/settings.json` (project).
+
+### Lifecycle events
+
+| Event | When it fires |
+|---|---|
+| `PreToolUse` | Before a tool call |
+| `PostToolUse` | After a tool call |
+| `Stop` | When Claude finishes responding |
+| `Notification` | When Claude wants to send a notification |
+| `PreCompact` | Before context compaction |
+
+### Structure
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "your-command $CLAUDE_FILE_PATH"
+        }]
+      }
+    ]
+  }
+}
+```
+
+`matcher` — filter by tool name. `"Write|Edit"` — file writes only, `"*"` — everything.
+`$CLAUDE_FILE_PATH` — path to the changed file.
+
+### Examples
+
+**Auto-linting / formatting after every file change:**
+```json
+"PostToolUse": [{
+  "matcher": "Write|Edit",
+  "hooks": [{ "type": "command", "command": "npm run lint -- --fix $CLAUDE_FILE_PATH" }]
+}]
+```
+
+**Sound alert when Claude finishes (macOS):**
+```json
+"Stop": [{
+  "matcher": "*",
+  "hooks": [{ "type": "command", "command": "afplay /System/Library/Sounds/Glass.aiff" }]
+}]
+```
+
+**Telegram notification when task is done:**
+```json
+"Stop": [{
+  "matcher": "*",
+  "hooks": [{ "type": "command", "command": "curl -s -X POST https://api.telegram.org/bot<TOKEN>/sendMessage -d chat_id=<CHAT_ID> -d text='Claude finished'" }]
+}]
+```
+
+---
+
+## 22. Scheduled Tasks
+
+Run prompts on a schedule without your involvement.
+
+| | CLI | Desktop (Cowork) | Cloud |
+|---|---|---|---|
+| Where it runs | Your machine | Your machine | Anthropic's servers |
+| Machine must be on | ✅ | ✅ | ❌ |
+| Setup | Terminal command | UI in Cowork | UI in Cowork |
+
+**Example scenarios:** daily digest from Jira/GitHub before standup, Sentry monitoring every hour, weekly metrics analysis.
+
+| | Scheduled Tasks | Channels |
+|---|---|---|
+| Trigger | Time | External event |
+| Example | "every day at 9:00" | "CI failed → react" |
+
+---
+
+## 23. Headless / Programmatic Usage
+
+Running Claude Code from scripts and CI/CD without interactive mode. The `-p` flag (print mode).
+
+```bash
+# Execute a prompt → stdout
+claude -p "find all TODOs in the project"
+
+# Pass context via stdin
+cat error.log | claude -p "explain this error"
+
+# Use in scripts
+result=$(claude -p "write a test for calculateTotal")
+```
+
+### Useful flags
+
+```bash
+--output-format json          # JSON output
+--output-format stream-json   # streaming JSON line by line
+--max-turns 5                 # limit agent steps
+--allowedTools "Read,Bash"    # specific tools only
+--dangerously-skip-permissions  # skip all confirmations ⚠️
+```
+
+```bash
+# Review all changed files in a PR
+git diff --name-only HEAD~1 | xargs -I{} claude -p "review for bugs: {}"
+```
+
+> ⚠️ `--dangerously-skip-permissions` removes all confirmations — only in isolated environments (Docker, CI sandbox).
+
+---
+
+## 24. Plan Mode
+
+Read-only analysis mode — Claude explores the codebase and builds a plan, but doesn't change anything until you approve.
+
+### Enable
+
+```bash
+claude --plan              # from CLI
+Shift+Tab                  # toggle inside a session
+```
+
+Or via settings.json:
+```json
+{ "permissions": { "defaultMode": "plan" } }
+```
+
+### How it works
+
+1. Claude reads files, searches code, studies the structure
+2. Builds a detailed plan of what and where to change
+3. Shows the plan to you
+4. **Waits for approval** — changes nothing
+5. After approval — exits plan mode and executes
+
+Exploration is delegated to the built-in `Plan` subagent (read-only) — doesn't pollute the main context.
+
+### When to use
+
+- Large refactors — check what Claude is going to do
+- Unfamiliar codebase — let it explain first
+- Risky operations — approve the plan before execution
+
+### Plan mode vs bypassPermissions
+
+| | Plan mode | bypassPermissions |
+|---|---|---|
+| Reads files | ✅ | ✅ |
+| Modifies files | ❌ | ✅ without asking |
+| Executes bash | ❌ | ✅ without asking |
+| Purpose | Safe analysis | Automation/CI |
+
+---
+
+## 25. Context Compaction
+
+A mechanism for managing the context window when it fills up.
+
+### Three commands
+
+**`/clear`** — completely clears context. Start from scratch. Use when switching to a different task.
+
+**`/compact`** — summarizes the conversation into a brief summary, replaces history with it. Context is freed, key details are preserved:
+```
+/compact focus on the authentication changes we made
+```
+
+**Autocompact** — triggers automatically at ~83.5% fill. Claude summarizes on its own.
+
+### Managing the threshold
+
+```json
+// ~/.claude/settings.json — trigger earlier (recommended 60-75%)
+{ "env": { "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75" } }
+
+// Disable completely (dangerous — can hit the limit)
+{ "autoCompact": false }
+```
+
+### Monitor usage
+
+```
+/context    # token breakdown: system prompt, tools, MCP, messages, free space
+```
+
+### When to use what
+
+| Situation | Command |
+|---|---|
+| Switched to a different task | `/clear` |
+| Context filling up, task not done | `/compact` |
+| Preserve specific details | `/compact focus on X` |
+| Configure automation | `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` |
+
+> ⚠️ `/compact` frees space from history, but not from MCP tool definitions — they always consume context. If MCP is clogging things up — disable unused servers via `/mcp`.
+
+---
+
+## 26. Sandboxing
+
+File system and network isolation for the Bash tool — Claude only sees allowed directories.
+
+**Platforms:** macOS (Apple Sandbox, kernel level), Linux (bwrap/bubblewrap).
+
+### Enable
+
+```bash
+claude --sandbox              # one-time
+claude remote-control --sandbox
+
+# settings.json
+{ "sandbox": true }
+```
+
+### What's allowed by default
+
+✅ Current project working directory, system utilities, `/tmp`
+
+❌ Outside the project (`~/.ssh`, `~/Documents`, etc.), network (optional)
+
+### Extend access
+
+```json
+{
+  "sandbox": true,
+  "permissions": {
+    "additionalDirectories": ["~/shared-libs", "/opt/tools"]
+  }
+}
+```
+
+### When to use
+
+- Unfamiliar code or third-party scripts
+- CI/CD — isolate the agent from the system
+- With `--dangerously-skip-permissions` — sandbox compensates for the risk
+- Protecting sensitive locations (`~/.ssh`, configs)
+
+### Sandbox vs Permissions
+
+| | Sandbox | Permissions |
+|---|---|---|
+| Level | OS (kernel) | Claude Code (application) |
+| Bypass | Cannot | Claude can request permission |
+| Reliability | Higher | Lower |
+
+---
+
+## 27. Git Worktrees + Claude Code
+
+A worktree is an additional folder tied to the same repo but on a different branch. Lets you work with multiple branches in parallel without `git stash` and switching.
+
+### Create a worktree
+
+```bash
+cd ~/Projects/myapp
+
+# Create a new branch and folder for it
+git worktree add ../myapp-feature feature/new-payment
+
+# Now there are two independent folders:
+# ~/Projects/myapp/          → main branch
+# ~/Projects/myapp-feature/  → feature/new-payment
+```
+
+### Run Claude in each
+
+```bash
+# Terminal 1
+cd ~/Projects/myapp
+claude                    # working on main
+
+# Terminal 2
+cd ~/Projects/myapp-feature
+claude                    # working on feature/new-payment
+```
+
+Two Claude Codes, two contexts, two branches — they don't interfere with each other.
+
+### List all worktrees
+
+```bash
+git worktree list
+# ~/Projects/myapp          abc1234 [main]
+# ~/Projects/myapp-feature  def5678 [feature/new-payment]
+```
+
+### Remove a worktree when done
+
+```bash
+cd ~/Projects/myapp          # exit the worktree folder
+git worktree remove ../myapp-feature
+# folder is deleted, git branch remains
+git worktree prune            # remove all inactive at once
+```
+
+### Rules
+
+- One branch can't be open in two worktrees simultaneously
+- Each worktree has its own `.claude/` config and context
+- Worktrees see the same `~/.claude/` global settings and user-scope MCP
+
+### Remote Control + worktrees
+
+```bash
+# Each new connection gets its own isolated worktree
+claude remote-control --spawn worktree
+```
+
+### Typical scenario with three parallel tasks
+
+```bash
+git worktree add ../myapp-auth feature/auth
+git worktree add ../myapp-ui feature/ui
+git worktree add ../myapp-api feature/api
+
+# Three terminals, three Claudes, three branches
+cd ../myapp-auth && claude
+cd ../myapp-ui && claude
+cd ../myapp-api && claude
+```
+
+---
+
+## 28. Model Selection
+
+Three models — three scenarios.
+
+| Model | Speed | When to use |
+|---|---|---|
+| **Haiku** | Fast, cheap | File search, simple edits, explore subagent |
+| **Sonnet** | Balanced | Writing code, refactoring, code review (default) |
+| **Opus** | Slow, powerful | Complex architecture, large refactoring |
+
+### How to switch
+
+```bash
+claude --model sonnet     # from CLI
+claude --model opus
+claude --model haiku
+
+/model                    # picker inside a session
+Option+P                  # quick picker
+
+# settings.json — default for all sessions
+{ "model": "claude-sonnet-4-6" }
+```
+
+### Models in subagents
+
+The key value — different models for different tasks:
+
+```markdown
+---
+name: explorer
+model: haiku      # cheap for search
+
+---
+name: architect
+model: opus       # powerful for architecture
+```
+
+The built-in `Explore` subagent runs on Haiku — so codebase exploration is fast and doesn't burn expensive tokens.

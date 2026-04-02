@@ -98,6 +98,7 @@ const dateLocale = post.data.lang === "ru" ? "ru-RU" : "en-US";
 // Filter headings for TOC (h2 and h3 only)
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 const showToc = tocHeadings.length >= 2;
+const collapseToc = tocHeadings.filter((h) => h.depth === 2).length > 8;
 
 // Helper to get post URL for prev/next navigation
 function getNavUrl(p: typeof post): string {
@@ -248,16 +249,33 @@ const breadcrumbSchema = {
         {
           showToc && (
             <nav class="toc" aria-label="Table of contents">
-              <h2 class="toc-title" data-en="Contents" data-ru="Содержание">
-                {post.data.lang === "ru" ? "Содержание" : "Contents"}
-              </h2>
-              <ol>
-                {tocHeadings.map((heading) => (
-                  <li class={heading.depth === 3 ? "toc-item toc-h3" : "toc-item"}>
-                    <a href={`#${heading.slug}`}>{heading.text}</a>
-                  </li>
-                ))}
-              </ol>
+              {collapseToc ? (
+                <details>
+                  <summary class="toc-title">
+                    {post.data.lang === "ru" ? "Содержание" : "Contents"}
+                  </summary>
+                  <ol>
+                    {tocHeadings.map((heading) => (
+                      <li class={heading.depth === 3 ? "toc-item toc-h3" : "toc-item"}>
+                        <a href={`#${heading.slug}`}>{heading.text}</a>
+                      </li>
+                    ))}
+                  </ol>
+                </details>
+              ) : (
+                <>
+                  <h2 class="toc-title">
+                    {post.data.lang === "ru" ? "Содержание" : "Contents"}
+                  </h2>
+                  <ol>
+                    {tocHeadings.map((heading) => (
+                      <li class={heading.depth === 3 ? "toc-item toc-h3" : "toc-item"}>
+                        <a href={`#${heading.slug}`}>{heading.text}</a>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
             </nav>
           )
         }
@@ -586,6 +604,32 @@ const breadcrumbSchema = {
   .toc a:focus-visible {
     outline: 2px solid var(--accent-start);
     outline-offset: 2px;
+  }
+
+  .toc details summary.toc-title {
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .toc details summary.toc-title::marker,
+  .toc details summary.toc-title::-webkit-details-marker {
+    display: none;
+  }
+
+  .toc details summary.toc-title::after {
+    content: "▸";
+    margin-left: 0.4em;
+    display: inline-block;
+    transition: transform 0.15s;
+    font-size: 1.5em;
+  }
+
+  .toc details[open] summary.toc-title::after {
+    transform: rotate(90deg);
+  }
+
+  .toc details[open] ol {
+    margin-top: 1rem;
   }
 
   /* Post navigation (prev/next) */

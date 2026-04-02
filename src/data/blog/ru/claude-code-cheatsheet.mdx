@@ -1,0 +1,1085 @@
+---
+title: 'Моя шпаргалка по Claude Code'
+author: 'Zach Orlovsky'
+tags: ['claude', 'claude-code', 'ai', 'tools']
+lang: ru
+translationOf: en/claude-code-cheatsheet
+---
+
+> Актуально на апрель 2026.
+
+---
+
+## 1. Desktop App: Chat vs Code (vs Cowork)
+
+| | **Chat** | **Code** | **Cowork** |
+|---|---|---|---|
+| Что это | Обычный диалог с Claude | Claude Code с GUI (diff, PR-превью) | Агентные задачи на файлах |
+| Для кого | Все | Разработчики | Все (knowledge work) |
+| Доступ к файлам | Нет (только upload) | Да (вся папка проекта) | Да (выбранная папка) |
+| Работает на iOS/web | ✅ | Только через Remote Control | Dispatch через мобилку |
+| MCP | ✅ | ✅ | ✅ |
+
+**Короче:** Chat — это claude.ai в нативном окне. Code — это Claude Code CLI, но с красивым UI вместо терминала.
+
+---
+
+## 2. Синхронизация чатов между устройствами
+
+| Surface | Синхронизация |
+|---|---|
+| **Chat** (desktop/iOS/web) | ✅ Полная — один и тот же список чатов везде |
+| **Code tab** | ❌ Нет автосинка. Сессии хранятся локально в `~/.claude/` |
+| **Code → мобилка** | Только через **Remote Control** (`/remote-control` в терминале) — это "окно" в локальную сессию, не облако |
+
+> Remote Control (фев 2026, preview): запускаешь в CLI, получаешь ссылку/QR, открываешь на телефоне — разговор синхронизируется, но Claude Code всё равно работает на твоей машине. Терминал должен быть открыт.
+
+---
+
+## 3. MCP и контекст — правда о токенах
+
+**Да, MCP всегда ест контекст** — это не миф.
+
+Каждый подключённый MCP-сервер инжектирует свои tool definitions в каждый запрос:
+- 1 tool ≈ 550–1400 токенов (имя + JSON-схема + описание)
+- GitHub MCP (~66 tools) → +46k токенов до того, как ты написал первое сообщение
+- 3 сервера (GitHub + Slack + Sentry, ~40 tools) → ~55k токенов съедено сразу
+
+**Видеть расход:** команда `/context` внутри Claude Code сессии — покажет разбивку по категориям.
+
+**Почему "уходят от MCP"?** Не уходят, но есть реальные проблемы:
+- Контекст-bloat при большом количестве tools
+- 28% failure rate у некоторых серверов (по бенчмаркам)
+
+
+**Альтернативы / митигация:**
+- Подключать только нужные серверы (отключать неиспользуемые через `/mcp`)
+- Использовать **Tool Search** (Anthropic фича — lazy-loading tool definitions)
+- Использовать `claude mcp serve` вместо тяжёлых серверов
+- Просто `bash` + `gh` CLI вместо GitHub MCP для простых операций
+
+---
+
+## 4. MCP на iOS/web
+
+**Нативных MCP на iOS/web нет.**
+
+| Платформа | MCP |
+|---|---|
+| Claude Desktop | ✅ (локальные desktop extensions) |
+| Claude Code CLI | ✅ |
+| Claude Code в Zed/VS Code | ✅ |
+| claude.ai (web) | ⚠️ Только **web connectors** (Slack, Notion, Gmail и т.д.) — это не MCP в полном смысле, это облачные интеграции |
+| iOS / Android | ⚠️ Те же web connectors через аккаунт. Локальные MCP — только через Remote Control (прокси через твой компьютер) |
+
+---
+
+## 5. Изоляция MCP между окружениями — это НЕ баг
+
+**Каждое окружение — отдельный MCP-клиент со своим конфигом.**
+
+| Окружение | Где хранится конфиг MCP |
+|---|---|
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+| Claude Code CLI | `~/.claude.json` (user scope) и `.mcp.json` в проекте (project scope) |
+| Claude Code в VS Code | `.vscode/mcp.json` или user profile VS Code |
+| Claude Code в **Zed** | Zed использует свой **vendored** Claude Code CLI — отдельный процесс со своими настройками |
+
+### Конкретно: Figma MCP в Zed ≠ Figma MCP в терминале
+
+**Zed держит свою копию Claude Code CLI** и не читает твой `~/.claude.json` автоматически. Это отдельный процесс.
+
+**Как пошарить конфиг:**
+```bash
+# Импортировать Claude Desktop серверы в Claude Code CLI:
+claude mcp add-from-claude-desktop
+
+# Посмотреть что подключено в CLI:
+claude mcp list
+
+# Добавить сервер глобально (user scope):
+claude mcp add figma --scope user
+```
+
+**Для Zed** — по умолчанию используется vendored копия, но можно переключить на глобальную:
+
+```json
+// ~/Library/Application Support/Zed/settings.json
+{
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry",
+      "env": {
+        "CLAUDE_CODE_EXECUTABLE": "/path/to/claude"  // узнать: which claude
+      }
+    }
+  }
+}
+```
+
+Это даст доступ к MCP из `~/.claude.json` и к глобальным настройкам.
+
+### Scopes в Claude Code CLI:
+
+| Scope | Флаг | Где хранится | Кто видит | В git? |
+|---|---|---|---|---|
+| `local` | дефолт | `~/.claude.json` → под путём проекта | Только ты, только этот проект | ❌ |
+| `project` | `--scope project` | `.mcp.json` в корне проекта | Вся команда | ✅ |
+| `user` | `--scope user` | `~/.claude.json` глобально | Только ты, все проекты | ❌ |
+
+**Приоритет при конфликте имён:** local > project > user
+
+**Когда какой использовать:**
+- `user` — инструменты нужны везде (Figma, GitHub, личные утилиты)
+- `project` — стандарт команды (общая БД, Sentry проекта)
+- `local` (дефолт) — пробуешь что-то / держишь секреты / не хочешь коммитить
+
+```bash
+claude mcp add figma --scope user ...       # везде, только для тебя
+claude mcp add sentry --scope project ...  # в .mcp.json → в git → все видят
+claude mcp add my-db                       # local по умолчанию
+```
+
+> ⚠️ Секреты в `--scope project` попадут в `.mcp.json` → в git. Используй `--env KEY=value` вместо хардкода значений.
+
+---
+
+## 6. MCP vs Plugin
+
+**MCP** — сервер с инструментами, добавляется через `claude mcp add`.
+
+**Plugin** — пакет который может содержать MCP + skills + hooks. Добавляется через `claude plugin install`. В `/mcp` отображается как `plugin:name:name` в секции Built-in MCPs.
+
+```bash
+# MCP напрямую
+claude mcp add my-server --scope local -- uvx my-server
+
+# Через плагин (включает MCP + skills)
+claude plugin install figma@claude-plugins-official --scope local
+```
+
+> ⚠️ Плагины с `--scope local` отображаются в Built-in MCPs (always available) — это визуальный баг. Реально они доступны только в проекте где установлены.
+
+Удалить: `claude mcp remove <n>` / `claude plugin uninstall <n>`
+
+---
+
+## 7. Установка Claude Code
+
+| Метод | Статус | Автообновление |
+|---|---|---|
+| `curl -fsSL https://claude.ai/install.sh \| bash` | ✅ Рекомендуемый | ✅ Автоматически |
+| `brew install --cask claude-code` | ✅ Официальный | ❌ `brew upgrade claude-code` вручную |
+| `npm install -g @anthropic-ai/claude-code` | ⚠️ Deprecated | ❌ Вручную |
+
+---
+
+## 8. Конфиг-файлы Claude Code
+
+| Файл | Кто пишет | Что хранит |
+|---|---|---|
+| `~/.claude/settings.json` | **Ты** | permissions, hooks, env vars, модель |
+| `~/.claude.json` | **Claude Code** (не трогай) | MCP user/local scope, OAuth, кэши, UI-настройки |
+| `.mcp.json` в проекте | Ты / команда | MCP project scope (в git) |
+| `~/.claude/CLAUDE.md` | Ты | Глобальные инструкции для Claude |
+
+---
+
+## 9. CLAUDE.md vs .claude/settings.json
+
+| | `CLAUDE.md` | `.claude/settings.json` |
+|---|---|---|
+| Формат | Markdown, свободный текст | JSON, строгая структура |
+| Кто читает | Claude (как контекст) | Claude Code (как рантайм конфиг) |
+| Что задаёт | Инструкции, конвенции, стиль | Permissions, hooks, env vars |
+| В git | ✅ Да | ✅ Да (без секретов) |
+
+**`CLAUDE.md`** — онбординг-документ для AI. Claude читает и следует написанному:
+```markdown
+# Project conventions
+- Always use TypeScript strict mode
+- Run `npm test` before committing
+- API endpoints follow REST conventions
+```
+
+**`.claude/settings.json`** — машиночитаемый конфиг рантайма. Claude Code применяет механически:
+```json
+{
+  "permissions": {
+    "allow": ["Bash(npm run test)", "Bash(npm run lint)"],
+    "deny": ["Bash(rm -rf *)"]
+  }
+}
+```
+
+**Аналогия:** `CLAUDE.md` — README для AI. `.claude/settings.json` — настройки инструмента.
+
+---
+
+## 10. Permissions
+
+Система контроля над тем, что Claude Code может делать без твоего разрешения.
+
+### Режимы работы
+
+| Режим | Поведение |
+|---|---|
+| `default` | Спрашивает перед каждым новым типом действия |
+| `acceptEdits` | Автопринятие изменений файлов, спрашивает про bash |
+| `auto` | AI-классификатор сам решает что спрашивать |
+| `bypassPermissions` | Пропускает всё ⚠️ только для CI/sandbox |
+| `plan` | Read-only, только читает и планирует |
+
+### Настройка в settings.json
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git *)",
+      "Read(~/.zshrc)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(curl *)",
+      "Read(.env)"
+    ],
+    "ask": [
+      "Bash(git push *)"
+    ]
+  }
+}
+```
+
+### Три массива
+
+- **`allow`** — выполнять без вопросов
+- **`deny`** — всегда блокировать (приоритет над allow)
+- **`ask`** — всегда спрашивать даже если в allow
+
+### Синтаксис паттернов
+
+```
+Bash(npm run *)           # любая npm run команда
+Read(.env*)               # любой .env файл
+WebFetch(domain:github.com)  # только конкретный домен
+mcp__github__*            # все tools конкретного MCP сервера
+Agent(Explore)            # конкретный subagent
+```
+
+### Управление в сессии
+
+```bash
+/permissions              # посмотреть текущие
+/config                   # изменить режим
+claude --permission-mode acceptEdits  # из CLI
+```
+
+> ⚠️ `deny` из любого scope блокирует действие независимо от других настроек.
+
+---
+
+## 11. Tools vs Skills
+
+**Tools** — конкретные действия которые Claude выполняет. Встроены в Claude Code:
+
+- `Read`, `Write`, `Edit` — работа с файлами
+- `Bash` — выполнение команд
+- `Glob`, `Grep`, `LS` — поиск
+- `WebFetch`, `WebSearch` — интернет
+- MCP-инструменты появляются как `mcp__servername__toolname`
+
+Permissions в `settings.json` управляют именно tools:
+```json
+{ "permissions": { "allow": ["Bash(npm run test)"], "deny": ["Bash(rm -rf *)"] } }
+```
+
+**Skills** — инструкции _как_ работать, а не _что_ делать. Markdown-файл который подгружается в контекст.
+
+- Активно: вызов через `/skill-name`
+- Пассивно: Claude сам подтягивает по `description` в frontmatter
+
+```markdown
+---
+description: Use when working with React components
+---
+# React Guidelines...
+```
+
+Skills ≠ tools. Skills — знания, tools — руки.
+
+Формат skill: один файл `SKILL.md` (простой) или папка с `SKILL.md` как точкой входа (сложный, с шаблонами/скриптами).
+
+---
+
+## 12. Кастомные Slash команды
+
+Markdown файл = команда. Имя файла = имя команды.
+
+> `.claude/commands/` — legacy формат, но рабочий. Рекомендуемый — Skills (`.claude/skills/`).
+
+### Создать команду
+
+```bash
+# Для проекта (в git, все видят)
+mkdir -p .claude/commands
+echo "Review for security vulnerabilities:" > .claude/commands/security.md
+
+# Для себя (все проекты)
+mkdir -p ~/.claude/commands
+echo "Analyze performance, suggest 3 optimizations:" > ~/.claude/commands/optimize.md
+```
+
+Вызов: `/security`, `/optimize`
+
+### С аргументами и frontmatter
+
+```markdown
+---
+description: Fix a GitHub issue
+argument-hint: [issue-number]
+allowed-tools: Bash(git *), Read, Write
+---
+
+Fix issue #$ARGUMENTS. Steps:
+1. Read the issue description
+2. Find relevant code
+3. Implement the fix
+4. Run tests
+```
+
+Вызов: `/fix-issue 123`
+
+`$1`, `$2` — позиционные аргументы, `$ARGUMENTS` — всё сразу.
+
+### Динамический контент (bash внутри команды)
+
+Префикс `!` — выполнить bash и вставить результат:
+
+```markdown
+---
+allowed-tools: Bash(git diff:*), Bash(git log:*)
+---
+
+Explain these changes:
+!`git diff HEAD~1`
+!`git log --oneline -5`
+```
+
+### Namespacing через папки
+
+```
+.claude/commands/
+├── review.md          → /review
+├── security/
+│   ├── audit.md       → /security:audit
+│   └── deps.md        → /security:deps
+└── deploy/
+    └── prod.md        → /deploy:prod
+```
+
+### Commands vs Skills
+
+| | Commands (legacy) | Skills (рекомендуется) |
+|---|---|---|
+| Вызов | Только явно `/command` | Явно + автоматически Claude'ом |
+| Структура | Один `.md` файл | Папка с `SKILL.md` |
+| Расположение | `.claude/commands/` | `.claude/skills/` |
+
+---
+
+## 13. Subagents и Agent Teams
+
+### Subagents
+
+Специализированные версии Claude в **своём отдельном контексте**. Результат возвращается в основной разговор.
+
+**Встроенные:**
+- `Explore` (haiku) — исследование кодовой базы, read-only, быстрый
+- `Plan` (inherit) — анализ без изменений, для plan mode
+- `general-purpose` (inherit) — универсальный
+
+**Создать свой** (`~/.claude/agents/my-agent.md` — для всех проектов, `.claude/agents/` — для проекта):
+```markdown
+---
+name: code-reviewer
+description: Reviews code for quality. Use proactively after code changes.
+tools: Read, Grep, Glob, Bash
+model: sonnet
+---
+
+You are a code reviewer. Check for quality, security, best practices.
+```
+
+**Способы запустить:**
+
+| Способ | Как |
+|---|---|
+| Автоматически | Claude сам решает по `description` |
+| Текстом | `Use the code-reviewer agent to check my changes` |
+| @-mention | `@"code-reviewer (agent)" look at auth module` |
+| Несколько сразу | `Research auth, DB, and API in parallel using separate subagents` |
+| Вся сессия | `claude --agent code-reviewer` |
+
+**Ключевые поля frontmatter:**
+- `model` — `haiku` / `sonnet` / `opus` / `inherit`
+- `tools` — allowlist tools (например `Read, Grep, Glob`)
+- `disallowedTools` — denylist (например `Write, Edit`)
+- `memory` — `user` / `project` / `local` — персистентная память между сессиями (файл `~/.claude/memory.md` или `.claude/memory.md`)
+- `background: true` — всегда запускать в фоне
+- `permissionMode` — `default` / `acceptEdits` / `bypassPermissions` / `plan`
+
+---
+
+### Agent Teams (экспериментально)
+
+Несколько независимых сессий Claude работают параллельно и общаются между собой. Один — lead, остальные — teammates.
+
+**Включить:**
+```json
+// ~/.claude/settings.json
+{ "env": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" } }
+```
+
+**Запустить текстом:**
+```
+Create an agent team to review this PR: one focused on security,
+one on performance, one on test coverage.
+```
+
+| | Subagents | Agent Teams |
+|---|---|---|
+| Контекст | Свой, результат → main | Свой, полностью независимый |
+| Общение | Только с main | Teammates общаются напрямую |
+| Токены | Меньше | Значительно больше |
+| Когда | Задача → результат | Нужно обсуждение между агентами |
+
+> ⚠️ Экспериментальная фича. Много токенов. Не поддерживает resumption сессий.
+
+---
+
+## 14. Remote Control
+
+Позволяет управлять локальной сессией Claude Code с телефона или браузера. Claude работает на твоей машине — наружу идут только сообщения чата.
+
+### Три способа запустить
+
+```bash
+# Server mode — терминал ждёт подключений, поддерживает несколько сессий
+claude remote-control
+
+# Интерактивная сессия + удалённый доступ одновременно
+claude --remote-control "Название проекта"
+
+# Включить на ходу из уже запущенной сессии
+/remote-control
+```
+
+### Как подключиться с другого устройства
+- Открыть URL из терминала
+- Сканировать QR-код (пробел в server mode)
+- Зайти на `claude.ai/code` → найти сессию по имени (зелёная точка = online)
+
+### Ограничения
+- Терминал должен быть открыт — закрыл, сессия умерла
+- Сеть пропала на 10+ минут → тайм-аут
+- Требует подписку claude.ai (Pro/Max/Team/Enterprise) — API key не работает
+
+### Remote Control vs Claude Code on the web
+
+| | Remote Control | Claude Code on web |
+|---|---|---|
+| Где выполняется | Твоя машина | Серверы Anthropic |
+| Локальные файлы | ✅ | ❌ |
+| Локальные MCP | ✅ | ❌ |
+| Открытый терминал | Нужен | Не нужен |
+| Параллельные задачи | Через `--spawn worktree` | ✅ Нативно |
+
+Автовключение для всех сессий: `/config` → Enable Remote Control for all sessions → true
+
+---
+
+## 15. Claude Code on the Web
+
+Claude Code на серверах Anthropic — без локальной машины. Доступен на `claude.ai/code`.
+
+**Когда использовать:**
+- Нет доступа к своей машине (телефон, чужой компьютер)
+- Параллельные async задачи без нагрузки на локальную машину
+- Работа с GitHub репо без клонирования — Claude клонирует сам
+- CI/CD и автоматизация без локального процесса
+
+**Ограничения:** нет доступа к локальным файлам и MCP серверам, свежее окружение каждый раз, работает только с GitHub репо.
+
+---
+
+## 16. SSH Remote
+
+Два способа запустить Claude Code на удалённой машине.
+
+### 1. SSH сессии в Desktop app (официально)
+
+Environment dropdown → **+ Add SSH connection** → указать хост, пользователя, identity file. Claude запускается на удалённой машине, Desktop app — интерфейс. Claude Code должен быть установлен на удалённой машине. Поддерживает permissions, connectors, plugins, MCP.
+
+### 2. SSH вручную через терминал
+
+```bash
+ssh user@remote-server
+cd /my/project
+claude
+```
+
+**Проблема:** соединение прервалось → сессия умерла. Решение — tmux:
+
+```bash
+ssh user@server
+tmux new -s claude-session   # создать сессию
+claude
+# Ctrl+B, D — detach (отключиться, сессия живёт)
+# Позже: tmux attach -t claude-session
+```
+
+### SSH + Remote Control = лучшее из двух миров
+
+Запускаешь на сервере → включаешь Remote Control → управляешь с телефона:
+
+```bash
+ssh user@server
+tmux new -s work
+claude --remote-control "my project"
+# Открываешь claude.ai/code на телефоне
+```
+
+---
+
+## 17. Dispatch
+
+Делегировать задачу Claude с телефона пока не за компьютером. Claude выполняет на десктопе (Cowork), присылает уведомление когда готово.
+
+| | Dispatch | Remote Control |
+|---|---|---|
+| Ты управляешь | ❌ Делегируешь | ✅ В реальном времени |
+| Где работает | Desktop app (Cowork) | CLI на твоей машине |
+| Сценарий | "Сделай пока я в дороге" | "Продолжить сессию с дивана" |
+
+Настройка: Cowork tab → Dispatch → Get started.
+
+---
+
+## 18. Channels
+
+Пушит внешние события в уже запущенную локальную сессию Claude Code. Claude реагирует и отвечает обратно через тот же канал.
+
+**Сценарии:** пишешь с телефона через Telegram → Claude отвечает там же, работая с локальными файлами. Или: CI упал → webhook прилетает в сессию → Claude реагирует.
+
+### Настройка Telegram (пример)
+
+```bash
+# 1. Создай бота через @BotFather в Telegram → получи токен
+
+# 2. Установи плагин
+/plugin install telegram@claude-plugins-official
+
+# 3. Сконфигурируй токен
+/telegram:configure <токен>
+
+# 4. Запусти с каналом
+claude --channels plugin:telegram@claude-plugins-official
+
+# 5. Напиши боту в Telegram → получи код → спарь
+/telegram:access pair <код>
+
+# 6. Закрой доступ только для себя
+/telegram:access policy allowlist
+```
+
+Несколько каналов: `claude --channels plugin:telegram@... plugin:discord@...`
+
+| | Channels | Remote Control | MCP |
+|---|---|---|---|
+| Кто инициирует | Внешняя система пушит | Ты управляешь | Claude запрашивает |
+| Сессия | Запущенная локальная | Запущенная локальная | Любая |
+
+**Требования:** Bun (`bun --version`), подписка claude.ai, сессия должна быть открыта.
+
+---
+
+## 19. Claude in Chrome
+
+Браузерная автоматизация прямо из CLI через расширение Chrome.
+
+**Требования:** Chrome или Edge, расширение "Claude in Chrome" из Chrome Web Store, Claude Code v2.0.73+, подписка claude.ai (Pro/Max/Team/Enterprise). Не работает в WSL, Brave, Arc.
+
+### Включить
+
+```bash
+claude --chrome          # разово
+/chrome                  # из текущей сессии
+# /chrome → "Enabled by default" — всегда включено
+```
+
+### Что умеет
+
+- **Live debugging** — читает console errors и DOM, потом фиксит код
+- **Тестирование** — открывает localhost, кликает, проверяет формы и flows
+- **Авторизованные сайты** — Google Docs, Gmail, Notion без API — использует твою сессию
+- **Извлечение данных** — парсит страницы, сохраняет в CSV/JSON
+- **Автоматизация форм** — заполняет данные из файла в веб-интерфейс
+- **Запись GIF** — записывает browser flow как демо
+
+### Примеры
+
+```
+Open localhost:3000, submit the login form with invalid data,
+check if error messages appear correctly
+
+Go to docs.google.com/document/d/abc123 and draft a project
+update based on recent git commits
+
+Extract product names and prices from this page, save as CSV
+```
+
+### Claude in Chrome vs Chrome DevTools MCP vs Playwright MCP
+
+| | `/chrome` | Chrome DevTools MCP | Playwright MCP |
+|---|---|---|---|
+| Браузер | Твой Chrome | Твой Chrome | Отдельный процесс |
+| Твои сессии/куки | ✅ | ✅ | ❌ |
+| Уровень | Высокий (DOM/клики) | Низкий (CDP/JS/сеть) | Полный программный |
+| Headless | ❌ | ❌/✅ | ✅ |
+| CI/CD | ❌ | ❌ | ✅ |
+| Установка | Расширение Chrome Web Store | MCP сервер | MCP сервер |
+
+**Когда что:**
+- Тестировать localhost или работать с авторизованными сервисами → `/chrome`
+- Перехватить сетевые запросы, запустить JS программно → Chrome DevTools MCP
+- Автотесты в CI, кросс-браузерность → Playwright
+
+### vs Computer use
+
+| | Claude in Chrome | Computer use |
+|---|---|---|
+| Что контролирует | Только браузер | Весь экран / любые приложения |
+| Точность | Высокая (DOM level) | Пиксельная (скриншоты) |
+| Скорость | Быстрее | Медленнее |
+| Платформа | Chrome / Edge, все ОС | macOS only |
+
+Claude всегда пробует Chrome extension первым если задача браузерная. Computer use — последний resort.
+
+---
+
+## 20. Computer Use
+
+Claude управляет компьютером напрямую: открывает приложения, кликает, печатает, видит экран.
+
+**Требования:** macOS, Pro или Max план, Claude Code v2.1.85+, интерактивная сессия (не `-p`)
+
+### Включить
+
+```
+/mcp → computer-use → Enable
+```
+Затем macOS попросит два разрешения: **Accessibility** и **Screen Recording**.
+
+### Как Claude выбирает инструмент (приоритет)
+
+1. MCP сервер (если есть для сервиса)
+2. Bash (если задача терминальная)
+3. Claude in Chrome (если браузерная)
+4. **Computer use** — только если ничего другого не подходит
+
+### Что умеет
+
+- Собрать и протестировать нативное приложение (Swift/Xcode)
+- Воспроизвести визуальный баг при определённом размере окна
+- Тестировать iOS Simulator без XCTest
+- Управлять GUI-only инструментами без API
+
+### Важные детали
+
+- Одна сессия одновременно — machine-wide lock
+- **Esc** — мгновенно останавливает из любого места
+- Пока Claude работает — другие приложения скрываются, терминал остаётся
+- Терминал никогда не попадает на скриншот — Claude не видит свой вывод
+- Каждое приложение одобряется отдельно в начале сессии
+
+### Пример
+
+```
+Build the MenuBarStats target, launch it, open preferences,
+verify the interval slider updates the label. Screenshot when done.
+```
+
+---
+
+## 21. Hooks
+
+Shell-команды которые запускаются автоматически в определённые моменты работы Claude Code. Как git hooks, только для событий Claude Code.
+
+Настраиваются в `~/.claude/settings.json` (глобально) или `.claude/settings.json` (проект).
+
+### Lifecycle events
+
+| Event | Когда срабатывает |
+|---|---|
+| `PreToolUse` | Перед вызовом инструмента |
+| `PostToolUse` | После вызова инструмента |
+| `Stop` | Когда Claude закончил отвечать |
+| `Notification` | Когда Claude хочет отправить уведомление |
+| `PreCompact` | Перед компакцией контекста |
+
+### Структура
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{
+          "type": "command",
+          "command": "your-command $CLAUDE_FILE_PATH"
+        }]
+      }
+    ]
+  }
+}
+```
+
+`matcher` — фильтр по имени tool. `"Write|Edit"` — только запись файлов, `"*"` — всё.
+`$CLAUDE_FILE_PATH` — путь к файлу который изменили.
+
+### Примеры
+
+**Автолинтинг / форматирование после каждого изменения файла:**
+```json
+"PostToolUse": [{
+  "matcher": "Write|Edit",
+  "hooks": [{ "type": "command", "command": "npm run lint -- --fix $CLAUDE_FILE_PATH" }]
+}]
+```
+
+**Звуковой сигнал когда Claude закончил (macOS):**
+```json
+"Stop": [{
+  "matcher": "*",
+  "hooks": [{ "type": "command", "command": "afplay /System/Library/Sounds/Glass.aiff" }]
+}]
+```
+
+**Уведомление в Telegram когда задача готова:**
+```json
+"Stop": [{
+  "matcher": "*",
+  "hooks": [{ "type": "command", "command": "curl -s -X POST https://api.telegram.org/bot<TOKEN>/sendMessage -d chat_id=<CHAT_ID> -d text='Claude finished'" }]
+}]
+```
+
+---
+
+## 22. Scheduled Tasks
+
+Запуск промптов по расписанию без твоего участия.
+
+| | CLI | Desktop (Cowork) | Cloud |
+|---|---|---|---|
+| Где работает | Твоя машина | Твоя машина | Серверы Anthropic |
+| Машина должна быть включена | ✅ | ✅ | ❌ |
+| Настройка | Команда в терминале | UI в Cowork | UI в Cowork |
+
+**Примеры сценариев:** ежедневный дайджест из Jira/GitHub перед стендапом, мониторинг Sentry раз в час, еженедельный анализ метрик.
+
+| | Scheduled Tasks | Channels |
+|---|---|---|
+| Триггер | Время | Внешнее событие |
+| Пример | "каждый день в 9:00" | "CI упал → отреагируй" |
+
+---
+
+## 23. Headless / Programmatic Usage
+
+Запуск Claude Code из скриптов и CI/CD без интерактивного режима. Флаг `-p` (print mode).
+
+```bash
+# Выполнить промпт → stdout
+claude -p "найди все TODO в проекте"
+
+# Передать контекст через stdin
+cat error.log | claude -p "объясни эту ошибку"
+
+# Использовать в скриптах
+result=$(claude -p "напиши тест для calculateTotal")
+```
+
+### Полезные флаги
+
+```bash
+--output-format json          # вывод в JSON
+--output-format stream-json   # стриминг JSON построчно
+--max-turns 5                 # ограничить шаги агента
+--allowedTools "Read,Bash"    # только конкретные tools
+--dangerously-skip-permissions  # пропустить все подтверждения ⚠️
+```
+
+```bash
+# Проверить все изменённые файлы в PR
+git diff --name-only HEAD~1 | xargs -I{} claude -p "review for bugs: {}"
+```
+
+> ⚠️ `--dangerously-skip-permissions` убирает все подтверждения — только в изолированном окружении (Docker, CI sandbox).
+
+---
+
+## 24. Plan Mode
+
+Режим только для чтения и анализа — Claude исследует кодовую базу и строит план, но ничего не меняет до твоего одобрения.
+
+### Включить
+
+```bash
+claude --plan              # из CLI
+Shift+Tab                  # toggle внутри сессии
+```
+
+Или через settings.json:
+```json
+{ "permissions": { "defaultMode": "plan" } }
+```
+
+### Как работает
+
+1. Claude читает файлы, ищет по коду, изучает структуру
+2. Строит детальный план что и где нужно изменить
+3. Показывает план тебе
+4. **Ждёт одобрения** — ничего не меняет
+5. После одобрения — выходит из plan mode и выполняет
+
+Исследование делегируется встроенному subagent `Plan` (read-only) — не засоряет основной контекст.
+
+### Когда использовать
+
+- Большие рефакторинги — проверить что Claude собирается делать
+- Незнакомая кодовая база — пусть сначала объяснит
+- Рискованные операции — одобрить план перед выполнением
+
+### Plan mode vs bypassPermissions
+
+| | Plan mode | bypassPermissions |
+|---|---|---|
+| Читает файлы | ✅ | ✅ |
+| Меняет файлы | ❌ | ✅ без вопросов |
+| Выполняет bash | ❌ | ✅ без вопросов |
+| Назначение | Безопасный анализ | Автоматизация/CI |
+
+---
+
+## 25. Context Compaction
+
+Механизм управления контекстным окном когда оно заполняется.
+
+### Три команды
+
+**`/clear`** — полностью очищает контекст. Начинаешь с нуля. Используй при переключении на другую задачу.
+
+**`/compact`** — суммаризирует разговор в краткое резюме, заменяет им историю. Контекст освобождается, ключевые детали сохраняются:
+```
+/compact focus on the authentication changes we made
+```
+
+**Autocompact** — срабатывает автоматически при ~83.5% заполнения. Claude сам суммаризирует.
+
+### Управление порогом
+
+```json
+// ~/.claude/settings.json — срабатывать раньше (рекомендуется 60-75%)
+{ "env": { "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75" } }
+
+// Отключить полностью (опасно — можно упереться в лимит)
+{ "autoCompact": false }
+```
+
+### Следить за расходом
+
+```
+/context    # разбивка токенов: system prompt, tools, MCP, messages, free space
+```
+
+### Когда что
+
+| Ситуация | Команда |
+|---|---|
+| Переключился на другую задачу | `/clear` |
+| Контекст заполняется, задача не закончена | `/compact` |
+| Сохранить конкретные детали | `/compact focus on X` |
+| Настроить автоматику | `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` |
+
+> ⚠️ `/compact` освобождает место от истории, но не от MCP tool definitions — они занимают контекст всегда. Если забито MCP — отключай неиспользуемые серверы через `/mcp`.
+
+---
+
+## 26. Sandboxing
+
+Изоляция файловой системы и сети для Bash tool — Claude видит только разрешённые директории.
+
+**Платформы:** macOS (Apple Sandbox, уровень ядра), Linux (bwrap/bubblewrap).
+
+### Включить
+
+```bash
+claude --sandbox              # разово
+claude remote-control --sandbox
+
+# settings.json
+{ "sandbox": true }
+```
+
+### Что разрешено по умолчанию
+
+✅ Текущая рабочая директория проекта, системные утилиты, `/tmp`
+
+❌ За пределами проекта (`~/.ssh`, `~/Documents` и т.д.), сеть (опционально)
+
+### Расширить доступ
+
+```json
+{
+  "sandbox": true,
+  "permissions": {
+    "additionalDirectories": ["~/shared-libs", "/opt/tools"]
+  }
+}
+```
+
+### Когда использовать
+
+- Незнакомый код или чужие скрипты
+- CI/CD — изолировать агента от системы
+- При `--dangerously-skip-permissions` — sandbox компенсирует риск
+- Защита чувствительных мест (`~/.ssh`, конфиги)
+
+### Sandbox vs Permissions
+
+| | Sandbox | Permissions |
+|---|---|---|
+| Уровень | ОС (ядро) | Claude Code (приложение) |
+| Обойти | Нельзя | Claude может попросить разрешение |
+| Надёжность | Выше | Ниже |
+
+---
+
+## 27. Git Worktrees + Claude Code
+
+Worktree — дополнительная папка привязанная к тому же репо, но на другой ветке. Позволяет работать с несколькими ветками параллельно без `git stash` и переключений.
+
+### Создать worktree
+
+```bash
+cd ~/Projects/myapp
+
+# Создать новую ветку и папку для неё
+git worktree add ../myapp-feature feature/new-payment
+
+# Теперь есть две независимые папки:
+# ~/Projects/myapp/          → main ветка
+# ~/Projects/myapp-feature/  → feature/new-payment
+```
+
+### Запустить Claude в каждом
+
+```bash
+# Терминал 1
+cd ~/Projects/myapp
+claude                    # работает на main
+
+# Терминал 2
+cd ~/Projects/myapp-feature
+claude                    # работает на feature/new-payment
+```
+
+Два Claude Code, два контекста, две ветки — не мешают друг другу.
+
+### Посмотреть все worktrees
+
+```bash
+git worktree list
+# ~/Projects/myapp          abc1234 [main]
+# ~/Projects/myapp-feature  def5678 [feature/new-payment]
+```
+
+### Удалить worktree когда закончил
+
+```bash
+cd ~/Projects/myapp          # выйди из папки worktree
+git worktree remove ../myapp-feature
+# папка удалится, ветка в git останется
+git worktree prune            # убрать все неактивные сразу
+```
+
+### Правила
+
+- Одну ветку нельзя открыть в двух worktrees одновременно
+- У каждого worktree свой `.claude/` конфиг и контекст
+- Worktree видит те же `~/.claude/` глобальные настройки и user-scope MCP
+
+### Remote Control + worktrees
+
+```bash
+# Каждое новое подключение получает свой изолированный worktree
+claude remote-control --spawn worktree
+```
+
+### Типичный сценарий с тремя параллельными задачами
+
+```bash
+git worktree add ../myapp-auth feature/auth
+git worktree add ../myapp-ui feature/ui
+git worktree add ../myapp-api feature/api
+
+# Три терминала, три Claude, три ветки
+cd ../myapp-auth && claude
+cd ../myapp-ui && claude
+cd ../myapp-api && claude
+```
+
+---
+
+## 28. Model Selection
+
+Три модели — три сценария.
+
+| Модель | Скорость | Когда использовать |
+|---|---|---|
+| **Haiku** | Быстрый, дешёвый | Поиск по файлам, простые правки, explore subagent |
+| **Sonnet** | Баланс | Написание кода, рефакторинг, code review (дефолт) |
+| **Opus** | Медленный, мощный | Сложная архитектура, большой рефакторинг |
+
+### Как переключить
+
+```bash
+claude --model sonnet     # из CLI
+claude --model opus
+claude --model haiku
+
+/model                    # picker внутри сессии
+Option+P                  # быстрый picker
+
+# settings.json — дефолт для всех сессий
+{ "model": "claude-sonnet-4-6" }
+```
+
+### Модели в subagents
+
+Главная ценность — разные модели для разных задач:
+
+```markdown
+---
+name: explorer
+model: haiku      # дешёвый для поиска
+
+---
+name: architect
+model: opus       # мощный для архитектуры
+```
+
+Встроенный `Explore` subagent на Haiku — поэтому исследование кодовой базы быстрое и не тратит дорогие токены.
