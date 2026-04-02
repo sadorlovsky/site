@@ -5,7 +5,6 @@ import PageHeader from "@components/PageHeader.astro";
 import LangInit from "@components/LangInit.astro";
 import YearGroup from "@components/YearGroup.astro";
 import ListItem from "@components/ListItem.astro";
-import Badge from "@components/kit/Badge.astro";
 import { Icon } from "astro-icon/components";
 import { getEffectivePubDate } from "@lib/blog";
 
@@ -101,17 +100,14 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                       })}
                     </time>
                     <span slot="title">{post.data.title}</span>
-                    <div class="post-meta">
-                      {post.data.tags?.map((tag: string) => (
-                        <Badge size="sm">{tag}</Badge>
-                      ))}
-                      {enToRuMap.has(post.id) && (
+                    {enToRuMap.has(post.id) && (
+                      <div class="post-meta">
                         <span class="translation-badge" title="Available in Russian" data-title-en="Available in Russian" data-title-ru="Доступно на русском">
                           <Icon name="globe" width={12} height={12} />
                           RU
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </ListItem>
                 );
               })}
@@ -143,17 +139,14 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                       })}
                     </time>
                     <span slot="title">{post.data.title}</span>
-                    <div class="post-meta">
-                      {post.data.tags?.map((tag: string) => (
-                        <Badge size="sm">{tag}</Badge>
-                      ))}
-                      {ruToEnMap.has(post.id) && (
+                    {ruToEnMap.has(post.id) && (
+                      <div class="post-meta">
                         <span class="translation-badge" title="Available in English" data-title-en="Available in English" data-title-ru="Доступно на английском">
                           <Icon name="globe" width={12} height={12} />
                           EN
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </ListItem>
                 );
               })}
