@@ -5,7 +5,6 @@ import PageHeader from "@components/PageHeader.astro";
 import LangInit from "@components/LangInit.astro";
 import YearGroup from "@components/YearGroup.astro";
 import ListItem from "@components/ListItem.astro";
-import { Icon } from "astro-icon/components";
 import { getEffectivePubDate } from "@lib/blog";
 
 export const prerender = true;
@@ -20,16 +19,6 @@ const enPosts = allPosts
 const ruPosts = allPosts
   .filter((post) => post.data.lang === "ru")
   .sort((a, b) => getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime());
-
-// Create maps for translation lookups
-const enToRuMap = new Map<string, string>();
-const ruToEnMap = new Map<string, string>();
-ruPosts.forEach((post) => {
-  if (post.data.translationOf) {
-    enToRuMap.set(post.data.translationOf, post.id);
-    ruToEnMap.set(post.id, post.data.translationOf);
-  }
-});
 
 // Group posts by year (for each language)
 // Posts are already sorted by pubDate desc, so we preserve that order within each year
@@ -100,14 +89,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                       })}
                     </time>
                     <span slot="title">{post.data.title}</span>
-                    {enToRuMap.has(post.id) && (
-                      <div class="post-meta">
-                        <span class="translation-badge" title="Available in Russian" data-title-en="Available in Russian" data-title-ru="Доступно на русском">
-                          <Icon name="globe" width={12} height={12} />
-                          RU
-                        </span>
-                      </div>
-                    )}
                   </ListItem>
                 );
               })}
@@ -139,14 +120,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
                       })}
                     </time>
                     <span slot="title">{post.data.title}</span>
-                    {ruToEnMap.has(post.id) && (
-                      <div class="post-meta">
-                        <span class="translation-badge" title="Available in English" data-title-en="Available in English" data-title-ru="Доступно на английском">
-                          <Icon name="globe" width={12} height={12} />
-                          EN
-                        </span>
-                      </div>
-                    )}
                   </ListItem>
                 );
               })}
@@ -256,35 +229,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     display: flex;
   }
 
-  .post-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.4rem;
-  }
-
-  .translation-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    background: light-dark(rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.15));
-    border: 1px solid light-dark(rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.25));
-    color: light-dark(#6366f1, #a78bfa);
-    cursor: help;
-    transition: all 0.2s ease;
-  }
-
-  .translation-badge:hover {
-    background: light-dark(rgba(99, 102, 241, 0.12), rgba(139, 92, 246, 0.22));
-    border-color: light-dark(rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.4));
-  }
-
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -303,9 +247,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
       animation: none;
     }
 
-    .translation-badge {
-      transition: none;
-    }
   }
 
   /* Mobile adjustments */
