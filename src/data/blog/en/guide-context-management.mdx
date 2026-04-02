@@ -1,0 +1,319 @@
+---
+title: 'Context management in Claude Code'
+pubDate: 2026-04-02
+author: 'Zach Orlovsky'
+tags: ['claude', 'claude-code', 'ai', 'tools']
+lang: en
+---
+
+> Up to date as of April 2026.
+
+---
+
+## The main principle
+
+**The context window is your most important resource.**
+
+Everything that happens in a session takes up context: every message, every file read, every command result, Claude's responses. When context fills up — quality drops. Claude starts "forgetting" early instructions and making more mistakes.
+
+Context size: 200k tokens (Sonnet/Haiku) or 1M (Opus 4.6 on Max/Team/Enterprise).
+
+---
+
+## What loads automatically at startup
+
+Before you've typed your first message, context is already occupied:
+
+| What | Tokens |
+|---|---|
+| Claude Code system prompt | ~2-3k |
+| Built-in tools | ~17k |
+| Your CLAUDE.md | depends on size |
+| Auto memory (MEMORY.md, first 200 lines) | depends |
+| MCP tool definitions | 550-1400 per tool |
+| Skill descriptions | 1% of context or 8k characters |
+
+**Takeaway:** with several MCP servers you start a session with 30-50k tokens already used.
+
+---
+
+## Monitoring
+
+```
+/context    # breakdown by category: what takes how much
+/memory     # which CLAUDE.md and auto memory files are loaded
+```
+
+The status line at the bottom shows fill % in real time.
+
+---
+
+## Context management commands
+
+### `/clear`
+Full reset. Start from scratch. CLAUDE.md reloads, conversation history disappears.
+
+**When:** switching to a different task, too much irrelevant context accumulated.
+
+### `/compact [instruction]`
+Claude summarizes the conversation, replaces history with a brief summary. You can specify what to keep:
+
+```
+/compact focus on the authentication changes we made
+/compact keep the list of modified files and test commands
+```
+
+**When:** context is filling up but the task isn't done.
+
+### `/btw question`
+Quick question without saving to history. The answer appears in an overlay and doesn't enter the context.
+
+```
+/btw what type does this function return?
+/btw is there a built-in for this in Python?
+```
+
+**When:** you need to clarify a detail without polluting context.
+
+### `/rewind` (or double Esc)
+Opens a restore menu to a previous checkpoint. You can restore: conversation, code, or both.
+
+**When:** Claude went the wrong way, you want to roll back and try differently.
+
+---
+
+## Autocompact
+
+Triggers automatically when context is close to full. Configure the threshold (as percentage of the limit):
+
+```json
+// ~/.claude/settings.json
+{ "env": { "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75" } }
+```
+
+60-75% is a good value. Earlier compaction = better quality = less context lost.
+
+Disable (not recommended):
+```json
+{ "autoCompact": false }
+```
+
+What survives `/compact` — CLAUDE.md is re-read from disk and re-injected. Instructions from conversation are lost — so write important things in CLAUDE.md.
+
+---
+
+## What eats the most context
+
+### 1. MCP tool definitions
+Every connected MCP server adds descriptions of all its tools at startup.
+- 1 tool ~ 550-1400 tokens
+- An MCP server with dozens of tools -> tens of thousands of tokens immediately
+
+**Mitigation:** only connect the servers you need, disable the rest via `/mcp`.
+
+### 2. Reading large files
+Every file Claude reads — fully in context.
+
+**Mitigation:** use subagents for codebase exploration — they work in their own context.
+
+### 3. Long conversations
+Accumulated message history.
+
+**Mitigation:** `/clear` between tasks, `/compact` within a task.
+
+---
+
+## Best practices
+
+### Give Claude a way to verify the result
+
+This is the most important one. Claude works significantly better when it can check its own work:
+
+```
+# Bad
+"implement email validation"
+
+# Good
+"write validateEmail function. test cases: user@example.com -> true,
+invalid -> false, user@.com -> false. run tests after implementing."
+```
+
+Without verification criteria Claude can produce something that looks right but doesn't work.
+
+### Explore -> Plan -> Code -> Commit
+
+Separate exploration and implementation:
+
+1. **Plan mode** — Claude reads files, builds a plan, changes nothing
+2. You approve the plan
+3. **Normal mode** — implements according to plan
+4. Commit
+
+```bash
+# Enable plan mode at launch
+claude --permission-mode plan
+# or Shift+Tab inside a session
+```
+
+### Specific prompts save context
+
+The more specific the prompt — the fewer iterations and less context spent:
+
+```
+# Bad — triggers many clarifying questions
+"add a calendar widget"
+
+# Good — everything is clear immediately
+"look at HotDogWidget.php to understand widget patterns.
+implement a calendar widget in the same style with month
+selection and year pagination. no new libraries."
+```
+
+### Subagents for exploration
+
+Codebase exploration reads many files — all of it pollutes the main context:
+
+```
+# Bad — Claude reads everything in the main context
+"investigate how our auth system handles token refresh"
+
+# Good — subagent works in its own context
+"use a subagent to investigate how our auth system handles
+token refresh and whether we have OAuth utilities to reuse"
+```
+
+The subagent returns a brief summary — the main context stays clean.
+
+### `/clear` between unrelated tasks
+
+```
+# Done with auth -> starting UI work
+/clear
+
+# Now a clean context without leftovers from the auth task
+```
+
+### After two failed corrections — reset and start over
+
+If you've corrected Claude twice and it still gets it wrong — the context is polluted with failed approaches. `/clear` and write a better initial prompt with what you've learned.
+
+### Use `@` to reference files
+
+```
+@src/api/auth.ts look at how this file works
+```
+
+Instead of describing where things are — give a direct reference.
+
+### Pipe data directly
+
+```bash
+cat error.log | claude -p "what's going on here?"
+gh pr diff | claude -p "summarize this PR"
+```
+
+---
+
+## Workflows for different task sizes
+
+### Small task (typo, rename, quick fix)
+```
+-> Just write what you need, no planning
+-> Claude does it
+-> You verify
+```
+
+### Medium task (new endpoint, feature)
+```
+-> Plan mode: "read src/api/ and plan how to add X"
+-> Approve the plan
+-> Normal mode: "implement"
+-> Run tests
+-> Commit
+```
+
+### Large task (refactoring, migration)
+```
+-> Separate session for exploration with subagents
+-> Write spec to a file
+-> New clean session for implementation
+-> Worktrees for parallel parts
+```
+
+---
+
+## Anti-patterns
+
+**"Kitchen sink" session** — started with one thing, then asked something unrelated, then came back. Context is full of irrelevant stuff.
+-> Fix: `/clear` between unrelated tasks.
+
+**Endless corrections** — Claude does it wrong, you correct, still wrong. Context is polluted with failed approaches.
+-> Fix: after two corrections -> `/clear` and a better prompt.
+
+**Endless exploration** — asked "investigate X" without boundaries, Claude reads hundreds of files.
+-> Fix: narrow the scope or use subagents.
+
+**Trust but don't verify** — Claude produced something plausible, you shipped to prod.
+-> Fix: always give Claude a way to verify (tests, screenshots, scripts).
+
+---
+
+## Checkpoints and resume
+
+Claude automatically creates checkpoints before every change. It's not a replacement for git, but lets you roll back:
+
+```
+Esc + Esc  # or /rewind — open checkpoint menu
+```
+
+Sessions are saved locally:
+
+```bash
+claude --continue   # continue the last session
+claude --resume     # pick from recent sessions
+/rename             # name a session ("oauth-migration")
+```
+
+---
+
+## Parallel sessions for scaling
+
+When you need more:
+
+```bash
+# Multiple worktrees — multiple independent Claude instances
+git worktree add ../proj-auth feature/auth
+git worktree add ../proj-ui feature/ui
+
+cd ../proj-auth && claude &
+cd ../proj-ui && claude &
+```
+
+**Writer/Reviewer pattern:**
+- Session A: implements the feature
+- Session B: reviews with a clean context (not biased toward the code it just wrote)
+
+**Fan-out for batch operations:**
+```bash
+for file in $(cat files.txt); do
+  claude -p "migrate $file from React to Vue" \
+    --allowedTools "Edit" "Bash(git commit:*)"
+done
+```
+
+---
+
+## Quick command cheatsheet
+
+| Command | When |
+|---|---|
+| `/context` | See what takes how much space |
+| `/clear` | New task or polluted context |
+| `/compact` | Task continues, need to free space |
+| `/compact focus on X` | Compaction preserving specific details |
+| `/btw question` | Quick question without polluting context |
+| `/rewind` or `Esc+Esc` | Roll back to a previous state |
+| `Esc` | Stop Claude mid-response |
+| `/mcp` | Disable unused MCP servers |
+| `--permission-mode plan` | Read-only mode before implementation |
+| `claude --continue` | Continue a previous session |
