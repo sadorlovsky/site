@@ -10,6 +10,10 @@ lang: en
 
 ---
 
+This isn’t official documentation. It’s the mental model and command snippets I keep open while using Claude Code. Skim the first sections for “how the surfaces fit together”, then treat the rest as a menu.
+
+---
+
 ## 1. Desktop App: Chat vs Code (vs Cowork)
 
 | | **Chat** | **Code** | **Cowork** |
@@ -32,7 +36,7 @@ lang: en
 | **Code tab** | ❌ No auto-sync. Sessions stored locally in `~/.claude/` |
 | **Code → mobile** | Only via **Remote Control** (`/remote-control` in terminal) — a window into your local session, not the cloud |
 
-> Remote Control (Feb 2026, preview): start it in CLI, get a link/QR, open on your phone — conversation syncs, but Claude Code still runs on your machine. Terminal must stay open.
+> Remote Control: start it from CLI (`claude --remote-control` or `/remote-control`), get a URL/QR, and drive the same local session from `claude.ai/code` or the mobile app. Claude still runs on your machine, so the terminal must stay open.
 
 ---
 
@@ -484,7 +488,7 @@ claude --remote-control "Project name"
 ### Limitations
 - Terminal must be open — close it, session dies
 - Network gone for 10+ minutes → timeout
-- Requires claude.ai subscription (Pro/Max/Team/Enterprise) — API key doesn't work
+- Requires claude.ai subscription auth (Pro/Max/Team/Enterprise). API key auth doesn't work.
 
 ### Remote Control vs Claude Code on the web
 
@@ -510,7 +514,7 @@ Claude Code on Anthropic's servers — no local machine needed. Available at `cl
 - Working with GitHub repos without cloning — Claude clones itself
 - CI/CD and automation without a local process
 
-**Limitations:** no access to local files and MCP servers, fresh environment each time, only works with GitHub repos.
+**Limitations:** runs in the cloud (no access to your local files or local MCP servers), and it’s GitHub-based (connect GitHub + install the Claude GitHub App for the full workflow).
 
 ---
 
