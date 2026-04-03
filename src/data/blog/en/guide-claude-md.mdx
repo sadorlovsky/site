@@ -22,7 +22,7 @@ A markdown file with instructions for Claude that gets loaded at the start of ev
 
 CLAUDE.md is the primary tool. You write the rules, Claude reads them every session in full.
 
-Auto memory is supplementary. Claude writes notes on its own as it works (build commands, debugging insights, your preferences). The first 200 lines of `MEMORY.md` are loaded at session start. More details in the [Auto memory](#auto-memory) section.
+Auto memory is supplementary. Claude writes notes on its own as it works (build commands, debugging insights, your preferences). On startup, Claude Code loads `MEMORY.md` up to the first ~200 lines (or ~25KB), so treat it like a short index, not a dumping ground. More details in the [Auto memory](#auto-memory) section.
 
 ---
 
@@ -31,6 +31,7 @@ Auto memory is supplementary. Claude writes notes on its own as it works (build 
 | File | Scope | Who sees it |
 |---|---|---|
 | `./CLAUDE.md` or `./.claude/CLAUDE.md` | Project | Team via git |
+| `./CLAUDE.local.md` | Project (local) | Only you (gitignored) |
 | `~/.claude/CLAUDE.md` | All projects | Only you |
 
 CLAUDE.md loads up the directory tree from the current folder. If you launch Claude in `foo/bar/` — both `foo/bar/CLAUDE.md` and `foo/CLAUDE.md` will be loaded.
