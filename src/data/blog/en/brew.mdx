@@ -1,0 +1,76 @@
+# My approach to installing software on macOS
+
+I install everything through Homebrew. Not "mostly" — everything. This is the hill I'm prepared to die on.
+
+## The rule
+
+**CLI tools** — `brew install`. Not `npm install -g`, not `curl | bash`, not the official "quick start" that's just a shell script with three redirects and a prayer.
+
+**Apps** — `brew install --cask`. Not `.dmg` files, not the App Store, not dragging things into `/Applications` like it's 2007. Even 1Password — cask, not the download from the official site.
+
+**Dev runtimes** (Node, Python, Ruby, etc.) — not through Homebrew at all. That's a different problem that needs a different tool.
+
+## Why not mix methods
+
+Every exception creates a new category of things you have to remember.
+
+"Is this CLI installed globally via npm or brew?" "Did I get this app from the App Store or a `.dmg`?" "Which Python am I running right now and why is it not the one I think it is?"
+
+When everything goes through Homebrew, there's one place to check:
+
+```
+brew list          # everything installed
+brew list --cask   # apps only
+```
+
+One command to update everything:
+
+```
+brew upgrade && brew upgrade --cask
+```
+
+One command to remove something cleanly:
+
+```
+brew uninstall <package>
+brew uninstall --cask <app>
+```
+
+No leftover files in random directories. No archaeology when something breaks.
+
+## Dev runtimes are different
+
+Installing Node or Python via Homebrew globally is asking for trouble. Projects have different requirements. You upgrade the system Python and something breaks in a way that takes three hours to debug because the error message is completely unrelated. Classic.
+
+`mise` solves this at the project level. A `.mise.toml` in the repo root declares what the project needs:
+
+```toml
+[tools]
+node = "22"
+python = "3.12"
+```
+
+`mise` installs and activates the right version automatically when you `cd` into the directory. No global state, no conflicts, no "works on my machine" energy.
+
+For Python specifically I also use `uv` — for virtualenvs, installing packages, running scripts. Faster than `pip` and handles the things `mise` doesn't cover.
+
+The setup is two lines:
+
+```
+brew install mise
+brew install uv
+```
+
+After that, `mise` and `uv` handle everything inside projects. Homebrew stays clean.
+
+## Brew itself
+
+```
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Yes, this is a `curl | bash` install. The one exception that makes the whole system possible. I've made peace with it.
+
+---
+
+The end state: one tool that knows about everything on my machine. `brew list` is the full picture. New machine setup is a `Brewfile` and some waiting. No mental overhead about where things came from or how to get rid of them.
