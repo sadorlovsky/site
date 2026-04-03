@@ -6,13 +6,20 @@ tags: ['claude', 'claude-code', 'ai', 'tools']
 lang: en
 ---
 
+> Up to date as of April 2026.
+
+---
+
 ## What are Skills
 
-A skill is a markdown file with instructions that Claude adds to its toolkit. You can invoke it explicitly via `/skill-name` or Claude will load it on its own when it deems necessary.
+Skills are how I “teach” Claude Code repeatable workflows without bloating `CLAUDE.md`.
 
-**Difference from CLAUDE.md:** CLAUDE.md loads always and in full. Skills load on demand — saves context.
+A skill is a directory with a `SKILL.md` file (YAML frontmatter + Markdown instructions). Claude can load a skill automatically when it’s relevant, or you can run it directly as a `/slash-command`.
 
-**Difference from slash commands (`.claude/commands/`):** commands still work, but Skills are the recommended format. Both create a `/command`, but Skills support more features: file folders, frontmatter, auto-invocation.
+The key differences:
+- **CLAUDE.md / rules** are “always-on” project memory. Great for stable constraints (commands, conventions, architecture).
+- **Skills** are “on-demand” playbooks. Great for actions and workflows (deploy, commit, review) or optional reference material.
+- **`.claude/commands/`** still works, but custom commands were merged into skills. A `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` both create `/deploy`. Skills win on flexibility because they can include supporting files.
 
 ---
 
@@ -20,11 +27,11 @@ A skill is a markdown file with instructions that Claude adds to its toolkit. Yo
 
 | Location | Scope |
 |---|---|
-| `~/.claude/skills/<name>/SKILL.md` | All your projects (personal) |
-| `.claude/skills/<name>/SKILL.md` | This project only (in git) |
-| Plugin `skills/<name>/SKILL.md` | Where the plugin is installed |
+| `~/.claude/skills/<skill-name>/SKILL.md` | All your projects (personal) |
+| `.claude/skills/<skill-name>/SKILL.md` | This project only (in git) |
+| Plugin: `<plugin>/skills/<skill-name>/SKILL.md` | Where the plugin is enabled |
 
-On name conflicts: personal > project > plugins.
+On name conflicts: enterprise > personal > project. Plugin skills use a `plugin-name:skill-name` namespace, so they don’t collide.
 
 ---
 
@@ -39,7 +46,7 @@ mkdir -p ~/.claude/skills/explain-code
 ```markdown
 ---
 name: explain-code
-description: Explains code with visual diagrams and analogies. Use when explaining how code works or when asked "how does this work?"
+description: Explains code with visual diagrams and analogies. Use when explaining how code works, teaching about a codebase, or when the user asks "how does this work?"
 ---
 
 When explaining code, always:
@@ -50,7 +57,9 @@ When explaining code, always:
 4. **Highlight a gotcha** — common mistake or misconception
 ```
 
-Invocation: `/explain-code` or Claude loads it automatically when you ask "how does this work?"
+Test it two ways:
+- Let Claude pick it up automatically: “How does this code work?”
+- Invoke explicitly: `/explain-code src/auth/login.ts`
 
 ---
 
@@ -58,8 +67,8 @@ Invocation: `/explain-code` or Claude loads it automatically when you ask "how d
 
 ```markdown
 ---
-name: command-name          # becomes /command-name
-description: What it does and when to use. Claude reads this for auto-invocation.
+name: skill-name            # becomes /skill-name
+description: What it does and when to use. Claude reads this to decide auto-invocation.
 ---
 
 # Content
@@ -73,18 +82,19 @@ Instructions for Claude on what to do when the skill is activated.
 
 | Field | Description |
 |---|---|
-| `name` | Command name. Letters, digits, hyphens. Max 64 characters. |
-| `description` | When to use. **Always recommended.** Max 250 characters — front-load the essentials. |
-| `argument-hint` | Hint in autocomplete. E.g.: `[issue-number]` |
-| `disable-model-invocation` | `true` — only you can invoke, Claude won't load automatically |
-| `user-invocable` | `false` — hide from `/` menu, only Claude can use |
-| `allowed-tools` | Tools available without permission prompt. Space-separated: `Read Grep Glob` |
-| `model` | Model for this skill: `haiku`, `sonnet`, `opus` |
-| `effort` | Thinking level: `low`, `medium`, `high`, `max` |
-| `context` | `fork` — run in an isolated subagent |
-| `agent` | Which subagent to use with `context: fork` |
-| `paths` | Glob patterns — load only for matching files |
-| `hooks` | Hooks for this skill's lifecycle |
+| `name` | Display name. If omitted, uses the directory name. Lowercase letters, numbers, and hyphens only. Max 64 chars. |
+| `description` | What it does and when to use it. Recommended. Descriptions longer than ~250 chars are truncated in the listing, so front-load the use case. |
+| `argument-hint` | Autocomplete hint for expected arguments. Example: `"[issue-number]"` |
+| `disable-model-invocation` | `true` to prevent Claude from auto-loading it. You run it manually as `/name`. |
+| `user-invocable` | `false` to hide it from the `/` menu (Claude can still use it). |
+| `allowed-tools` | Tools Claude can use without asking permission while the skill is active. Accepts a space-separated string or a YAML list. |
+| `model` | Override the model when the skill is active. |
+| `effort` | Override effort level while the skill is active (`low`/`medium`/`high`/`max`, where `max` is Opus 4.6 only). |
+| `context` | `fork` to run the skill in a forked subagent context. |
+| `agent` | Which subagent type to use when `context: fork` is set. |
+| `hooks` | Hooks scoped to this skill’s lifecycle. |
+| `paths` | Glob patterns limiting when Claude auto-loads the skill (same format as path-scoped rules). |
+| `shell` | Shell for inline `!` command blocks (`bash` or `powershell`, Windows-only toggle required). |
 
 ---
 
@@ -154,7 +164,7 @@ Never touch legacy-core.js directly...
 name: fix-issue
 description: Fix a GitHub issue by number
 disable-model-invocation: true
-argument-hint: [issue-number]
+argument-hint: "[issue-number]"
 ---
 
 Fix GitHub issue #$ARGUMENTS:
@@ -250,11 +260,7 @@ Research $ARGUMENTS thoroughly:
 3. Return a summary with specific file references
 ```
 
-Which `agent` to specify:
-- `Explore` — read-only, haiku, fast search
-- `Plan` — read-only, for planning
-- `general-purpose` — all tools
-- Or any custom subagent from `.claude/agents/`
+Pick `agent` based on what you want (read-only research vs implementation), or point at a custom subagent from `.claude/agents/`.
 
 ---
 
@@ -397,4 +403,3 @@ $ARGUMENTS
 
 **Description gets truncated:**
 - Front-load the essentials — the first 250 characters matter most
-- Budget for all descriptions: 1% of context or 8000 characters

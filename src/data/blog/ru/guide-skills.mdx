@@ -6,13 +6,20 @@ lang: ru
 translationOf: en/guide-skills
 ---
 
+> Актуально на апрель 2026.
+
+---
+
 ## Что такое Skills
 
-Skill = markdown файл с инструкциями который Claude добавляет в свой арсенал. Можно вызвать явно через `/skill-name` или Claude загрузит сам когда посчитает нужным.
+Skills для меня это способ "обучать" Claude Code повторяемым воркфлоу, не превращая `CLAUDE.md` в простыню.
 
-**Отличие от CLAUDE.md:** CLAUDE.md загружается всегда и полностью. Skills загружаются по необходимости — экономит контекст.
+Skill это папка с файлом `SKILL.md` (YAML frontmatter + Markdown инструкции). Claude может подхватить skill автоматически когда он релевантен, или ты можешь запустить его вручную как `/slash-command`.
 
-**Отличие от slash команд (`.claude/commands/`):** команды по-прежнему работают, но Skills — рекомендуемый формат. Оба создают `/команду`, но Skills поддерживают больше возможностей: папка с файлами, frontmatter, автозапуск.
+Ключевые отличия:
+- **CLAUDE.md / rules** это "постоянная память" проекта. Хорошо для стабильных правил (команды, конвенции, архитектура).
+- **Skills** это "плейбуки по запросу". Хорошо для действий и воркфлоу (deploy, commit, review) или опционального справочника.
+- **`.claude/commands/`** всё еще работает, но кастомные команды объединили со skills. `.claude/commands/deploy.md` и `.claude/skills/deploy/SKILL.md` оба создают `/deploy`. Skills удобнее, потому что можно хранить supporting files рядом.
 
 ---
 
@@ -22,9 +29,9 @@ Skill = markdown файл с инструкциями который Claude до
 |---|---|
 | `~/.claude/skills/<name>/SKILL.md` | Все твои проекты (личные) |
 | `.claude/skills/<name>/SKILL.md` | Только этот проект (в git) |
-| Плагин `skills/<name>/SKILL.md` | Где установлен плагин |
+| Плагин: `<plugin>/skills/<skill-name>/SKILL.md` | Где плагин включен |
 
-При конфликте имён: личные > проектные > плагины.
+При конфликте имён: enterprise > личные > проектные. Skills из плагинов живут в неймспейсе `plugin-name:skill-name`, поэтому с остальными не конфликтуют.
 
 ---
 
@@ -50,7 +57,9 @@ When explaining code, always:
 4. **Highlight a gotcha** — частая ошибка или заблуждение
 ```
 
-Вызов: `/explain-code` или Claude загрузит сам когда ты спросишь "как это работает?"
+Проверка двумя способами:
+- Пусть Claude подхватит автоматически: "How does this code work?"
+- Запусти вручную: `/explain-code src/auth/login.ts`
 
 ---
 
@@ -58,8 +67,8 @@ When explaining code, always:
 
 ```markdown
 ---
-name: имя-команды          # становится /имя-команды
-description: Что делает и когда использовать. Claude читает это для автозапуска.
+name: skill-name            # становится /skill-name
+description: Что делает и когда использовать. Claude читает это для авто-запуска.
 ---
 
 # Содержимое
@@ -73,18 +82,19 @@ description: Что делает и когда использовать. Claude 
 
 | Поле | Описание |
 |---|---|
-| `name` | Имя команды. Буквы, цифры, дефисы. Макс 64 символа. |
-| `description` | Когда использовать. **Рекомендуется всегда.** Макс 250 символов — front-load главное. |
-| `argument-hint` | Подсказка в autocomplete. Например: `[issue-number]` |
-| `disable-model-invocation` | `true` — только ты можешь вызвать, Claude не будет загружать автоматически |
-| `user-invocable` | `false` — скрыть из `/` меню, только Claude может использовать |
-| `allowed-tools` | Инструменты доступные без запроса разрешения. Пробел-separated: `Read Grep Glob` |
-| `model` | Модель для этого skill: `haiku`, `sonnet`, `opus` |
-| `effort` | Уровень размышления: `low`, `medium`, `high`, `max` |
-| `context` | `fork` — запустить в изолированном subagent |
-| `agent` | Какой subagent использовать при `context: fork` |
-| `paths` | Glob паттерны — загружать только для matching файлов |
-| `hooks` | Hooks для lifecycle этого skill |
+| `name` | Имя. Если не указать, берется имя папки. Только lowercase буквы, цифры и дефисы. Макс 64 символа. |
+| `description` | Что делает и когда использовать. Рекомендуется. В списке skills описания длиннее ~250 символов обрезаются, поэтому самое важное ставь в начало. |
+| `argument-hint` | Подсказка для автокомплита. Пример: `"[issue-number]"` |
+| `disable-model-invocation` | `true` чтобы Claude не запускал автоматически. Тогда запускаешь только ты: `/name`. |
+| `user-invocable` | `false` чтобы скрыть из меню `/` (Claude все еще может использовать). |
+| `allowed-tools` | Какие tools доступны без запроса разрешения пока активен skill. Можно строкой через пробел или YAML list. |
+| `model` | Переопределить модель пока активен skill. |
+| `effort` | Переопределить effort (`low`/`medium`/`high`/`max`, где `max` только для Opus 4.6). |
+| `context` | `fork` чтобы выполнить skill в отдельном subagent контексте. |
+| `agent` | Какой subagent использовать при `context: fork`. |
+| `hooks` | Hooks на жизненный цикл skill. |
+| `paths` | Glob паттерны, ограничивающие когда Claude авто-загружает skill (формат как у path-scoped rules). |
+| `shell` | Shell для inline `!` команд (`bash` или `powershell`, с Windows-тогглом). |
 
 ---
 
@@ -154,7 +164,7 @@ paths:
 name: fix-issue
 description: Fix a GitHub issue by number
 disable-model-invocation: true
-argument-hint: [issue-number]
+argument-hint: "[issue-number]"
 ---
 
 Fix GitHub issue #$ARGUMENTS:
@@ -250,11 +260,7 @@ Research $ARGUMENTS thoroughly:
 3. Return a summary with specific file references
 ```
 
-Какой `agent` указывать:
-- `Explore` — read-only, haiku, быстрый поиск
-- `Plan` — read-only, для планирования
-- `general-purpose` — все инструменты
-- Или любой свой subagent из `.claude/agents/`
+`agent` выбирай по задаче (read-only research vs implementation) или укажи кастомный subagent из `.claude/agents/`.
 
 ---
 
@@ -397,4 +403,3 @@ $ARGUMENTS
 
 **Описание обрезается:**
 - Front-load главное — первые 250 символов самые важные
-- Бюджет на все descriptions: 1% контекста или 8000 символов
