@@ -66,6 +66,8 @@ Every connected MCP server injects its tool definitions into every request:
 
 My bias: keep MCP for tools that genuinely expand what Claude can do, not for actions a normal CLI already handles well.
 
+{/* 📊 PLACEHOLDER: diagram — horizontal bars comparing context consumed by MCP setups. Row 1: no MCP (baseline). Row 2: GitHub MCP only (~46k tokens). Row 3: GitHub + Slack + Sentry (~55k tokens). Label the free space left in each row. Point is to make the numbers visceral. */}
+
 ---
 
 ## 4. MCP on iOS/web
@@ -507,6 +509,10 @@ claude --remote-control "Project name"
 | Parallel tasks | Via `--spawn worktree` | ✅ Native |
 
 Auto-enable for all sessions: `/config` → Enable Remote Control for all sessions → true
+
+Before this existed, I genuinely used to wish for it. Start a long task in Claude CLI, step outside for coffee or just some air — and keep working in the same session from my phone without stopping. That's exactly what this does.
+
+{/* 📱 PLACEHOLDER: screenshot — phone screen showing claude.ai/code with an active Claude Code session. Ideally with a real project visible, not a demo. Should look like someone actually using this from their couch, not a product shot. */}
 
 ---
 
