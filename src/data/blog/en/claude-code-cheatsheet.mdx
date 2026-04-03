@@ -6,10 +6,6 @@ tags: ['claude', 'claude-code', 'ai', 'tools']
 lang: en
 ---
 
-> Up to date as of April 2026.
-
----
-
 This isn’t official documentation. It’s the mental model and command snippets I keep open while using Claude Code.
 
 I wrote it for the moment when you vaguely remember that Claude Code can do something, but not which surface it lives on, what it’s called, or what the catch is. Skim the first sections to orient yourself, then treat the rest as a menu.
@@ -87,6 +83,8 @@ My bias: keep MCP for tools that genuinely expand what Claude can do, not for ac
 ---
 
 ## 5. MCP Isolation Between Environments — It's NOT a Bug
+
+This one drove me crazy on day one of using Zed. Tools I'd connected in terminal Claude simply didn't show up in Zed — and vice versa. Spent a while before realizing they're separate processes with separate configs. Not a bug, just non-obvious behavior that nobody mentions upfront.
 
 **Each environment is a separate MCP client with its own config.**
 
