@@ -16,7 +16,7 @@ lang: en
 
 Everything that happens in a session takes up context: every message, every file read, every command result, Claude's responses. When context fills up — quality drops. Claude starts "forgetting" early instructions and making more mistakes.
 
-Context size: 200k tokens (Sonnet/Haiku) or 1M (Opus 4.6 on Max/Team/Enterprise).
+Context size depends on the model you’re running. Some models have extended context (including 1M-token variants), but the only number that matters is the one in *your* session: check `/context`.
 
 ---
 
@@ -24,16 +24,15 @@ Context size: 200k tokens (Sonnet/Haiku) or 1M (Opus 4.6 on Max/Team/Enterprise)
 
 Before you've typed your first message, context is already occupied:
 
-| What | Tokens |
-|---|---|
-| Claude Code system prompt | ~2-3k |
-| Built-in tools | ~17k |
-| Your CLAUDE.md | depends on size |
-| Auto memory (MEMORY.md, first 200 lines) | depends |
-| MCP tool definitions | 550-1400 per tool |
-| Skill descriptions | 1% of context or 8k characters |
+| What |
+|---|
+| System prompt + built-in tools |
+| Your `CLAUDE.md` + any imported files |
+| Auto memory (if enabled) |
+| Skill list metadata |
+| MCP server tool definitions (if enabled) |
 
-**Takeaway:** with several MCP servers you start a session with 30-50k tokens already used.
+If you want the real breakdown (with numbers), run `/context`. If you want to know which memory files loaded, run `/memory`.
 
 ---
 
@@ -66,14 +65,14 @@ Claude summarizes the conversation, replaces history with a brief summary. You c
 **When:** context is filling up but the task isn't done.
 
 ### `/btw question`
-Quick question without saving to history. The answer appears in an overlay and doesn't enter the context.
+Quick side question without adding it to the main conversation.
 
 ```
 /btw what type does this function return?
 /btw is there a built-in for this in Python?
 ```
 
-**When:** you need to clarify a detail without polluting context.
+**When:** you need a quick clarification without polluting the main thread.
 
 ### `/rewind` (or double Esc)
 Opens a restore menu to a previous checkpoint. You can restore: conversation, code, or both.
@@ -84,21 +83,22 @@ Opens a restore menu to a previous checkpoint. You can restore: conversation, co
 
 ## Autocompact
 
-Triggers automatically when context is close to full. Configure the threshold (as percentage of the limit):
+Auto-compaction kicks in automatically when context usage gets close to full.
+
+If you want it to happen earlier, Claude Code documents this env var:
 
 ```json
 // ~/.claude/settings.json
 { "env": { "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75" } }
 ```
 
-60-75% is a good value. Earlier compaction = better quality = less context lost.
+That sets the threshold as a percentage of available context. Default behavior is roughly 95%. Lower values compact earlier. The setting applies to both the main conversation and subagents.
 
-Disable (not recommended):
-```json
-{ "autoCompact": false }
-```
+If you're using an extended-context model and want compaction math based on a smaller effective window, Claude Code also documents `CLAUDE_CODE_AUTO_COMPACT_WINDOW`.
 
-What survives `/compact` — CLAUDE.md is re-read from disk and re-injected. Instructions from conversation are lost — so write important things in CLAUDE.md.
+What survives `/compact`: Claude re-reads `CLAUDE.md` from disk, but ad-hoc instructions that existed only in the conversation can be lost. If something matters, move it into `CLAUDE.md`.
+
+---
 
 ---
 
@@ -269,8 +269,9 @@ Esc + Esc  # or /rewind — open checkpoint menu
 Sessions are saved locally:
 
 ```bash
-claude --continue   # continue the last session
-claude --resume     # pick from recent sessions
+claude --continue         # continue the last session in this directory
+claude --resume           # pick from recent sessions
+claude --resume auth-refactor
 /rename             # name a session ("oauth-migration")
 ```
 
@@ -311,7 +312,7 @@ done
 | `/clear` | New task or polluted context |
 | `/compact` | Task continues, need to free space |
 | `/compact focus on X` | Compaction preserving specific details |
-| `/btw question` | Quick question without polluting context |
+| `/btw question` | Quick side question outside the main thread |
 | `/rewind` or `Esc+Esc` | Roll back to a previous state |
 | `Esc` | Stop Claude mid-response |
 | `/mcp` | Disable unused MCP servers |
