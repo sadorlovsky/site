@@ -14,7 +14,7 @@ lang: en
 
 **The context window is your most important resource.**
 
-Everything that happens in a session takes up context: every message, every file read, every command result, Claude's responses. When context fills up — quality drops. Claude starts "forgetting" early instructions and making more mistakes.
+The easiest way to make Claude Code feel worse is to keep piling things into one session and hope it somehow stays sharp. Everything counts: every message, every file read, every command result, every answer back from Claude. As the window fills up, quality usually drops before you notice it.
 
 Context size depends on the model you’re running. Some models have extended context (including 1M-token variants), but the only number that matters is the one in *your* session: check `/context`.
 
@@ -22,7 +22,7 @@ Context size depends on the model you’re running. Some models have extended co
 
 ## What loads automatically at startup
 
-Before you've typed your first message, context is already occupied:
+Before you type anything, some of the window is already spoken for:
 
 | What |
 |---|
@@ -32,11 +32,13 @@ Before you've typed your first message, context is already occupied:
 | Skill list metadata |
 | MCP server tool definitions (if enabled) |
 
-If you want the real breakdown (with numbers), run `/context`. If you want to know which memory files loaded, run `/memory`.
+That is why two sessions with the same prompt can still behave differently. Different MCP servers, different memory files, different imported rules. If you want the real breakdown, run `/context`. If you want to know which memory files loaded, run `/memory`.
 
 ---
 
 ## Monitoring
+
+I check these two more than any other commands when Claude starts feeling "off":
 
 ```
 /context    # breakdown by category: what takes how much
@@ -83,7 +85,9 @@ Opens a restore menu to a previous checkpoint. You can restore: conversation, co
 
 ## Autocompact
 
-Auto-compaction kicks in automatically when context usage gets close to full.
+Auto-compaction is the safety net, not the primary strategy.
+
+It kicks in automatically when context usage gets close to full.
 
 If you want it to happen earlier, Claude Code documents this env var:
 
@@ -96,9 +100,8 @@ That sets the threshold as a percentage of available context. Default behavior i
 
 If you're using an extended-context model and want compaction math based on a smaller effective window, Claude Code also documents `CLAUDE_CODE_AUTO_COMPACT_WINDOW`.
 
-What survives `/compact`: Claude re-reads `CLAUDE.md` from disk, but ad-hoc instructions that existed only in the conversation can be lost. If something matters, move it into `CLAUDE.md`.
-
 ---
+What survives `/compact`: Claude re-reads `CLAUDE.md` from disk, but ad-hoc instructions that existed only in the conversation can be lost. If something matters, move it into `CLAUDE.md`.
 
 ---
 
@@ -114,7 +117,7 @@ Every connected MCP server adds descriptions of all its tools at startup.
 ### 2. Reading large files
 Every file Claude reads — fully in context.
 
-**Mitigation:** use subagents for codebase exploration — they work in their own context.
+**Mitigation:** use subagents for exploration, and reference the exact file you care about instead of vaguely saying "look around the auth system."
 
 ### 3. Long conversations
 Accumulated message history.
@@ -124,6 +127,8 @@ Accumulated message history.
 ---
 
 ## Best practices
+
+Most context problems are workflow problems in disguise.
 
 ### Give Claude a way to verify the result
 
@@ -142,7 +147,7 @@ Without verification criteria Claude can produce something that looks right but 
 
 ### Explore -> Plan -> Code -> Commit
 
-Separate exploration and implementation:
+Separate exploration and implementation. The session that reads widely is usually not the session you want doing the final edit.
 
 1. **Plan mode** — Claude reads files, builds a plan, changes nothing
 2. You approve the plan
@@ -216,6 +221,8 @@ gh pr diff | claude -p "summarize this PR"
 
 ## Workflows for different task sizes
 
+This is the simplest mental model I know:
+
 ### Small task (typo, rename, quick fix)
 ```
 -> Just write what you need, no planning
@@ -255,6 +262,8 @@ gh pr diff | claude -p "summarize this PR"
 
 **Trust but don't verify** — Claude produced something plausible, you shipped to prod.
 -> Fix: always give Claude a way to verify (tests, screenshots, scripts).
+
+If a session starts feeling muddy, it usually is. Reset earlier than your instincts tell you to.
 
 ---
 

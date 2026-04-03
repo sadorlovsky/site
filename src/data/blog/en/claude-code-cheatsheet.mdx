@@ -10,11 +10,15 @@ lang: en
 
 ---
 
-This isn’t official documentation. It’s the mental model and command snippets I keep open while using Claude Code. Skim the first sections for “how the surfaces fit together”, then treat the rest as a menu.
+This isn’t official documentation. It’s the mental model and command snippets I keep open while using Claude Code.
+
+I wrote it for the moment when you vaguely remember that Claude Code can do something, but not which surface it lives on, what it’s called, or what the catch is. Skim the first sections to orient yourself, then treat the rest as a menu.
 
 ---
 
 ## 1. Desktop App: Chat vs Code (vs Cowork)
+
+If Claude’s product surfaces feel blurry, this is the split that matters:
 
 | | **Chat** | **Code** | **Cowork** |
 |---|---|---|---|
@@ -24,11 +28,13 @@ This isn’t official documentation. It’s the mental model and command snippet
 | Works on iOS/web | ✅ | Only via Remote Control | Dispatch from mobile |
 | MCP | ✅ | ✅ | ✅ |
 
-**In short:** Chat is claude.ai in a native window. Code is the Claude Code CLI, but with a nice UI instead of a terminal.
+**In short:** Chat is conversation-first. Code is environment-first. Cowork is task-first.
 
 ---
 
 ## 2. Chat Sync Across Devices
+
+This is the distinction that trips people up most often:
 
 | Surface | Sync |
 |---|---|
@@ -42,7 +48,7 @@ This isn’t official documentation. It’s the mental model and command snippet
 
 ## 3. MCP and Context — The Token Truth
 
-**Yes, MCP always eats context** — this is not a myth.
+**Yes, MCP always eats context**. That is not drama, just how the system works.
 
 Every connected MCP server injects its tool definitions into every request:
 - 1 tool ≈ 550–1,400 tokens (name + JSON schema + description)
@@ -51,7 +57,7 @@ Every connected MCP server injects its tool definitions into every request:
 
 **See usage:** the `/context` command inside a Claude Code session — shows a breakdown by category.
 
-**Why are people "leaving MCP"?** They're not, but there are real problems:
+**Why do some people get frustrated with MCP?** Usually because they turned on too much of it at once:
 - Context bloat with a large number of tools
 - 28% failure rate on some servers (per benchmarks)
 
@@ -61,6 +67,8 @@ Every connected MCP server injects its tool definitions into every request:
 - Use **Tool Search** (Anthropic feature — lazy-loading tool definitions)
 - Use `claude mcp serve` instead of heavy servers
 - Just `bash` + `gh` CLI instead of GitHub MCP for simple operations
+
+My bias: keep MCP for tools that genuinely expand what Claude can do, not for actions a normal CLI already handles well.
 
 ---
 

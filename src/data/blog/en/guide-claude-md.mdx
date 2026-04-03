@@ -12,17 +12,19 @@ lang: en
 
 ## What is CLAUDE.md
 
-A markdown file with instructions for Claude that gets loaded at the start of every session. It's not a config — it's context. Claude reads it and tries to follow, but there's no hard enforcement.
+A lot of people treat `CLAUDE.md` like a random note file. That usually leads to disappointment: too vague, too long, too much generic advice, and then the model ignores half of it.
 
-**Key principle:** the more specific and concise — the better it follows.
+What it actually is: a markdown file Claude loads at the start of every session. Not a config file, not a magic lock, just high-priority context. Claude reads it and tries to follow it, but only if the instructions are concrete enough to survive contact with the rest of the session.
+
+**My rule of thumb:** shorter and sharper beats comprehensive almost every time.
 
 ---
 
 ## CLAUDE.md and auto memory
 
-CLAUDE.md is the primary tool. You write the rules, Claude reads them every session in full.
+If I care about a rule every session, it belongs in `CLAUDE.md`.
 
-Auto memory is supplementary. Claude writes notes on its own as it works (build commands, debugging insights, your preferences). On startup, Claude Code loads `MEMORY.md` up to the first ~200 lines (or ~25KB), so treat it like a short index, not a dumping ground. More details in the [Auto memory](#auto-memory) section.
+Auto memory is the supporting layer. Claude writes notes on its own while working: build commands, debugging patterns, preferences it inferred. On startup, Claude Code loads `MEMORY.md` up to the first ~200 lines (or ~25KB), so treat it like a short index, not a dumping ground. More details in the [Auto memory](#auto-memory) section.
 
 ---
 
@@ -36,9 +38,13 @@ Auto memory is supplementary. Claude writes notes on its own as it works (build 
 
 CLAUDE.md loads up the directory tree from the current folder. If you launch Claude in `foo/bar/` — both `foo/bar/CLAUDE.md` and `foo/CLAUDE.md` will be loaded.
 
+That loading behavior is why small local files beat one giant universal file.
+
 ---
 
 ## Structure of a good CLAUDE.md
+
+The best `CLAUDE.md` files are boring in a good way: practical, specific, easy to scan.
 
 ```markdown
 # Project Overview
@@ -98,7 +104,7 @@ src/
 
 ### Keep it under 200 lines
 
-Longer = less adherence + more tokens. If your CLAUDE.md is growing — split it into `.claude/rules/` or use imports.
+Longer usually means two bad things at once: worse adherence and more context spent. If your `CLAUDE.md` keeps growing, split it into `.claude/rules/` or use imports.
 
 ### No contradictions
 
@@ -111,6 +117,8 @@ Use headings and bullets — not walls of text. Claude scans structure the same 
 ---
 
 ## What to write, what to skip
+
+This is where most files go wrong. People put in everything they know about the project instead of the subset Claude genuinely needs at session start.
 
 **Write:**
 - Build, test, and lint commands
@@ -229,7 +237,9 @@ Glob patterns:
 
 ## Auto memory
 
-Claude writes notes on its own as it works. Stored in:
+Auto memory is useful when it stays small and boring. Think "index of things worth remembering", not "journal of everything that happened".
+
+Stored in:
 
 ```
 ~/.claude/projects/<project>/memory/
@@ -252,17 +262,21 @@ Tell Claude "add this to CLAUDE.md" → writes to the file.
 
 ## Quick start
 
+If you don't have a `CLAUDE.md` yet, don't overthink version one.
+
 ```bash
 /init    # Claude will analyze the codebase and generate CLAUDE.md
 ```
 
-After `/init` — edit the result: remove the unnecessary parts, add what Claude didn't find automatically.
+After `/init`, edit aggressively: cut the fluff, keep the commands, add the non-obvious rules Claude could not infer from the repo.
 
 ---
 
 ## After `/compact`
 
-CLAUDE.md fully survives compaction — it's re-read from disk and re-injected into the session. If an instruction "disappeared" after `/compact` — it means you gave it only in conversation, not in CLAUDE.md.
+This is the practical test for whether a rule belongs in `CLAUDE.md`.
+
+`CLAUDE.md` survives compaction because Claude re-reads it from disk. If an instruction "disappeared" after `/compact`, that usually means it lived only in chat and never became project memory.
 
 ---
 
@@ -274,7 +288,7 @@ If Claude isn't following your CLAUDE.md:
 /memory    # check that the file is actually loaded
 ```
 
-If the file isn't in the list — Claude can't see it. Check the location.
+If the file isn't in the list, Claude can't see it. Check the location before rewriting the content.
 
 For detailed logging of which files load and when — use the `InstructionsLoaded` hook in `settings.json`.
 

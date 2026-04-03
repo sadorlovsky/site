@@ -14,7 +14,9 @@ lang: en
 
 Skills are how I “teach” Claude Code repeatable workflows without bloating `CLAUDE.md`.
 
-A skill is a directory with a `SKILL.md` file (YAML frontmatter + Markdown instructions). Claude can load a skill automatically when it’s relevant, or you can run it directly as a `/slash-command`.
+A skill is a directory with a `SKILL.md` file (YAML frontmatter + Markdown instructions). Claude can load it automatically when it’s relevant, or you can run it directly as a `/slash-command`.
+
+The practical reason to use them is simple: `CLAUDE.md` should contain the rules of the road, while skills should contain reusable moves.
 
 The key differences:
 - **CLAUDE.md / rules** are “always-on” project memory. Great for stable constraints (commands, conventions, architecture).
@@ -33,9 +35,13 @@ The key differences:
 
 On name conflicts: enterprise > personal > project. Plugin skills use a `plugin-name:skill-name` namespace, so they don’t collide.
 
+If you're working alone, start with personal skills. If a workflow clearly belongs to one repo, move it into `.claude/skills/` and commit it.
+
 ---
 
 ## Minimal skill
+
+This is the smallest useful example I know. It does one thing, has a clear trigger, and is easy to test.
 
 ```
 mkdir -p ~/.claude/skills/explain-code
@@ -80,6 +86,8 @@ Instructions for Claude on what to do when the skill is activated.
 
 ## All frontmatter fields
 
+You do not need most of these most of the time. For many real skills, `name` + `description` + instructions is enough.
+
 | Field | Description |
 |---|---|
 | `name` | Display name. If omitted, uses the directory name. Lowercase letters, numbers, and hyphens only. Max 64 chars. |
@@ -100,6 +108,8 @@ Instructions for Claude on what to do when the skill is activated.
 
 ## Three types of content
 
+I think about skills in three buckets:
+
 ### 1. Reference — knowledge Claude applies
 
 Loaded inline, Claude uses it alongside the conversation:
@@ -119,7 +129,7 @@ When writing API endpoints:
 
 ### 2. Task — step-by-step instruction for a specific action
 
-For actions you want to control yourself — add `disable-model-invocation: true`:
+For actions you want to control yourself, add `disable-model-invocation: true`:
 
 ```markdown
 ---
@@ -158,6 +168,8 @@ Never touch legacy-core.js directly...
 ---
 
 ## Arguments
+
+Arguments are where skills stop being static templates and start feeling like tools.
 
 ```markdown
 ---
@@ -216,7 +228,7 @@ agent: Explore
 Summarize this pull request: what changed, why, and what to review carefully.
 ```
 
-Commands execute **before** sending to Claude — it receives the ready data.
+Commands execute **before** sending to Claude, which is why this pattern is useful for things like PR review, release notes, or incident summaries.
 
 ---
 
@@ -243,7 +255,7 @@ When writing React components:
 
 ## Running in a subagent (context: fork)
 
-The skill executes in an isolated context — doesn't pollute the main conversation:
+This is one of the highest-leverage features. The skill executes in an isolated context, so the main conversation stays cleaner:
 
 ```markdown
 ---
@@ -266,7 +278,7 @@ Pick `agent` based on what you want (read-only research vs implementation), or p
 
 ## Folder with additional files
 
-For complex skills — keep SKILL.md compact, details in separate files:
+If a skill starts turning into a wall of Markdown, break it up. `SKILL.md` should stay readable:
 
 ```
 .claude/skills/deploy/
@@ -297,6 +309,8 @@ Keep SKILL.md under 500 lines. Details go in separate files.
 
 ## Invocation control
 
+This is the part worth getting right early, because it changes how "pushy" the skill feels in everyday use.
+
 | Frontmatter | You invoke | Claude invokes | In context |
 |---|---|---|---|
 | (default) | yes | yes | Description always, content on invocation |
@@ -322,6 +336,8 @@ Keep SKILL.md under 500 lines. Details go in separate files.
 ---
 
 ## Practical examples
+
+The best skills are usually boring operational tools you reach for repeatedly, not clever demos.
 
 ### Commit helper
 
@@ -391,6 +407,8 @@ $ARGUMENTS
 ---
 
 ## Troubleshooting
+
+When a skill feels flaky, the problem is usually one of three things: vague description, wrong invocation mode, or too much stuffed into one file.
 
 **Skill doesn't trigger automatically:**
 - Check that `description` contains keywords you use
