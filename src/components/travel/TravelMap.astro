@@ -173,44 +173,6 @@ const { mode = "globe" } = Astro.props;
     outline: none;
   }
 
-  .maplibregl-marker > svg g[fill="#3FB1CE"] {
-    fill: red;
-  }
-
-  .city-marker {
-    cursor: pointer;
-  }
-
-  .city-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    transition: all 0.2s ease;
-  }
-
-  @media (max-width: 480px) {
-    .city-dot {
-      width: 10px;
-      height: 10px;
-      border: 3px solid rgba(255, 255, 255, 0.8);
-    }
-  }
-
-  .city-marker.visited .city-dot {
-    background-color: #00d4ff;
-    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
-  }
-
-  .city-marker:hover .city-dot {
-    transform: scale(1.3);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
-  }
-
-  .city-marker.visited:hover .city-dot {
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
-  }
-
   .city-label-overlay {
     position: absolute;
     display: flex;

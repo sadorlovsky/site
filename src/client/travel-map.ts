@@ -5,7 +5,13 @@ import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
 const MOBILE_BREAKPOINT = 480;
 const VISITED_COLOR = "#ed6292";
-const CITY_COLOR = "#ffffff";
+// City dots adapt to color scheme: a white core glows on the dark map, while a
+// deep accent core (with a white ring) stays legible on the light map. The glow
+// halo underneath uses the site accent in both themes.
+const CITY_CORE_DARK = "#ffffff";
+const CITY_CORE_LIGHT = "#b81f54";
+const CITY_GLOW_DARK = "#ed6292";
+const CITY_GLOW_LIGHT = "#a01848";
 const BORDER_COLOR = "#c74b7a";
 const LIGHT_BG = "#f8f8ff";
 const DARK_BG = "#191919";
@@ -323,14 +329,52 @@ async function initMap(): Promise<void> {
     },
   });
 
-  // Add visited cities layer with feature-state driven hover
+  // Soft accent glow beneath each city — the "halo" of the beacon. Shares the
+  // visited-cities source, so the hover feature-state lights up glow + core
+  // together. Added before the core so it renders underneath it.
+  map.addLayer(
+    {
+      id: "visited-cities-glow",
+      type: "circle",
+      source: "visited-cities",
+      paint: {
+        "circle-color": CITY_GLOW_DARK,
+        "circle-blur": 1,
+        "circle-radius": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          1,
+          ["case", ["boolean", ["feature-state", "hover"], false], 10, 6],
+          3,
+          ["case", ["boolean", ["feature-state", "hover"], false], 16, 11],
+          5,
+          ["case", ["boolean", ["feature-state", "hover"], false], 26, 18],
+          8,
+          ["case", ["boolean", ["feature-state", "hover"], false], 26, 18],
+        ],
+        "circle-radius-transition": { duration: 200 },
+        "circle-opacity": [
+          "case",
+          ["boolean", ["feature-state", "hover"], false],
+          0.6,
+          0.32,
+        ],
+        "circle-opacity-transition": { duration: 200 },
+      },
+    },
+    "label_other",
+  );
+
+  // Crisp core dot on top. Color/ring are set per color-scheme by
+  // applyCityColors below; radius/opacity react to the hover feature-state.
   map.addLayer(
     {
       id: "visited-cities",
       type: "circle",
       source: "visited-cities",
       paint: {
-        "circle-color": CITY_COLOR,
+        "circle-color": CITY_CORE_DARK,
         "circle-radius": [
           "interpolate",
           ["linear"],
@@ -348,20 +392,63 @@ async function initMap(): Promise<void> {
         "circle-blur": [
           "case",
           ["boolean", ["feature-state", "hover"], false],
-          0.15,
-          0.25,
+          0,
+          0.08,
         ],
         "circle-blur-transition": { duration: 150 },
         "circle-opacity": [
           "case",
           ["boolean", ["feature-state", "hover"], false],
-          0.9,
-          0.45,
+          1,
+          0.95,
         ],
         "circle-opacity-transition": { duration: 150 },
+        "circle-stroke-width": 0,
+        "circle-stroke-color": "rgba(0, 0, 0, 0)",
+        "circle-stroke-opacity": 0.9,
       },
     },
     "label_other",
+  );
+
+  // White core glows on the dark map; on the light map a white core would be
+  // invisible, so switch to a deep accent core with a thin white ring.
+  function applyCityColors(isDark: boolean): void {
+    if (!map.getLayer("visited-cities")) return;
+    map.setPaintProperty(
+      "visited-cities",
+      "circle-color",
+      isDark ? CITY_CORE_DARK : CITY_CORE_LIGHT,
+    );
+    map.setPaintProperty(
+      "visited-cities",
+      "circle-stroke-width",
+      isDark ? 0 : 1.5,
+    );
+    map.setPaintProperty(
+      "visited-cities",
+      "circle-stroke-color",
+      isDark ? "rgba(0, 0, 0, 0)" : "#ffffff",
+    );
+    // On the light map a same-hue glow washes out over the pink countries, so
+    // the glow goes deeper and a touch stronger; the dark map keeps the airy
+    // accent glow that already looks right.
+    map.setPaintProperty(
+      "visited-cities-glow",
+      "circle-color",
+      isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT,
+    );
+    map.setPaintProperty("visited-cities-glow", "circle-opacity", [
+      "case",
+      ["boolean", ["feature-state", "hover"], false],
+      isDark ? 0.6 : 0.65,
+      isDark ? 0.32 : 0.45,
+    ]);
+  }
+
+  applyCityColors(colorSchemeQuery.matches);
+  colorSchemeQuery.addEventListener("change", (e) =>
+    applyCityColors(e.matches),
   );
 
   // City hover: track hovered feature and show label tooltip
