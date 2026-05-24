@@ -61,9 +61,17 @@
   );
 }
 
-/* Touch devices have no hover — show the grouping persistently. */
+/* Touch devices have no hover, so reveal the grouping on tap instead. The row
+   is focusable (tabindex="-1"), so tapping it triggers :focus-within; tapping
+   elsewhere blurs it and hides the tint again. Gated to hover-less pointers so
+   desktop keeps its pure-hover behavior. */
 @media (hover: none) {
-  .countryGroup {
+  :global(.list-item):focus-within {
+    /* The row is only focusable to drive the reveal — no focus ring wanted. */
+    outline: none;
+  }
+
+  :global(.list-item):focus-within .countryGroup {
     background-color: light-dark(
       hsl(var(--group-hue) 65% 45% / 0.13),
       hsl(var(--group-hue) 70% 60% / 0.16)

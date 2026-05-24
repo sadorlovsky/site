@@ -3,15 +3,17 @@ interface Props {
   href?: string;
   interactive?: boolean;
   class?: string;
+  tabindex?: number;
 }
 
-const { href, interactive = true, class: className } = Astro.props;
+const { href, interactive = true, class: className, tabindex } = Astro.props;
 const Element = href ? "a" : "div";
 ---
 
 <Element
   class:list={["list-item", { interactive }, className]}
   href={href}
+  tabindex={tabindex}
 >
   <span class="list-item-date">
     <slot name="date" />
