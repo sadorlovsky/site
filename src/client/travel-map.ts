@@ -458,6 +458,14 @@ async function initMap(): Promise<void> {
   container.appendChild(cityLabel);
 
   let hoveredCityId: number | null = null;
+  // Last known cursor position in canvas coords, kept so we can re-evaluate the
+  // hover when the map moves under a stationary cursor (pan/zoom/auto-rotation).
+  let lastPoint: { x: number; y: number } | null = null;
+  let cursorInside = false;
+  // While dragging the map (e.g. rotating the globe) the cursor sits over a
+  // moving canvas, so markers sweep under it without it being a real hover.
+  // Suppress the tooltip entirely for the duration of the drag.
+  let isDragging = false;
 
   // Find the closest city feature to a screen point
   function getClosestCity(point: { x: number; y: number }) {
@@ -489,10 +497,26 @@ async function initMap(): Promise<void> {
     return closest;
   }
 
-  map.on("mousemove", (e) => {
-    const feature = getClosestCity(e.point);
+  function clearHover(): void {
+    if (hoveredCityId !== null) {
+      map.setFeatureState(
+        { source: "visited-cities", id: hoveredCityId },
+        { hover: false },
+      );
+      hoveredCityId = null;
+    }
+    map.getCanvas().style.cursor = "";
+    cityLabel.style.display = "none";
+  }
 
-    if (feature) {
+  // Resolve the hover + tooltip for a given cursor position. The tooltip stays
+  // pinned to the cursor (`point`), but which marker is highlighted is decided
+  // by what currently sits under that point — so it stays correct even when the
+  // map moved rather than the cursor.
+  function updateHover(point: { x: number; y: number } | null): void {
+    const feature = point ? getClosestCity(point) : null;
+
+    if (feature && point) {
       const newId = feature.id as number;
 
       if (hoveredCityId !== null && hoveredCityId !== newId) {
@@ -514,17 +538,52 @@ async function initMap(): Promise<void> {
 
       map.getCanvas().style.cursor = "pointer";
       cityLabel.style.display = "flex";
-      cityLabel.style.left = `${e.point.x}px`;
-      cityLabel.style.top = `${e.point.y - 30}px`;
-    } else if (hoveredCityId !== null) {
-      map.setFeatureState(
-        { source: "visited-cities", id: hoveredCityId },
-        { hover: false },
-      );
-      hoveredCityId = null;
-      map.getCanvas().style.cursor = "";
-      cityLabel.style.display = "none";
+      cityLabel.style.left = `${point.x}px`;
+      cityLabel.style.top = `${point.y - 30}px`;
+    } else {
+      clearHover();
     }
+  }
+
+  map.on("mousemove", (e) => {
+    lastPoint = e.point;
+    cursorInside = true;
+    if (isDragging) return;
+    updateHover(e.point);
+  });
+
+  map.on("dragstart", () => {
+    isDragging = true;
+    clearHover();
+  });
+  map.on("dragend", () => {
+    isDragging = false;
+    // Re-evaluate against where the cursor ended up after the drag.
+    if (cursorInside && lastPoint) updateHover(lastPoint);
+  });
+
+  // Cursor left the map entirely — drop any active hover.
+  map.on("mouseout", () => {
+    cursorInside = false;
+    lastPoint = null;
+    clearHover();
+  });
+
+  // When the map moves under a stationary cursor (pan, zoom, or the globe's
+  // auto-rotation) `mousemove` never fires, so the highlight + tooltip would
+  // stick to a marker that has since slid away. Re-run the hover test against
+  // the last cursor position. Skip work unless the cursor is over the map, and
+  // coalesce to one queryRenderedFeatures call per frame so the per-frame
+  // rotation stays cheap.
+  let hoverRafPending = false;
+  map.on("move", () => {
+    if (isDragging || !cursorInside || lastPoint === null || hoverRafPending)
+      return;
+    hoverRafPending = true;
+    requestAnimationFrame(() => {
+      hoverRafPending = false;
+      if (cursorInside && lastPoint) updateHover(lastPoint);
+    });
   });
 
   // Hide placeholder when map is fully rendered
