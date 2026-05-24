@@ -1,7 +1,7 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
 import type { Trip } from "@lib/travel";
-import { formatTripDate } from "@lib/travel";
+import { formatTripDate, getCountryName } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
 import ListItem from "@components/ListItem.astro";
 import styles from "./TravelTripList.module.css";
@@ -27,6 +27,13 @@ const getCountryFlag = (code: string) => {
   };
 };
 
+// Deterministic hue per country so each country keeps the same tint everywhere.
+const countryHue = (code: string) => {
+  let h = 0;
+  for (let i = 0; i < code.length; i++) h = (h * 31 + code.charCodeAt(i)) % 360;
+  return h;
+};
+
 const isTba = trip.year === null;
 const dateEn = isTba ? "TBA" : formatTripDate(trip, "en");
 const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
@@ -40,45 +47,53 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
     {
       trip.destinations.map((destination, destIndex) => {
         const flagInfo = getCountryFlag(destination.country[0]);
-        return destination.cities.map((city, cityIndex) => (
-          <>
-            {!(destIndex === 0 && cityIndex === 0) && (
-              <span class={styles.separator}>→</span>
-            )}
-            <div class={styles.city}>
-              {cityIndex === 0 &&
-                (flagInfo.isRegional ? (
-                  <span class={styles.flagGroup}>
-                    <span
-                      class={[
-                        styles.flag,
-                        "fi",
-                        `fi-${flagInfo.countryCode}`,
-                      ].join(" ")}
-                    />
-                    <span class={styles.flagDivider}>·</span>
-                    <span
-                      class={[
-                        styles.flag,
-                        "fi",
-                        `fi-${flagInfo.regionCode}`,
-                      ].join(" ")}
-                    />
-                  </span>
-                ) : (
+        const countryEn = getCountryName(destination.country[1], "en");
+        const countryRu = getCountryName(destination.country[1], "ru");
+        return (
+          <div class={styles.destItem}>
+            {destIndex > 0 && <span class={styles.separator}>→</span>}
+            <div
+              class={styles.countryGroup}
+              style={`--group-hue: ${countryHue(destination.country[1])}`}
+              title={countryEn}
+              data-title-en={countryEn}
+              data-title-ru={countryRu}
+            >
+              {flagInfo.isRegional ? (
+                <span class={styles.flagGroup}>
                   <span
-                    class={[styles.flag, "fi", `fi-${flagInfo.code}`].join(" ")}
+                    class={[
+                      styles.flag,
+                      "fi",
+                      `fi-${flagInfo.countryCode}`,
+                    ].join(" ")}
                   />
-                ))}
-              <span
-                class="city-name"
-                data-city={city}
-                data-en={getCityName(city, "en")}
-                data-ru={getCityName(city, "ru")}
-              >{city}</span>
+                  <span class={styles.flagDivider}>·</span>
+                  <span
+                    class={[styles.flag, "fi", `fi-${flagInfo.regionCode}`].join(
+                      " ",
+                    )}
+                  />
+                </span>
+              ) : (
+                <span
+                  class={[styles.flag, "fi", `fi-${flagInfo.code}`].join(" ")}
+                />
+              )}
+              {destination.cities.map((city, cityIndex) => (
+                <>
+                  {cityIndex > 0 && <span class={styles.separator}>→</span>}
+                  <span
+                    class="city-name"
+                    data-city={city}
+                    data-en={getCityName(city, "en")}
+                    data-ru={getCityName(city, "ru")}
+                  >{city}</span>
+                </>
+              ))}
             </div>
-          </>
-        ));
+          </div>
+        );
       })
     }
   </div>

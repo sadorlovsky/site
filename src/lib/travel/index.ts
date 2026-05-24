@@ -160,7 +160,33 @@ const COUNTRY_NAMES: Record<string, { en: string; ru: string }> = {
   HKG: { en: "Hong Kong", ru: "Гонконг" },
   MAC: { en: "Macao", ru: "Макао" },
   SJM: { en: "Svalbard", ru: "Шпицберген" },
+  ALB: { en: "Albania", ru: "Албания" },
+  BIH: { en: "Bosnia and Herzegovina", ru: "Босния и Герцеговина" },
+  DNK: { en: "Denmark", ru: "Дания" },
+  EGY: { en: "Egypt", ru: "Египет" },
+  IND: { en: "India", ru: "Индия" },
+  ISL: { en: "Iceland", ru: "Исландия" },
+  JPN: { en: "Japan", ru: "Япония" },
+  KGZ: { en: "Kyrgyzstan", ru: "Киргизия" },
+  KOR: { en: "South Korea", ru: "Южная Корея" },
+  LKA: { en: "Sri Lanka", ru: "Шри-Ланка" },
+  MAR: { en: "Morocco", ru: "Марокко" },
+  MNE: { en: "Montenegro", ru: "Черногория" },
+  MYS: { en: "Malaysia", ru: "Малайзия" },
+  NOR: { en: "Norway", ru: "Норвегия" },
+  SRB: { en: "Serbia", ru: "Сербия" },
+  THA: { en: "Thailand", ru: "Таиланд" },
+  TJK: { en: "Tajikistan", ru: "Таджикистан" },
+  TWN: { en: "Taiwan", ru: "Тайвань" },
+  VNM: { en: "Vietnam", ru: "Вьетнам" },
 };
+
+// Country display name by alpha-3 code (case-insensitive), language-aware.
+// Falls back to the upper-cased code if a name is not yet defined.
+export function getCountryName(a3: string, lang: "en" | "ru"): string {
+  const entry = COUNTRY_NAMES[a3.toUpperCase()];
+  return entry ? entry[lang] : a3.toUpperCase();
+}
 
 export interface CountryWithCities {
   code: string;

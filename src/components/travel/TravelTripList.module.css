@@ -19,10 +19,62 @@
   border-radius: 3px;
 }
 
-.city {
+/* Keeps the inter-country arrow glued to the country that follows it, so the
+   arrow never strands alone at the start or end of a wrapped line. */
+.destItem {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0;
+  gap: 0.25rem;
+}
+
+/* Each country's cities live in one capsule. Padding and radius are always
+   present so revealing the tint on hover changes only color — no layout shift. */
+.countryGroup {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  /* Pill on a single line, tidy rounded rectangle when the group wraps. */
+  border-radius: 0.85rem;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  /* Keep each city name intact; the group wraps between cities, not mid-word. */
+  white-space: nowrap;
+}
+
+/* Reveal all country capsules when hovering anywhere on the trip row.
+   :global is required: CSS Modules localize bare class names, but .list-item
+   is a global class owned by ListItem.astro. */
+:global(.list-item):hover .countryGroup {
+  background-color: light-dark(
+    hsl(var(--group-hue) 65% 45% / 0.13),
+    hsl(var(--group-hue) 70% 60% / 0.16)
+  );
+}
+
+/* Pointing at one capsule deepens it slightly while the rest stay revealed. */
+:global(.list-item):hover .countryGroup:hover {
+  background-color: light-dark(
+    hsl(var(--group-hue) 65% 45% / 0.17),
+    hsl(var(--group-hue) 70% 60% / 0.2)
+  );
+}
+
+/* Touch devices have no hover — show the grouping persistently. */
+@media (hover: none) {
+  .countryGroup {
+    background-color: light-dark(
+      hsl(var(--group-hue) 65% 45% / 0.13),
+      hsl(var(--group-hue) 70% 60% / 0.16)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .countryGroup {
+    transition: none;
+  }
 }
 
 .flagGroup {
