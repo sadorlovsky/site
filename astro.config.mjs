@@ -6,6 +6,14 @@ import vercel from "@astrojs/vercel";
 import sitemap from "@astrojs/sitemap";
 import db from "@astrojs/db";
 import { loadEnv } from "vite";
+import browserslist from "browserslist";
+import { browserslistToTargets } from "lightningcss";
+
+// Targets deliberately include Safari/iOS < 17.5 so Lightning CSS lowers
+// light-dark() into @media (prefers-color-scheme) fallbacks at build time.
+const cssTargets = browserslistToTargets(
+  browserslist("defaults, Safari >= 15.4, iOS >= 15.4"),
+);
 
 const { VERCEL_ISR_BYPASS_TOKEN, CDN_DOMAIN, CDN_DEV_DOMAIN } = loadEnv(
   process.env.NODE_ENV,
@@ -27,8 +35,15 @@ export default defineConfig({
         target: "esnext",
       },
     },
+    css: {
+      transformer: "lightningcss",
+      lightningcss: {
+        targets: cssTargets,
+      },
+    },
     build: {
       target: "esnext",
+      cssMinify: "lightningcss",
     },
     ssr: {
       noExternal: ["@simplewebauthn/server"],
