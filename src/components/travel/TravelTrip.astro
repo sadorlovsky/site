@@ -42,7 +42,7 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
         const flagInfo = getCountryFlag(destination.country[0]);
         return destination.cities.map((city, cityIndex) => (
           <>
-            {destIndex > 0 && cityIndex === 0 && (
+            {!(destIndex === 0 && cityIndex === 0) && (
               <span class={styles.separator}>→</span>
             )}
             <div class={styles.city}>
@@ -73,9 +73,9 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
               <span
                 class="city-name"
                 data-city={city}
-                data-en={`${getCityName(city, "en")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
-                data-ru={`${getCityName(city, "ru")}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}
-              >{`${city}${cityIndex < destination.cities.length - 1 ? ", " : ""}`}</span>
+                data-en={getCityName(city, "en")}
+                data-ru={getCityName(city, "ru")}
+              >{city}</span>
             </div>
           </>
         ));

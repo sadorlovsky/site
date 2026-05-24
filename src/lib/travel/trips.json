@@ -152,6 +152,18 @@
   },
   {
     "year": 2026,
+    "month": 5,
+    "endMonth": 6,
+    "description": "Vietnam",
+    "destinations": [
+      {
+        "country": ["vn", "vnm"],
+        "cities": ["Hanoi", "Da Nang", "Hoi An", "Da Lat", "Nha Trang", "Ho Chi Minh City", "Vung Tau"]
+      }
+    ]
+  },
+  {
+    "year": 2026,
     "month": 2,
     "endMonth": 3,
     "description": "Thailand and Vietnam",
@@ -160,7 +172,7 @@
         "country": ["th", "tha"],
         "cities": ["Bangkok", "Chiang Mai", "Phuket"]
       },
-      { "country": ["vn", "vnm"], "cities": ["Ho Chi Minh City", "Vũng Tàu"] }
+      { "country": ["vn", "vnm"], "cities": ["Ho Chi Minh City", "Vung Tau"] }
     ]
   },
   {

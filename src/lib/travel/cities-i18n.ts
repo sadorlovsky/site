@@ -223,6 +223,9 @@ export const cityNamesRu: Record<string, string> = {
   "Mui Ne": "Муйне",
   "Ho Chi Minh City": "Хошимин",
   Hanoi: "Ханой",
+  "Da Nang": "Дананг",
+  "Hoi An": "Хойан",
+  "Da Lat": "Далат",
 
   // Thailand
   Bangkok: "Бангкок",
@@ -230,7 +233,7 @@ export const cityNamesRu: Record<string, string> = {
   Phuket: "Пхукет",
 
   // Vietnam
-  "Vũng Tàu": "Вунгтау",
+  "Vung Tau": "Вунгтау",
 };
 
 export function getCityName(city: string, lang: "en" | "ru"): string {
