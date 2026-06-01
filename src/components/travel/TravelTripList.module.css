@@ -43,8 +43,15 @@
    break: clone) rather than a block pill, so it flows with the text and breaks
    across lines into rounded bands — leaving no trailing dead space for the next
    country to fill. Padding/radius are always present so revealing the tint on
-   hover changes only color, never layout. */
+   hover changes only color, never layout.
+
+   line-height: 1 pins the band's height to the font box + padding, which paints
+   identically in Chrome and Safari. The vertical breathing room between wrapped
+   bands instead comes from the parent's strut (.destination line-height: 1.9) —
+   the inline background's painted height is UA-defined when it inherits a tall
+   line-height, which is what made the two browsers disagree. */
 .countryGroup {
+  line-height: 1;
   padding: 0.15rem 0.5rem;
   border-radius: 0.85rem;
   background-color: transparent;
