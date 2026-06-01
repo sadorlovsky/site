@@ -39,6 +39,21 @@ const dateEn = isTba ? "TBA" : formatTripDate(trip, "en");
 const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
 ---
 
+{/*
+  The journey is laid out as one continuous inline run so countries fill each
+  line (a country tucks into the space left at the end of the previous one's
+  last line). Two whitespace-sensitive rules make the wrapping read right, and
+  because Astro renders source whitespace literally, the JSX below is written to
+  control it byte-for-byte (hence the long, prettier-ignored lines):
+
+    • Every line break is an explicit ZWSP ("\u200b"). A city and its trailing
+      arrow are one nowrap unit, so an arrow always trails — never leads — a line.
+    • The inter-country arrow (.interSep) hugs the closing </span> of the country
+      it leaves with NO whitespace, so it sits OUTSIDE that country's tint yet
+      can never strand at the start of a wrapped line. The single space before
+      the next country (from this comment's leading whitespace in each fragment)
+      is the only break point there, letting the next country fall to a new line.
+*/}
 <ListItem interactive tabindex={-1}>
   <span slot="date" data-en={dateEn} data-ru={dateRu}>
     {dateEn}
@@ -49,50 +64,34 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
         const flagInfo = getCountryFlag(destination.country[0]);
         const countryEn = getCountryName(destination.country[1], "en");
         const countryRu = getCountryName(destination.country[1], "ru");
+        const hue = countryHue(destination.country[1]);
+        const isLastCountry = destIndex === trip.destinations.length - 1;
+        const flag = flagInfo.isRegional ? (
+          <span class={styles.flagGroup}>
+            <span class={[styles.flag, "fi", `fi-${flagInfo.countryCode}`].join(" ")} />
+            <span class={styles.flagDivider}>·</span>
+            <span class={[styles.flag, "fi", `fi-${flagInfo.regionCode}`].join(" ")} />
+          </span>
+        ) : (
+          // Single flags ride the same flagGroup wrapper as the two-flag case, so
+          // both center identically in the tint (a bare inline-block flag sits low
+          // and grazes the rounded corner).
+          <span class={styles.flagGroup}>
+            <span class={[styles.flag, "fi", `fi-${flagInfo.code}`].join(" ")} />
+          </span>
+        );
         return (
-          <div class={styles.destItem}>
-            {destIndex > 0 && <span class={styles.separator}>→</span>}
-            <div
-              class={styles.countryGroup}
-              style={`--group-hue: ${countryHue(destination.country[1])}`}
-              title={countryEn}
-              data-title-en={countryEn}
-              data-title-ru={countryRu}
-            >
-              {flagInfo.isRegional ? (
-                <span class={styles.flagGroup}>
-                  <span
-                    class={[
-                      styles.flag,
-                      "fi",
-                      `fi-${flagInfo.countryCode}`,
-                    ].join(" ")}
-                  />
-                  <span class={styles.flagDivider}>·</span>
-                  <span
-                    class={[styles.flag, "fi", `fi-${flagInfo.regionCode}`].join(
-                      " ",
-                    )}
-                  />
-                </span>
-              ) : (
-                <span
-                  class={[styles.flag, "fi", `fi-${flagInfo.code}`].join(" ")}
-                />
-              )}
-              {destination.cities.map((city, cityIndex) => (
-                <>
-                  {cityIndex > 0 && <span class={styles.separator}>→</span>}
-                  <span
-                    class="city-name"
-                    data-city={city}
-                    data-en={getCityName(city, "en")}
-                    data-ru={getCityName(city, "ru")}
-                  >{city}</span>
-                </>
-              ))}
-            </div>
-          </div>
+          <Fragment>
+            {/* prettier-ignore */}
+            <span class={styles.countryGroup} style={`--group-hue: ${hue}`} title={countryEn} data-title-en={countryEn} data-title-ru={countryRu}>{destination.cities.map((city, cityIndex) => {
+              const isLastCity = cityIndex === destination.cities.length - 1;
+              // The flag rides inside the first city's nowrap unit so "🇦🇹 Vienna"
+              // can never split — an inline-block flag otherwise leaves a wrap
+              // opportunity after itself and strands at a line end.
+              // prettier-ignore
+              return (<Fragment><span class={styles.cityUnit}>{cityIndex === 0 && flag}<span class="city-name" data-city={city} data-en={getCityName(city, "en")} data-ru={getCityName(city, "ru")}>{city}</span>{!isLastCity && <span class={styles.separator}>→</span>}</span>{!isLastCity && "\u200b"}</Fragment>);
+            })}</span>{!isLastCountry && <span class={styles.interSep}>→</span>}{!isLastCountry && "\u200b"}
+          </Fragment>
         );
       })
     }

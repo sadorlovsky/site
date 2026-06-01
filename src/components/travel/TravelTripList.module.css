@@ -2,45 +2,55 @@
   margin-top: 12px;
 }
 
+/* Inline flow (not flex) so the whole journey fills each line continuously: a
+   country can tuck into the space left at the end of the previous country's last
+   line instead of every country dropping to its own block. Generous line-height
+   leaves room for the highlighter bands so wrapped lines never overlap. */
 .destination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem;
+  line-height: 1.9;
 }
 
+/* Arrow between cities inside a country — lives inside the tint. */
 .separator {
   color: #666;
   font-size: 0.85rem;
+  margin: 0 0.25rem;
+}
+
+/* Arrow between countries — lives OUTSIDE the tint (neutral). It is glued to the
+   previous country in markup (no whitespace before it) so it trails the line; the
+   space after it is the wrap point for the next country. The country's own right
+   padding already gaps it from the last city, so only a hair of left margin. */
+.interSep {
+  color: #666;
+  font-size: 0.85rem;
+  margin-left: 0.1rem;
 }
 
 .flag {
   margin-right: 4px;
   border-radius: 3px;
+  vertical-align: -0.12em;
 }
 
-/* Keeps the inter-country arrow glued to the country that follows it, so the
-   arrow never strands alone at the start or end of a wrapped line. */
-.destItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
+/* Each city + its trailing arrow is one no-break unit; the journey breaks only
+   between units, so an arrow always trails — never leads — a wrapped line. */
+.cityUnit {
+  white-space: nowrap;
 }
 
-/* Each country's cities live in one capsule. Padding and radius are always
-   present so revealing the tint on hover changes only color — no layout shift. */
+/* A country's cities share one tint. It's an inline highlight (box-decoration-
+   break: clone) rather than a block pill, so it flows with the text and breaks
+   across lines into rounded bands — leaving no trailing dead space for the next
+   country to fill. Padding/radius are always present so revealing the tint on
+   hover changes only color, never layout. */
 .countryGroup {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  padding: 0.2rem 0.5rem;
-  /* Pill on a single line, tidy rounded rectangle when the group wraps. */
+  padding: 0.15rem 0.5rem;
   border-radius: 0.85rem;
   background-color: transparent;
   transition: background-color 0.2s ease;
-  /* Keep each city name intact; the group wraps between cities, not mid-word. */
-  white-space: nowrap;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 /* Reveal all country capsules when hovering anywhere on the trip row.
@@ -82,6 +92,16 @@
 @media (prefers-reduced-motion: reduce) {
   .countryGroup {
     transition: none;
+  }
+}
+
+/* On mobile the row collapses to a single column, so the capsule's left padding
+   would indent flags/text 0.5rem past the date label above. Pull the whole row
+   back by that padding so the first flag aligns with the date; the hover pill
+   then bleeds slightly into the left gutter, which reads as intentional. */
+@media (max-width: 480px) {
+  .destination {
+    margin-inline-start: -0.5rem;
   }
 }
 
