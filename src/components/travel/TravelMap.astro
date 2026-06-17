@@ -85,7 +85,6 @@ const { mode = "globe" } = Astro.props;
     cursor: pointer;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 16px;
@@ -97,7 +96,6 @@ const { mode = "globe" } = Astro.props;
     .toggle-label {
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
       color: black;
       border: 1px solid rgba(0, 0, 0, 0.2);
     }
@@ -180,7 +178,6 @@ const { mode = "globe" } = Astro.props;
     gap: 6px;
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
     color: white;
     padding: 4px 8px;
     border-radius: 4px;
@@ -206,7 +203,6 @@ const { mode = "globe" } = Astro.props;
     .city-label-overlay {
       background: rgba(255, 255, 255, 0.7);
       backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
       color: black;
       border: 1px solid rgba(0, 0, 0, 0.2);
     }
@@ -218,8 +214,11 @@ const { mode = "globe" } = Astro.props;
     }
   }
 
-  /* iOS Safari specific fixes */
-  @supports (-webkit-appearance: none) {
+  /* iOS Safari specific fixes. Scope to iOS only: -webkit-touch-callout is
+     iOS-exclusive, whereas -webkit-appearance also matches desktop Chrome,
+     where the perspective below establishes a containing block that breaks
+     backdrop-filter on the city tooltip. */
+  @supports (-webkit-touch-callout: none) {
     .map {
       /* Force hardware acceleration */
       -webkit-backface-visibility: hidden;

@@ -158,7 +158,19 @@
     "destinations": [
       {
         "country": ["vn", "vnm"],
-        "cities": ["Hanoi", "Da Nang", "Hoi An", "Da Lat", "Nha Trang", "Ho Chi Minh City", "Vung Tau"]
+        "cities": [
+          "Hanoi",
+          "Da Nang",
+          "Hoi An",
+          "Da Lat",
+          "Nha Trang",
+          "Ho Chi Minh City",
+          "Vung Tau"
+        ]
+      },
+      {
+        "country": ["my", "mys"],
+        "cities": ["Kuala Lumpur"]
       }
     ]
   },
