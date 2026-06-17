@@ -101,7 +101,6 @@
 @media (hover: hover) and (pointer: fine) {
   .wishlist-item {
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
   }
 }
 
@@ -304,7 +303,6 @@
   .priority-badge {
     background: light-dark(rgba(0, 0, 0, 0.7), rgba(255, 255, 255, 0.15));
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
 }
 
@@ -522,7 +520,6 @@
   .priority-badge {
     background: light-dark(#555555, #555555);
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
   }
 
   .priority-low {

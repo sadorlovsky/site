@@ -56,7 +56,6 @@
 @media (hover: hover) and (pointer: fine) {
   .item-card {
     backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
   }
 
   .item-card:hover {

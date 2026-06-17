@@ -41,7 +41,6 @@
 @media (hover: hover) and (pointer: fine) {
   .modal {
     backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
   }
 }
 
