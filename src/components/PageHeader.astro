@@ -1,7 +1,6 @@
 ---
 import { Icon } from "astro-icon/components";
 import LangSwitcher from "@components/LangSwitcher.astro";
-import Dock from "@components/Dock.astro";
 
 interface Props {
   pageTitle: {
@@ -15,7 +14,6 @@ interface Props {
     ru: string;
   };
   langSwitcher?: string;
-  /** Kept for backward compatibility; the active section is shown in the dock. */
   parentLink?: {
     href: string;
     label: { en: string; ru: string };
@@ -23,45 +21,78 @@ interface Props {
   forceLang?: "en" | "ru";
 }
 
-const { pageTitle, subtitle, langSwitcher, forceLang } = Astro.props;
+const { pageTitle, subtitle, langSwitcher, parentLink, forceLang } =
+  Astro.props;
 
 // Use forceLang if provided, otherwise default to "en" (client-side JS updates it).
 const displayLang = forceLang || "en";
-
-const navItems = [
-  { href: "/travel", en: "Travel", ru: "Путешествия" },
-  { href: "/wishlist", en: "Wishlist", ru: "Вишлист" },
-  { href: "/blog", en: "Blog", ru: "Блог" },
-];
+const pageTitleHref = pageTitle.href;
 
 // Sub-pages (posts) pass pageTitle.href as a crumb — they carry their own title.
-const showHeroTitle = !pageTitle.href;
+const showHeroTitle = !pageTitleHref;
 const hasActions = Astro.slots.has("actions");
 ---
 
 <header class="page-header">
-  <div class="site-bar">
-    <a
-      href="/"
-      class="home-chip"
-      aria-label="Home"
-      data-aria-label-en="Home"
-      data-aria-label-ru="Главная"
-    >
-      <Icon name="home" aria-hidden="true" />
-    </a>
-
-    <Dock
-      bare
-      items={navItems}
-      activeHref={Astro.url.pathname}
-      lang={displayLang}
-    />
+  <div class="header-row">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a
+        href="/"
+        class="crumb-home"
+        aria-label="Home"
+        data-aria-label-en="Home"
+        data-aria-label-ru="Главная"
+      >
+        <Icon name="home" aria-hidden="true" />
+      </a>
+      <span class="crumb-sep" aria-hidden="true">/</span>
+      {
+        parentLink && (
+          <>
+            <a
+              href={parentLink.href}
+              class="crumb-link"
+              data-en={parentLink.label.en}
+              data-ru={parentLink.label.ru}
+            >
+              {displayLang === "ru" ? parentLink.label.ru : parentLink.label.en}
+            </a>
+            <span class="crumb-sep" aria-hidden="true">
+              /
+            </span>
+          </>
+        )
+      }
+      {
+        pageTitleHref ? (
+          <a
+            href={pageTitleHref}
+            class="crumb-current crumb-current--link"
+            data-en={pageTitle.en}
+            data-ru={pageTitle.ru}
+          >
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+          </a>
+        ) : (
+          <span
+            class="crumb-current"
+            data-en={pageTitle.en}
+            data-ru={pageTitle.ru}
+          >
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+          </span>
+        )
+      }
+    </nav>
 
     {
       (langSwitcher || hasActions) && (
-        <div class="site-bar__end">
-          {langSwitcher && <LangSwitcher storageKey={langSwitcher} />}
+        <div class="header-end">
+          {langSwitcher && (
+            <div class="lang-shell">
+              <LangSwitcher storageKey={langSwitcher} />
+            </div>
+          )}
           <slot name="actions" />
         </div>
       )
@@ -91,13 +122,23 @@ const hasActions = Astro.slots.has("actions");
     margin: 0;
   }
 
-  /* Glass site bar */
-  .site-bar {
+  .header-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Glass breadcrumb pill */
+  .crumbs {
+    display: inline-flex;
+    align-items: center;
     gap: 0.5rem;
-    padding: 0.4rem;
+    padding: 0.35rem 0.85rem 0.35rem 0.4rem;
     border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 600;
     background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
     backdrop-filter: blur(16px) saturate(170%);
     border: 1px solid
@@ -108,21 +149,13 @@ const hasActions = Astro.slots.has("actions");
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .site-bar__end {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-right: 0.15rem;
-  }
-
-  .home-chip {
+  .crumb-home {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex: none;
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2rem;
+    height: 2rem;
     border-radius: 50%;
     color: light-dark(#555, #b4b4b8);
     text-decoration: none;
@@ -133,21 +166,77 @@ const hasActions = Astro.slots.has("actions");
       box-shadow 0.3s ease;
   }
 
-  .home-chip:hover {
+  .crumb-home:hover {
     color: #fff;
     background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(237, 87, 96, 0.4);
   }
 
-  .home-chip:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
-    outline-offset: 2px;
+  .crumb-home :global(svg) {
+    width: 1.05rem;
+    height: 1.05rem;
   }
 
-  .home-chip :global(svg) {
-    width: 1.15rem;
-    height: 1.15rem;
+  .crumb-sep {
+    color: light-dark(#bbb, #555);
+    user-select: none;
+  }
+
+  .crumb-link {
+    color: light-dark(#666, #999);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .crumb-link:hover {
+    color: light-dark(#333, #ddd);
+  }
+
+  .crumb-current {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .crumb-current--link {
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .crumb-current--link:hover {
+    opacity: 0.75;
+  }
+
+  .crumb-home:focus-visible,
+  .crumb-link:focus-visible,
+  .crumb-current--link:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Right cluster */
+  .header-end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .lang-shell {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
+    backdrop-filter: blur(16px) saturate(170%);
+    border: 1px solid
+      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
+      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
+    animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   /* Hero title */
@@ -183,26 +272,10 @@ const hasActions = Astro.slots.has("actions");
     }
   }
 
-  @media (max-width: 520px) {
-    .site-bar {
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      border-radius: 1.4rem;
-    }
-
-    .site-bar__end {
-      padding-right: 0;
-    }
-
-    .home-chip {
-      width: 2rem;
-      height: 2rem;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .site-bar,
-    .home-chip {
+    .crumbs,
+    .lang-shell,
+    .crumb-home {
       animation: none;
       transition: none;
     }
