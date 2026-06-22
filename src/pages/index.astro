@@ -1,7 +1,14 @@
 ---
+import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 import Avatar from "@components/Avatar.astro";
-// import SocialLinks from "@components/SocialLinks.astro";
+import Dock from "@components/Dock.astro";
+
+const navItems = [
+  { href: "/travel", en: "Travel", ru: "Путешествия" },
+  { href: "/wishlist", en: "Wishlist", ru: "Вишлист" },
+  { href: "/blog", en: "Blog", ru: "Блог" },
+];
 
 export const prerender = true;
 
@@ -33,12 +40,37 @@ const personSchema = {
       <div class="info">
         <h1>Zach</h1>
         <p class="bio">Software engineer & traveler</p>
-        <nav class="nav">
-          <a href="/travel">/Travel</a>
-          <a href="/blog">/Blog</a>
-          <a href="/wishlist">/Wishlist</a>
-        </nav>
-        <!-- <SocialLinks class="social-links" /> -->
+
+        <div class="dock-wrap">
+          <Dock items={navItems} />
+        </div>
+
+        <div class="social-links">
+          <a
+            href="https://instagram.com/sadorlovsky"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+          >
+            <Icon name="instagram" />
+          </a>
+          <a
+            href="https://t.me/sadorlovsky"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Telegram"
+          >
+            <Icon name="telegram" />
+          </a>
+          <a
+            href="https://github.com/sadorlovsky"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+          >
+            <Icon name="github" />
+          </a>
+        </div>
       </div>
     </div>
   </main>
@@ -172,31 +204,42 @@ const personSchema = {
     font-weight: 400;
   }
 
-  .nav {
+  /* Glass dock entrance (dock styles live in Dock.astro) */
+  .dock-wrap {
+    margin-top: 1.75rem;
+    animation: fadeInUp 0.8s ease-out 0.35s both;
+  }
+
+  /* Social links */
+  .social-links {
+    margin-top: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1.25rem;
-    margin-top: 1.5rem;
+    gap: 1rem;
   }
 
-  .nav a {
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 500;
+  .social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: light-dark(#666, #888);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .social-links a:hover {
+    color: white;
     background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    transition: opacity 0.2s ease;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(237, 87, 96, 0.4);
   }
 
-  .nav a:hover {
-    opacity: 0.7;
-  }
-
-  .social-links {
-    margin-top: 1.25rem;
+  .social-links svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   @keyframes fadeInUp {
@@ -253,8 +296,10 @@ const personSchema = {
       border-radius: 50%;
     }
 
-    .nav-links a {
+    .dock-wrap,
+    .social-links a {
       transition: none;
+      animation: none;
     }
   }
 
@@ -281,6 +326,10 @@ const personSchema = {
 
     .content {
       gap: 1.5rem;
+    }
+
+    .dock-wrap {
+      margin-top: 1.25rem;
     }
 
     .social-links {

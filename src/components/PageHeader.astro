@@ -1,10 +1,13 @@
 ---
+import { Icon } from "astro-icon/components";
 import LangSwitcher from "@components/LangSwitcher.astro";
+import Dock from "@components/Dock.astro";
 
 interface Props {
   pageTitle: {
     en: string;
     ru: string;
+    /** When set, the title is a sub-page crumb (e.g. a post) — no hero title. */
     href?: string;
   };
   subtitle?: {
@@ -12,69 +15,66 @@ interface Props {
     ru: string;
   };
   langSwitcher?: string;
+  /** Kept for backward compatibility; the active section is shown in the dock. */
   parentLink?: {
     href: string;
-    label: {
-      en: string;
-      ru: string;
-    };
+    label: { en: string; ru: string };
   };
   forceLang?: "en" | "ru";
 }
 
-const {
-  pageTitle,
-  subtitle,
-  langSwitcher,
-  parentLink,
-  forceLang,
-} = Astro.props;
+const { pageTitle, subtitle, langSwitcher, forceLang } = Astro.props;
 
-// Use forceLang if provided, otherwise default to "en" (client-side JS will update)
+// Use forceLang if provided, otherwise default to "en" (client-side JS updates it).
 const displayLang = forceLang || "en";
-const pageTitleHref = pageTitle.href;
+
+const navItems = [
+  { href: "/travel", en: "Travel", ru: "Путешествия" },
+  { href: "/wishlist", en: "Wishlist", ru: "Вишлист" },
+  { href: "/blog", en: "Blog", ru: "Блог" },
+];
+
+// Sub-pages (posts) pass pageTitle.href as a crumb — they carry their own title.
+const showHeroTitle = !pageTitle.href;
+const hasActions = Astro.slots.has("actions");
 ---
 
 <header class="page-header">
-  <div class="title-row">
-    <h1 class="title">
-      <a href="/" class="name-link" data-en="Zach" data-ru="Зак">{displayLang === "ru" ? "Зак" : "Zach"}</a>
-      <span class="separator">/</span>
-      {
-        parentLink && (
-          <>
-            <a
-              href={parentLink.href}
-              class="parent-link"
-              data-en={parentLink.label.en}
-              data-ru={parentLink.label.ru}
-            >
-              {displayLang === "ru" ? parentLink.label.ru : parentLink.label.en}
-            </a>
-            <span class="separator">/</span>
-          </>
-        )
-      }
-      {
-        pageTitleHref ? (
-          <a
-            href={pageTitleHref}
-            class="page-title-link"
-            data-en={pageTitle.en}
-            data-ru={pageTitle.ru}
-          >
-            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
-          </a>
-        ) : (
-          <span class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
-            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
-          </span>
-        )
-      }
-    </h1>
-    {langSwitcher && <LangSwitcher storageKey={langSwitcher} />}
-    <slot name="actions" />
+  <div class="site-bar">
+    <a
+      href="/"
+      class="home-chip"
+      aria-label="Home"
+      data-aria-label-en="Home"
+      data-aria-label-ru="Главная"
+    >
+      <Icon name="home" aria-hidden="true" />
+    </a>
+
+    <Dock
+      bare
+      items={navItems}
+      activeHref={Astro.url.pathname}
+      lang={displayLang}
+    />
+
+    {
+      (langSwitcher || hasActions) && (
+        <div class="site-bar__end">
+          {langSwitcher && <LangSwitcher storageKey={langSwitcher} />}
+          <slot name="actions" />
+        </div>
+      )
+    }
   </div>
+
+  {
+    showHeroTitle && (
+      <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
+        {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+      </h1>
+    )
+  }
   {
     subtitle && (
       <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
@@ -91,100 +91,119 @@ const pageTitleHref = pageTitle.href;
     margin: 0;
   }
 
-  .title-row {
+  /* Glass site bar */
+  .site-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem;
+    border-radius: 999px;
+    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
+    backdrop-filter: blur(16px) saturate(170%);
+    border: 1px solid
+      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
+      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
+    animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  .title {
+  .site-bar__end {
+    margin-left: auto;
     display: flex;
-    align-items: baseline;
-    justify-content: flex-start;
-    gap: 0.35em;
-    font-weight: 700;
-    font-size: 24px;
-    letter-spacing: -0.03em;
-    margin: 0;
-    min-width: 0;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding-right: 0.15rem;
   }
 
-  .name-link {
+  .home-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    color: light-dark(#555, #b4b4b8);
     text-decoration: none;
-    color: light-dark(#666, #888);
-    -webkit-text-fill-color: light-dark(#666, #888);
-    transition: opacity 0.2s ease;
+    transition:
+      color 0.3s ease,
+      background 0.3s ease,
+      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s ease;
   }
 
-  .name-link:hover {
-    color: light-dark(#444, #bbb);
-    -webkit-text-fill-color: light-dark(#444, #bbb);
+  .home-chip:hover {
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(237, 87, 96, 0.4);
   }
 
-  .name-link:focus-visible,
-  .parent-link:focus-visible {
+  .home-chip:focus-visible {
     outline: 2px solid light-dark(#333, #fff);
     outline-offset: 2px;
-    border-radius: 2px;
   }
 
-  .separator {
-    color: light-dark(#666, #888);
+  .home-chip :global(svg) {
+    width: 1.15rem;
+    height: 1.15rem;
   }
 
-  .parent-link {
-    text-decoration: none;
-    color: light-dark(#666, #999);
-    transition: opacity 0.2s ease;
-  }
-
-  .parent-link:hover {
-    color: light-dark(#444, #bbb);
-  }
-
+  /* Hero title */
   .page-title {
-    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin: 1.25rem 0 0 0;
+    font-size: clamp(1.9rem, 5vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    width: fit-content;
     max-width: 100%;
-  }
-
-  .page-title-link {
-    background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-  }
-
-  .page-title-link:hover {
-    opacity: 0.7;
-  }
-
-  .page-title-link:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
-    outline-offset: 2px;
-    border-radius: 2px;
   }
 
   .subtitle {
     color: light-dark(#666, #999);
-    margin: 0;
-    margin-top: 0.5rem;
+    margin: 0.45rem 0 0 0;
     font-weight: 400;
-    font-size: 0.95rem;
+    font-size: 1rem;
+  }
+
+  @keyframes barIn {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .site-bar {
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      border-radius: 1.4rem;
+    }
+
+    .site-bar__end {
+      padding-right: 0;
+    }
+
+    .home-chip {
+      width: 2rem;
+      height: 2rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .name-link,
-    .parent-link,
-    .page-title-link {
+    .site-bar,
+    .home-chip {
+      animation: none;
       transition: none;
     }
   }
