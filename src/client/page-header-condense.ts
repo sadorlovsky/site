@@ -4,8 +4,13 @@
 // threshold (with hysteresis to avoid flicker near the boundary). All the
 // motion lives in CSS — this only flips the class.
 
-const CONDENSE_AT = 24; // px scrolled before the header condenses
-const EXPAND_AT = 8; // px below which it expands again
+// A wide gap between the two thresholds is deliberate: it keeps small
+// back-and-forth scrolls near the top from repeatedly flipping the state
+// (each flip reflows the page below the collapsing hero, which reads as a
+// jump). You must commit ~44px of scroll to condense, and return almost to
+// the top to expand again.
+const CONDENSE_AT = 44; // px scrolled before the header condenses
+const EXPAND_AT = 6; // px below which it expands again
 
 function initCondense(header: HTMLElement) {
   if (header.dataset.condenseReady === "true") return;
