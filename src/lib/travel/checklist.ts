@@ -1,4 +1,4 @@
-import * as countryList from "../../pages/travel/countries.md";
+import countryListRaw from "../../pages/travel/countries.md?raw";
 import { countries as visitedCountryCodes } from "./index";
 import { getByCode } from "./countries";
 
@@ -984,7 +984,7 @@ const CATEGORY_NAMES: Record<CategoryId, { en: string; ru: string }> = {
 };
 
 function parseCountriesMarkdown(): ParsedSection[] {
-  const content = countryList.rawContent();
+  const content = countryListRaw;
   const sections: ParsedSection[] = [];
 
   // Split by ## headers

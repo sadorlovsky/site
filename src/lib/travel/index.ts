@@ -1,6 +1,6 @@
 import tripsData from "./trips.json";
 import citiesData from "./cities.json";
-import * as countryList from "../../pages/travel/countries.md";
+import countryListRaw from "../../pages/travel/countries.md?raw";
 
 // Types for the new trip format
 export interface Destination {
@@ -241,6 +241,6 @@ export const cityCoordinates = citiesData as unknown as Record<
   string,
   [number, number]
 >;
-export const countryListSize = getCountryListSize(countryList.rawContent());
+export const countryListSize = getCountryListSize(countryListRaw);
 export const continentsVisited = 2;
 export const continentsTotal = 7;

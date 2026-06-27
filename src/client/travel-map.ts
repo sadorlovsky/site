@@ -1,4 +1,5 @@
 import { Map as MapLibre } from "maplibre-gl";
+import type { Feature, Point } from "geojson";
 import { countries, cities, cityCoordinates } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
@@ -282,7 +283,7 @@ async function initMap(): Promise<void> {
   // Add Crimea exclusion layer (to hide it from visited countries)
   map.addSource("crimea", {
     type: "geojson",
-    data: crimeaGeoJson as GeoJSON.Feature,
+    data: crimeaGeoJson as Feature,
   });
 
   const isDark = colorSchemeQuery.matches;
@@ -484,7 +485,7 @@ async function initMap(): Promise<void> {
     let minDist = Infinity;
     for (const f of features) {
       const projected = map.project(
-        (f.geometry as GeoJSON.Point).coordinates as [number, number],
+        (f.geometry as Point).coordinates as [number, number],
       );
       const dx = projected.x - point.x;
       const dy = projected.y - point.y;

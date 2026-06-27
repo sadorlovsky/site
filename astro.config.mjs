@@ -31,9 +31,6 @@ export default defineConfig({
   vite: {
     optimizeDeps: {
       exclude: ["@simplewebauthn/server"],
-      esbuildOptions: {
-        target: "esnext",
-      },
     },
     css: {
       transformer: "lightningcss",
@@ -77,6 +74,43 @@ export default defineConfig({
       },
     },
   },
+  fonts: [
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter",
+      fallbacks: ["system-ui", "sans-serif"],
+      options: {
+        variants: [
+          {
+            weight: "100 900",
+            style: "normal",
+            src: ["./src/assets/fonts/InterVariable.woff2"],
+          },
+          {
+            weight: "100 900",
+            style: "italic",
+            src: ["./src/assets/fonts/InterVariable-Italic.woff2"],
+          },
+        ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: "Fira Code",
+      cssVariable: "--font-fira-code",
+      fallbacks: ["ui-monospace", "monospace"],
+      options: {
+        variants: [
+          {
+            weight: "300 700",
+            style: "normal",
+            src: ["./src/assets/fonts/FiraCode-Variable.woff2"],
+          },
+        ],
+      },
+    },
+  ],
   env: {
     schema: {
       CDN_DEV_DOMAIN: envField.string({
@@ -141,45 +175,5 @@ export default defineConfig({
         default: "wishlist-images",
       }),
     },
-  },
-  experimental: {
-    contentIntellisense: true,
-    fonts: [
-      {
-        provider: fontProviders.local(),
-        name: "Inter",
-        cssVariable: "--font-inter",
-        fallbacks: ["system-ui", "sans-serif"],
-        options: {
-          variants: [
-            {
-              weight: "100 900",
-              style: "normal",
-              src: ["./src/assets/fonts/InterVariable.woff2"],
-            },
-            {
-              weight: "100 900",
-              style: "italic",
-              src: ["./src/assets/fonts/InterVariable-Italic.woff2"],
-            },
-          ],
-        },
-      },
-      {
-        provider: fontProviders.local(),
-        name: "Fira Code",
-        cssVariable: "--font-fira-code",
-        fallbacks: ["ui-monospace", "monospace"],
-        options: {
-          variants: [
-            {
-              weight: "300 700",
-              style: "normal",
-              src: ["./src/assets/fonts/FiraCode-Variable.woff2"],
-            },
-          ],
-        },
-      },
-    ],
   },
 });
