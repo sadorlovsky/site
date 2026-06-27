@@ -30,12 +30,20 @@ const pageTitleHref = pageTitle.href;
 
 // Sub-pages (posts) pass pageTitle.href as a crumb — they carry their own title.
 const showHeroTitle = !pageTitleHref;
+// Show the leaf in the breadcrumb only when it is NOT already the hero title,
+// so the page name never appears twice.
+const showLeafCrumb = !showHeroTitle;
+// No text crumbs at all — render the pill as a clean home button.
+const soloCrumb = !parentLink && !showLeafCrumb;
 const hasActions = Astro.slots.has("actions");
 ---
 
 <header class="page-header">
   <div class="header-row">
-    <nav class="crumbs" aria-label="Breadcrumb">
+    <nav
+      class:list={["crumbs", { "crumbs--solo": soloCrumb }]}
+      aria-label="Breadcrumb"
+    >
       <a
         href="/"
         class="crumb-home"
@@ -45,10 +53,12 @@ const hasActions = Astro.slots.has("actions");
       >
         <Icon name="home" aria-hidden="true" />
       </a>
-      <span class="crumb-sep" aria-hidden="true">/</span>
       {
         parentLink && (
           <>
+            <span class="crumb-sep" aria-hidden="true">
+              /
+            </span>
             <a
               href={parentLink.href}
               class="crumb-link"
@@ -57,30 +67,24 @@ const hasActions = Astro.slots.has("actions");
             >
               {displayLang === "ru" ? parentLink.label.ru : parentLink.label.en}
             </a>
-            <span class="crumb-sep" aria-hidden="true">
-              /
-            </span>
           </>
         )
       }
       {
-        pageTitleHref ? (
-          <a
-            href={pageTitleHref}
-            class="crumb-current crumb-current--link"
-            data-en={pageTitle.en}
-            data-ru={pageTitle.ru}
-          >
-            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
-          </a>
-        ) : (
-          <span
-            class="crumb-current"
-            data-en={pageTitle.en}
-            data-ru={pageTitle.ru}
-          >
-            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
-          </span>
+        showLeafCrumb && (
+          <>
+            <span class="crumb-sep" aria-hidden="true">
+              /
+            </span>
+            <a
+              href={pageTitleHref}
+              class="crumb-current crumb-current--link"
+              data-en={pageTitle.en}
+              data-ru={pageTitle.ru}
+            >
+              {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+            </a>
+          </>
         )
       }
     </nav>
@@ -147,6 +151,11 @@ const hasActions = Astro.slots.has("actions");
       0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
       inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Home-only pill (section landings) — symmetric, reads as a home button. */
+  .crumbs--solo {
+    padding: 0.35rem;
   }
 
   .crumb-home {
