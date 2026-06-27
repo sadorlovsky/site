@@ -19,10 +19,18 @@ interface Props {
     label: { en: string; ru: string };
   };
   forceLang?: "en" | "ru";
+  /** Pin the header and condense the hero title into the nav row on scroll. */
+  condenseOnScroll?: boolean;
 }
 
-const { pageTitle, subtitle, langSwitcher, parentLink, forceLang } =
-  Astro.props;
+const {
+  pageTitle,
+  subtitle,
+  langSwitcher,
+  parentLink,
+  forceLang,
+  condenseOnScroll,
+} = Astro.props;
 
 // Use forceLang if provided, otherwise default to "en" (client-side JS updates it).
 const displayLang = forceLang || "en";
@@ -38,7 +46,9 @@ const soloCrumb = !parentLink && !showLeafCrumb;
 const hasActions = Astro.slots.has("actions");
 ---
 
-<header class="page-header">
+<header
+  class:list={["page-header", { "page-header--condense": condenseOnScroll }]}
+>
   <div class="header-row">
     <nav
       class:list={["crumbs", { "crumbs--solo": soloCrumb }]}
@@ -90,6 +100,20 @@ const hasActions = Astro.slots.has("actions");
     </nav>
 
     {
+      condenseOnScroll && showHeroTitle && (
+        <span class="condensed-title" aria-hidden="true">
+          <span
+            class="condensed-title__text"
+            data-en={pageTitle.en}
+            data-ru={pageTitle.ru}
+          >
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+          </span>
+        </span>
+      )
+    }
+
+    {
       (langSwitcher || hasActions) && (
         <div class="header-end">
           {langSwitcher && (
@@ -104,20 +128,38 @@ const hasActions = Astro.slots.has("actions");
   </div>
 
   {
-    showHeroTitle && (
-      <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
-        {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
-      </h1>
+    condenseOnScroll ? (
+      <div class="hero-collapse">
+        <div class="hero-collapse__inner">
+          {showHeroTitle && (
+            <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
+              {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+            </h1>
+          )}
+          {subtitle && (
+            <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
+              {displayLang === "ru" ? subtitle.ru : subtitle.en}
+            </p>
+          )}
+          <slot />
+        </div>
+      </div>
+    ) : (
+      <>
+        {showHeroTitle && (
+          <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+          </h1>
+        )}
+        {subtitle && (
+          <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
+            {displayLang === "ru" ? subtitle.ru : subtitle.en}
+          </p>
+        )}
+        <slot />
+      </>
     )
   }
-  {
-    subtitle && (
-      <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
-        {displayLang === "ru" ? subtitle.ru : subtitle.en}
-      </p>
-    )
-  }
-  <slot />
 </header>
 
 <style>
@@ -127,6 +169,7 @@ const hasActions = Astro.slots.has("actions");
   }
 
   .header-row {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -234,11 +277,21 @@ const hasActions = Astro.slots.has("actions");
     gap: 0.5rem;
   }
 
-  /* The LangSwitcher carries its own glass capsule now — this is just the
-     animated wrapper so it enters in sync with the breadcrumb pill. */
+  /* The LangSwitcher carries its own glass capsule now — this is just a plain
+     wrapper. The entrance animation is applied to the switcher itself (below),
+     NOT here: a transform on this ancestor (even the identity matrix a finished
+     transform animation leaves behind) resets the backdrop-filter root and
+     silently kills the switcher's glass blur. */
   .lang-shell {
     display: inline-flex;
     align-items: center;
+  }
+
+  /* Slide the switcher in, in sync with the breadcrumb pill. Putting the
+     animation on the switcher itself (the element that owns the backdrop-filter)
+     keeps its blur intact — an element's own transform doesn't break its own
+     backdrop, only an ancestor's does. */
+  .lang-shell :global(.lang-switcher) {
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
@@ -264,6 +317,123 @@ const hasActions = Astro.slots.has("actions");
     font-size: 1rem;
   }
 
+  /* ===========================================================================
+     Condense-on-scroll mode.
+
+     The header is pinned to the top of the viewport. As the page scrolls the
+     hero title collapses (its grid row eases to 0fr) and fades out, while a
+     compact copy cross-fades in as its own floating glass pill — centred between
+     the home and language pills. Rather than a full-width bar over the page's
+     empty dark margins, the condensed header reads as three liquid-glass pills,
+     echoing the magnetic glass dock used elsewhere on the site.
+     =========================================================================== */
+  .page-header--condense {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* A whisper more breathing room from the very top edge once the pills float. */
+  .page-header--condense.is-condensed {
+    padding-top: 0.55rem;
+  }
+
+  /* Hero title collapses by easing its grid row from 1fr to 0fr. */
+  .page-header--condense .hero-collapse {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .page-header--condense .hero-collapse__inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .page-header--condense.is-condensed .hero-collapse {
+    grid-template-rows: 0fr;
+  }
+
+  /* Big hero title fades out as it collapses, so it doesn't double the copy
+     that flies up into the pill. */
+  .page-header--condense .page-title {
+    transition:
+      opacity 0.25s ease,
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .page-header--condense.is-condensed .page-title {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  /* Compact title — a floating glass pill centred over the row, hidden until
+     condensed. Same liquid-glass recipe as the dock and language switcher. */
+  .condensed-title {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, calc(-50% + 8px)) scale(0.96);
+    opacity: 0;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 1.05rem;
+    border-radius: 999px;
+    /* Stronger tint than the resting pills: this one floats over the colourful
+       map, where a 0.45 wash lets bright land bleed through. A heavier frost
+       keeps it reading as glass over any backdrop. (No manual -webkit- prefix —
+       it trips Astro's autoprefixer into dropping backdrop-filter entirely.) */
+    background: light-dark(rgba(255, 255, 255, 0.65), rgba(26, 26, 30, 0.64));
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid
+      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
+      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
+    transition:
+      opacity 0.35s ease,
+      transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* The home and language pills also float over the map once condensed — give
+     them the same heavier frost so all three read as glass, not wash. Resting
+     (expanded) state keeps the lighter site-wide recipe. */
+  .page-header--condense.is-condensed .crumbs,
+  .page-header--condense.is-condensed
+    .lang-shell
+    :global(.lang-switcher.kit-toggle-group) {
+    background: light-dark(rgba(255, 255, 255, 0.65), rgba(26, 26, 30, 0.64));
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  .condensed-title__text {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .page-header--condense.is-condensed .condensed-title {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-header--condense,
+    .page-header--condense .hero-collapse,
+    .page-header--condense .page-title,
+    .condensed-title {
+      transition: none;
+    }
+  }
+
   @keyframes barIn {
     from {
       opacity: 0;
@@ -286,3 +456,4 @@ const hasActions = Astro.slots.has("actions");
 </style>
 
 <script src="@client/crumb-home-magnet.ts"></script>
+<script src="@client/page-header-condense.ts"></script>
