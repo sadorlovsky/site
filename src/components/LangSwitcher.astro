@@ -23,6 +23,7 @@ const { storageKey, size = "sm" } = Astro.props;
   data-aria-label-ru="Выбор языка"
   data-storage-key={storageKey}
 >
+  <span class="lang-switcher__indicator" aria-hidden="true"></span>
   <Icon
     name="globe"
     class="kit-toggle-group__icon lang-switcher__icon"
@@ -47,7 +48,101 @@ const { storageKey, size = "sm" } = Astro.props;
 </div>
 
 <style>
-  /* LangSwitcher-specific overrides */
+  /* ===========================================================================
+     LangSwitcher — liquid glass pillow with the magnetic glass dock's effect.
+
+     The switcher is its own glass capsule (same recipe as Dock.astro) and shares
+     the dock's sliding gradient "magic line": a single indicator slides behind
+     the hovered/focused button and rests on the active language. Positioning +
+     magnetic hover live in @client/lang-switcher-indicator.ts (modelled on
+     nav-dock.ts) so the feel matches the home-page nav exactly.
+     =========================================================================== */
+
+  /* Glass shell — overrides the kit's grey toggle-group track. */
+  .lang-switcher.kit-toggle-group {
+    position: relative; /* positioning context for the sliding indicator */
+    gap: 0.2rem;
+    padding: 0.3rem;
+    border-radius: 999px;
+    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
+    backdrop-filter: blur(16px) saturate(170%);
+    border: 1px solid
+      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
+    box-shadow:
+      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
+      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
+  }
+
+  /* Sliding gradient indicator — the dock's "magic line". Geometry (--ind-*)
+     is set by the script; here we mirror the dock indicator's look + easing. */
+  .lang-switcher__indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--ind-w, 0);
+    height: var(--ind-h, 0);
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+    opacity: 0;
+    transform: translate(var(--ind-x, 0), var(--ind-y, 0)) scale(0.9);
+    transition:
+      transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+      width 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .lang-switcher[data-active] .lang-switcher__indicator {
+    opacity: 1;
+    transform: translate(var(--ind-x, 0), var(--ind-y, 0)) scale(1);
+  }
+
+  /* Pill-shaped items — match dock-item geometry and resting colour. */
+  .lang-switcher .lang-switcher__btn {
+    position: relative;
+    z-index: 1;
+    height: 28px;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    color: light-dark(#555, #b4b4b8);
+    background: transparent;
+    box-shadow: none;
+    transition: color 0.3s ease;
+    will-change: transform; /* magnetic hover */
+  }
+
+  /* Neutralise the kit's flat aria-pressed pill — the indicator does the work. */
+  .lang-switcher .lang-switcher__btn[aria-pressed="true"] {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .lang-switcher .lang-switcher__btn:hover {
+    color: light-dark(#1a1a1a, #fff);
+  }
+
+  /* Whichever button the indicator rests under — the active language, or the
+     one being hovered/focused. Set by the script; mirrors .dock-item.is-active.
+     Declared after :hover so it wins on the hovered button (equal specificity). */
+  .lang-switcher .lang-switcher__btn.is-active {
+    color: #fff;
+  }
+
+  .lang-switcher .lang-switcher__btn:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+  }
+
+  /* Globe icon — muted, above the indicator. */
+  .lang-switcher .lang-switcher__icon {
+    position: relative;
+    z-index: 1;
+    margin-left: 0.15rem;
+    color: light-dark(#888, #8a8a90);
+  }
 
   /* Hide globe icon on narrow screens */
   @media (max-width: 768px) {
@@ -56,23 +151,19 @@ const { storageKey, size = "sm" } = Astro.props;
     }
   }
 
-  /* Active state controlled by html.lang-ru class */
-  .lang-switcher__btn[data-lang="en"] {
-    color: light-dark(#111, #fff);
-    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
-    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
+  @media (prefers-reduced-motion: reduce) {
+    .lang-switcher__indicator,
+    .lang-switcher .lang-switcher__btn {
+      transition: none;
+    }
   }
 
-  html.lang-ru .lang-switcher__btn[data-lang="en"] {
-    color: light-dark(#555, #aaa);
-    background: transparent;
-    box-shadow: none;
-  }
-
-  html.lang-ru .lang-switcher__btn[data-lang="ru"] {
-    color: light-dark(#111, #fff);
-    background: light-dark(#fff, rgba(255, 255, 255, 0.15));
-    box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
+  /* Opaque fallback when transparency is reduced. */
+  @media (prefers-reduced-transparency: reduce) {
+    .lang-switcher.kit-toggle-group {
+      background: light-dark(#f0f0f0, #2a2a2e);
+      backdrop-filter: none;
+    }
   }
 </style>
 
@@ -149,3 +240,5 @@ const { storageKey, size = "sm" } = Astro.props;
     setupLangSwitchers();
   })();
 </script>
+
+<script src="@client/lang-switcher-indicator.ts"></script>

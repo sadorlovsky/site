@@ -171,15 +171,16 @@ const hasActions = Astro.slots.has("actions");
     transition:
       color 0.3s ease,
       background 0.3s ease,
-      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
       box-shadow 0.3s ease;
+    will-change: transform; /* magnetic pull toward the cursor */
   }
 
+  /* Same recipe as the language switcher's gradient indicator: accent fill,
+     white glyph, and the identical accent glow. */
   .crumb-home:hover {
     color: #fff;
     background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(237, 87, 96, 0.4);
+    box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
   }
 
   .crumb-home :global(svg) {
@@ -233,18 +234,11 @@ const hasActions = Astro.slots.has("actions");
     gap: 0.5rem;
   }
 
+  /* The LangSwitcher carries its own glass capsule now — this is just the
+     animated wrapper so it enters in sync with the breadcrumb pill. */
   .lang-shell {
     display: inline-flex;
     align-items: center;
-    padding: 0.2rem;
-    border-radius: 999px;
-    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
-    backdrop-filter: blur(16px) saturate(170%);
-    border: 1px solid
-      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
-    box-shadow:
-      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
-      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
@@ -290,3 +284,5 @@ const hasActions = Astro.slots.has("actions");
     }
   }
 </style>
+
+<script src="@client/crumb-home-magnet.ts"></script>
