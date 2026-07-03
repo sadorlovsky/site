@@ -16,6 +16,7 @@ const { storageKey, size = "sm" } = Astro.props;
     "kit-toggle-group",
     `kit-toggle-group--${size}`,
     "lang-switcher",
+    "liquid-glass",
   ]}
   role="group"
   aria-label="Language selection"
@@ -58,19 +59,18 @@ const { storageKey, size = "sm" } = Astro.props;
      nav-dock.ts) so the feel matches the home-page nav exactly.
      =========================================================================== */
 
-  /* Glass shell — overrides the kit's grey toggle-group track. */
+  /* Glass shell — the recipe itself comes from the shared .liquid-glass
+     utility (global.css). The background is re-declared here through the same
+     tokens because the kit's grey `background` shorthand ties .liquid-glass on
+     specificity, and this double-class selector settles the fight. Sized to a
+     2.7rem content box so it stands exactly as tall as the home pill. */
   .lang-switcher.kit-toggle-group {
     position: relative; /* positioning context for the sliding indicator */
     gap: 0.2rem;
-    padding: 0.3rem;
+    padding: 0.35rem;
     border-radius: 999px;
-    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
-    backdrop-filter: blur(16px) saturate(170%);
-    border: 1px solid
-      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
-    box-shadow:
-      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
-      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
+    background-color: var(--glass-bg);
+    background-image: var(--glass-sheen);
   }
 
   /* Sliding gradient indicator — the dock's "magic line". Geometry (--ind-*)
@@ -99,11 +99,12 @@ const { storageKey, size = "sm" } = Astro.props;
     transform: translate(var(--ind-x, 0), var(--ind-y, 0)) scale(1);
   }
 
-  /* Pill-shaped items — match dock-item geometry and resting colour. */
+  /* Pill-shaped items — match dock-item geometry and resting colour. 2rem
+     tall, like the home glyph, so both capsules share one height. */
   .lang-switcher .lang-switcher__btn {
     position: relative;
     z-index: 1;
-    height: 28px;
+    height: 2rem;
     padding: 0 0.8rem;
     border-radius: 999px;
     font-size: 0.72rem;
@@ -158,10 +159,12 @@ const { storageKey, size = "sm" } = Astro.props;
     }
   }
 
-  /* Opaque fallback when transparency is reduced. */
+  /* Opaque fallback when transparency is reduced — must live here too: the
+     glass-token background above out-specifies .liquid-glass's own fallback. */
   @media (prefers-reduced-transparency: reduce) {
     .lang-switcher.kit-toggle-group {
-      background: light-dark(#f0f0f0, #2a2a2e);
+      background-color: light-dark(#f0f0f0, #2a2a2e);
+      background-image: none;
       backdrop-filter: none;
     }
   }

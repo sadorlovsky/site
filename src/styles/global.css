@@ -12,6 +12,67 @@
   /* Accent colors */
   --accent-start: rgb(237, 98, 146);
   --accent-end: rgb(237, 87, 96);
+
+  /* Liquid glass — the single source of truth for every floating capsule
+     (home pill, condensed title, language switcher, nav dock). Components
+     apply these via the .liquid-glass utility below so the frost, rim light
+     and shadow can never drift apart between elements. */
+  --glass-bg: light-dark(rgba(255, 255, 255, 0.55), rgba(28, 28, 32, 0.55));
+  --glass-sheen: linear-gradient(
+    115deg,
+    light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.07)),
+    transparent 38%,
+    transparent 62%,
+    light-dark(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.04))
+  );
+  --glass-filter: blur(20px) saturate(150%);
+  --glass-border: 1px solid
+    light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.09));
+  --glass-shadow:
+    0 10px 30px light-dark(rgba(20, 20, 40, 0.12), rgba(0, 0, 0, 0.38)),
+    0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
+  --glass-rim:
+    inset 1.5px 1.5px 1px -1px
+      light-dark(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.32)),
+    inset -1.5px -1.5px 1px -1px
+      light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.12)),
+    inset 0 0 12px light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
+}
+
+/* =============================================================================
+   Liquid glass capsule. Apply alongside a component-owned border-radius.
+   The tinted frost + diagonal sheen live on the element itself (under its
+   content), while ::after paints a refractive rim — a bright lens edge
+   catching light from the top-left — so the capsule reads as glass with real
+   thickness, not a flat translucent wash.
+   ============================================================================= */
+/* Positioning note: the rim ::after needs a positioned host, but the class
+   deliberately doesn't set `position` — consumers are positioned themselves
+   (relative or absolute), and forcing `relative` here would fight them. */
+.liquid-glass {
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: var(--glass-rim);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
+    backdrop-filter: none;
+  }
 }
 
 html,

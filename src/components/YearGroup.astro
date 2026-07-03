@@ -25,7 +25,11 @@ const { year, class: className } = Astro.props;
 
   .year-header {
     position: sticky;
-    top: 0;
+    /* On pages with a pinned condensing header (/travel), the header's script
+       publishes its stuck height as --sticky-header-offset on <main>, so the
+       year docks just below the floating pills instead of colliding with
+       them. Elsewhere the variable is unset and the year sticks to the top. */
+    top: var(--sticky-header-offset, 0px);
     background-color: light-dark(
       rgba(248, 248, 255, 0.85),
       rgba(25, 25, 25, 0.85)

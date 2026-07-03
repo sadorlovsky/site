@@ -40,6 +40,24 @@ function initCondense(header: HTMLElement) {
 
   update();
   window.addEventListener("scroll", onScroll, { passive: true });
+
+  // The pinned header floats over the page, so any *other* sticky element
+  // (the year rows on /travel) must dock below it, not under it. Publish the
+  // header's stuck height — the pill row plus its condensed top padding
+  // (0.55rem, keep in sync with .page-header--condense.is-condensed) and a
+  // small breathing gap — as a CSS variable scoped to the page's <main>.
+  const row = header.querySelector<HTMLElement>(".header-row");
+  const scope = header.closest<HTMLElement>("main");
+  if (row && scope) {
+    const rem =
+      parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const publish = () => {
+      const offset = Math.round(row.offsetHeight + 1.05 * rem); // 0.55rem pad + 0.5rem gap
+      scope.style.setProperty("--sticky-header-offset", `${offset}px`);
+    };
+    publish();
+    new ResizeObserver(publish).observe(row);
+  }
 }
 
 function initAll() {

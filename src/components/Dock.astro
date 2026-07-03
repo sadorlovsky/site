@@ -33,7 +33,7 @@ function isActive(href: string): boolean {
 ---
 
 <nav
-  class:list={["dock", { "dock--bare": bare }, className]}
+  class:list={["dock", { "dock--bare": bare, "liquid-glass": !bare }, className]}
   data-dock
   aria-label="Site"
 >
@@ -54,6 +54,8 @@ function isActive(href: string): boolean {
 </nav>
 
 <style>
+  /* The glass shell comes from the shared .liquid-glass utility (global.css),
+     added only when the dock isn't embedded (`bare`). */
   .dock {
     position: relative;
     display: inline-flex;
@@ -61,23 +63,12 @@ function isActive(href: string): boolean {
     gap: 0.25rem;
     padding: 0.4rem;
     border-radius: 999px;
-    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
-    backdrop-filter: blur(16px) saturate(170%);
-    border: 1px solid
-      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
-    box-shadow:
-      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
-      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
   }
 
   /* Embedded variant: no glass shell of its own (the parent provides it). */
   .dock--bare {
     padding: 0;
     border-radius: 0;
-    background: none;
-    backdrop-filter: none;
-    border: none;
-    box-shadow: none;
   }
 
   .dock-indicator {

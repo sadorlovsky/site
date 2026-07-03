@@ -51,7 +51,7 @@ const hasActions = Astro.slots.has("actions");
 >
   <div class="header-row">
     <nav
-      class:list={["crumbs", { "crumbs--solo": soloCrumb }]}
+      class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
       aria-label="Breadcrumb"
     >
       <a
@@ -101,7 +101,7 @@ const hasActions = Astro.slots.has("actions");
 
     {
       condenseOnScroll && showHeroTitle && (
-        <span class="condensed-title" aria-hidden="true">
+        <span class="condensed-title liquid-glass" aria-hidden="true">
           <span
             class="condensed-title__text"
             data-en={pageTitle.en}
@@ -177,8 +177,10 @@ const hasActions = Astro.slots.has("actions");
     flex-wrap: wrap;
   }
 
-  /* Glass breadcrumb pill */
+  /* Breadcrumb pill — the glass itself comes from the shared .liquid-glass
+     utility (global.css); only layout lives here. */
   .crumbs {
+    position: relative; /* hosts the .liquid-glass rim */
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -186,13 +188,6 @@ const hasActions = Astro.slots.has("actions");
     border-radius: 999px;
     font-size: 0.95rem;
     font-weight: 600;
-    background: light-dark(rgba(255, 255, 255, 0.5), rgba(28, 28, 32, 0.45));
-    backdrop-filter: blur(16px) saturate(170%);
-    border: 1px solid
-      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
-    box-shadow:
-      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
-      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
@@ -334,6 +329,38 @@ const hasActions = Astro.slots.has("actions");
     transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  /* Progressive veil behind the floating pills. The pills leave open gaps
+     where page content would otherwise scroll past at full strength; this
+     fixed, masked backdrop-blur dissolves whatever approaches the top edge —
+     sharp at the year row, frosted mist at the viewport edge — so rows melt
+     away instead of colliding with the capsules. Sits at the bottom of the
+     header's stacking context (z-index: -1), under all three pills. */
+  .page-header--condense::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    /* Ends exactly where docked sticky content (the year rows) begins, so the
+       veil never blurs their text — only the strip the pills float over. */
+    height: var(--sticky-header-offset, 5.5rem);
+    pointer-events: none;
+    z-index: -1;
+    background: linear-gradient(
+      to bottom,
+      light-dark(rgba(248, 248, 255, 0.9), rgba(25, 25, 25, 0.9)) 25%,
+      transparent
+    );
+    backdrop-filter: blur(16px);
+    mask-image: linear-gradient(to bottom, black 45%, transparent 96%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .page-header--condense.is-condensed::before {
+    opacity: 1;
+  }
+
   /* A whisper more breathing room from the very top edge once the pills float. */
   .page-header--condense.is-condensed {
     padding-top: 0.55rem;
@@ -369,7 +396,8 @@ const hasActions = Astro.slots.has("actions");
   }
 
   /* Compact title — a floating glass pill centred over the row, hidden until
-     condensed. Same liquid-glass recipe as the dock and language switcher. */
+     condensed. Shares the .liquid-glass recipe with the home and language
+     pills so all three read as one row of identical glass capsules. */
   .condensed-title {
     position: absolute;
     left: 50%;
@@ -386,17 +414,6 @@ const hasActions = Astro.slots.has("actions");
     align-items: center;
     padding: 0 1.05rem;
     border-radius: 999px;
-    /* Stronger tint than the resting pills: this one floats over the colourful
-       map, where a 0.45 wash lets bright land bleed through. A heavier frost
-       keeps it reading as glass over any backdrop. (No manual -webkit- prefix —
-       it trips Astro's autoprefixer into dropping backdrop-filter entirely.) */
-    background: light-dark(rgba(255, 255, 255, 0.65), rgba(26, 26, 30, 0.64));
-    backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid
-      light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.08));
-    box-shadow:
-      0 10px 30px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.35)),
-      inset 0 1px 0 light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
     /* Share the hero-collapse's exact duration + easing so the pill flies in
        in lock-step with the closing hero — a two-speed hand-off is what reads
        as a jump. */
@@ -404,17 +421,6 @@ const hasActions = Astro.slots.has("actions");
       opacity 0.4s ease,
       transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform, opacity;
-  }
-
-  /* The home and language pills also float over the map once condensed — give
-     them the same heavier frost so all three read as glass, not wash. Resting
-     (expanded) state keeps the lighter site-wide recipe. */
-  .page-header--condense.is-condensed .crumbs,
-  .page-header--condense.is-condensed
-    .lang-shell
-    :global(.lang-switcher.kit-toggle-group) {
-    background: light-dark(rgba(255, 255, 255, 0.65), rgba(26, 26, 30, 0.64));
-    backdrop-filter: blur(20px) saturate(180%);
   }
 
   .condensed-title__text {
@@ -436,6 +442,7 @@ const hasActions = Astro.slots.has("actions");
 
   @media (prefers-reduced-motion: reduce) {
     .page-header--condense,
+    .page-header--condense::before,
     .page-header--condense .hero-collapse,
     .page-header--condense .page-title,
     .condensed-title {
