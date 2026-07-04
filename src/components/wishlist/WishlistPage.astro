@@ -127,6 +127,7 @@ const allCategory = categories.find((c) => c.id === "all")!;
             <WishlistItem
               item={item}
               isLCP={index === 0}
+              eager={index < 6}
               reservationsEnabled={reservationsEnabled}
             />
           ))

@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import { Picture } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Badge from "@components/kit/Badge.astro";
 import {
@@ -10,10 +10,17 @@ import {
 interface Props {
   item: WishlistItemWithReservation;
   isLCP?: boolean;
+  /** Above-the-fold items load eagerly instead of waiting for lazy IO */
+  eager?: boolean;
   reservationsEnabled?: boolean;
 }
 
-const { item, isLCP = false, reservationsEnabled = true } = Astro.props;
+const {
+  item,
+  isLCP = false,
+  eager = false,
+  reservationsEnabled = true,
+} = Astro.props;
 const imageUrl = getCdnImageUrl(item.imageUrl);
 ---
 
@@ -27,16 +34,19 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
 >
   <div class="item-image">
     <div class="skeleton"></div>
-    <Image
+    <Picture
       class="wishlist-img"
       src={imageUrl}
       alt={item.title}
       width={560}
       height={420}
-      format="webp"
-      quality={80}
-      loading={isLCP ? "eager" : "lazy"}
-      decoding={isLCP ? "sync" : "async"}
+      widths={[400, 560, 800, 1200]}
+      sizes="(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px"
+      formats={["avif"]}
+      fallbackFormat="webp"
+      quality={65}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
       fetchpriority={isLCP ? "high" : undefined}
     />
     {
@@ -161,13 +171,14 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
     document
       .querySelectorAll<HTMLImageElement>(".wishlist-img")
       .forEach((img) => {
+        const container = img.closest(".item-image");
         if (img.complete) {
-          img.parentElement?.classList.add("loaded");
+          container?.classList.add("loaded");
         } else {
           img.addEventListener(
             "load",
             () => {
-              img.parentElement?.classList.add("loaded");
+              container?.classList.add("loaded");
             },
             { once: true },
           );

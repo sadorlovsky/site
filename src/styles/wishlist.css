@@ -16,34 +16,34 @@
   gap: 1.25rem;
 }
 
-/* Ambient background blobs - disabled on touch devices for performance */
+/* Ambient background blobs - disabled on touch devices for performance.
+   The blur is baked into radial gradients instead of filter: blur(100px) —
+   same soft glow, none of the per-frame rasterization cost while scrolling. */
 @media (hover: hover) and (pointer: fine) {
   .wishlist-container::before,
   .wishlist-container::after {
     content: "";
     position: fixed;
-    border-radius: 50%;
-    filter: blur(100px);
     opacity: 0.5;
     z-index: -1;
     pointer-events: none;
   }
 
   .wishlist-container::before {
-    width: 600px;
-    height: 600px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    top: -200px;
-    right: -200px;
+    width: 780px;
+    height: 780px;
+    background: radial-gradient(circle, rgb(237, 93, 121), transparent 70%);
+    top: -290px;
+    right: -290px;
     opacity: light-dark(0.15, 0.2);
   }
 
   .wishlist-container::after {
-    width: 500px;
-    height: 500px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    bottom: 0;
-    left: -150px;
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(circle, rgb(119, 97, 244), transparent 70%);
+    bottom: -75px;
+    left: -225px;
     opacity: light-dark(0.1, 0.15);
   }
 }
@@ -88,7 +88,9 @@
     light-dark(var(--glass-border-light), var(--glass-border-dark));
   border-radius: 20px;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
     0 4px 24px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
     0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
@@ -97,10 +99,11 @@
   contain-intrinsic-size: 300px 400px;
 }
 
-/* Apply backdrop-filter only on non-touch devices to prevent iOS Safari crashes */
-@media (hover: hover) and (pointer: fine) {
+/* Where supported, remember the actual rendered size of offscreen cards so
+   the scrollbar doesn't jump as estimates get replaced with real layout */
+@supports (contain-intrinsic-size: auto 400px) {
   .wishlist-item {
-    backdrop-filter: blur(20px);
+    contain-intrinsic-size: auto 300px auto 400px;
   }
 }
 
@@ -248,6 +251,9 @@
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
+  /* Stop the infinite shimmer once the image is in — otherwise every
+     card keeps invalidating paint on each frame forever */
+  animation: none;
 }
 
 .item-image img {
@@ -391,7 +397,11 @@
   font-weight: 600;
   border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reserve-btn:hover {
