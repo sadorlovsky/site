@@ -1,0 +1,14 @@
+{
+  "issyk-kul": {
+    "en": "Lake Issyk-Kul",
+    "ru": "Иссык-Куль",
+    "coords": [77.25, 42.4333],
+    "kind": "lake"
+  },
+  "kyrchyn": {
+    "en": "Kyrchyn Gorge",
+    "ru": "Кырчын",
+    "coords": [77.01, 42.76],
+    "kind": "gorge"
+  }
+}

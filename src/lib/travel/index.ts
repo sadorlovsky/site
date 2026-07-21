@@ -1,11 +1,16 @@
 import tripsData from "./trips.json";
 import citiesData from "./cities.json";
+import landmarksData from "./landmarks.json";
 import countryListRaw from "../../pages/travel/countries.md?raw";
 
 // Types for the new trip format
 export interface Destination {
   country: [string, string]; // [alpha-2, alpha-3]
   cities: string[];
+  // Slugs into landmarks.json. Landmarks are areal, not route steps — they sit
+  // around the journey rather than on it, so they are kept out of `cities` and
+  // never counted toward the cities stat.
+  landmarks?: string[];
 }
 
 export interface Trip {
@@ -77,6 +82,30 @@ export function getCountries(data: Trip[]) {
 export function getCities(data: Trip[]) {
   return new Set(
     data.flatMap((trip) => trip.destinations).flatMap((dest) => dest.cities),
+  );
+}
+
+export interface Landmark {
+  en: string;
+  ru: string;
+  coords: [number, number];
+  kind: string;
+}
+
+// Unlike cities (whose coords and translations live in two separate files for
+// legacy reasons), a landmark is one self-contained record.
+export const landmarkData = landmarksData as unknown as Record<string, Landmark>;
+
+export function getLandmarkName(slug: string, lang: "en" | "ru"): string {
+  const entry = landmarkData[slug];
+  return entry ? entry[lang] : slug;
+}
+
+export function getLandmarks(data: Trip[]) {
+  return new Set(
+    data
+      .flatMap((trip) => trip.destinations)
+      .flatMap((dest) => dest.landmarks ?? []),
   );
 }
 
@@ -237,6 +266,7 @@ export const datedTrips = getDatedTrips(trips);
 export const tripsCount = datedTrips.length;
 export const countries = getCountries(datedTrips);
 export const cities = new Set([...getCities(datedTrips), ...homeCities]);
+export const visitedLandmarks = getLandmarks(datedTrips);
 export const cityCoordinates = citiesData as unknown as Record<
   string,
   [number, number]

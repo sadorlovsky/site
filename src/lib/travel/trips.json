@@ -152,6 +152,19 @@
   },
   {
     "year": 2026,
+    "month": 7,
+    "endMonth": null,
+    "description": "Kyrgyzstan",
+    "destinations": [
+      {
+        "country": ["kg", "kgz"],
+        "cities": ["Bishkek", "Cholpon-Ata", "Bosteri"],
+        "landmarks": ["issyk-kul", "kyrchyn"]
+      }
+    ]
+  },
+  {
+    "year": 2026,
     "month": 5,
     "endMonth": 6,
     "description": "Vietnam",

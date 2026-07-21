@@ -140,6 +140,8 @@ export const cityNamesRu: Record<string, string> = {
 
   // Kyrgyzstan
   Bishkek: "Бишкек",
+  "Cholpon-Ata": "Чолпон-Ата",
+  Bosteri: "Бостери",
 
   // Tajikistan
   Dushanbe: "Душанбе",

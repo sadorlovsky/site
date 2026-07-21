@@ -1,7 +1,7 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
 import type { Trip } from "@lib/travel";
-import { formatTripDate, getCountryName } from "@lib/travel";
+import { formatTripDate, getCountryName, getLandmarkName } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
 import ListItem from "@components/ListItem.astro";
 import styles from "./TravelTripList.module.css";
@@ -37,6 +37,12 @@ const countryHue = (code: string) => {
 const isTba = trip.year === null;
 const dateEn = isTba ? "TBA" : formatTripDate(trip, "en");
 const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
+
+// Landmarks are areal, not route steps, so they get their own muted row beneath
+// the journey instead of joining the arrow chain. Aggregated across the trip's
+// destinations: splitting them per country would force the countries onto
+// separate blocks and break the continuous inline flow the chain relies on.
+const tripLandmarks = trip.destinations.flatMap((d) => d.landmarks ?? []);
 ---
 
 {/*
@@ -96,4 +102,27 @@ const dateRu = isTba ? "TBA" : formatTripDate(trip, "ru");
       })
     }
   </div>
+  {
+    tripLandmarks.length > 0 && (
+      <div class={styles.landmarks}>
+        {/* Same mark as the map: a ring with a core. List and map say the
+            same thing with the same sign. */}
+        <span class={styles.landmarkIcon} aria-hidden="true">
+          ◎
+        </span>
+        {tripLandmarks.map((slug, i) => (
+          <Fragment>
+            {i > 0 && <span class={styles.landmarkSep}>·</span>}
+            <span
+              class="landmark-name"
+              data-en={getLandmarkName(slug, "en")}
+              data-ru={getLandmarkName(slug, "ru")}
+            >
+              {getLandmarkName(slug, "en")}
+            </span>
+          </Fragment>
+        ))}
+      </div>
+    )
+  }
 </ListItem>
