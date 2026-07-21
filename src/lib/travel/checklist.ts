@@ -806,7 +806,7 @@ const SHORT_NAMES_RU: Record<string, string> = {
   Kenya: "Кения",
   Kiribati: "Кирибати",
   Kuwait: "Кувейт",
-  Kyrgyzstan: "Киргизия",
+  Kyrgyzstan: "Кыргызстан",
   Laos: "Лаос",
   Latvia: "Латвия",
   Lebanon: "Ливан",

@@ -196,7 +196,7 @@ const COUNTRY_NAMES: Record<string, { en: string; ru: string }> = {
   IND: { en: "India", ru: "Индия" },
   ISL: { en: "Iceland", ru: "Исландия" },
   JPN: { en: "Japan", ru: "Япония" },
-  KGZ: { en: "Kyrgyzstan", ru: "Киргизия" },
+  KGZ: { en: "Kyrgyzstan", ru: "Кыргызстан" },
   KOR: { en: "South Korea", ru: "Южная Корея" },
   LKA: { en: "Sri Lanka", ru: "Шри-Ланка" },
   MAR: { en: "Morocco", ru: "Марокко" },
