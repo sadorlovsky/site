@@ -120,30 +120,77 @@ async function initMap(): Promise<void> {
     });
     resizeObserver.observe(container);
 
-    // Auto-rotation for globe mode
-    let isRotating = true;
+    // Auto-rotation for globe mode. The rAF loop must not run when there is
+    // nothing to see: off-screen (scrolled away), on a hidden tab, or when the
+    // user prefers reduced motion. Otherwise it repaints the WebGL globe every
+    // frame forever — a needless CPU/GPU/battery drain on a page the map only
+    // occupies the top of.
     const rotationSpeed = 0.15; // degrees per frame
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    let userStopped = false; // user interacted → never auto-resume
+    let inViewport = true; // map container intersects the viewport
+    let rafId: number | null = null;
+
+    const shouldRotate = () =>
+      !userStopped && !prefersReducedMotion && inViewport && !document.hidden;
 
     function rotate() {
-      if (!isRotating) return;
+      if (!shouldRotate()) {
+        rafId = null;
+        return;
+      }
       const center = map.getCenter();
       center.lng += rotationSpeed;
       map.setCenter(center);
-      requestAnimationFrame(rotate);
+      rafId = requestAnimationFrame(rotate);
     }
 
-    // Start rotation
-    rotate();
+    function startRotation() {
+      if (rafId === null && shouldRotate()) {
+        rafId = requestAnimationFrame(rotate);
+      }
+    }
 
-    // Stop rotation on user interaction
+    function pauseRotation() {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    }
+
+    // Permanent stop once the user takes control of the globe.
     const stopRotation = () => {
-      isRotating = false;
+      userStopped = true;
+      pauseRotation();
     };
 
     map.on("mousedown", stopRotation);
     map.on("touchstart", stopRotation);
     map.on("wheel", stopRotation);
     map.on("dragstart", stopRotation);
+
+    // Pause/resume (not a permanent stop) as the map scrolls in and out of view.
+    const rotationObserver = new IntersectionObserver(
+      (entries) => {
+        inViewport = entries[0].isIntersecting;
+        if (inViewport) startRotation();
+        else pauseRotation();
+      },
+      { threshold: 0 },
+    );
+    rotationObserver.observe(container);
+
+    // Same for tab visibility — a backgrounded tab throttles rAF anyway, but
+    // this stops the work outright and resumes cleanly on return.
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) pauseRotation();
+      else startRotation();
+    });
+
+    startRotation();
   }
 
   // Add countries source from MapLibre demo tiles
@@ -608,8 +655,28 @@ async function initMap(): Promise<void> {
   (window as unknown as { flyToCity: typeof flyToCity }).flyToCity = flyToCity;
 }
 
+// Defer the (heavy) MapLibre instantiation until the map is actually near the
+// viewport. On this page the map sits at the top, so it still initialises on
+// load — but if the user lands scrolled down (anchor link, restored scroll),
+// the ~1 MB WebGL setup and remote style/tile fetches are skipped until needed.
+function scheduleInit(): void {
+  const container = document.getElementById("map");
+  if (!container) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        void initMap();
+      }
+    },
+    { rootMargin: "200px" },
+  );
+  observer.observe(container);
+}
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initMap);
+  document.addEventListener("DOMContentLoaded", scheduleInit);
 } else {
-  initMap();
+  scheduleInit();
 }

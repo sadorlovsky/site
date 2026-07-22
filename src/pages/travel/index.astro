@@ -17,6 +17,12 @@ export const prerender = true;
 ---
 
 <PageLayout title="Travel — Zach">
+  {/* The map fetches its style + tiles from these hosts; warming the
+      connections shaves the TLS/DNS round-trips off the first tile request. */}
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <link rel="preconnect" href="https://demotiles.maplibre.org" crossorigin />
+  </Fragment>
   <LangInit />
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>

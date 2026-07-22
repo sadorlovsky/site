@@ -2,6 +2,24 @@
   margin-top: 12px;
 }
 
+/* Off-screen trip rows skip layout + paint until scrolled near, so only the
+   handful of visible rows cost anything — cheap "virtualization" for a
+   server-rendered list without any JS. `contain-intrinsic-size: auto <h>` lets
+   the browser remember each row's real height after its first render, so the
+   scrollbar stays stable; the bare fallback keeps a sensible placeholder height
+   where the `auto` keyword is unsupported. Applied to the rows, not the year
+   group, so the sticky year header stays outside paint containment. */
+.tripItem {
+  content-visibility: auto;
+  contain-intrinsic-size: 60px;
+}
+
+@supports (contain-intrinsic-size: auto 60px) {
+  .tripItem {
+    contain-intrinsic-size: auto 60px;
+  }
+}
+
 /* Inline flow (not flex) so the whole journey fills each line continuously: a
    country can tuck into the space left at the end of the previous country's last
    line instead of every country dropping to its own block. Generous line-height
