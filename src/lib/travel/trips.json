@@ -159,7 +159,7 @@
       {
         "country": ["kg", "kgz"],
         "cities": ["Bishkek", "Cholpon-Ata", "Bosteri"],
-        "landmarks": ["issyk-kul", "kyrchyn"]
+        "landmarks": ["issyk-kul", "kyrchyn", "ala-archa"]
       }
     ]
   },
@@ -299,7 +299,8 @@
       { "country": ["fr", "fra"], "cities": ["Paris"] },
       {
         "country": ["pt", "prt"],
-        "cities": ["Lisbon", "Sintra", "Costa da Caparica", "Almada"]
+        "cities": ["Lisbon", "Sintra", "Costa da Caparica", "Almada"],
+        "landmarks": ["cabo-da-roca"]
       },
       { "country": ["at", "aut"], "cities": ["Vienna", "Hallstatt"] },
       { "country": ["sk", "svk"], "cities": ["Bratislava"] },
@@ -316,7 +317,8 @@
           "Riomaggiore",
           "Rome",
           "Naples"
-        ]
+        ],
+        "landmarks": ["cinque-terre"]
       },
       { "country": ["va", "vat"], "cities": ["Vatican City"] }
     ]
@@ -325,7 +327,13 @@
     "year": 2022,
     "month": 10,
     "endMonth": null,
-    "destinations": [{ "country": ["kz", "kaz"], "cities": ["Almaty"] }]
+    "destinations": [
+      {
+        "country": ["kz", "kaz"],
+        "cities": ["Almaty"],
+        "landmarks": ["shymbulak"]
+      }
+    ]
   },
   {
     "year": 2022,
@@ -424,8 +432,10 @@
           "Svetlogorsk",
           "Zelenogradsk",
           "Sochi",
+          "Esto-Sadok",
           "Krasnaya Polyana"
-        ]
+        ],
+        "landmarks": ["monrepos"]
       }
     ]
   },
@@ -439,7 +449,13 @@
     "year": 2020,
     "month": 8,
     "endMonth": null,
-    "destinations": [{ "country": ["ru", "rus"], "cities": ["Sochi"] }]
+    "destinations": [
+      {
+        "country": ["ru", "rus"],
+        "cities": ["Sochi"],
+        "landmarks": ["mountain-olympic-village", "bely-kamen"]
+      }
+    ]
   },
   {
     "year": 2020,
@@ -457,7 +473,12 @@
     "year": 2019,
     "month": 8,
     "endMonth": 9,
-    "destinations": [{ "country": ["ru", "rus"], "cities": ["Sochi"] }]
+    "destinations": [
+      {
+        "country": ["ru", "rus"],
+        "cities": ["Sochi"]
+      }
+    ]
   },
   {
     "year": 2019,
@@ -469,7 +490,13 @@
     "year": 2019,
     "month": 6,
     "endMonth": null,
-    "destinations": [{ "country": ["ru", "rus"], "cities": ["Vladimir"] }]
+    "destinations": [
+      {
+        "country": ["ru", "rus"],
+        "cities": ["Vladimir", "Bogolyubovo"],
+        "landmarks": ["pokrova-na-nerli"]
+      }
+    ]
   },
   {
     "year": 2019,
@@ -478,7 +505,11 @@
     "description": "Baltic and Nordic tour",
     "destinations": [
       { "country": ["by", "blr"], "cities": ["Minsk"] },
-      { "country": ["lv", "lva"], "cities": ["Riga", "Jūrmala"] },
+      {
+        "country": ["lv", "lva"],
+        "cities": ["Riga", "Jūrmala"],
+        "landmarks": ["gulf-of-riga"]
+      },
       { "country": ["se", "swe"], "cities": ["Stockholm"] }
     ]
   },

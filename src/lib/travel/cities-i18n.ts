@@ -83,10 +83,12 @@ export const cityNamesRu: Record<string, string> = {
   Svetlogorsk: "Светлогорск",
   Zelenogradsk: "Зеленоградск",
   Sochi: "Сочи",
+  "Esto-Sadok": "Эстосадок",
   "Krasnaya Polyana": "Красная Поляна",
   Krasnodar: "Краснодар",
   Kazan: "Казань",
   Vladimir: "Владимир",
+  Bogolyubovo: "Боголюбово",
   Murmansk: "Мурманск",
 
   // Moldova

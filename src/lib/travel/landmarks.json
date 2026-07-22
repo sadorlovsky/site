@@ -1,4 +1,34 @@
 {
+  "ala-archa": {
+    "en": "Ala-Archa National Park",
+    "ru": "Ала-Арча",
+    "coords": [74.4783, 42.5636],
+    "kind": "park"
+  },
+  "bely-kamen": {
+    "en": "White Stone Trail",
+    "ru": "Тропа Белый камень",
+    "coords": [40.318, 43.615],
+    "kind": "trail"
+  },
+  "cabo-da-roca": {
+    "en": "Cabo da Roca",
+    "ru": "Мыс Рока",
+    "coords": [-9.4989, 38.7803],
+    "kind": "cape"
+  },
+  "cinque-terre": {
+    "en": "Cinque Terre",
+    "ru": "Чинкве-Терре",
+    "coords": [9.7085, 44.1281],
+    "kind": "coast"
+  },
+  "gulf-of-riga": {
+    "en": "Gulf of Riga",
+    "ru": "Рижский залив",
+    "coords": [23.6, 57.65],
+    "kind": "gulf"
+  },
   "issyk-kul": {
     "en": "Lake Issyk-Kul",
     "ru": "Иссык-Куль",
@@ -10,5 +40,29 @@
     "ru": "Кырчын",
     "coords": [77.01, 42.76],
     "kind": "gorge"
+  },
+  "monrepos": {
+    "en": "Monrepos Park",
+    "ru": "Монрепо",
+    "coords": [28.7269, 60.7361],
+    "kind": "park"
+  },
+  "mountain-olympic-village": {
+    "en": "Mountain Olympic Village",
+    "ru": "Горная Олимпийская деревня",
+    "coords": [40.3208, 43.6497],
+    "kind": "village"
+  },
+  "pokrova-na-nerli": {
+    "en": "Church of the Intercession on the Nerl",
+    "ru": "Церковь Покрова на Нерли",
+    "coords": [40.5614, 56.1961],
+    "kind": "church"
+  },
+  "shymbulak": {
+    "en": "Shymbulak",
+    "ru": "Шымбулак",
+    "coords": [77.081, 43.1289],
+    "kind": "resort"
   }
 }
