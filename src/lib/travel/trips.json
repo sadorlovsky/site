@@ -228,7 +228,11 @@
         "country": ["gb-eng", "gbr"],
         "cities": ["London", "Bath", "York", "Liverpool"]
       },
-      { "country": ["gb-sct", "gbr"], "cities": ["Edinburgh"] }
+      {
+        "country": ["gb-sct", "gbr"],
+        "cities": ["Edinburgh"],
+        "landmarks": ["arthurs-seat"]
+      }
     ]
   },
   {

@@ -5,6 +5,12 @@
     "coords": [74.4783, 42.5636],
     "kind": "park"
   },
+  "arthurs-seat": {
+    "en": "Arthur's Seat",
+    "ru": "Артурс-Сит",
+    "coords": [-3.1618, 55.9444],
+    "kind": "hill"
+  },
   "bely-kamen": {
     "en": "White Stone Trail",
     "ru": "Тропа Белый камень",
