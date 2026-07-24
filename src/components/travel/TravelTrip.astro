@@ -60,7 +60,7 @@ const tripLandmarks = trip.destinations.flatMap((d) => d.landmarks ?? []);
       the next country (from this comment's leading whitespace in each fragment)
       is the only break point there, letting the next country fall to a new line.
 */}
-<ListItem interactive tabindex={-1}>
+<ListItem interactive tabindex={-1} class={styles.tripItem}>
   <span slot="date" data-en={dateEn} data-ru={dateRu}>
     {dateEn}
   </span>
