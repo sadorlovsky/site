@@ -59,6 +59,12 @@
     "coords": [40.3208, 43.6497],
     "kind": "village"
   },
+  "pervomayskie-prudy": {
+    "en": "Pervomayskie Ponds",
+    "ru": "Первомайские пруды",
+    "coords": [76.94, 43.3736],
+    "kind": "ponds"
+  },
   "pokrova-na-nerli": {
     "en": "Church of the Intercession on the Nerl",
     "ru": "Церковь Покрова на Нерли",
