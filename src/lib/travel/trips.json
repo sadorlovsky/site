@@ -209,6 +209,19 @@
   },
   {
     "year": 2025,
+    "month": 10,
+    "endMonth": null,
+    "kind": "outing",
+    "destinations": [
+      {
+        "country": ["kz", "kaz"],
+        "cities": ["Almaty"],
+        "landmarks": ["shymbulak"]
+      }
+    ]
+  },
+  {
+    "year": 2025,
     "month": 7,
     "endMonth": null,
     "destinations": [
@@ -232,6 +245,32 @@
         "country": ["gb-sct", "gbr"],
         "cities": ["Edinburgh"],
         "landmarks": ["arthurs-seat"]
+      }
+    ]
+  },
+  {
+    "year": 2024,
+    "month": 9,
+    "endMonth": null,
+    "kind": "outing",
+    "destinations": [
+      {
+        "country": ["kz", "kaz"],
+        "cities": ["Almaty"],
+        "landmarks": ["pervomayskie-prudy"]
+      }
+    ]
+  },
+  {
+    "year": 2024,
+    "month": 8,
+    "endMonth": null,
+    "kind": "outing",
+    "destinations": [
+      {
+        "country": ["kz", "kaz"],
+        "cities": ["Almaty"],
+        "landmarks": ["shymbulak"]
       }
     ]
   },
@@ -334,8 +373,7 @@
     "destinations": [
       {
         "country": ["kz", "kaz"],
-        "cities": ["Almaty"],
-        "landmarks": ["shymbulak"]
+        "cities": ["Almaty"]
       }
     ]
   },

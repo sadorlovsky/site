@@ -20,6 +20,14 @@ export interface Trip {
   endMonth: number | null;
   description?: string;
   destinations: Destination[];
+  // A day out from where I live rather than a journey to somewhere new. Since
+  // moving to Almaty in Jan 2023 the places around it are reached from home, so
+  // they have no trip to hang on — but they still happened on a date, and a
+  // landmark has no date of its own (it inherits the entry's). Recording them
+  // as entries keeps that date truthful; this flag keeps them distinguishable
+  // from real travel if the timeline ever wants to render them differently.
+  // Country and city stats are Sets, so a repeat entry cannot inflate them.
+  kind?: "outing";
 }
 
 // Month names for formatting
