@@ -1,0 +1,212 @@
+/**
+ * The style system for AI-restyled wishlist card images.
+ *
+ * Every prompt is assembled from three parts:
+ *   BASE   — identical for all items; this is what makes 60+ cards read as one set
+ *   FORM   — per form factor: how big the product sits in frame, and how it's posed
+ *   TINT   — per category: a barely-there colour wash so the grid gains structure
+ *            that matches the category filter without breaking the shared look
+ *
+ * The numbers here are not arbitrary — they're derived from how the card renders:
+ *   - src/styles/wishlist.css:222  .item-image is aspect-ratio 4/3, object-fit: cover
+ *   - src/styles/wishlist.css:277  hover scales the image 1.08, cropping ~4% per side
+ *   - src/components/wishlist/WishlistItem.astro:52-84  badges overlay both top corners
+ *   - src/styles/wishlist.css:223  the card lives on light-dark(#f0f0f0, #1a1a1a),
+ *     so one mid-tone backdrop has to survive both themes
+ *   - WishlistItem.astro:45-47  avif at quality 65 bands on smooth gradients, which is
+ *     why the finish asks for fine grain — it dithers the backdrop falloff
+ */
+
+/** Frame share and pose per form factor. Scale = product bounding box / frame height. */
+export const FORM_FACTORS = {
+  flat: {
+    scale: "66%",
+    pose:
+      "The product is flat and rectangular. Present its printed face square to " +
+      "camera, tilted back 8 degrees, leaning against {{surface}}.",
+  },
+  soft: {
+    scale: "60%",
+    pose:
+      "The product is a soft textile. Present it neatly folded on {{surface}} with " +
+      "gentle natural creases and the front graphic facing camera.",
+  },
+  headwear: {
+    scale: "52%",
+    pose:
+      "Present the headwear upright, holding the shape it has when worn rather " +
+      "than flattened, front panel square to camera in a slight three-quarter view.",
+  },
+  footwear: {
+    scale: "55%",
+    pose:
+      "Present a single shoe in three-quarter view, outer side to camera, toe " +
+      "pointing 20 degrees to the left, laces tidy.",
+  },
+  device: {
+    scale: "58%",
+    pose:
+      "Present the device upright in three-quarter view, its face or display " +
+      "turned toward camera.",
+  },
+  packaged: {
+    scale: "52%",
+    pose:
+      "Present the package upright on {{surface}}, front label square to camera, " +
+      "held in shape as if full.",
+  },
+  object: {
+    scale: "50%",
+    pose:
+      "Present the object in three-quarter view at its most recognisable angle, " +
+      "resting on {{surface}}.",
+  },
+};
+
+const DEFAULT_STAGING =
+  "The product rests on the set's one fixed shelf, which must look IDENTICAL in " +
+  "every image of this series. Exact geometry: a dead-level slab of matte frosted " +
+  "white glass running the full frame width edge to edge, no visible ends, legs, " +
+  "brackets or supports, no perspective taper. Its top surface line sits at 30% of " +
+  "frame height from the bottom edge. Its front face is a plain uniform vertical " +
+  "band exactly 4% of frame height tall, milky white near #ece9e4, matte — not " +
+  "glossy, not mirrored, no marble veining, no wood grain, no stone or metal " +
+  "texture, no visible top plane beyond a sliver. One thin brighter highlight line " +
+  "along the top front edge, nothing else on the front face. On the top surface: a " +
+  "soft contact shadow under the product and one faint short reflection of it.";
+
+/**
+ * Per-category staging override. Vinyl sleeves are already flat rectangles resting
+ * on their own edge — a glass shelf under them reads as an extra prop and every
+ * model draws its shape a little differently, which is the one thing that breaks
+ * the "same set" illusion across a grid. Simpler is more consistent: no shelf,
+ * product straight on the backdrop.
+ */
+const STAGING_OVERRIDES = {
+  vinyl:
+    "The product stands directly on the backdrop with no plinth, shelf, stand or " +
+    "any other surface beneath it — just the seamless backdrop continuing under the " +
+    "product. Soft contact shadow directly beneath it, no reflection.",
+};
+
+const SURFACE_OVERRIDES = { vinyl: "the backdrop" };
+
+/** Barely-there backdrop wash per category. Keep these weak — 10%, not a colour block. */
+export const CATEGORY_TINTS = {
+  "blu-ray": "a faint cool slate-blue wash",
+  vinyl: "a faint warm amber wash",
+  clothing: "a faint soft sage wash",
+  sweets: "a faint pale rose wash",
+  books: "a faint warm sand wash",
+  home: "a faint pale mint wash",
+  merch: "a faint soft lilac wash",
+  other: "no colour wash — leave the backdrop neutral",
+};
+
+/**
+ * Shared negative prompt. Models that don't accept one still benefit from the
+ * hard rules baked into SUBJECT below, which is where the real protection is.
+ */
+export const NEGATIVE_PROMPT = [
+  "invented text",
+  "altered logo",
+  "misspelled label",
+  "extra product",
+  "duplicated product",
+  "hands",
+  "people",
+  "stickers",
+  "price tag",
+  "watermark",
+  "cluttered background",
+  "blown specular highlights",
+  "wide-angle distortion",
+  "heavy vignette",
+  "cartoon",
+  "illustration",
+  "oversaturated colours",
+  "wooden shelf",
+  "marble surface",
+  "stone slab",
+  "glossy countertop",
+  "table",
+  "pedestal",
+  "thick slab",
+  "shelf brackets",
+  "horizon line",
+].join(", ");
+
+/**
+ * Second-pass prompt: relight an approved light-theme render for dark theme.
+ *
+ * This runs on the *chosen* light image, not the original product photo, so the
+ * composition, pose and shelf geometry carry over pixel-for-pixel and the pair
+ * reads as the same shot under different lighting — which is exactly what a
+ * prefers-color-scheme swap should feel like.
+ */
+export function buildDarkenPrompt(category) {
+  // Mentioning a shelf at all invites the model to invent one, so the no-shelf
+  // categories get an explicit prohibition instead of a conditional.
+  const shelf =
+    category in STAGING_OVERRIDES
+      ? "There is NO shelf, table or any surface in this image — the product stands directly on the seamless backdrop. Do not add a shelf, ledge, floor line or reflective surface of any kind; only the contact shadow under the product remains."
+      : "If a frosted-glass shelf is present, keep its exact geometry and highlight, rendered as darker smoked glass that fits the dark set.";
+
+  return `Relight this studio product photograph for a dark-themed gallery, changing NOTHING else.
+
+Keep the product pixel-identical: same shape, colours, printed artwork, logos and lettering, same position, size and crop. Keep the camera, composition and shadow placement exactly as they are.
+
+Change only the environment: the backdrop becomes near-black, roughly #1e1e20 behind the product falling off to #141416 toward the frame edges, keeping the same vertical falloff. Strictly neutral grey — no brown, sepia or warm cast on the backdrop. ${shelf}
+
+The product itself keeps its original brightness and colour, still lit by the same softbox from the upper left. Clean commercial retouch, subtle fine film grain, no HDR.`;
+}
+
+/**
+ * Build the full prompt for one item.
+ *
+ * @param {{ title: string, formFactor: keyof typeof FORM_FACTORS, category: string,
+ *           units?: number }} item
+ */
+export function buildPrompt(item) {
+  const form = FORM_FACTORS[item.formFactor];
+  if (!form) {
+    throw new Error(`Unknown form factor "${item.formFactor}" for "${item.title}"`);
+  }
+
+  const tint = CATEGORY_TINTS[item.category] ?? CATEGORY_TINTS.other;
+  const staging = STAGING_OVERRIDES[item.category] ?? DEFAULT_STAGING;
+  const surface = SURFACE_OVERRIDES[item.category] ?? "the shelf";
+  const pose = form.pose.replace("{{surface}}", surface);
+
+  // Multi-packs read as "one product" unless we say otherwise, and a lone unit for
+  // a "3 Pack" listing is actively misleading about what's being asked for.
+  const units =
+    item.units && item.units > 1
+      ? `\nUNITS — Show ${numberWord(item.units)} identical units: one in front, the ` +
+        `${item.units === 2 ? "other" : "others"} behind and offset to the right, ` +
+        `partially overlapping. Treat the group as a single subject when applying the ` +
+        `composition rules below.`
+      : "";
+
+  return `Studio product photograph.
+
+SUBJECT — Keep the product from the reference image exactly as it is: same shape, proportions, colour, materials and packaging. Reproduce all printed artwork, logos, lettering and label text pixel-faithfully. Do NOT redraw, restyle, translate, correct or reinterpret any graphic or text. If a detail is unreadable in the reference, keep it unchanged rather than inventing it. The product is "${item.title}".
+${units}
+SET — Seamless studio backdrop, warm neutral grey, roughly #b4b0a8 behind the product falling off to #8e8a83 toward the frame edges, with ${tint}. No horizon line, no walls, no props, no text, no watermark, no price tag.
+
+STAGING — ${staging}
+
+POSE — ${pose}
+
+CAMERA — 85mm equivalent, eye level, 12 degrees above the product's centre line, straight on. No wide-angle distortion, no tilt.
+
+LIGHT — One large softbox from the upper left at 35 degrees, gentle fill from the right, soft wraparound shadow falling down and to the right. Identical in every image of this set.
+
+COMPOSITION — 4:3 landscape. Product centred horizontally, its optical centre at 46% of frame height. The product bounding box occupies ${form.scale} of the frame height. Leave at least 10% empty margin on every side, and keep the top 18% of the frame completely clear.
+
+FINISH — Clean commercial retouch, subtle fine film grain, no HDR, no heavy vignette, no colour cast on the product itself.`;
+}
+
+function numberWord(n) {
+  return ["", "one", "two", "three", "four", "five", "six"][n] ?? String(n);
+}

@@ -7,6 +7,7 @@ const WishlistItem = defineTable({
     titleRu: column.text({ optional: true }), // Russian translation
     price: column.text(), // Original price with currency symbol (e.g., "$64", "£25", "€300", "AU$140")
     imageUrl: column.text(),
+    imageUrlDark: column.text({ optional: true }), // dark-theme variant; falls back to imageUrl
     description: column.text({ optional: true }),
     descriptionRu: column.text({ optional: true }), // Russian translation
     url: column.text({ optional: true }),

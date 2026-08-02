@@ -26,6 +26,7 @@ export type WishlistItemWithReservation = {
   priceUsd: number | null;
   priceRub: number | null;
   imageUrl: string;
+  imageUrlDark: string | null;
   description: string | null;
   descriptionRu: string | null;
   url: string | null;

@@ -24,3 +24,6 @@ pnpm-debug.log*
 .astro/
 
 public/trips.json
+
+# generated wishlist card candidates awaiting review
+scripts/wishlist-images/out/
