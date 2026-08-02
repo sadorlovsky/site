@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "title": "The Florida Project Limited Edition 4K UHD",
+    "category": "blu-ray",
+    "imageUrl": "second-sight-florida-project.webp"
+  },
+  {
+    "id": 5,
+    "title": "Celeste Desk Mat",
+    "category": "merch,home",
+    "imageUrl": "celeste-deskmat.webp"
+  },
+  {
+    "id": 19,
+    "title": "Vans Sk8-Hi",
+    "category": "clothing",
+    "imageUrl": "vans-sk8hi.avif"
+  },
+  {
+    "id": 21,
+    "title": "Philips Sonicare 9900 Prestige",
+    "category": "home",
+    "imageUrl": "philips-sonicare-diamondclean.webp"
+  },
+  {
+    "id": 23,
+    "title": "Funko POP Twin Peaks Laura Palmer",
+    "category": "merch",
+    "imageUrl": "funko-pop-laura-palmer.jpg"
+  },
+  {
+    "id": 35,
+    "title": "Adidas Oversized Tee (2 pcs)",
+    "category": "clothing",
+    "imageUrl": "adidas-oversized-tee.avif"
+  },
+  {
+    "id": 40,
+    "title": "Three 6 Mafia — When The Smoke Clears (Vinyl LP)",
+    "category": "vinyl",
+    "imageUrl": "three-6-mafia-wtsc-vinyl.jpg"
+  },
+  {
+    "id": 48,
+    "title": "Michel Foucault — Discipline and Punish",
+    "category": "books",
+    "imageUrl": "foucault-discipline-punish.webp"
+  },
+  {
+    "id": 52,
+    "title": "Moomin Blueberry-raspberry liquorice stick (30 pcs)",
+    "category": "sweets",
+    "imageUrl": "moomin-blueberry-raspberry-liquorice-stick.webp"
+  },
+  {
+    "id": 55,
+    "title": "Dumle Original (2 pcs)",
+    "category": "sweets",
+    "imageUrl": "dumle-original.webp"
+  }
+]
