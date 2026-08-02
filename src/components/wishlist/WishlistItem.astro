@@ -1,5 +1,5 @@
 ---
-import { Picture } from "astro:assets";
+import { Picture, getImage } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Badge from "@components/kit/Badge.astro";
 import {
@@ -22,6 +22,26 @@ const {
   reservationsEnabled = true,
 } = Astro.props;
 const imageUrl = getCdnImageUrl(item.imageUrl);
+
+// Items with a dark-theme render get a hand-built <picture> with media-gated
+// sources (Astro's <Picture> can't do art direction). Others keep <Picture>.
+const imageOpts = {
+  width: 560,
+  height: 420,
+  widths: [400, 560, 800, 1200],
+  quality: 65,
+};
+const imageSizes =
+  "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px";
+
+const darkImageUrl = item.imageUrlDark ? getCdnImageUrl(item.imageUrlDark) : null;
+const [darkAvif, lightAvif, lightWebp] = darkImageUrl
+  ? await Promise.all([
+      getImage({ src: darkImageUrl, ...imageOpts, format: "avif" }),
+      getImage({ src: imageUrl, ...imageOpts, format: "avif" }),
+      getImage({ src: imageUrl, ...imageOpts, format: "webp" }),
+    ])
+  : [null, null, null];
 ---
 
 <article
@@ -34,21 +54,51 @@ const imageUrl = getCdnImageUrl(item.imageUrl);
 >
   <div class="item-image">
     <div class="skeleton"></div>
-    <Picture
-      class="wishlist-img"
-      src={imageUrl}
-      alt={item.title}
-      width={560}
-      height={420}
-      widths={[400, 560, 800, 1200]}
-      sizes="(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px"
-      formats={["avif"]}
-      fallbackFormat="webp"
-      quality={65}
-      loading={eager ? "eager" : "lazy"}
-      decoding="async"
-      fetchpriority={isLCP ? "high" : undefined}
-    />
+    {
+      darkAvif && lightAvif && lightWebp ? (
+        <picture>
+          <source
+            media="(prefers-color-scheme: dark)"
+            type="image/avif"
+            srcset={darkAvif.srcSet.attribute}
+            sizes={imageSizes}
+          />
+          <source
+            type="image/avif"
+            srcset={lightAvif.srcSet.attribute}
+            sizes={imageSizes}
+          />
+          <img
+            class="wishlist-img"
+            src={lightWebp.src}
+            srcset={lightWebp.srcSet.attribute}
+            sizes={imageSizes}
+            alt={item.title}
+            width={560}
+            height={420}
+            loading={eager ? "eager" : "lazy"}
+            decoding="async"
+            fetchpriority={isLCP ? "high" : undefined}
+          />
+        </picture>
+      ) : (
+        <Picture
+          class="wishlist-img"
+          src={imageUrl}
+          alt={item.title}
+          width={560}
+          height={420}
+          widths={[400, 560, 800, 1200]}
+          sizes={imageSizes}
+          formats={["avif"]}
+          fallbackFormat="webp"
+          quality={65}
+          loading={eager ? "eager" : "lazy"}
+          decoding="async"
+          fetchpriority={isLCP ? "high" : undefined}
+        />
+      )
+    }
     {
       item.received && (
         <Badge

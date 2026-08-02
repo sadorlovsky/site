@@ -14,14 +14,14 @@
  *   --model=<name>     nano-banana (default) | seedream | kontext
  *   --variants=<n>     candidates per item (default 2)
  *   --only=<ids>       comma-separated item ids
- *   --category=<slug>  restrict to one category
+ *   --category=<slug>  restrict to one or more categories (comma-separated)
  *   --limit=<n>        stop after n items
  *   --items=<path>     read items from JSON instead of Turso (implies offline)
  *   --out=<dir>        output directory (default scripts/wishlist-images/out)
  *   --dry-run          print prompts, call nothing
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildPrompt, NEGATIVE_PROMPT } from "./style.mjs";
 import { describe } from "./classify.mjs";
@@ -41,7 +41,7 @@ function parseArgs(argv) {
     else if (key === "variants") args.variants = Number.parseInt(value, 10);
     else if (key === "limit") args.limit = Number.parseInt(value, 10);
     else if (key === "only") args.only = value.split(",").map((id) => Number.parseInt(id, 10));
-    else if (key === "category") args.category = value;
+    else if (key === "category") args.categories = value.split(",").map((c) => c.trim());
     else if (key === "items") args.items = value;
     else if (key === "out") args.out = value;
     else throw new Error(`Unknown flag: ${arg}`);
@@ -82,6 +82,38 @@ async function pool(items, worker, size) {
   return results;
 }
 
+/**
+ * Fold this run's records into whatever manifest.json already has on disk, keyed by
+ * item id, so running generate.mjs on one category (or --only) doesn't wipe out
+ * results from earlier runs on other items.
+ *
+ * A failed attempt only overwrites a prior *successful* record if that's all we
+ * have — otherwise the earlier good candidates survive and the failure is dropped,
+ * since re-running --only=<failed ids> is the documented way to retry.
+ */
+async function mergeManifest(manifestPath, newRecords) {
+  let existing = [];
+  try {
+    existing = JSON.parse(await readFile(manifestPath, "utf8")).items ?? [];
+  } catch {
+    // No manifest yet — first run.
+  }
+
+  const byId = new Map(existing.map((record) => [record.id, record]));
+
+  for (const record of newRecords) {
+    const prior = byId.get(record.id);
+    if (record.variants.length > 0 || !prior || prior.variants.length === 0) {
+      byId.set(record.id, record);
+    }
+  }
+
+  const items = [...byId.values()].sort((a, b) => a.id - b.id);
+  const models = [...new Set(items.map((item) => item.model).filter(Boolean))];
+
+  return { model: models.length === 1 ? models[0] : "mixed", items };
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   loadEnv();
@@ -89,7 +121,7 @@ async function main() {
   let items = (await loadItems({ from: args.items })).map(describe);
 
   if (args.only) items = items.filter((item) => args.only.includes(item.id));
-  if (args.category) items = items.filter((item) => item.category === args.category);
+  if (args.categories) items = items.filter((item) => args.categories.includes(item.category));
   if (args.limit) items = items.slice(0, args.limit);
 
   if (items.length === 0) {
@@ -149,19 +181,22 @@ async function main() {
 
         console.log(`  ✓ #${item.id} ${item.title} → ${files.length} variant(s)`);
 
-        return { ...item, source, prompt, variants: files };
+        return { ...item, source, prompt, model: args.model, variants: files };
       } catch (error) {
         console.error(`  ✗ #${item.id} ${item.title}: ${error.message}`);
         failures.push({ id: item.id, title: item.title, error: error.message });
-        return { ...item, source, prompt, variants: [], error: error.message };
+        return { ...item, source, prompt, model: args.model, variants: [], error: error.message };
       }
     },
     CONCURRENCY,
   );
 
+  const manifestPath = path.join(args.out, "manifest.json");
+  const merged = await mergeManifest(manifestPath, records);
+
   await writeFile(
-    path.join(args.out, "manifest.json"),
-    `${JSON.stringify({ model: args.model, items: records }, null, 2)}\n`,
+    manifestPath,
+    `${JSON.stringify(merged, null, 2)}\n`,
   );
 
   console.log(`\nWrote ${args.out}/manifest.json`);

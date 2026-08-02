@@ -96,10 +96,14 @@ export async function loadItems({ from } = {}) {
   }
 
   return execute(
-    "SELECT id, title, category, imageUrl FROM WishlistItem ORDER BY id",
+    "SELECT id, title, category, imageUrl, imageUrlDark FROM WishlistItem ORDER BY id",
   );
 }
 
 export async function setImageUrl(id, filename) {
   await execute("UPDATE WishlistItem SET imageUrl = ? WHERE id = ?", [filename, id]);
+}
+
+export async function setImageUrlDark(id, filename) {
+  await execute("UPDATE WishlistItem SET imageUrlDark = ? WHERE id = ?", [filename, id]);
 }

@@ -64,10 +64,13 @@ Read the prompts without spending anything or touching the database:
 bun scripts/wishlist-images/generate.mjs --dry-run --items=scripts/wishlist-images/sample-items.json
 ```
 
-Generate candidates — start with one category to calibrate before doing the lot:
+Generate candidates — start with one category to calibrate before doing the lot.
+`--category` accepts a comma-separated list, and `manifest.json` merges across runs
+keyed by item id, so partial reruns (`--only=…`) never lose earlier results:
 
 ```bash
 bun scripts/wishlist-images/generate.mjs --category=vinyl --variants=3
+bun scripts/wishlist-images/generate.mjs --category=blu-ray,books --variants=3
 ```
 
 Build the contact sheet, open it, pick one variant per item (or keep the original),
@@ -78,7 +81,20 @@ bun scripts/wishlist-images/review.mjs
 open scripts/wishlist-images/out/review.html
 ```
 
-Publish. The first run is a dry run that prints the plan:
+Derive dark-theme twins from the approved picks. Each chosen light render goes back
+through the edit model with a relight-only prompt, so the pair shares one composition;
+`out/review-dark.html` shows the pairs on the real card backgrounds:
+
+```bash
+bun scripts/wishlist-images/derive-dark.mjs
+open scripts/wishlist-images/out/review-dark.html
+```
+
+Publish. The first run is a dry run that prints the plan. Dark twins are picked up
+by naming convention (`<file>-dark.jpg` next to the light file) and land in
+`WishlistItem.imageUrlDark`; the card serves them via
+`<source media="(prefers-color-scheme: dark)">` and falls back to the light image
+when no dark variant exists:
 
 ```bash
 bun scripts/wishlist-images/publish.mjs

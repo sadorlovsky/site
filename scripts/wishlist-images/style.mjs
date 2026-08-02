@@ -23,12 +23,12 @@ export const FORM_FACTORS = {
     scale: "66%",
     pose:
       "The product is flat and rectangular. Present its printed face square to " +
-      "camera, tilted back 8 degrees, leaning against the plinth.",
+      "camera, tilted back 8 degrees, leaning against {{surface}}.",
   },
   soft: {
     scale: "60%",
     pose:
-      "The product is a soft textile. Present it neatly folded on the plinth with " +
+      "The product is a soft textile. Present it neatly folded on {{surface}} with " +
       "gentle natural creases and the front graphic facing camera.",
   },
   headwear: {
@@ -52,16 +52,44 @@ export const FORM_FACTORS = {
   packaged: {
     scale: "52%",
     pose:
-      "Present the package upright on the plinth, front label square to camera, " +
+      "Present the package upright on {{surface}}, front label square to camera, " +
       "held in shape as if full.",
   },
   object: {
     scale: "50%",
     pose:
       "Present the object in three-quarter view at its most recognisable angle, " +
-      "resting on the plinth.",
+      "resting on {{surface}}.",
   },
 };
+
+const DEFAULT_STAGING =
+  "The product rests on the set's one fixed shelf, which must look IDENTICAL in " +
+  "every image of this series. Exact geometry: a dead-level slab of matte frosted " +
+  "white glass running the full frame width edge to edge, no visible ends, legs, " +
+  "brackets or supports, no perspective taper. Its top surface line sits at 30% of " +
+  "frame height from the bottom edge. Its front face is a plain uniform vertical " +
+  "band exactly 4% of frame height tall, milky white near #ece9e4, matte — not " +
+  "glossy, not mirrored, no marble veining, no wood grain, no stone or metal " +
+  "texture, no visible top plane beyond a sliver. One thin brighter highlight line " +
+  "along the top front edge, nothing else on the front face. On the top surface: a " +
+  "soft contact shadow under the product and one faint short reflection of it.";
+
+/**
+ * Per-category staging override. Vinyl sleeves are already flat rectangles resting
+ * on their own edge — a glass shelf under them reads as an extra prop and every
+ * model draws its shape a little differently, which is the one thing that breaks
+ * the "same set" illusion across a grid. Simpler is more consistent: no shelf,
+ * product straight on the backdrop.
+ */
+const STAGING_OVERRIDES = {
+  vinyl:
+    "The product stands directly on the backdrop with no plinth, shelf, stand or " +
+    "any other surface beneath it — just the seamless backdrop continuing under the " +
+    "product. Soft contact shadow directly beneath it, no reflection.",
+};
+
+const SURFACE_OVERRIDES = { vinyl: "the backdrop" };
 
 /** Barely-there backdrop wash per category. Keep these weak — 10%, not a colour block. */
 export const CATEGORY_TINTS = {
@@ -97,7 +125,41 @@ export const NEGATIVE_PROMPT = [
   "cartoon",
   "illustration",
   "oversaturated colours",
+  "wooden shelf",
+  "marble surface",
+  "stone slab",
+  "glossy countertop",
+  "table",
+  "pedestal",
+  "thick slab",
+  "shelf brackets",
+  "horizon line",
 ].join(", ");
+
+/**
+ * Second-pass prompt: relight an approved light-theme render for dark theme.
+ *
+ * This runs on the *chosen* light image, not the original product photo, so the
+ * composition, pose and shelf geometry carry over pixel-for-pixel and the pair
+ * reads as the same shot under different lighting — which is exactly what a
+ * prefers-color-scheme swap should feel like.
+ */
+export function buildDarkenPrompt(category) {
+  // Mentioning a shelf at all invites the model to invent one, so the no-shelf
+  // categories get an explicit prohibition instead of a conditional.
+  const shelf =
+    category in STAGING_OVERRIDES
+      ? "There is NO shelf, table or any surface in this image — the product stands directly on the seamless backdrop. Do not add a shelf, ledge, floor line or reflective surface of any kind; only the contact shadow under the product remains."
+      : "If a frosted-glass shelf is present, keep its exact geometry and highlight, rendered as darker smoked glass that fits the dark set.";
+
+  return `Relight this studio product photograph for a dark-themed gallery, changing NOTHING else.
+
+Keep the product pixel-identical: same shape, colours, printed artwork, logos and lettering, same position, size and crop. Keep the camera, composition and shadow placement exactly as they are.
+
+Change only the environment: the backdrop becomes near-black, roughly #1e1e20 behind the product falling off to #141416 toward the frame edges, keeping the same vertical falloff. Strictly neutral grey — no brown, sepia or warm cast on the backdrop. ${shelf}
+
+The product itself keeps its original brightness and colour, still lit by the same softbox from the upper left. Clean commercial retouch, subtle fine film grain, no HDR.`;
+}
 
 /**
  * Build the full prompt for one item.
@@ -112,6 +174,9 @@ export function buildPrompt(item) {
   }
 
   const tint = CATEGORY_TINTS[item.category] ?? CATEGORY_TINTS.other;
+  const staging = STAGING_OVERRIDES[item.category] ?? DEFAULT_STAGING;
+  const surface = SURFACE_OVERRIDES[item.category] ?? "the shelf";
+  const pose = form.pose.replace("{{surface}}", surface);
 
   // Multi-packs read as "one product" unless we say otherwise, and a lone unit for
   // a "3 Pack" listing is actively misleading about what's being asked for.
@@ -129,9 +194,9 @@ SUBJECT — Keep the product from the reference image exactly as it is: same sha
 ${units}
 SET — Seamless studio backdrop, warm neutral grey, roughly #b4b0a8 behind the product falling off to #8e8a83 toward the frame edges, with ${tint}. No horizon line, no walls, no props, no text, no watermark, no price tag.
 
-STAGING — The product rests on a low frosted-glass plinth: translucent milky white, soft edge highlights, about 12% of frame height. Soft contact shadow beneath it and a faint reflection on the glass.
+STAGING — ${staging}
 
-POSE — ${form.pose}
+POSE — ${pose}
 
 CAMERA — 85mm equivalent, eye level, 12 degrees above the product's centre line, straight on. No wide-angle distortion, no tilt.
 
