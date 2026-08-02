@@ -21,8 +21,8 @@ studio white. If it reads wrong in either theme, that's the first knob to turn �
 two hex values in `style.mjs` → `SET`.
 
 Product size is set per form factor, not per category: flat art 66% of frame height,
-soft goods 60%, devices 58%, footwear 55%, packaging 52%, objects 50%. Small things
-still look small; the grid still has rhythm.
+soft goods 60%, devices 58%, footwear 55%, headwear and packaging 52%, objects 50%.
+Small things still look small; the grid still has rhythm.
 
 Composition constraints come from how the card actually renders — 4:3 with
 `object-fit: cover`, a 1.08 hover zoom that eats ~4% per side, and badges overlaying

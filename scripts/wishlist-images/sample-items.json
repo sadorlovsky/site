@@ -36,6 +36,18 @@
     "imageUrl": "adidas-oversized-tee.avif"
   },
   {
+    "id": 36,
+    "title": "Adidas Beanie",
+    "category": "clothing",
+    "imageUrl": "adidas-beanie.avif"
+  },
+  {
+    "id": 38,
+    "title": "Scentio Milk Plus Shower Cream 2x450ml",
+    "category": "home",
+    "imageUrl": "scentio-milk-plus-shower-cream.jpg"
+  },
+  {
     "id": 40,
     "title": "Three 6 Mafia — When The Smoke Clears (Vinyl LP)",
     "category": "vinyl",

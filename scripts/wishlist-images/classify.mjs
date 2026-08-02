@@ -13,15 +13,17 @@ const OVERRIDES = {
   "desk mat": "flat",
   "titanium band": "object",
   "funko pop": "object",
-  blanket: "soft",
 };
 
 /** Keyword rules, checked in order. First hit wins. */
 const KEYWORD_RULES = [
   [/\b(sk8-hi|half cab|terrex|salomon|x ultra|free hiker|sneaker|boot)\b/i, "footwear"],
-  [/\b(sonicare|flosser|shaver|norelco|clipper)\b/i, "device"],
-  [/\b(vinyl|lp\b|blu-ray|4k uhd|box set|soundtrack)\b/i, "flat"],
-  [/\b(t-shirt|tee\b|hoodie|sweatshirt|longsleeve|sweater|pants|beanie|hat|boxers|blanket)\b/i, "soft"],
+  // Headwear before soft goods: a cap folded flat like a t-shirt loses its shape,
+  // and "hat"/"beanie" would otherwise be caught by the textile rule below.
+  [/\b(hat|cap|beanie)\b/i, "headwear"],
+  [/\b(sonicare|flosser|shaver|norelco)\b/i, "device"],
+  [/\b(vinyl|lp\b|blu-ray|4k uhd|box set|collector's edition|soundtrack)\b/i, "flat"],
+  [/\b(t-shirt|tee\b|hoodie|sweatshirt|longsleeve|sweater|pants|boxers|blanket)\b/i, "soft"],
   [/\b(cream|gel|shampoo|candy|chocolate|praline|fudge|liquorice|salmiakki|bag)\b/i, "packaged"],
 ];
 
@@ -67,7 +69,10 @@ export function unitCount(title = "") {
   const match =
     title.match(/\((\d+)\s*pcs?\)/i) ??
     title.match(/\b(\d+)[-\s]pack\b/i) ??
-    title.match(/\b(\d+)\s*pcs\b/i);
+    title.match(/\b(\d+)\s*pcs\b/i) ??
+    // Volume multipacks: "Shower Cream 2x450ml". Anchored to a unit so it can't
+    // swallow "Terrex Free Hiker 2.0" or "X Trilogy 4K".
+    title.match(/\b(\d+)\s*[x×]\s*\d+\s*(?:ml|g|l|cl)\b/i);
 
   if (!match) return 1;
 

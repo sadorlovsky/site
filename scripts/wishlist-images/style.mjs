@@ -31,6 +31,12 @@ export const FORM_FACTORS = {
       "The product is a soft textile. Present it neatly folded on the plinth with " +
       "gentle natural creases and the front graphic facing camera.",
   },
+  headwear: {
+    scale: "52%",
+    pose:
+      "Present the headwear upright, holding the shape it has when worn rather " +
+      "than flattened, front panel square to camera in a slight three-quarter view.",
+  },
   footwear: {
     scale: "55%",
     pose:
