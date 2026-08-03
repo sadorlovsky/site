@@ -70,7 +70,8 @@
   min-width: 0;
 }
 
-/* "All" filter pill and random-item button — match the liquid glass filter chips */
+/* "All" filter pill and random-item button — the same glass capsule as the
+   category chips (shared tokens, .dock-item text colours). */
 .kit-btn.filter-all-btn,
 .kit-btn.mobile-filter-all-btn,
 .kit-btn.filter-random,
@@ -81,7 +82,7 @@
   backdrop-filter: var(--glass-filter);
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
-  color: light-dark(#555, #ddd);
+  color: light-dark(#555, #b4b4b8);
 }
 
 .kit-btn.filter-all-btn::after,
@@ -96,21 +97,33 @@
   box-shadow: var(--glass-rim);
 }
 
+/* Hover re-pins the glass surface: the kit's ghost/secondary :hover rules
+   out-specify the resting rule above and would repaint these buttons with
+   their own flat backgrounds/inset rings. Only the label colour changes. */
 .kit-btn.filter-all-btn:hover:not(.is-active),
 .kit-btn.mobile-filter-all-btn:hover:not(.is-active),
 .kit-btn.filter-random:hover:not(:disabled),
 .kit-btn.mobile-filter-random:hover:not(:disabled) {
-  color: light-dark(#111, #fff);
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  box-shadow: var(--glass-shadow);
+  color: light-dark(#1a1a1a, #fff);
 }
 
+/* Active "All" = the dock indicator: opaque accent gradient + its glow,
+   glass artefacts off. */
 .kit-btn.filter-all-btn.is-active,
 .kit-btn.mobile-filter-all-btn.is-active {
-  background-color: light-dark(rgba(237, 92, 121, 0.55), rgba(237, 92, 121, 0.4));
-  background-image: var(--glass-sheen);
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  backdrop-filter: none;
+  border-color: transparent;
   color: white;
-  box-shadow:
-    0 4px 14px rgba(237, 87, 96, 0.3),
-    0 2px 6px rgba(237, 87, 96, 0.15);
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+}
+
+.kit-btn.filter-all-btn.is-active::after,
+.kit-btn.mobile-filter-all-btn.is-active::after {
+  box-shadow: none;
 }
 
 /* Grid */
@@ -323,10 +336,7 @@
 }
 
 /* Badges */
-/* Specificity note: .kit-badge.wishlist-badge (not just .wishlist-badge) so this
-   reliably wins over badge.css's `.kit-badge--solid-*  { position: relative }`
-   regardless of stylesheet load order — both are single-class rules otherwise. */
-.kit-badge.wishlist-badge {
+.wishlist-badge {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
@@ -463,16 +473,23 @@
   box-shadow: var(--glass-rim);
 }
 
+/* Hover = the chrome's accent treatment (crumb-home hover): opaque gradient,
+   white label, the shared 0.45 glow. Rim and border switch off with it. */
 .reserve-btn:hover {
-  background-color: light-dark(rgba(237, 92, 121, 0.55), rgba(237, 92, 121, 0.4));
-  background-image: var(--glass-sheen);
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  backdrop-filter: none;
+  border-color: transparent;
   color: white;
   transform: scale(1.05);
-  box-shadow:
-    0 4px 15px rgba(237, 87, 96, 0.4),
-    0 2px 6px rgba(237, 87, 96, 0.2);
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
 }
 
+.reserve-btn:hover::after {
+  box-shadow: none;
+}
+
+/* Own reservation ("Cancel") — a pressed neutral glass state; its hover must
+   undo the accent-hover rule above (keep frost, border and rim). */
 .reserve-btn.own-reservation {
   background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
   background-image: none;
@@ -480,21 +497,30 @@
 }
 
 .reserve-btn.own-reservation:hover {
-  background-color: light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
-  background-image: none;
+  background: light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
   color: light-dark(#333, #fff);
   transform: scale(1.05);
   box-shadow: var(--glass-shadow);
 }
 
+.reserve-btn.own-reservation:hover::after {
+  box-shadow: var(--glass-rim);
+}
+
+/* Received — a solid success-gradient pill, same finish as the accent states. */
 .reserve-btn.received {
-  background-color: light-dark(rgba(16, 185, 129, 0.55), rgba(16, 185, 129, 0.35));
-  background-image: var(--glass-sheen);
+  background: linear-gradient(135deg, #10b981, #059669);
+  backdrop-filter: none;
+  border-color: transparent;
   color: white;
   cursor: default;
-  box-shadow:
-    0 4px 15px rgba(16, 185, 129, 0.3),
-    0 2px 6px rgba(16, 185, 129, 0.15);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);
+}
+
+.reserve-btn.received::after {
+  box-shadow: none;
 }
 
 .reserve-btn:disabled {
@@ -627,15 +653,12 @@
     border-top-color: light-dark(#1a1a1a, #3a3a3a);
   }
 
-  /* Reserve button */
+  /* Reserve button. Accent/received states need no override — their gradients
+     are already opaque. */
   .reserve-btn {
     background: light-dark(#f0f0f0, #3a3a3a);
     background-image: none;
     backdrop-filter: none;
-  }
-
-  .reserve-btn:hover {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
   }
 
   .reserve-btn.own-reservation {
@@ -644,26 +667,23 @@
 
   .reserve-btn.own-reservation:hover {
     background: light-dark(#dcdcdc, #505050);
+    backdrop-filter: none;
   }
 
-  .reserve-btn.received {
-    background: linear-gradient(135deg, #10b981, #059669);
-  }
-
-  /* "All" filter pill and random-item button */
+  /* "All" filter pill and random-item button. The hover override matters:
+     the base hover rule re-pins the translucent glass tokens. */
   .kit-btn.filter-all-btn,
   .kit-btn.mobile-filter-all-btn,
   .kit-btn.filter-random,
-  .kit-btn.mobile-filter-random {
+  .kit-btn.mobile-filter-random,
+  .kit-btn.filter-all-btn:hover:not(.is-active),
+  .kit-btn.mobile-filter-all-btn:hover:not(.is-active),
+  .kit-btn.filter-random:hover:not(:disabled),
+  .kit-btn.mobile-filter-random:hover:not(:disabled) {
     background-color: light-dark(#fff, #2a2a2d);
     background-image: none;
     backdrop-filter: none;
     border-color: light-dark(#e0e0e0, #444);
-  }
-
-  .kit-btn.filter-all-btn.is-active,
-  .kit-btn.mobile-filter-all-btn.is-active {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
   }
 }
 
