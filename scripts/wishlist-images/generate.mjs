@@ -21,7 +21,7 @@
  *   --dry-run          print prompts, call nothing
  */
 
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { buildPrompt, NEGATIVE_PROMPT } from "./style.mjs";
 import { describe } from "./classify.mjs";
@@ -83,6 +83,30 @@ async function pool(items, worker, size) {
 }
 
 /**
+ * After publishing, WishlistItem.imageUrl points at a *styled* render — feeding that
+ * back in as the edit reference makes the model inherit its staging (shelf and all)
+ * no matter what the prompt says. The original photo keys were recorded as `previous`
+ * in publish.mjs's rollback files, so recover them from there, oldest first.
+ */
+async function loadOriginalSources(outDir) {
+  const originals = new Map();
+
+  const files = (await readdir(outDir))
+    .filter((f) => /^rollback-\d+\.json$/.test(f))
+    .sort();
+
+  for (const file of files) {
+    for (const { id, previous } of JSON.parse(await readFile(path.join(outDir, file), "utf8"))) {
+      if (!originals.has(id) && previous && !previous.startsWith("wishlist/styled/")) {
+        originals.set(id, previous);
+      }
+    }
+  }
+
+  return originals;
+}
+
+/**
  * Fold this run's records into whatever manifest.json already has on disk, keyed by
  * item id, so running generate.mjs on one category (or --only) doesn't wipe out
  * results from earlier runs on other items.
@@ -119,6 +143,17 @@ async function main() {
   loadEnv();
 
   let items = (await loadItems({ from: args.items })).map(describe);
+
+  const originals = await loadOriginalSources(args.out).catch(() => new Map());
+  items = items.map((item) => {
+    if (!item.imageUrl?.startsWith("wishlist/styled/")) return item;
+    const original = originals.get(item.id);
+    if (!original) {
+      console.warn(`  ! #${item.id} imageUrl is already styled and no original found in rollback files`);
+      return item;
+    }
+    return { ...item, imageUrl: original };
+  });
 
   if (args.only) items = items.filter((item) => args.only.includes(item.id));
   if (args.categories) items = items.filter((item) => args.categories.includes(item.category));
