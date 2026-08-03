@@ -233,13 +233,15 @@ async function initMap(): Promise<void> {
     const resizeObserver = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width === 0 || height === 0) return;
-      const newZoom = getZoomForGlobe(getGlobeSize(container));
-      map.setZoom(newZoom);
       // A resized container gives the globe a new size, and that size is also
-      // the new floor.
+      // the new floor. The floor has to move first: it *is* the zoom that draws
+      // the globe at the old diameter, so on a shrink it would clamp the very
+      // setZoom meant to shrink the globe, and the sphere would stay at its
+      // wide-viewport size and spill out of the narrower frame.
       map.setMinZoom(
         getGlobeZoomFloor(getGlobeSize(container), GLOBE_LATITUDE),
       );
+      map.setZoom(getZoomForGlobe(getGlobeSize(container)));
       // It fills at a different zoom too.
       frameFromZoom = getZoomForFullFrame(width, height);
       syncFrame();

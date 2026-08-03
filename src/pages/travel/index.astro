@@ -158,6 +158,14 @@ export const prerender = true;
     padding: 0 1em;
 
     display: grid;
+    /* The column is capped at the container rather than sized by its contents.
+       MapLibre writes a pixel width onto its canvas, so an auto column would
+       take that as its max-content and hold the page open at the width the map
+       had *before* a resize — the map's own `width: 100%` then resolved against
+       that stale column, so the ResizeObserver that would have shrunk the
+       canvas never fired. A fresh load at the narrow width was fine, which is
+       why only resizing showed it. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
 
