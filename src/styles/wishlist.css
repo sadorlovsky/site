@@ -71,20 +71,47 @@
 }
 
 /* "All" filter pill and random-item button — the same glass capsule as the
-   category chips (shared tokens, .dock-item text colours). */
+   category chips: shared tokens, .dock-item text colours, a gradient indicator
+   that scales in rather than a background swap, and the chips' pill radius. */
 .kit-btn.filter-all-btn,
 .kit-btn.mobile-filter-all-btn,
 .kit-btn.filter-random,
 .kit-btn.mobile-filter-random {
   position: relative;
+  isolation: isolate;
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
   color: light-dark(#555, #b4b4b8);
+  border-radius: 999px;
+  /* Not `all`: `transform` belongs to the cursor magnetism (filter-magnet.ts). */
+  transition: color 0.3s ease;
+  will-change: transform;
 }
 
+/* Gradient indicator — .dock-indicator's fill, glow and easing. */
+.kit-btn.filter-all-btn::before,
+.kit-btn.mobile-filter-all-btn::before,
+.kit-btn.filter-random::before,
+.kit-btn.mobile-filter-random::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Refractive rim — above the indicator. */
 .kit-btn.filter-all-btn::after,
 .kit-btn.mobile-filter-all-btn::after,
 .kit-btn.filter-random::after,
@@ -94,36 +121,76 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  z-index: 5;
   box-shadow: var(--glass-rim);
 }
 
-/* Hover re-pins the glass surface: the kit's ghost/secondary :hover rules
-   out-specify the resting rule above and would repaint these buttons with
-   their own flat backgrounds/inset rings. Only the label colour changes. */
-.kit-btn.filter-all-btn:hover:not(.is-active),
-.kit-btn.mobile-filter-all-btn:hover:not(.is-active),
-.kit-btn.filter-random:hover:not(:disabled),
-.kit-btn.mobile-filter-random:hover:not(:disabled) {
+/* Lit = the current filter, or the control under the cursor/keyboard. The glass
+   surface has to be re-pinned here too: the kit's ghost/secondary rules would
+   otherwise repaint these buttons with their own flat backgrounds, gradients
+   and inset rings. Every `:not(:disabled)` below is there to out-specify them —
+   the kit already blocks pointer events on disabled buttons. */
+.kit-btn.filter-all-btn:is(:hover, :focus-visible, .is-active):not(:disabled),
+.kit-btn.mobile-filter-all-btn:is(:hover, :focus-visible, .is-active):not(
+    :disabled
+  ),
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled),
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled) {
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   box-shadow: var(--glass-shadow);
-  color: light-dark(#1a1a1a, #fff);
+  color: #fff;
 }
 
-/* Active "All" = the dock indicator: opaque accent gradient + its glow,
-   glass artefacts off. */
-.kit-btn.filter-all-btn.is-active,
-.kit-btn.mobile-filter-all-btn.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  backdrop-filter: none;
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+.kit-btn.filter-all-btn:is(:hover, :focus-visible, .is-active):not(
+    :disabled
+  )::before,
+.kit-btn.mobile-filter-all-btn:is(:hover, :focus-visible, .is-active):not(
+    :disabled
+  )::before,
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled)::before,
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(
+    :disabled
+  )::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
-.kit-btn.filter-all-btn.is-active::after,
-.kit-btn.mobile-filter-all-btn.is-active::after {
+.kit-btn.filter-all-btn:is(:hover, :focus-visible, .is-active):not(
+    :disabled
+  )::after,
+.kit-btn.mobile-filter-all-btn:is(:hover, :focus-visible, .is-active):not(
+    :disabled
+  )::after,
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled)::after,
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled)::after {
   box-shadow: none;
+}
+
+/* An active "All" dims while the row is hovered, matching the chips: the light
+   reads as following the cursor. */
+.filters:hover .kit-btn.filter-all-btn.is-active:not(:hover)::before,
+.mobile-filter-bar-inner:hover
+  .kit-btn.mobile-filter-all-btn.is-active:not(:hover)::before {
+  opacity: 0.4;
+}
+
+/* The chrome's focus ring — an accent outline would vanish into the lit fill. */
+.kit-btn.filter-all-btn:focus-visible,
+.kit-btn.mobile-filter-all-btn:focus-visible,
+.kit-btn.filter-random:focus-visible,
+.kit-btn.mobile-filter-random:focus-visible {
+  outline: 2px solid light-dark(#333, #fff);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-btn.filter-all-btn::before,
+  .kit-btn.mobile-filter-all-btn::before,
+  .kit-btn.filter-random::before,
+  .kit-btn.mobile-filter-random::before {
+    transition: none;
+  }
 }
 
 /* Grid */
@@ -649,17 +716,14 @@
     border-color: transparent;
   }
 
-  /* "All" filter pill and random-item button — border for visibility */
+  /* "All" filter pill and random-item button — border for visibility. It stays
+     put when lit: the accent indicator fills inside the capsule rather than
+     replacing its chrome. */
   .kit-btn.filter-all-btn,
   .kit-btn.mobile-filter-all-btn,
   .kit-btn.filter-random,
   .kit-btn.mobile-filter-random {
     border: 2px solid light-dark(#ccc, #555);
-  }
-
-  .kit-btn.filter-all-btn.is-active,
-  .kit-btn.mobile-filter-all-btn.is-active {
-    border-color: transparent;
   }
 }
 
@@ -728,16 +792,17 @@
     backdrop-filter: none;
   }
 
-  /* "All" filter pill and random-item button. The hover override matters:
-     the base hover rule re-pins the translucent glass tokens. */
+  /* "All" filter pill and random-item button. The lit override matters: the
+     lit rule re-pins the translucent glass tokens. Nothing is needed for the
+     indicator itself — its gradient is already opaque. */
   .kit-btn.filter-all-btn,
   .kit-btn.mobile-filter-all-btn,
   .kit-btn.filter-random,
   .kit-btn.mobile-filter-random,
-  .kit-btn.filter-all-btn:hover:not(.is-active),
-  .kit-btn.mobile-filter-all-btn:hover:not(.is-active),
-  .kit-btn.filter-random:hover:not(:disabled),
-  .kit-btn.mobile-filter-random:hover:not(:disabled) {
+  .kit-btn.filter-all-btn:is(:hover, :focus-visible, .is-active),
+  .kit-btn.mobile-filter-all-btn:is(:hover, :focus-visible, .is-active),
+  .kit-btn.filter-random:is(:hover, :focus-visible),
+  .kit-btn.mobile-filter-random:is(:hover, :focus-visible) {
     background-color: light-dark(#fff, #2a2a2d);
     background-image: none;
     backdrop-filter: none;
@@ -788,6 +853,11 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     gap: 0.4rem;
+    /* Room for the chips' magnetic drift (max 6px) so the scroller's overflow
+       doesn't clip a chip that's leaning toward the cursor. Cancelled by the
+       negative margin, so the row keeps its height. */
+    padding-block: 8px;
+    margin-block: -8px;
     /* Fade both edges by default */
     mask-image: linear-gradient(
       to right,
