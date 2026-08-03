@@ -27,10 +27,10 @@ const Element = href ? "a" : "div";
 </Element>
 
 <style>
+  /* The accent tokens used to be redeclared here with the same two values
+     global.css already holds — the drift that put the wishlist card on its own
+     dialect, in miniature. */
   .list-item {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-
     display: grid;
     grid-template-columns: 80px 1fr;
     gap: 0.5rem;
@@ -43,19 +43,28 @@ const Element = href ? "a" : "div";
     color: inherit;
   }
 
+  /* The wash a row answers a cursor with is the one the filter chips use — the
+     same alpha, the same easing — so "the thing being pointed at" reads the
+     same everywhere. It used to be half as strong at a 4px radius, which was
+     faint enough that the country tints inside a travel row seemed to appear
+     out of nowhere. The radius is generous rather than a capsule: rows wrap to
+     several lines, and a 999px pill on a three-line block bows outward. */
   .list-item.interactive {
-    padding: 0.5rem;
-    border-radius: 4px;
-    transition: background-color 0.15s ease;
+    padding: 0.5rem 0.75rem;
+    margin-inline: -0.75rem;
+    border-radius: 14px;
+    transition: background-color 0.25s ease;
   }
 
   .list-item.interactive:hover {
-    background-color: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
+    background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
   }
 
   .list-item-date {
     font-size: 0.9rem;
-    color: light-dark(#888, #666);
+    /* The chrome's muted colour. Dark mode had #666, which on a near-black page
+       sat right at the edge of legible. */
+    color: light-dark(#888, #9a9aa0);
   }
 
   .list-item-title {
