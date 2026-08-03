@@ -206,6 +206,14 @@ The product itself keeps its original brightness and colour, still lit by the sa
  * shared set so the card still reads as part of the series.
  */
 const ITEM_OVERRIDES = {
+  // Hollow Knight Collector's Edition — flat box, same no-shelf treatment as the
+  // vinyl/blu-ray/books categories even though it lives in merch.
+  11: {
+    staging: NO_SHELF_STAGING,
+    pose:
+      "The product is flat and rectangular. Present its printed face square to " +
+      "camera, tilted back 8 degrees, leaning against the backdrop.",
+  },
   // Hollow Knight Blanket — show it in use, pattern spread toward camera.
   12: {
     staging:
