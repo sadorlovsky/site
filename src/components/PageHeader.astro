@@ -101,7 +101,13 @@ const hasActions = Astro.slots.has("actions");
 
     {
       condenseOnScroll && showHeroTitle && (
-        <span class="condensed-title liquid-glass" aria-hidden="true">
+        <button
+          type="button"
+          class="condensed-title liquid-glass"
+          aria-label="Back to top"
+          data-aria-label-en="Back to top"
+          data-aria-label-ru="Наверх"
+        >
           <span
             class="condensed-title__text"
             data-en={pageTitle.en}
@@ -109,7 +115,7 @@ const hasActions = Astro.slots.has("actions");
           >
             {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
           </span>
-        </span>
+        </button>
       )
     }
 
@@ -131,7 +137,14 @@ const hasActions = Astro.slots.has("actions");
     condenseOnScroll ? (
       <div class="page-header__hero">
         {showHeroTitle && (
-          <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
+          /* tabindex -1: the back-to-top pill hands focus here on click, so a
+             keyboard user lands at the top of the page rather than nowhere. */
+          <h1
+            class="page-title"
+            tabindex="-1"
+            data-en={pageTitle.en}
+            data-ru={pageTitle.ru}
+          >
             {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
           </h1>
         )}
@@ -381,7 +394,11 @@ const hasActions = Astro.slots.has("actions");
 
   /* Compact title — a floating glass pill centred over the row, hidden until
      condensed. Shares the .liquid-glass recipe with the home and language
-     pills so all three read as one row of identical glass capsules. */
+     pills so all three read as one row of identical glass capsules.
+
+     It's also the way back to the top: the page title is exactly the thing you
+     reach for when you want the start of the page, and once condensed it sits
+     right where the cursor already is. */
   .condensed-title {
     position: absolute;
     left: 50%;
@@ -393,17 +410,25 @@ const hasActions = Astro.slots.has("actions");
     min-height: 2.7rem;
     transform: translate(-50%, calc(-50% + 6px)) scale(0.97);
     opacity: 0;
+    /* Hidden, not just transparent: an invisible button in the middle of the
+       row would still swallow clicks and still take tab focus. Visibility is
+       held back until the fade ends so leaving isn't a hard cut. */
+    visibility: hidden;
     pointer-events: none;
     display: inline-flex;
     align-items: center;
     padding: 0 1.05rem;
     border-radius: 999px;
+    font-family: inherit;
+    cursor: pointer;
     /* Short, because it starts the moment the title slides under the row —
        while the page is still moving. A long fade would still be running after
        the scroll had stopped, which is the whole thing this replaced. */
     transition:
       opacity 0.22s ease,
-      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s ease,
+      visibility 0s linear 0.22s;
     will-change: transform, opacity;
   }
 
@@ -421,7 +446,33 @@ const hasActions = Astro.slots.has("actions");
 
   .page-header--condense.is-condensed .condensed-title {
     opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
     transform: translate(-50%, -50%) scale(1);
+    transition:
+      opacity 0.22s ease,
+      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.3s ease,
+      visibility 0s;
+  }
+
+  /* Hover lights the rim, the same way the wishlist cards answer a hover —
+     the pill doesn't move, because nothing in the chrome scales under a
+     cursor. */
+  .condensed-title:hover::after,
+  .condensed-title:focus-visible::after {
+    box-shadow: var(--glass-rim-lit);
+  }
+
+  .condensed-title:focus-visible {
+    outline: 2px solid light-dark(#333, #fff);
+    outline-offset: 2px;
+  }
+
+  /* The hero title takes focus after the trip back up; it shouldn't wear a
+     focus ring for it, since the whole page is the destination. */
+  .page-title:focus {
+    outline: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

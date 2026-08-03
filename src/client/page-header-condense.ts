@@ -36,6 +36,20 @@ function initCondense(header: HTMLElement) {
     new ResizeObserver(publish).observe(row);
   }
 
+  // The compact pill doubles as the way back to the top: it carries the page
+  // title, and by the time it exists the cursor is already up there.
+  const pill = header.querySelector<HTMLElement>(".condensed-title");
+  const title = header.querySelector<HTMLElement>(".page-title");
+  pill?.addEventListener("click", () => {
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    // The pill fades out on the way up, so focus would be left on nothing.
+    // preventScroll keeps this from racing the smooth scroll it just started.
+    title?.focus({ preventScroll: true });
+  });
+
   const hero = header.querySelector<HTMLElement>(".page-header__hero");
   if (!hero) return;
 
