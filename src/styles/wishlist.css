@@ -230,6 +230,10 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  /* The card takes its track's width and nothing more — without this its own
+     automatic minimum size (again, that long URL) lets it spill past the
+     track's right edge even once the track itself is capped. */
+  min-width: 0;
   background: var(--card-bg);
   border: var(--glass-border);
   border-radius: 20px;
@@ -1008,8 +1012,14 @@
     -webkit-mask-image: none;
   }
 
+  /* minmax(0, 1fr), not 1fr: a bare `1fr` is `minmax(auto, 1fr)`, and that auto
+     floor is the widest card's min-content — which is the full, un-wrappable
+     `.item-url`. One long URL pushed the single column to ~790px and put a
+     horizontal scrollbar on the whole page. A 0 floor lets the track be the
+     container's width and leaves the URL to ellipsize, which it already knows
+     how to do. */
   .wishlist-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
 
