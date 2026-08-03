@@ -49,6 +49,7 @@ const hasActions = Astro.slots.has("actions");
 <header
   class:list={["page-header", { "page-header--condense": condenseOnScroll }]}
 >
+  {condenseOnScroll && <div class="page-header__veil" aria-hidden="true" />}
   <div class="header-row">
     <nav
       class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
@@ -390,31 +391,46 @@ const hasActions = Astro.slots.has("actions");
     margin-top: 0;
   }
 
-  /* Progressive veil behind the floating pills. The pills leave open gaps
-     where page content would otherwise scroll past at full strength; this
-     fixed, masked backdrop-blur dissolves whatever approaches the top edge —
-     sharp at the year row, frosted mist at the viewport edge — so rows melt
-     away instead of colliding with the capsules. Sits at the bottom of the
-     row's stacking context (z-index: -1), under all three pills. */
-  .page-header--condense .header-row::before {
-    content: "";
+  /* Progressive veil behind the floating pills. The pills leave open gaps where
+     page content would otherwise scroll past at full strength; this fixed,
+     masked backdrop-blur dissolves whatever approaches the top edge, so rows
+     melt away instead of colliding with the capsules.
+
+     It's a real element rather than the row's ::before, and that's the point.
+     As a pseudo-element it lived inside the row's stacking context (z-index 30)
+     and so painted above everything else pinned to the top — including
+     /travel's sticky year, which meant the veil had to stop dead at the year's
+     top edge and fade out well before it. That left a band with no veil and no
+     year in it, where content scrolled past perfectly sharp. On its own layer
+     at z-index 5 it sits above the page but below the year (10) and the pills
+     (30), so it can run on behind the year and dissolve there instead. */
+  .page-header__veil {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    /* Ends exactly where docked sticky content (the year rows) begins, so the
-       veil never blurs their text — only the strip the pills float over. */
-    height: var(--sticky-header-offset, 5.5rem);
+    /* Solid for the strip the pills float over, then a dissolve. On /travel the
+       dissolve happens behind the sticky year, which is opaque and covers it, so
+       the blur runs unbroken from the top edge to the end of the year's bar;
+       with no year docked the same fade is simply a soft bottom. One shape does
+       both the tint and the blur — they used to fade on two different curves,
+       25% for the colour against 45%-96% for the mask. */
+    --veil-fade: 2.75rem;
+    height: calc(var(--sticky-header-offset, 5.5rem) + var(--veil-fade));
     pointer-events: none;
-    z-index: -1;
-    background: linear-gradient(to bottom, var(--veil-bg) 25%, transparent);
+    z-index: 5;
+    background: var(--veil-bg);
     backdrop-filter: var(--veil-filter);
-    mask-image: linear-gradient(to bottom, black 45%, transparent 96%);
+    mask-image: linear-gradient(
+      to bottom,
+      black calc(100% - var(--veil-fade)),
+      transparent
+    );
     opacity: 0;
     transition: opacity 0.4s ease;
   }
 
-  .page-header--condense.is-condensed .header-row::before {
+  .page-header--condense.is-condensed .page-header__veil {
     opacity: 1;
   }
 
@@ -502,7 +518,7 @@ const hasActions = Astro.slots.has("actions");
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .page-header--condense .header-row::before,
+    .page-header__veil,
     .condensed-title {
       transition: none;
     }
