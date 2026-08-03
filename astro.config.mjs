@@ -22,7 +22,11 @@ const { VERCEL_ISR_BYPASS_TOKEN, CDN_DOMAIN, CDN_DEV_DOMAIN } = loadEnv(
 );
 
 const isProd = process.env.NODE_ENV === "production";
-const cdnDomain = isProd ? CDN_DOMAIN : CDN_DEV_DOMAIN;
+// Both vars are optional (see the env schema below), so dev falls back to the
+// production CDN exactly like src/lib/wishlist.ts does. Without the fallback an
+// undefined domain reaches image.domains, config validation fails with
+// "image.domains.0: Required", and the dev server exits before it starts.
+const cdnDomain = (isProd ? CDN_DOMAIN : (CDN_DEV_DOMAIN ?? CDN_DOMAIN)) ?? "";
 
 // https://astro.build/config
 export default defineConfig({
@@ -55,7 +59,7 @@ export default defineConfig({
     },
   }),
   image: {
-    domains: [cdnDomain],
+    domains: cdnDomain ? [cdnDomain] : [],
   },
   integrations: [
     icon(),
