@@ -19,8 +19,33 @@ const { mode = "globe" } = Astro.props;
      backdrop root — which killed the frost on the city labels everywhere. It
      now lives in the iOS-only block at the bottom of this file, next to the
      `perspective` whose identical effect was already documented there. */
+  /* Registered so the script can read them: getComputedStyle hands back an
+     unregistered custom property exactly as written — "clamp(280px, 40vw,
+     480px)" — while a registered <length> resolves to pixels. */
+  @property --globe-size {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  @property --globe-gap {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /* The geometry runs one way: the globe's diameter is the input, the container
+     is that plus a gap above and below, and the breathing room is what falls
+     out. It used to run the other way — a fixed 500px box and a hardcoded 50px
+     of padding, which left the globe whatever height remained (400px) without
+     anyone choosing it.
+
+     travel-map.ts reads --globe-size to work out the zoom, so the number lives
+     in exactly one place. */
   .map {
-    height: 500px;
+    --globe-size: clamp(280px, 40vw, 480px);
+    --globe-gap: 1.75rem;
+    height: calc(var(--globe-size) + var(--globe-gap) * 2);
     border: 1px solid transparent;
     border-radius: 20px;
     overflow: hidden;
@@ -66,9 +91,8 @@ const { mode = "globe" } = Astro.props;
 
   @media (max-width: 480px) {
     .map {
-      height: 300px;
-      /* iOS Safari mobile fixes */
-      min-height: 300px;
+      /* A phone has less to spare above and below than it does across. */
+      --globe-gap: 1rem;
       -webkit-overflow-scrolling: touch;
     }
   }

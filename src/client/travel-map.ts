@@ -20,13 +20,21 @@ const LIGHT_WATER = "#cad8e6";
 const DARK_WATER = "#2a3a4a";
 const LIGHT_TEXT = "#333333";
 const DARK_TEXT = "#e0e0e0";
-const GLOBE_PADDING_DESKTOP = 50;
-const GLOBE_PADDING_MOBILE = 0;
 
-function getGlobePadding(containerWidth: number): number {
-  return containerWidth <= MOBILE_BREAKPOINT
-    ? GLOBE_PADDING_MOBILE
-    : GLOBE_PADDING_DESKTOP;
+/**
+ * The globe's diameter, in pixels, as chosen by the stylesheet (--globe-size on
+ * .map). The container's height is that plus a gap above and below, so reading
+ * it here keeps one number in one place instead of a padding constant on this
+ * side and a fixed height on the other, each implying a different globe.
+ */
+function getGlobeSize(container: HTMLElement): number {
+  const declared = parseFloat(
+    getComputedStyle(container).getPropertyValue("--globe-size"),
+  );
+  if (Number.isFinite(declared) && declared > 0) return declared;
+  // No custom property (a container styled elsewhere): fall back to fitting the
+  // sphere into whichever way the box is tighter.
+  return Math.min(container.clientWidth, container.clientHeight);
 }
 
 // Calculate zoom level to fit globe in container
@@ -35,16 +43,8 @@ function getGlobePadding(containerWidth: number): number {
 // Solving for zoom: zoom = log2(visualDiameter * 2.7 / 512)
 const GLOBE_SCALE_FACTOR = 2.7;
 
-function getZoomForGlobe(
-  containerWidth: number,
-  containerHeight: number,
-  padding: number,
-): number {
-  const targetDiameter = Math.min(
-    containerWidth,
-    containerHeight - padding * 2,
-  );
-  return Math.log2((targetDiameter * GLOBE_SCALE_FACTOR) / 512);
+function getZoomForGlobe(diameter: number): number {
+  return Math.log2((diameter * GLOBE_SCALE_FACTOR) / 512);
 }
 
 /**
@@ -74,12 +74,7 @@ async function initMap(): Promise<void> {
   // For globe mode, calculate zoom to fit globe in container with padding
   const getInitialZoom = (): number => {
     if (isGlobe) {
-      const padding = getGlobePadding(container.clientWidth);
-      return getZoomForGlobe(
-        container.clientWidth,
-        container.clientHeight,
-        padding,
-      );
+      return getZoomForGlobe(getGlobeSize(container));
     }
     return isMobile ? 1 : 2;
   };
@@ -103,12 +98,7 @@ async function initMap(): Promise<void> {
   function setProjectionMode(mode: "globe" | "normal") {
     if (mode === "globe") {
       map.setProjection({ type: "globe" });
-      const padding = getGlobePadding(container.clientWidth);
-      const newZoom = getZoomForGlobe(
-        container.clientWidth,
-        container.clientHeight,
-        padding,
-      );
+      const newZoom = getZoomForGlobe(getGlobeSize(container));
       map.setMinZoom(newZoom);
       map.setZoom(newZoom);
     } else {
@@ -145,8 +135,7 @@ async function initMap(): Promise<void> {
     const resizeObserver = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width === 0 || height === 0) return;
-      const padding = getGlobePadding(width);
-      const newZoom = getZoomForGlobe(width, height, padding);
+      const newZoom = getZoomForGlobe(getGlobeSize(container));
       map.setMinZoom(newZoom);
       map.setZoom(newZoom);
       // A resized container fills at a different zoom.
