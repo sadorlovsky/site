@@ -30,16 +30,18 @@ const { year, class: className } = Astro.props;
        year docks just below the floating pills instead of colliding with
        them. Elsewhere the variable is unset and the year sticks to the top. */
     top: var(--sticky-header-offset, 0px);
-    background-color: light-dark(
-      rgba(248, 248, 255, 0.85),
-      rgba(25, 25, 25, 0.85)
-    );
-    backdrop-filter: blur(12px);
+    /* The same veil as the pinned header's strip: both are the page closing
+       over what scrolls beneath them, and they used to say so with two sets of
+       hand-written values. */
+    background-color: var(--veil-bg);
+    backdrop-filter: var(--veil-filter);
     font-weight: 600;
     font-size: 1.25rem;
+    /* Years are numbers first: tabular figures keep them aligned down the page
+       as the eye scans the column. */
+    font-variant-numeric: tabular-nums;
     padding: 0.5rem 0;
-    border-bottom: 1px solid
-      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+    border-bottom: var(--glass-border);
     margin-bottom: 0.5rem;
     z-index: 10;
     color: light-dark(#333, #fafafa);

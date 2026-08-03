@@ -1,13 +1,3 @@
-/* The card's own tint. Named --card-* on purpose: it used to be --glass-bg-light
-   and friends, one hex away from global.css's --glass-* and easy to mistake for
-   them, which is how the card ended up with a second dialect of the same
-   material. Everything else the card needs — border, shadow, rim — now comes
-   from the real tokens; only the tint is its own, and heavier (0.7 vs 0.55)
-   because a card is content you read through, not chrome you look past. */
-:root {
-  --card-bg: light-dark(rgba(255, 255, 255, 0.7), rgba(40, 40, 45, 0.7));
-}
-
 .wishlist-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -852,12 +842,6 @@
 
 /* Accessibility - Reduced transparency */
 @media (prefers-reduced-transparency: reduce) {
-  /* Card tint → solid. The rest of the card's glass (border, rim) is opaque
-     already; global.css takes care of the .liquid-glass surfaces. */
-  :root {
-    --card-bg: light-dark(#ffffff, #2a2a2d);
-  }
-
   /* Ambient blobs — hide */
   .wishlist-container::before,
   .wishlist-container::after {

@@ -5,6 +5,8 @@ import { getCityName } from "@lib/travel/cities-i18n";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
 const MOBILE_BREAKPOINT = 480;
+/** Latitude the globe opens on — also what its zoom floor is measured from. */
+const GLOBE_LATITUDE = 50;
 const VISITED_COLOR = "#ed6292";
 // City dots adapt to color scheme: a white core glows on the dark map, while a
 // deep accent core (with a white ring) stays legible on the light map. The glow
@@ -20,31 +22,95 @@ const LIGHT_WATER = "#cad8e6";
 const DARK_WATER = "#2a3a4a";
 const LIGHT_TEXT = "#333333";
 const DARK_TEXT = "#e0e0e0";
-const GLOBE_PADDING_DESKTOP = 50;
-const GLOBE_PADDING_MOBILE = 0;
 
-function getGlobePadding(containerWidth: number): number {
-  return containerWidth <= MOBILE_BREAKPOINT
-    ? GLOBE_PADDING_MOBILE
-    : GLOBE_PADDING_DESKTOP;
+/**
+ * The globe's diameter, in pixels, as chosen by the stylesheet (--globe-size on
+ * .map). The container's height is that plus a gap above and below, so reading
+ * it here keeps one number in one place instead of a padding constant on this
+ * side and a fixed height on the other, each implying a different globe.
+ */
+function getGlobeSize(container: HTMLElement): number {
+  const declared = parseFloat(
+    getComputedStyle(container).getPropertyValue("--globe-size"),
+  );
+  if (Number.isFinite(declared) && declared > 0) return declared;
+  // No custom property (a container styled elsewhere): fall back to fitting the
+  // sphere into whichever way the box is tighter.
+  return Math.min(container.clientWidth, container.clientHeight);
 }
 
-// Calculate zoom level to fit globe in container
-// MapLibre globe visual size ≈ 512 * 2^zoom / 2.7 (empirically determined)
-// So: visualDiameter = 512 * 2^zoom / 2.7
-// Solving for zoom: zoom = log2(visualDiameter * 2.7 / 512)
-const GLOBE_SCALE_FACTOR = 2.7;
+// MapLibre's rendered globe is ≈ 512 * 2^zoom / GLOBE_SCALE_FACTOR pixels
+// across, so zoom = log2(diameter * GLOBE_SCALE_FACTOR / 512).
+//
+// The factor is measured, not derived. It was 2.7, which asked for a diameter
+// and got about 97% of it — invisible while the container had 50px of padding
+// to hide the shortfall, and plain once the container became the globe. Read
+// off the rendered sphere's width at its widest point at three container
+// sizes: 480→466, 440→428, 280→272, all landing within 0.002 of the same
+// ratio.
+const GLOBE_SCALE_FACTOR = 2.78;
 
-function getZoomForGlobe(
+function getZoomForGlobe(diameter: number): number {
+  return Math.log2((diameter * GLOBE_SCALE_FACTOR) / 512);
+}
+
+/**
+ * Mercator's scale factor at a latitude, in zoom levels.
+ *
+ * Under the globe projection getZoom()/setZoom() speak in mercator-equivalent
+ * units for the centre's latitude, while the transform — and with it the size
+ * the sphere is drawn at — does not. The two differ by exactly this: 0.64 zoom
+ * levels at 50°N, 2.5 at 80°N. Anything comparing a zoom against a size has to
+ * account for it, or it holds at one latitude and drifts everywhere else.
+ */
+function latitudeZoomOffset(latitude: number): number {
+  return Math.log2(1 / Math.cos((latitude * Math.PI) / 180));
+}
+
+/**
+ * The reported zoom, restated in the units the sphere's size was measured in —
+ * those of GLOBE_LATITUDE — so a threshold in those units means the same thing
+ * wherever the globe has been dragged to. At GLOBE_LATITUDE it changes nothing.
+ */
+function sizeZoom(map: MapLibre): number {
+  return (
+    map.getZoom() +
+    latitudeZoomOffset(map.getCenter().lat) -
+    latitudeZoomOffset(GLOBE_LATITUDE)
+  );
+}
+
+/**
+ * The floor to hand to setMinZoom so gestures can enlarge the globe but never
+ * shrink it below `diameter` on screen.
+ *
+ * minZoom is compared against the transform's zoom, so the offset above has to
+ * be added to a value that came from getZoomForGlobe. Measured: a floor of
+ * 1.382 let the sphere shrink to a reported 0.745, while 1.382 + 0.637 stops it
+ * at exactly 1.382.
+ *
+ * Apply it only once the globe projection is active. In the constructor, where
+ * the map is still mercator, the same number clamps the opening view instead
+ * and the globe starts half again too large.
+ */
+function getGlobeZoomFloor(diameter: number, latitude: number): number {
+  return getZoomForGlobe(diameter) + latitudeZoomOffset(latitude);
+}
+
+/**
+ * Zoom at which the sphere reaches into the container's corners — the point
+ * where the map has filled its frame and a border stops being a box drawn
+ * around empty space. Derived from the container's diagonal with the same
+ * empirical scale factor as above, rather than a number picked by eye, so it
+ * follows the viewport instead of being right at one width only. The 0.9 gives
+ * it a little lead: the frame should be there as the corners fill, not after.
+ */
+function getZoomForFullFrame(
   containerWidth: number,
   containerHeight: number,
-  padding: number,
 ): number {
-  const targetDiameter = Math.min(
-    containerWidth,
-    containerHeight - padding * 2,
-  );
-  return Math.log2((targetDiameter * GLOBE_SCALE_FACTOR) / 512);
+  const diagonal = Math.hypot(containerWidth, containerHeight) * 0.9;
+  return Math.log2((diagonal * GLOBE_SCALE_FACTOR) / 512);
 }
 
 async function initMap(): Promise<void> {
@@ -58,18 +124,15 @@ async function initMap(): Promise<void> {
   // For globe mode, calculate zoom to fit globe in container with padding
   const getInitialZoom = (): number => {
     if (isGlobe) {
-      const padding = getGlobePadding(container.clientWidth);
-      return getZoomForGlobe(
-        container.clientWidth,
-        container.clientHeight,
-        padding,
-      );
+      return getZoomForGlobe(getGlobeSize(container));
     }
     return isMobile ? 1 : 2;
   };
 
   // For globe mode, start further west so rotation immediately shows Western Europe
-  const initialCenter: [number, number] = isGlobe ? [-10, 50] : [43, 55];
+  const initialCenter: [number, number] = isGlobe
+    ? [-10, GLOBE_LATITUDE]
+    : [43, 55];
 
   const initialZoom = getInitialZoom();
 
@@ -78,7 +141,7 @@ async function initMap(): Promise<void> {
     style: "https://tiles.openfreemap.org/styles/positron",
     center: initialCenter,
     zoom: initialZoom,
-    minZoom: isGlobe ? initialZoom : 1,
+    minZoom: 1,
     attributionControl: false,
   });
 
@@ -87,14 +150,11 @@ async function initMap(): Promise<void> {
   function setProjectionMode(mode: "globe" | "normal") {
     if (mode === "globe") {
       map.setProjection({ type: "globe" });
-      const padding = getGlobePadding(container.clientWidth);
-      const newZoom = getZoomForGlobe(
-        container.clientWidth,
-        container.clientHeight,
-        padding,
-      );
-      map.setMinZoom(newZoom);
+      const newZoom = getZoomForGlobe(getGlobeSize(container));
       map.setZoom(newZoom);
+      map.setMinZoom(
+        getGlobeZoomFloor(getGlobeSize(container), GLOBE_LATITUDE),
+      );
     } else {
       map.setProjection({ type: "mercator" });
       map.setMinZoom(1);
@@ -106,17 +166,72 @@ async function initMap(): Promise<void> {
   (window as unknown as { setMapMode: typeof setProjectionMode }).setMapMode =
     setProjectionMode;
 
+  // The globe fills most of the first screen, so a page that let it eat every
+  // scroll would be a page you couldn't leave with the cursor where it lands.
+  //
+  // Plain wheel and two-finger scroll therefore belong to the page. Zoom stays
+  // on the pinch, which reaches the browser as a wheel event with ctrlKey set
+  // by the operating system — the gesture people already use to zoom a map, and
+  // nothing anyone has to hold down. Stopping the event here in the capture
+  // phase means MapLibre's own handler, which sits on a descendant, never runs
+  // and never calls preventDefault, so the page scrolls exactly as it would
+  // over any other element.
+  container.addEventListener(
+    "wheel",
+    (event) => {
+      if (!event.ctrlKey) event.stopPropagation();
+    },
+    { capture: true },
+  );
+
+  // Touch has the same trap and less room to escape it: a finger landing on the
+  // globe would drag the map instead of the page. One finger scrolls, two
+  // fingers still zoom and turn it. The globe spins by itself until touched, so
+  // the page keeps its animation either way.
+  if (window.matchMedia("(pointer: coarse)").matches) {
+    map.dragPan.disable();
+  }
+
+  // The frame only earns its place once the map fills it. Around the globe it
+  // would be drawing a box around mostly empty space — a sphere in a 2.7:1
+  // container leaves the majority of the frame dark — while zoomed in the map
+  // runs edge to edge and the border reads as a window onto it. The threshold
+  // is cached rather than measured per zoom event, since reading the
+  // container's size on every frame of a pinch would cost a layout each time.
+  let frameFromZoom = getZoomForFullFrame(
+    container.clientWidth,
+    container.clientHeight,
+  );
+  const syncFrame = () => {
+    // Compared in size units, not reported ones: dragging to a pole shifts the
+    // reported zoom by two and a half levels without changing how big anything
+    // is drawn, and the frame used to wait that much longer to appear there.
+    const zoom = isGlobe ? sizeZoom(map) : map.getZoom();
+    container.classList.toggle("is-framed", zoom >= frameFromZoom);
+  };
+  map.on("zoom", syncFrame);
+  // Latitude changes what the reported zoom means, so panning matters too.
+  map.on("move", syncFrame);
+  syncFrame();
+
   if (isGlobe) {
     map.setProjection({ type: "globe" });
+    map.setMinZoom(getGlobeZoomFloor(getGlobeSize(container), GLOBE_LATITUDE));
 
     // Recalculate zoom on container resize
     const resizeObserver = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       if (width === 0 || height === 0) return;
-      const padding = getGlobePadding(width);
-      const newZoom = getZoomForGlobe(width, height, padding);
-      map.setMinZoom(newZoom);
+      const newZoom = getZoomForGlobe(getGlobeSize(container));
       map.setZoom(newZoom);
+      // A resized container gives the globe a new size, and that size is also
+      // the new floor.
+      map.setMinZoom(
+        getGlobeZoomFloor(getGlobeSize(container), GLOBE_LATITUDE),
+      );
+      // It fills at a different zoom too.
+      frameFromZoom = getZoomForFullFrame(width, height);
+      syncFrame();
     });
     resizeObserver.observe(container);
 

@@ -27,14 +27,14 @@ import {
         aria-label="Why this number? View country list"
         data-aria-label-en="Why this number? View country list"
         data-aria-label-ru="Почему такое число? Посмотреть список стран"
-        title="Why this number? View country list"
-        data-title-en="Why this number? View country list"
-        data-title-ru="Почему такое число? Посмотреть список стран"
+        data-tooltip="Why this number? View country list"
+        data-tooltip-en="Why this number? View country list"
+        data-tooltip-ru="Почему такое число? Посмотреть список стран"
       >
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
-    <ProgressBar value={countries.size} max={countryListSize} label="Countries visited progress" />
+    <ProgressBar value={countries.size} max={countryListSize} label="Countries visited progress" accent />
   </div>
   <div class="card">
     <h3 data-en="Cities" data-ru="Города">Cities</h3>
@@ -52,44 +52,65 @@ import {
         aria-label="Why 7 continents? National Geographic definition"
         data-aria-label-en="Why 7 continents? National Geographic definition"
         data-aria-label-ru="Почему 7 континентов? Определение National Geographic"
-        title="Why 7 continents? National Geographic definition"
-        data-title-en="Why 7 continents? National Geographic definition"
-        data-title-ru="Почему 7 континентов? Определение National Geographic"
+        data-tooltip="Why 7 continents? National Geographic definition"
+        data-tooltip-en="Why 7 continents? National Geographic definition"
+        data-tooltip-ru="Почему 7 континентов? Определение National Geographic"
       >
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
-    <ProgressBar value={continentsVisited} max={continentsTotal} label="Continents visited progress" />
+    <ProgressBar value={continentsVisited} max={continentsTotal} label="Continents visited progress" accent />
   </div>
 </div>
+
+<script>
+  // The "?" links explain the numbers, so they get the site's own tooltip
+  // rather than the browser's — which arrives half a second late and in the
+  // operating system's styling.
+  import { initTooltips } from "@client/tooltip";
+  initTooltips();
+</script>
 
 <style>
   .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    /* The page's own grid gap, so the stats sit on the same rhythm as the map
+       and the trip list rather than a tighter one of their own. */
+    gap: 1.25rem;
   }
 
+  /* The same material as a wishlist card: tint, border, shadow and rim all from
+     the shared tokens, and the same 20px radius so the two read as one family
+     of surfaces. It used to be a flat #222222 with a second hardcoded colour
+     for the light scheme. */
   .card {
-    background-color: #222222;
-    padding: 1em;
-    border-radius: 5px;
+    position: relative;
+    background: var(--card-bg);
+    border: var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    padding: 1rem 1.1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5em;
   }
 
-  @media (prefers-color-scheme: light) {
-    .card {
-      background-color: #ebedf0;
-    }
+  /* The refractive rim — a lens edge lit from the top left. */
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: var(--glass-rim);
   }
 
   .card > h3 {
     margin: 0;
     font-size: 0.85rem;
     font-weight: 500;
-    color: #888;
+    color: light-dark(#666, #9a9aa0);
   }
 
   .value {
@@ -106,12 +127,12 @@ import {
     display: inline-flex;
     vertical-align: super;
     padding: 0.1rem;
-    border-radius: 4px;
+    border-radius: 999px;
     transition: color 0.2s ease;
   }
 
   .info-link:hover .info-icon {
-    color: #888;
+    color: light-dark(#1a1a1a, #fff);
   }
 
   .info-link:focus-visible {
@@ -119,8 +140,10 @@ import {
     outline-offset: 2px;
   }
 
+  /* Muted like the language switcher's globe — present, not competing with the
+     number it belongs to. */
   .info-icon {
-    color: #666;
+    color: light-dark(#888, #8a8a90);
     width: 14px;
     height: 14px;
     transition: color 0.2s ease;

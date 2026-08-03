@@ -14,15 +14,79 @@ const { mode = "globe" } = Astro.props;
 </div>
 
 <style>
+  /* Note the absence of `transform: translateZ(0)` here. It was an iOS Safari
+     fix applied to every browser, and an ancestor's transform resets the
+     backdrop root — which killed the frost on the city labels everywhere. It
+     now lives in the iOS-only block at the bottom of this file, next to the
+     `perspective` whose identical effect was already documented there. */
+  /* Registered so the script can read them: getComputedStyle hands back an
+     unregistered custom property exactly as written — "clamp(280px, 40vw,
+     480px)" — while a registered <length> resolves to pixels. */
+  @property --globe-size {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  @property --globe-gap {
+    syntax: "<length>";
+    inherits: false;
+    initial-value: 0px;
+  }
+
+  /* The geometry runs one way: the globe's diameter is the input, the container
+     is that plus a gap above and below, and the breathing room is what falls
+     out. It used to run the other way — a fixed 500px box and a hardcoded 50px
+     of padding, which left the globe whatever height remained (400px) without
+     anyone choosing it.
+
+     travel-map.ts reads --globe-size to work out the zoom, so the number lives
+     in exactly one place. */
   .map {
-    height: 500px;
-    border-radius: 5px;
+    --globe-size: clamp(280px, 40vw, 480px);
+    /* Zero: the container is the globe. Whatever air the globe needs comes from
+       the page's own grid gap, which already separates it from the title above
+       and the stats below — the container adding its own would be a second
+       margin nobody asked for. Kept as a variable because the geometry below
+       reads better stated in full, and a phone may yet want a hair of it. */
+    --globe-gap: 0px;
+    height: calc(var(--globe-size) + var(--globe-gap) * 2);
+    border: 1px solid transparent;
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
-    /* iOS Safari fixes */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
     width: 100%;
+    transition:
+      border-color 0.4s ease,
+      box-shadow 0.4s ease;
+  }
+
+  /* Framed like a card — border, shadow, rim and radius from the shared tokens
+     — but only once the map fills the frame. Around the globe the border would
+     be drawing a box around mostly empty space; zoomed in, the map runs edge to
+     edge and the same border reads as a window onto it. travel-map.ts sets
+     `is-framed` as the globe flattens. The transparent border above holds the
+     space either way, so nothing shifts when it arrives. */
+  .map.is-framed {
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* The lens edge, above the canvas but below the city labels (z-index 10000). */
+  .map::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    box-shadow: var(--glass-rim);
+  }
+
+  .map.is-framed::after {
+    opacity: 1;
   }
 
   .map:has(canvas:focus-visible) {
@@ -32,9 +96,6 @@ const { mode = "globe" } = Astro.props;
 
   @media (max-width: 480px) {
     .map {
-      height: 300px;
-      /* iOS Safari mobile fixes */
-      min-height: 300px;
       -webkit-overflow-scrolling: touch;
     }
   }
@@ -50,7 +111,12 @@ const { mode = "globe" } = Astro.props;
     pointer-events: none;
     z-index: 1;
     border-radius: inherit;
-    background: linear-gradient(90deg, #2a2a2a 0%, #3a3a3a 50%, #2a2a2a 100%);
+    background: linear-gradient(
+      90deg,
+      light-dark(#e0e0e0, #2a2a2a) 0%,
+      light-dark(#f0f0f0, #3a3a3a) 50%,
+      light-dark(#e0e0e0, #2a2a2a) 100%
+    );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite ease-in-out;
   }
@@ -63,107 +129,6 @@ const { mode = "globe" } = Astro.props;
       background-position: -200% 0;
     }
   }
-
-  @media (prefers-color-scheme: light) {
-    .placeholder {
-      background: linear-gradient(90deg, #e0e0e0 0%, #f0f0f0 50%, #e0e0e0 100%);
-      background-size: 200% 100%;
-    }
-  }
-
-  .cities-toggle {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-  }
-
-  .toggle-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 16px;
-    color: white;
-    user-select: none;
-  }
-
-  @media (prefers-color-scheme: light) {
-    .toggle-label {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(8px);
-      color: black;
-      border: 1px solid rgba(0, 0, 0, 0.2);
-    }
-  }
-
-  .toggle-input {
-    display: none;
-  }
-
-  .toggle-slider {
-    position: relative;
-    width: 32px;
-    height: 18px;
-    background: #666;
-    border-radius: 9px;
-    transition: background 0.3s ease;
-  }
-
-  .toggle-slider::before {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 14px;
-    height: 14px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-  }
-
-  .toggle-input:checked + .toggle-slider {
-    background: #00d4ff;
-  }
-
-  .toggle-input:checked + .toggle-slider::before {
-    transform: translateX(14px);
-  }
-
-  @media (prefers-color-scheme: light) {
-    .toggle-slider {
-      background: #ccc;
-    }
-  }
-
-  @media (max-width: 480px) {
-    .cities-toggle {
-      top: 5px;
-      right: 5px;
-    }
-
-    .toggle-label {
-      padding: 6px 10px;
-    }
-
-    .toggle-slider {
-      width: 28px;
-      height: 16px;
-    }
-
-    .toggle-slider::before {
-      width: 12px;
-      height: 12px;
-    }
-
-    .toggle-input:checked + .toggle-slider::before {
-      transform: translateX(12px);
-    }
-  }
 </style>
 
 <style is:global>
@@ -171,16 +136,24 @@ const { mode = "globe" } = Astro.props;
     outline: none;
   }
 
+  /* A label lying on the map is glass over media — the same case as a badge on
+     a wishlist photo, and it uses the same tokens. They stay dark in both
+     schemes on purpose: this one used to flip to white with black text in the
+     light scheme, over a map that is dark blue and pink either way. */
   .city-label-overlay {
     position: absolute;
     display: flex;
     align-items: center;
     gap: 6px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(6px);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
+    background: var(--glass-bg-on-media);
+    backdrop-filter: var(--glass-filter);
+    border: var(--glass-border-on-media);
+    box-shadow:
+      var(--glass-rim-on-media),
+      0 2px 10px rgba(0, 0, 0, 0.28);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
     font-size: 16px;
     white-space: nowrap;
     pointer-events: none;
@@ -199,28 +172,29 @@ const { mode = "globe" } = Astro.props;
     border-radius: 3px;
   }
 
-  @media (prefers-color-scheme: light) {
+  @media (max-width: 480px) {
     .city-label-overlay {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(6px);
-      color: black;
-      border: 1px solid rgba(0, 0, 0, 0.2);
+      padding: 3px 8px;
     }
   }
 
-  @media (max-width: 480px) {
+  @media (prefers-reduced-transparency: reduce) {
     .city-label-overlay {
-      padding: 3px 6px;
+      background: rgb(24, 24, 28);
+      backdrop-filter: none;
     }
   }
 
   /* iOS Safari specific fixes. Scope to iOS only: -webkit-touch-callout is
-     iOS-exclusive, whereas -webkit-appearance also matches desktop Chrome,
-     where the perspective below establishes a containing block that breaks
-     backdrop-filter on the city tooltip. */
+     iOS-exclusive, whereas -webkit-appearance also matches desktop Chrome.
+     Everything in here establishes a containing block, which resets the
+     backdrop root and takes the frost off the city labels — a fair trade for
+     the rendering bugs it avoids on iOS, but only there. */
   @supports (-webkit-touch-callout: none) {
     .map {
       /* Force hardware acceleration */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
       /* Prevent iOS Safari rendering issues */
