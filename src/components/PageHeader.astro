@@ -129,20 +129,18 @@ const hasActions = Astro.slots.has("actions");
 
   {
     condenseOnScroll ? (
-      <div class="hero-collapse">
-        <div class="hero-collapse__inner">
-          {showHeroTitle && (
-            <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
-              {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
-            </h1>
-          )}
-          {subtitle && (
-            <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
-              {displayLang === "ru" ? subtitle.ru : subtitle.en}
-            </p>
-          )}
-          <slot />
-        </div>
+      <div class="page-header__hero">
+        {showHeroTitle && (
+          <h1 class="page-title" data-en={pageTitle.en} data-ru={pageTitle.ru}>
+            {displayLang === "ru" ? pageTitle.ru : pageTitle.en}
+          </h1>
+        )}
+        {subtitle && (
+          <p class="subtitle" data-en={subtitle.en} data-ru={subtitle.ru}>
+            {displayLang === "ru" ? subtitle.ru : subtitle.en}
+          </p>
+        )}
+        <slot />
       </div>
     ) : (
       <>
@@ -315,18 +313,38 @@ const hasActions = Astro.slots.has("actions");
   /* ===========================================================================
      Condense-on-scroll mode.
 
-     The header is pinned to the top of the viewport. As the page scrolls the
-     hero title collapses (its grid row eases to 0fr) and fades out, while a
-     compact copy cross-fades in as its own floating glass pill — centred between
-     the home and language pills. Rather than a full-width bar over the page's
-     empty dark margins, the condensed header reads as three liquid-glass pills,
-     echoing the magnetic glass dock used elsewhere on the site.
+     The pill row pins to the top of the viewport; the hero title is ordinary
+     content that scrolls away under it and comes back at exactly the speed the
+     page is scrolled. It used to be a state instead — the title's grid row
+     eased from 1fr to 0fr once the scroll position crossed a threshold — which
+     meant the title only started coming back at y < 6px, after the scroll had
+     already stopped, and then took another 400ms. Nothing to wait for now,
+     because nothing animates: the title just moves with the page.
+
+     `display: contents` is what makes the pinning possible. A sticky element is
+     confined to its parent's box, and this header's box is only as tall as the
+     row plus the title — the pills would come unstuck a few hundred pixels
+     down. With the header generating no box of its own, the row's containing
+     block becomes the page container, so it stays pinned the whole way. It also
+     hands the row and the hero to that container's own flex gap, which is why
+     the title no longer carries a top margin here.
      =========================================================================== */
   .page-header--condense {
+    display: contents;
+  }
+
+  .page-header--condense .header-row {
     position: sticky;
-    top: 0;
+    top: 0.55rem;
     z-index: 30;
-    transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* No margin of its own: with the header's box gone, the row and the hero are
+     two items of the page's own container, and its gap already separates them
+     exactly as the title's old top margin did. A container without a gap would
+     have them touch — the trade for letting the page own its spacing. */
+  .page-header--condense .page-title {
+    margin-top: 0;
   }
 
   /* Progressive veil behind the floating pills. The pills leave open gaps
@@ -334,8 +352,8 @@ const hasActions = Astro.slots.has("actions");
      fixed, masked backdrop-blur dissolves whatever approaches the top edge —
      sharp at the year row, frosted mist at the viewport edge — so rows melt
      away instead of colliding with the capsules. Sits at the bottom of the
-     header's stacking context (z-index: -1), under all three pills. */
-  .page-header--condense::before {
+     row's stacking context (z-index: -1), under all three pills. */
+  .page-header--condense .header-row::before {
     content: "";
     position: fixed;
     top: 0;
@@ -357,42 +375,8 @@ const hasActions = Astro.slots.has("actions");
     transition: opacity 0.4s ease;
   }
 
-  .page-header--condense.is-condensed::before {
+  .page-header--condense.is-condensed .header-row::before {
     opacity: 1;
-  }
-
-  /* A whisper more breathing room from the very top edge once the pills float. */
-  .page-header--condense.is-condensed {
-    padding-top: 0.55rem;
-  }
-
-  /* Hero title collapses by easing its grid row from 1fr to 0fr. */
-  .page-header--condense .hero-collapse {
-    display: grid;
-    grid-template-rows: 1fr;
-    transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .page-header--condense .hero-collapse__inner {
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  .page-header--condense.is-condensed .hero-collapse {
-    grid-template-rows: 0fr;
-  }
-
-  /* Big hero title fades out as it collapses, so it doesn't double the copy
-     that flies up into the pill. */
-  .page-header--condense .page-title {
-    transition:
-      opacity 0.25s ease,
-      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .page-header--condense.is-condensed .page-title {
-    opacity: 0;
-    transform: translateY(-8px);
   }
 
   /* Compact title — a floating glass pill centred over the row, hidden until
@@ -414,12 +398,12 @@ const hasActions = Astro.slots.has("actions");
     align-items: center;
     padding: 0 1.05rem;
     border-radius: 999px;
-    /* Share the hero-collapse's exact duration + easing so the pill flies in
-       in lock-step with the closing hero — a two-speed hand-off is what reads
-       as a jump. */
+    /* Short, because it starts the moment the title slides under the row —
+       while the page is still moving. A long fade would still be running after
+       the scroll had stopped, which is the whole thing this replaced. */
     transition:
-      opacity 0.4s ease,
-      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity 0.22s ease,
+      transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform, opacity;
   }
 
@@ -441,10 +425,7 @@ const hasActions = Astro.slots.has("actions");
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .page-header--condense,
-    .page-header--condense::before,
-    .page-header--condense .hero-collapse,
-    .page-header--condense .page-title,
+    .page-header--condense .header-row::before,
     .condensed-title {
       transition: none;
     }
