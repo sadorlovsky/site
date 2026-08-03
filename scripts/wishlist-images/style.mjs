@@ -71,7 +71,9 @@ export const FORM_FACTORS = {
     scale: "52%",
     pose:
       "Present the package upright on {{surface}}, front label square to camera, " +
-      "held in shape as if full.",
+      "held in shape as if full. A flat box leans back 8 degrees like the flat " +
+      "categories; a gusseted bag or pouch stands plump on its base, top seam " +
+      "straight and unwrinkled.",
   },
   object: {
     scale: "50%",
@@ -109,12 +111,14 @@ const STAGING_OVERRIDES = {
   vinyl: NO_SHELF_STAGING,
   "blu-ray": NO_SHELF_STAGING,
   books: NO_SHELF_STAGING,
+  sweets: NO_SHELF_STAGING,
 };
 
 const SURFACE_OVERRIDES = {
   vinyl: "the backdrop",
   "blu-ray": "the backdrop",
   books: "the backdrop",
+  sweets: "the backdrop",
 };
 
 /**
