@@ -179,9 +179,6 @@ export function initScrollableCategories(
     scrollStart = scroller.scrollLeft;
     scroller.style.cursor = "grabbing";
     scroller.style.userSelect = "none";
-    // Lets the chips' cursor magnetism stand down while the row is dragged
-    // (filter-magnet.ts) — otherwise every chip wobbles under the drag.
-    scroller.classList.add("is-dragging");
   }
 
   function onMouseMove(e: MouseEvent) {
@@ -199,7 +196,6 @@ export function initScrollableCategories(
     isDragging = false;
     scroller.style.cursor = "";
     scroller.style.userSelect = "";
-    scroller.classList.remove("is-dragging");
   }
 
   function onClickCapture(e: MouseEvent) {

@@ -151,109 +151,63 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 }
 
 /* Resting chip: the shared glass recipe, verbatim — same tokens as the dock /
-   lang-switcher capsules. Text colours mirror .dock-item exactly.
-
-   Like the dock, a chip never repaints its own surface: the accent arrives as
-   an indicator (::before) that scales up behind the label, so the glass stays
-   put underneath. `isolation` gives the chip a stacking context, which lands
-   the z-index:-1 indicator above the frost but below the label. */
+   lang-switcher capsules. Text colours mirror .dock-item exactly. */
 .kit-toggle-group--separated .kit-toggle-item {
   position: relative;
-  isolation: isolate;
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
   color: light-dark(#555, #b4b4b8);
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
-  /* Not `all`: `transform` belongs to the cursor magnetism, which drives it
-     per frame and must not be smoothed a second time. */
-  transition: color 0.3s ease;
-  will-change: transform;
 }
 
-/* Gradient indicator — the dock's "magic line", sized to the whole chip.
-   Accent fill, the shared 0.45 glow, and .dock-indicator's easing verbatim. */
-.kit-toggle-group--separated .kit-toggle-item::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
-  opacity: 0;
-  transform: scale(0.9);
-  transition:
-    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.3s ease;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* Refractive rim — the .liquid-glass lens edge, above the indicator. */
 .kit-toggle-group--separated .kit-toggle-item::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 5;
   box-shadow: var(--glass-rim);
 }
 
-/* Lit chip — the current category, or the one under the cursor/keyboard, just
-   like a dock item. The indicator glides in, the label turns white and the rim
-   steps aside. */
-.kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"]::before,
-.kit-toggle-group--separated .kit-toggle-item.is-active::before,
-.kit-toggle-group--separated .kit-toggle-item:hover:not(:disabled)::before,
-.kit-toggle-group--separated .kit-toggle-item:focus-visible::before {
-  opacity: 1;
-  transform: scale(1);
+.kit-toggle-group--separated
+  .kit-toggle-item:hover:not(:disabled):not([aria-pressed="true"]):not(
+    .is-active
+  ) {
+  color: light-dark(#1a1a1a, #fff);
 }
 
+/* Active chip = the dock indicator: opaque accent gradient with its glow.
+   Glass artefacts (border, rim, blur) switch off — chrome's gradient pills
+   carry none of them. */
 .kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"],
-.kit-toggle-group--separated .kit-toggle-item.is-active,
-.kit-toggle-group--separated .kit-toggle-item:focus-visible,
-/* The :not() chain isn't redundant — it out-specifies the group-agnostic hover
-   rule above, which would otherwise paint a hovered label near-black in light
-   mode, on top of the accent fill. */
-.kit-toggle-group--separated
-  .kit-toggle-item:hover:not(:disabled):not(.is-active):not(
-    [aria-pressed="true"]
-  ) {
-  color: #fff;
+.kit-toggle-group--separated .kit-toggle-item.is-active {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  backdrop-filter: none;
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
 }
 
 .kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"]::after,
-.kit-toggle-group--separated .kit-toggle-item.is-active::after,
-.kit-toggle-group--separated .kit-toggle-item:hover:not(:disabled)::after,
-.kit-toggle-group--separated .kit-toggle-item:focus-visible::after {
+.kit-toggle-group--separated .kit-toggle-item.is-active::after {
   box-shadow: none;
 }
 
-/* The dock only ever lights one item: the indicator travels to whatever the
-   pointer is over. A row of chips can't move a single indicator between
-   wrapped/scrolled positions, so the resting chip dims instead — the light
-   still reads as following the cursor. */
-.kit-toggle-group--separated:hover
-  .kit-toggle-item:is([aria-pressed="true"], .is-active):not(:hover)::before {
-  opacity: 0.4;
-}
-
-/* Separated sizes — capsules, like every other glass control in the chrome. */
+/* Separated sizes */
 .kit-toggle-group--separated.kit-toggle-group--sm .kit-toggle-item {
   height: 32px;
-  padding: 0 0.9rem;
+  padding: 0 0.85rem;
   font-size: 0.75rem;
-  border-radius: 999px;
+  border-radius: 8px;
 }
 
 .kit-toggle-group--separated.kit-toggle-group--md .kit-toggle-item {
   height: 38px;
-  padding: 0 1.15rem;
+  padding: 0 1.1rem;
   font-size: 0.8rem;
-  border-radius: 999px;
+  border-radius: 10px;
 }
 
 /* =============================================================================
@@ -266,16 +220,8 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   transition: color 0.2s ease;
 }
 
-/* A lit item's icon follows its label — including on hover, where a separated
-   chip's indicator turns the label white. */
 .kit-toggle-item.is-active .kit-toggle-group__icon,
-.kit-toggle-item[aria-pressed="true"] .kit-toggle-group__icon,
-.kit-toggle-group--separated
-  .kit-toggle-item:hover:not(:disabled)
-  .kit-toggle-group__icon,
-.kit-toggle-group--separated
-  .kit-toggle-item:focus-visible
-  .kit-toggle-group__icon {
+.kit-toggle-item[aria-pressed="true"] .kit-toggle-group__icon {
   color: inherit;
 }
 
@@ -352,17 +298,8 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
    Accessibility
    ============================================================================= */
 
-/* Separated chips wear the chrome's focus ring (same as .dock-item): the
-   accent is the lit-state indicator now, so an accent outline on top of it
-   would be invisible. */
-.kit-toggle-group--separated .kit-toggle-item:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
-  outline-offset: 2px;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .kit-toggle-item,
-  .kit-toggle-group--separated .kit-toggle-item::before {
+  .kit-toggle-item {
     transition: none;
   }
 }
@@ -372,21 +309,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
     border: 1px solid light-dark(#ccc, #555);
   }
 
-  /* The ring lives on the rim pseudo-element, not the chip: an inset
-     box-shadow paints under the indicator, which would swallow it whenever a
-     chip lights up. */
   .kit-toggle-group--separated .kit-toggle-item {
-    box-shadow: none;
-  }
-
-  .kit-toggle-group--separated .kit-toggle-item::after,
-  .kit-toggle-group--separated
-    .kit-toggle-item:is(
-      [aria-pressed="true"],
-      .is-active,
-      :hover,
-      :focus-visible
-    )::after {
     box-shadow: inset 0 0 0 2px light-dark(#999, #666);
   }
 }
@@ -401,7 +324,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
     background: light-dark(#fff, #444);
   }
 
-  /* Lit chips need no override — the indicator's gradient is already opaque. */
+  /* Active chips need no override — their gradient is already opaque. */
   .kit-toggle-group--separated .kit-toggle-item {
     background-color: light-dark(#fff, #2a2a2d);
     background-image: none;
