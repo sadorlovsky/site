@@ -37,11 +37,16 @@ function getGlobeSize(container: HTMLElement): number {
   return Math.min(container.clientWidth, container.clientHeight);
 }
 
-// Calculate zoom level to fit globe in container
-// MapLibre globe visual size ≈ 512 * 2^zoom / 2.7 (empirically determined)
-// So: visualDiameter = 512 * 2^zoom / 2.7
-// Solving for zoom: zoom = log2(visualDiameter * 2.7 / 512)
-const GLOBE_SCALE_FACTOR = 2.7;
+// MapLibre's rendered globe is ≈ 512 * 2^zoom / GLOBE_SCALE_FACTOR pixels
+// across, so zoom = log2(diameter * GLOBE_SCALE_FACTOR / 512).
+//
+// The factor is measured, not derived. It was 2.7, which asked for a diameter
+// and got about 97% of it — invisible while the container had 50px of padding
+// to hide the shortfall, and plain once the container became the globe. Read
+// off the rendered sphere's width at its widest point at three container
+// sizes: 480→466, 440→428, 280→272, all landing within 0.002 of the same
+// ratio.
+const GLOBE_SCALE_FACTOR = 2.78;
 
 function getZoomForGlobe(diameter: number): number {
   return Math.log2((diameter * GLOBE_SCALE_FACTOR) / 512);

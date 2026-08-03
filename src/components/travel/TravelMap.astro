@@ -44,7 +44,12 @@ const { mode = "globe" } = Astro.props;
      in exactly one place. */
   .map {
     --globe-size: clamp(280px, 40vw, 480px);
-    --globe-gap: 1.75rem;
+    /* Zero: the container is the globe. Whatever air the globe needs comes from
+       the page's own grid gap, which already separates it from the title above
+       and the stats below — the container adding its own would be a second
+       margin nobody asked for. Kept as a variable because the geometry below
+       reads better stated in full, and a phone may yet want a hair of it. */
+    --globe-gap: 0px;
     height: calc(var(--globe-size) + var(--globe-gap) * 2);
     border: 1px solid transparent;
     border-radius: 20px;
@@ -91,8 +96,6 @@ const { mode = "globe" } = Astro.props;
 
   @media (max-width: 480px) {
     .map {
-      /* A phone has less to spare above and below than it does across. */
-      --globe-gap: 1rem;
       -webkit-overflow-scrolling: touch;
     }
   }
