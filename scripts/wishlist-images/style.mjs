@@ -199,10 +199,49 @@ The product itself keeps its original brightness and colour, still lit by the sa
 }
 
 /**
+ * Per-item overrides, keyed by database id — the escape hatch for products that a
+ * generic studio arrangement genuinely misrepresents. A folded blanket says nothing
+ * about its pattern; a rolled desk mat says nothing about its art. Override only
+ * what must differ (staging / pose / camera / scale); everything else stays on the
+ * shared set so the card still reads as part of the series.
+ */
+const ITEM_OVERRIDES = {
+  // Hollow Knight Blanket — show it in use, pattern spread toward camera.
+  12: {
+    staging:
+      "A person reclines on a low seat upholstered in plain neutral grey fabric, " +
+      "in front of the same seamless backdrop. The seat and the person exist only " +
+      "to carry the blanket — no other props.",
+    pose:
+      "The blanket is draped over the reclining person as if in use, covering them " +
+      "from shoulders down, with a generous area of the woven pattern falling " +
+      "toward camera, unfolded and clearly readable. The person's face is turned " +
+      "away from camera and out of focus; the blanket is the subject.",
+    scale: "72%",
+  },
+  // Celeste Desk Mat — flat on a desk, art facing up.
+  7: {
+    staging:
+      "A clean desk surface in matte light wood spans the full frame width, with " +
+      "the same seamless backdrop behind it. Nothing else on the desk — no " +
+      "keyboard, monitor, mouse or cables.",
+    pose:
+      "The desk mat lies completely flat on the desk, long edge parallel to the " +
+      "frame, its printed artwork facing up and fully visible corner to corner. " +
+      "Keep the art, logos and proportions exactly as in the reference.",
+    camera:
+      "85mm equivalent, elevated three-quarter view about 35 degrees above the " +
+      "desk plane, centred on the mat. Mild perspective only — the whole printed " +
+      "surface must stay readable. No wide-angle distortion.",
+    scale: "58%",
+  },
+};
+
+/**
  * Build the full prompt for one item.
  *
- * @param {{ title: string, formFactor: keyof typeof FORM_FACTORS, category: string,
- *           units?: number }} item
+ * @param {{ id?: number, title: string, formFactor: keyof typeof FORM_FACTORS,
+ *           category: string, units?: number }} item
  */
 export function buildPrompt(item) {
   const form = FORM_FACTORS[item.formFactor];
@@ -210,13 +249,19 @@ export function buildPrompt(item) {
     throw new Error(`Unknown form factor "${item.formFactor}" for "${item.title}"`);
   }
 
+  const overrides = ITEM_OVERRIDES[item.id] ?? {};
   const tint = CATEGORY_TINTS[item.category] ?? CATEGORY_TINTS.other;
   const staging =
+    overrides.staging ??
     FORM_STAGING_OVERRIDES[item.formFactor] ??
     STAGING_OVERRIDES[item.category] ??
     DEFAULT_STAGING;
   const surface = SURFACE_OVERRIDES[item.category] ?? "the shelf";
-  const pose = form.pose.replace("{{surface}}", surface);
+  const pose = overrides.pose ?? form.pose.replace("{{surface}}", surface);
+  const camera =
+    overrides.camera ??
+    "85mm equivalent, eye level, 12 degrees above the product's centre line, straight on. No wide-angle distortion, no tilt.";
+  const scale = overrides.scale ?? form.scale;
 
   // Multi-packs read as "one product" unless we say otherwise, and a lone unit for
   // a "3 Pack" listing is actively misleading about what's being asked for.
@@ -238,11 +283,11 @@ STAGING — ${staging}
 
 POSE — ${pose}
 
-CAMERA — 85mm equivalent, eye level, 12 degrees above the product's centre line, straight on. No wide-angle distortion, no tilt.
+CAMERA — ${camera}
 
 LIGHT — One large softbox from the upper left at 35 degrees, gentle fill from the right, soft wraparound shadow falling down and to the right. Identical in every image of this set.
 
-COMPOSITION — 4:3 landscape. Product centred horizontally, its optical centre at 46% of frame height. The product bounding box occupies ${form.scale} of the frame height. Leave at least 10% empty margin on every side, and keep the top 18% of the frame completely clear.
+COMPOSITION — 4:3 landscape. Product centred horizontally, its optical centre at 46% of frame height. The product bounding box occupies ${scale} of the frame height. Leave at least 10% empty margin on every side, and keep the top 18% of the frame completely clear.
 
 FINISH — Clean commercial retouch, subtle fine film grain, no HDR, no heavy vignette, no colour cast on the product itself.`;
 }
