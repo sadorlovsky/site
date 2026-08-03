@@ -39,6 +39,14 @@
     inset 0 0 12px
       light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
 
+  /* The veil: the page itself, translucent, used by anything pinned that has
+     content scrolling underneath it — the header's blurred strip and the year
+     headings on /travel. Not --glass-*: a capsule is a neutral tint you look
+     through, while this is the page's own colour closing over what passes
+     beneath. The two were separately hardcoded, a hex and a blur radius apart. */
+  --veil-bg: light-dark(rgba(248, 248, 255, 0.9), rgba(25, 25, 25, 0.9));
+  --veil-filter: blur(16px);
+
   /* A card's tint. Cards take their border, shadow and rim from the tokens
      above but keep a tint of their own, heavier than the chrome's 0.55: a card
      is content you read through, not chrome you look past. It carries no

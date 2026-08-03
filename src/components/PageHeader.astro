@@ -407,12 +407,8 @@ const hasActions = Astro.slots.has("actions");
     height: var(--sticky-header-offset, 5.5rem);
     pointer-events: none;
     z-index: -1;
-    background: linear-gradient(
-      to bottom,
-      light-dark(rgba(248, 248, 255, 0.9), rgba(25, 25, 25, 0.9)) 25%,
-      transparent
-    );
-    backdrop-filter: blur(16px);
+    background: linear-gradient(to bottom, var(--veil-bg) 25%, transparent);
+    backdrop-filter: var(--veil-filter);
     mask-image: linear-gradient(to bottom, black 45%, transparent 96%);
     opacity: 0;
     transition: opacity 0.4s ease;

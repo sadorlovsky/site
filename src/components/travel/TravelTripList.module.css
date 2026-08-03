@@ -30,7 +30,7 @@
 
 /* Arrow between cities inside a country — lives inside the tint. */
 .separator {
-  color: #666;
+  color: light-dark(#999, #666);
   font-size: 0.85rem;
   margin: 0 0.25rem;
 }
@@ -40,7 +40,7 @@
    space after it is the wrap point for the next country. The country's own right
    padding already gaps it from the last city, so only a hair of left margin. */
 .interSep {
-  color: #666;
+  color: light-dark(#999, #666);
   font-size: 0.85rem;
   margin-left: 0.1rem;
 }
@@ -173,7 +173,7 @@
 }
 
 .flagDivider {
-  color: #666;
+  color: light-dark(#999, #666);
   margin: 0 3px 0 0;
   font-size: 0.7rem;
 }
