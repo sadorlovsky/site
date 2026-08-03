@@ -54,14 +54,20 @@ const hasActions = Astro.slots.has("actions");
       class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
       aria-label="Breadcrumb"
     >
+      {/* The label is hidden on narrow screens, where `display: none` would
+          leave the link with no accessible name at all — so the aria-label
+          stays, worded exactly like the visible text. */}
       <a
         href="/"
         class="crumb-home"
         aria-label="Home"
         data-aria-label-en="Home"
-        data-aria-label-ru="Главная"
+        data-aria-label-ru="Домой"
       >
         <Icon name="home" aria-hidden="true" />
+        <span class="crumb-home__label" data-en="Home" data-ru="Домой">
+          Home
+        </span>
       </a>
       {
         parentLink && (
@@ -211,17 +217,41 @@ const hasActions = Astro.slots.has("actions");
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.4rem;
     flex: none;
-    width: 2rem;
     height: 2rem;
-    border-radius: 50%;
+    padding: 0 0.7rem 0 0.55rem;
+    border-radius: 999px;
     color: light-dark(#555, #b4b4b8);
     text-decoration: none;
+    white-space: nowrap;
     transition:
       color 0.3s ease,
       background 0.3s ease,
       box-shadow 0.3s ease;
     will-change: transform; /* magnetic pull toward the cursor */
+  }
+
+  .crumb-home__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  /* Narrow screens: the label goes and the pill closes back into a circle.
+     Three labelled capsules plus the compact title don't fit a phone, and the
+     house on its own is the one glyph nobody needs a word for — the language
+     switcher drops its globe at the same width for the same reason. */
+  @media (max-width: 600px) {
+    .crumb-home {
+      width: 2rem;
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    .crumb-home__label {
+      display: none;
+    }
   }
 
   /* Same recipe as the language switcher's gradient indicator: accent fill,
