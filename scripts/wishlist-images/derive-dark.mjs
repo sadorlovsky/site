@@ -21,7 +21,7 @@
 import { readFile, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { buildDarkenPrompt, NEGATIVE_PROMPT } from "./style.mjs";
-import { primaryCategory } from "./classify.mjs";
+import { describe } from "./classify.mjs";
 import { loadEnv, loadItems } from "./db.mjs";
 import { generate } from "./fal.mjs";
 
@@ -85,10 +85,8 @@ async function main() {
 
   console.log(`${selection.length} item(s) · model ${args.model} · deriving dark variants`);
 
-  // The shelf/no-shelf split in the darken prompt follows the item's category.
-  const categoryById = new Map(
-    (await loadItems()).map((item) => [item.id, primaryCategory(item.category)]),
-  );
+  // The shelf/no-shelf split in the darken prompt follows category + form factor.
+  const itemById = new Map((await loadItems()).map((item) => [item.id, describe(item)]));
 
   const failures = [];
 
@@ -110,7 +108,7 @@ async function main() {
 
         const urls = await generate({
           model: args.model,
-          prompt: buildDarkenPrompt(categoryById.get(id)),
+          prompt: buildDarkenPrompt(itemById.get(id)),
           imageUrl: dataUri,
           negativePrompt: NEGATIVE_PROMPT,
           variants: 1,

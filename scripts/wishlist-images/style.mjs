@@ -31,6 +31,15 @@ export const FORM_FACTORS = {
       "The product is a soft textile. Present it neatly folded on {{surface}} with " +
       "gentle natural creases and the front graphic facing camera.",
   },
+  hanging: {
+    scale: "62%",
+    pose:
+      "The garment hangs on a slim matte black wooden hanger, front square to " +
+      "camera, shoulders filled naturally, sleeves relaxed at the sides, fabric " +
+      "falling with gentle natural creases. No mannequin, no person, no visible " +
+      "rail or rod — the hanger's hook floats free against the backdrop. The " +
+      "hanger counts as part of the product bounding box.",
+  },
   headwear: {
     scale: "52%",
     pose:
@@ -82,14 +91,28 @@ const DEFAULT_STAGING =
  * the "same set" illusion across a grid. Simpler is more consistent: no shelf,
  * product straight on the backdrop.
  */
+const NO_SHELF_STAGING =
+  "The product stands directly on the backdrop with no plinth, shelf, stand or " +
+  "any other surface beneath it — just the seamless backdrop continuing under the " +
+  "product. Soft contact shadow directly beneath it, no reflection.";
+
 const STAGING_OVERRIDES = {
-  vinyl:
-    "The product stands directly on the backdrop with no plinth, shelf, stand or " +
-    "any other surface beneath it — just the seamless backdrop continuing under the " +
-    "product. Soft contact shadow directly beneath it, no reflection.",
+  vinyl: NO_SHELF_STAGING,
+  "blu-ray": NO_SHELF_STAGING,
 };
 
-const SURFACE_OVERRIDES = { vinyl: "the backdrop" };
+const SURFACE_OVERRIDES = { vinyl: "the backdrop", "blu-ray": "the backdrop" };
+
+/**
+ * Per-form-factor staging override — wins over the category one. Hanging garments
+ * have nothing to stand on, so any shelf the model draws is pure invention.
+ */
+const FORM_STAGING_OVERRIDES = {
+  hanging:
+    "The garment hangs in front of the seamless backdrop. There is NO shelf, " +
+    "plinth, rail, rod or any other prop in frame — only the garment on its " +
+    "hanger, casting one soft shadow down and to the right onto the backdrop.",
+};
 
 /** Barely-there backdrop wash per category. Keep these weak — 10%, not a colour block. */
 export const CATEGORY_TINTS = {
@@ -144,13 +167,13 @@ export const NEGATIVE_PROMPT = [
  * reads as the same shot under different lighting — which is exactly what a
  * prefers-color-scheme swap should feel like.
  */
-export function buildDarkenPrompt(category) {
+export function buildDarkenPrompt({ category, formFactor } = {}) {
   // Mentioning a shelf at all invites the model to invent one, so the no-shelf
-  // categories get an explicit prohibition instead of a conditional.
-  const shelf =
-    category in STAGING_OVERRIDES
-      ? "There is NO shelf, table or any surface in this image — the product stands directly on the seamless backdrop. Do not add a shelf, ledge, floor line or reflective surface of any kind; only the contact shadow under the product remains."
-      : "If a frosted-glass shelf is present, keep its exact geometry and highlight, rendered as darker smoked glass that fits the dark set.";
+  // cases get an explicit prohibition instead of a conditional.
+  const shelfless = formFactor in FORM_STAGING_OVERRIDES || category in STAGING_OVERRIDES;
+  const shelf = shelfless
+    ? "There is NO shelf, table or any surface in this image — do not add a shelf, ledge, rail, floor line or reflective surface of any kind; only the product's soft shadow remains."
+    : "If a frosted-glass shelf is present, keep its exact geometry and highlight, rendered as darker smoked glass that fits the dark set.";
 
   return `Relight this studio product photograph for a dark-themed gallery, changing NOTHING else.
 
@@ -174,7 +197,10 @@ export function buildPrompt(item) {
   }
 
   const tint = CATEGORY_TINTS[item.category] ?? CATEGORY_TINTS.other;
-  const staging = STAGING_OVERRIDES[item.category] ?? DEFAULT_STAGING;
+  const staging =
+    FORM_STAGING_OVERRIDES[item.formFactor] ??
+    STAGING_OVERRIDES[item.category] ??
+    DEFAULT_STAGING;
   const surface = SURFACE_OVERRIDES[item.category] ?? "the shelf";
   const pose = form.pose.replace("{{surface}}", surface);
 

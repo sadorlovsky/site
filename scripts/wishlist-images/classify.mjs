@@ -23,7 +23,9 @@ const KEYWORD_RULES = [
   [/\b(hat|cap|beanie)\b/i, "headwear"],
   [/\b(sonicare|flosser|shaver|norelco)\b/i, "device"],
   [/\b(vinyl|lp\b|blu-ray|4k uhd|box set|collector's edition|soundtrack)\b/i, "flat"],
-  [/\b(t-shirt|tee\b|hoodie|sweatshirt|longsleeve|sweater|pants|boxers|blanket)\b/i, "soft"],
+  // Tops hang on hangers; things without shoulders stay folded.
+  [/\b(t-shirt|tee\b|hoodie|sweatshirt|longsleeve|sweater)\b/i, "hanging"],
+  [/\b(pants|boxers|blanket)\b/i, "soft"],
   [/\b(cream|gel|shampoo|candy|chocolate|praline|fudge|liquorice|salmiakki|bag)\b/i, "packaged"],
 ];
 
