@@ -166,6 +166,32 @@ async function initMap(): Promise<void> {
   (window as unknown as { setMapMode: typeof setProjectionMode }).setMapMode =
     setProjectionMode;
 
+  // The globe fills most of the first screen, so a page that let it eat every
+  // scroll would be a page you couldn't leave with the cursor where it lands.
+  //
+  // Plain wheel and two-finger scroll therefore belong to the page. Zoom stays
+  // on the pinch, which reaches the browser as a wheel event with ctrlKey set
+  // by the operating system — the gesture people already use to zoom a map, and
+  // nothing anyone has to hold down. Stopping the event here in the capture
+  // phase means MapLibre's own handler, which sits on a descendant, never runs
+  // and never calls preventDefault, so the page scrolls exactly as it would
+  // over any other element.
+  container.addEventListener(
+    "wheel",
+    (event) => {
+      if (!event.ctrlKey) event.stopPropagation();
+    },
+    { capture: true },
+  );
+
+  // Touch has the same trap and less room to escape it: a finger landing on the
+  // globe would drag the map instead of the page. One finger scrolls, two
+  // fingers still zoom and turn it. The globe spins by itself until touched, so
+  // the page keeps its animation either way.
+  if (window.matchMedia("(pointer: coarse)").matches) {
+    map.dragPan.disable();
+  }
+
   // The frame only earns its place once the map fills it. Around the globe it
   // would be drawing a box around mostly empty space — a sphere in a 2.7:1
   // container leaves the majority of the frame dark — while zoomed in the map
