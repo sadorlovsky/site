@@ -188,8 +188,15 @@ async function initMap(): Promise<void> {
   // globe would drag the map instead of the page. One finger scrolls, two
   // fingers still zoom and turn it. The globe spins by itself until touched, so
   // the page keeps its animation either way.
+  //
+  // Cooperative gestures is the handler that draws that line — it raises drag
+  // pan's minimum to two fingers rather than taking it away, which is what
+  // disabling dragPan outright got wrong: it also cost the two-finger drag, and
+  // with it every way of turning the globe or moving a zoomed-in map by touch.
+  // The screen it flashes to explain itself is hidden in TravelMap.astro; the
+  // gesture is the one the page already teaches by working.
   if (window.matchMedia("(pointer: coarse)").matches) {
-    map.dragPan.disable();
+    map.cooperativeGestures.enable();
   }
 
   // The frame only earns its place once the map fills it. Around the globe it

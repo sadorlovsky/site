@@ -136,6 +136,16 @@ const { mode = "globe" } = Astro.props;
     outline: none;
   }
 
+  /* Cooperative gestures is here for one thing — the two-finger minimum on drag
+     pan, so a finger dragged down the globe scrolls the page. Its other half is
+     a panel that flashes "use two fingers to move the map" on every one of
+     those scrolls, which would make a message out of the ordinary act of
+     leaving the map. The gesture teaches itself the moment a second finger
+     lands; the panel is already aria-hidden, so nothing is lost with it gone. */
+  .map .maplibregl-cooperative-gesture-screen {
+    display: none;
+  }
+
   /* A label lying on the map is glass over media — the same case as a badge on
      a wishlist photo, and it uses the same tokens. They stay dark in both
      schemes on purpose: this one used to flip to white with black text in the
