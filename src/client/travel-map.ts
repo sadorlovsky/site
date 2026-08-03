@@ -47,6 +47,22 @@ function getZoomForGlobe(
   return Math.log2((targetDiameter * GLOBE_SCALE_FACTOR) / 512);
 }
 
+/**
+ * Zoom at which the sphere reaches into the container's corners — the point
+ * where the map has filled its frame and a border stops being a box drawn
+ * around empty space. Derived from the container's diagonal with the same
+ * empirical scale factor as above, rather than a number picked by eye, so it
+ * follows the viewport instead of being right at one width only. The 0.9 gives
+ * it a little lead: the frame should be there as the corners fill, not after.
+ */
+function getZoomForFullFrame(
+  containerWidth: number,
+  containerHeight: number,
+): number {
+  const diagonal = Math.hypot(containerWidth, containerHeight) * 0.9;
+  return Math.log2((diagonal * GLOBE_SCALE_FACTOR) / 512);
+}
+
 async function initMap(): Promise<void> {
   const container = document.getElementById("map")!;
   if (!container) return;
@@ -106,6 +122,22 @@ async function initMap(): Promise<void> {
   (window as unknown as { setMapMode: typeof setProjectionMode }).setMapMode =
     setProjectionMode;
 
+  // The frame only earns its place once the map fills it. Around the globe it
+  // would be drawing a box around mostly empty space — a sphere in a 2.7:1
+  // container leaves the majority of the frame dark — while zoomed in the map
+  // runs edge to edge and the border reads as a window onto it. The threshold
+  // is cached rather than measured per zoom event, since reading the
+  // container's size on every frame of a pinch would cost a layout each time.
+  let frameFromZoom = getZoomForFullFrame(
+    container.clientWidth,
+    container.clientHeight,
+  );
+  const syncFrame = () => {
+    container.classList.toggle("is-framed", map.getZoom() >= frameFromZoom);
+  };
+  map.on("zoom", syncFrame);
+  syncFrame();
+
   if (isGlobe) {
     map.setProjection({ type: "globe" });
 
@@ -117,6 +149,9 @@ async function initMap(): Promise<void> {
       const newZoom = getZoomForGlobe(width, height, padding);
       map.setMinZoom(newZoom);
       map.setZoom(newZoom);
+      // A resized container fills at a different zoom.
+      frameFromZoom = getZoomForFullFrame(width, height);
+      syncFrame();
     });
     resizeObserver.observe(container);
 
