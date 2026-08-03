@@ -23,6 +23,9 @@ pnpm-debug.log*
 # Astro-specific files
 .astro/
 
+# Wrangler's local state and caches
+.wrangler/
+
 public/trips.json
 
 # generated wishlist card candidates awaiting review
