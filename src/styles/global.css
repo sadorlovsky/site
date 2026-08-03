@@ -39,6 +39,18 @@
     inset 0 0 12px
       light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
 
+  /* A card's tint. Cards take their border, shadow and rim from the tokens
+     above but keep a tint of their own, heavier than the chrome's 0.55: a card
+     is content you read through, not chrome you look past. It carries no
+     backdrop-filter for the same reason — frost pays for itself over content,
+     and a card *is* the content.
+
+     Named --card-* rather than another --glass-*: the wishlist card used to
+     declare --glass-bg-light and friends locally, one hex away from the tokens
+     here and easy to mistake for them, which is how it ended up with a second
+     dialect of the same material. */
+  --card-bg: light-dark(rgba(255, 255, 255, 0.7), rgba(40, 40, 45, 0.7));
+
   /* The same edge with the light source closer — for glass that tilts toward
      the viewer. The wishlist card is its only consumer today: it wears this
      while it's lifted on hover. In the light scheme the top-left layer is
@@ -97,6 +109,10 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  :root {
+    --card-bg: light-dark(#ffffff, #2a2a2d);
+  }
+
   .liquid-glass {
     background-color: light-dark(#f0f0f0, #2a2a2e);
     background-image: none;

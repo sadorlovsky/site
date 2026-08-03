@@ -49,6 +49,13 @@
         const label = el.getAttribute("data-aria-label-" + lang);
         if (label) el.setAttribute("aria-label", label);
       });
+      // data-tooltip drives the site's own tooltip (client/tooltip.ts). It used
+      // to be translated only by the wishlist's script, which left every other
+      // page's tooltips in English.
+      document.querySelectorAll("[data-tooltip-" + lang + "]").forEach((el) => {
+        const tooltip = el.getAttribute("data-tooltip-" + lang);
+        if (tooltip) el.setAttribute("data-tooltip", tooltip);
+      });
       document.documentElement.classList.add("lang-ready");
     }
 

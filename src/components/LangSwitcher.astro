@@ -200,6 +200,13 @@ const { storageKey, size = "sm" } = Astro.props;
           var label = el.getAttribute("data-aria-label-" + lang);
           if (label) el.setAttribute("aria-label", label);
         });
+      // Matches LangInit's first pass, so tooltips follow a switch mid-page.
+      document
+        .querySelectorAll("[data-tooltip-en][data-tooltip-ru]")
+        .forEach(function (el) {
+          var tooltip = el.getAttribute("data-tooltip-" + lang);
+          if (tooltip) el.setAttribute("data-tooltip", tooltip);
+        });
     }
 
     function setupLangSwitchers() {
