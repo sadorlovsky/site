@@ -7,6 +7,8 @@ import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 const MOBILE_BREAKPOINT = 480;
 /** How close a city label may come to the window's edge before it stops. */
 const VIEWPORT_EDGE_GAP = 8;
+/** How far from a city's centre the cursor still counts as pointing at it. */
+const HOVER_RADIUS = 14;
 /** Latitude the globe opens on — also what its zoom floor is measured from. */
 const GLOBE_LATITUDE = 50;
 const VISITED_COLOR = "#ed6292";
@@ -666,25 +668,62 @@ async function initMap(): Promise<void> {
   // Suppress the tooltip entirely for the duration of the drag.
   let isDragging = false;
 
-  // Find the closest city feature to a screen point
+  /**
+   * Whether a coordinate is on the half of the globe turned towards the viewer.
+   * A flat map has no far side, so everything on it faces the camera.
+   *
+   * The globe hides half the world behind itself, but the cities back there are
+   * still in the source and still project to a screen position — one that lands
+   * inside the visible disc, near whichever limb they sit behind. A query near
+   * the limb therefore reaches straight through the planet, which is how a
+   * cursor at the edge of the Atlantic came back holding Krasnodar.
+   */
+  function facesCamera(lngLat: [number, number]): boolean {
+    if (map.getProjection().type !== "globe") return true;
+    const centre = map.getCenter();
+    const toRadians = Math.PI / 180;
+    const centreLat = centre.lat * toRadians;
+    const pointLat = lngLat[1] * toRadians;
+    const deltaLng = (lngLat[0] - centre.lng) * toRadians;
+    // Cosine of the angle between the two points' surface normals: positive on
+    // the hemisphere facing the camera, negative on the one facing away. The
+    // real horizon of a perspective camera falls a little short of ninety
+    // degrees, so a sliver at the very edge stays hoverable — which is the
+    // forgiving side to err on for something you are trying to point at.
+    return (
+      Math.sin(centreLat) * Math.sin(pointLat) +
+        Math.cos(centreLat) * Math.cos(pointLat) * Math.cos(deltaLng) >
+      0
+    );
+  }
+
+  /**
+   * The city under a screen point, or null if the point is not on one.
+   *
+   * The box handed to queryRenderedFeatures is a coarse filter: it matches
+   * anything whose drawn circle overlaps, so a dot answers from further away
+   * than its centre, and the answer used to be accepted however far off it was.
+   * Where the dots are spread out that reads as a generous target. Where the
+   * globe's curvature packs a continent into a few pixels of limb it stops
+   * reading as anything — every city near the edge answers at once, and the
+   * name that wins can belong to a dot nowhere near the cursor. So the centre
+   * has to be inside the same radius the box was drawn from.
+   */
   function getClosestCity(point: { x: number; y: number }) {
-    const pad = 14;
     const bbox: [[number, number], [number, number]] = [
-      [point.x - pad, point.y - pad],
-      [point.x + pad, point.y + pad],
+      [point.x - HOVER_RADIUS, point.y - HOVER_RADIUS],
+      [point.x + HOVER_RADIUS, point.y + HOVER_RADIUS],
     ];
     const features = map.queryRenderedFeatures(bbox, {
       layers: ["visited-cities"],
     });
-    if (features.length === 0) return null;
 
-    // Find closest to cursor
-    let closest = features[0];
-    let minDist = Infinity;
+    let closest: (typeof features)[number] | null = null;
+    let minDist = HOVER_RADIUS * HOVER_RADIUS;
     for (const f of features) {
-      const projected = map.project(
-        (f.geometry as Point).coordinates as [number, number],
-      );
+      const coordinates = (f.geometry as Point).coordinates as [number, number];
+      if (!facesCamera(coordinates)) continue;
+      const projected = map.project(coordinates);
       const dx = projected.x - point.x;
       const dy = projected.y - point.y;
       const dist = dx * dx + dy * dy;
