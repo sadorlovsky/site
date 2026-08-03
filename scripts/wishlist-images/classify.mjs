@@ -33,7 +33,7 @@ const KEYWORD_RULES = [
 const CATEGORY_DEFAULTS = {
   vinyl: "flat",
   "blu-ray": "flat",
-  books: "flat",
+  books: "book",
   clothing: "soft",
   sweets: "packaged",
   merch: "object",

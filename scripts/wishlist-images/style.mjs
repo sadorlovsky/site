@@ -31,6 +31,15 @@ export const FORM_FACTORS = {
       "The product is a soft textile. Present it neatly folded on {{surface}} with " +
       "gentle natural creases and the front graphic facing camera.",
   },
+  book: {
+    scale: "60%",
+    pose:
+      "The product is a book. Stand it upright directly on the backdrop, front " +
+      "cover toward camera, rotated 12 degrees so the spine and the page fore-edge " +
+      "are just visible, tilted back 5 degrees. Keep the binding, dust jacket, " +
+      "edges and corners exactly as in the reference — do not thicken, thin or " +
+      "restyle the book.",
+  },
   hanging: {
     scale: "62%",
     pose:
@@ -99,9 +108,14 @@ const NO_SHELF_STAGING =
 const STAGING_OVERRIDES = {
   vinyl: NO_SHELF_STAGING,
   "blu-ray": NO_SHELF_STAGING,
+  books: NO_SHELF_STAGING,
 };
 
-const SURFACE_OVERRIDES = { vinyl: "the backdrop", "blu-ray": "the backdrop" };
+const SURFACE_OVERRIDES = {
+  vinyl: "the backdrop",
+  "blu-ray": "the backdrop",
+  books: "the backdrop",
+};
 
 /**
  * Per-form-factor staging override — wins over the category one. Hanging garments
