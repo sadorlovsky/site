@@ -231,6 +231,34 @@ const ITEM_OVERRIDES = {
       "away from camera and out of focus; the blanket is the subject.",
     scale: "72%",
   },
+  // TPOB Mini Skull — ground it: earlier renders left it floating.
+  9: {
+    staging: NO_SHELF_STAGING,
+    pose:
+      "Present the skull figurine in three-quarter view at its most recognisable " +
+      "angle, resting FIRMLY on the backdrop surface — visibly grounded, with a " +
+      "clear contact shadow anchoring its base. It must not float or hover.",
+  },
+  // Sonicare Power Flosser — present like the approved Sonicare toothbrush card:
+  // one clean unit, none of the accessory clutter from the shop photo.
+  26: {
+    pose:
+      "Show ONLY the main Power Flosser unit as one clean device — the reservoir " +
+      "base with its handle docked — upright in three-quarter view, face toward " +
+      "camera. Omit any box, spare nozzles, cables or other accessories present " +
+      "in the reference photo.",
+  },
+  // Norelco Head Shaver — the shaver alone, no dock or attachments. Its base is
+  // rounded, so it cannot stand upright: it lies on its side instead.
+  33: {
+    pose:
+      "Show ONLY the head shaver unit itself, LYING on its side on the surface — " +
+      "it has a rounded base and cannot stand upright. Rest it naturally on the " +
+      "curve of its body, shaving head toward camera in three-quarter view, " +
+      "handle trailing away, clear contact shadow along the line where the body " +
+      "touches the surface. Omit any charging dock, stand, attachments, spare " +
+      "heads, cables or packaging present in the reference photo.",
+  },
   // Celeste Desk Mat — flat on a desk, art facing up.
   7: {
     staging:
