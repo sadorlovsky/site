@@ -443,69 +443,112 @@
   cursor: default;
 }
 
-/* Reserve button */
+/* =============================================================================
+   Reserve button — the chrome's liquid-glass capsule.
+
+   Same recipe as the magnetic glass dock, the language switcher and the
+   breadcrumb home glyph: a glass pill that never swaps its own background.
+   Instead a gradient "indicator" (::before) scales up behind the label on
+   hover/focus with the dock indicator's easing, the label cross-fades to white,
+   and the button is magnetically pulled toward the cursor (reserve-magnet.ts).
+
+   The indicator has to be a pseudo-element: wishlist.ts rewrites the button's
+   textContent on every state change, which would wipe a real child node.
+   ============================================================================= */
 .reserve-btn {
   position: relative;
+  /* Own stacking context so the z-index:-1 indicator lands above the glass
+     frost but below the label. */
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
-  color: light-dark(#333, #eee);
+  color: light-dark(#555, #b4b4b8);
   border: var(--glass-border);
-  padding: 0.6rem 1.25rem;
+  padding: 0.55rem 1.15rem;
   font-size: 0.8rem;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 999px;
   cursor: pointer;
   box-shadow: var(--glass-shadow);
-  transition:
-    background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: color 0.3s ease;
+  will-change: transform; /* magnetic pull toward the cursor */
 }
 
+/* Sliding gradient indicator — the dock's "magic line", sized to the whole
+   pill. Accent fill + the shared 0.45 glow, easing copied from .dock-indicator
+   so the feel matches the nav exactly. */
+.reserve-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Refractive rim — the .liquid-glass lens edge, above the indicator. */
 .reserve-btn::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
+  z-index: 5;
   box-shadow: var(--glass-rim);
 }
 
-/* Hover = the chrome's accent treatment (crumb-home hover): opaque gradient,
-   white label, the shared 0.45 glow. Rim and border switch off with it. */
-.reserve-btn:hover {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  backdrop-filter: none;
-  border-color: transparent;
-  color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+/* Hover/focus = the chrome's accent treatment (crumb-home hover, dock active
+   item): the indicator glides in, the label turns white, the rim steps aside. */
+.reserve-btn:hover::before,
+.reserve-btn:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
-.reserve-btn:hover::after {
+.reserve-btn:hover,
+.reserve-btn:focus-visible {
+  color: #fff;
+}
+
+.reserve-btn:hover::after,
+.reserve-btn:focus-visible::after {
   box-shadow: none;
 }
 
-/* Own reservation ("Cancel") — a pressed neutral glass state; its hover must
-   undo the accent-hover rule above (keep frost, border and rim). */
+/* Own reservation ("Cancel") — a pressed neutral glass state. No accent
+   indicator: cancelling isn't the accented action. */
 .reserve-btn.own-reservation {
   background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
   background-image: none;
   color: light-dark(#666, #aaa);
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
 }
 
-.reserve-btn.own-reservation:hover {
-  background: light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
-  backdrop-filter: var(--glass-filter);
-  border: var(--glass-border);
+.reserve-btn.own-reservation::before {
+  display: none;
+}
+
+.reserve-btn.own-reservation:hover,
+.reserve-btn.own-reservation:focus-visible {
+  background-color: light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
   color: light-dark(#333, #fff);
-  transform: scale(1.05);
-  box-shadow: var(--glass-shadow);
 }
 
-.reserve-btn.own-reservation:hover::after {
+.reserve-btn.own-reservation:hover::after,
+.reserve-btn.own-reservation:focus-visible::after {
   box-shadow: var(--glass-rim);
 }
 
@@ -519,6 +562,10 @@
   box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);
 }
 
+.reserve-btn.received::before {
+  display: none;
+}
+
 .reserve-btn.received::after {
   box-shadow: none;
 }
@@ -527,16 +574,30 @@
   cursor: not-allowed;
 }
 
-.reserve-btn:disabled:hover {
-  transform: none;
+.reserve-btn:disabled::before {
+  opacity: 0;
+  transform: scale(0.9);
 }
 
 .reserve-btn--loading {
   visibility: hidden;
 }
 
-/* Accessibility - Focus styles */
-.reserve-btn:focus-visible,
+@media (prefers-reduced-motion: reduce) {
+  .reserve-btn,
+  .reserve-btn::before {
+    transition: none;
+  }
+}
+
+/* Accessibility - Focus styles. The reserve pill wears the chrome's focus ring
+   (same as .dock-item / .lang-switcher__btn) since its accent fill is now the
+   hover/focus indicator. */
+.reserve-btn:focus-visible {
+  outline: 2px solid light-dark(#333, #fff);
+  outline-offset: 2px;
+}
+
 .item-url:focus-visible {
   outline: 2px solid var(--accent-start);
   outline-offset: 2px;
@@ -574,13 +635,10 @@
     color: light-dark(#444, #bbb);
   }
 
-  /* Reserve button — border for visibility */
+  /* Reserve button — border for visibility. It stays put on hover now: the
+     accent indicator fills inside the pill rather than replacing its chrome. */
   .reserve-btn {
     border: 2px solid light-dark(#ccc, #555);
-  }
-
-  .reserve-btn:hover {
-    border-color: transparent;
   }
 
   .reserve-btn.own-reservation {
