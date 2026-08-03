@@ -1,5 +1,4 @@
 ---
-import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
 
 interface Props {
@@ -9,10 +8,7 @@ interface Props {
 
 const { categories, currentCategory } = Astro.props;
 
-const otherCategories = categories.filter((c) => c.id !== "all");
-
 // Check if slots are provided
-const hasStartSlot = Astro.slots.has("start");
 const hasEndSlot = Astro.slots.has("end");
 ---
 
@@ -22,22 +18,19 @@ const hasEndSlot = Astro.slots.has("end");
   aria-label="Quick category filter"
   data-aria-label-en="Quick category filter"
   data-aria-label-ru="Быстрый фильтр по категории"
-  data-has-start={hasStartSlot ? "true" : undefined}
   data-has-end={hasEndSlot ? "true" : undefined}
   hidden
 >
   <div class="mobile-filter-bar-inner">
-    {hasStartSlot && (
-      <div class="mobile-filter-start">
-        <slot name="start" />
-      </div>
-    )}
-    <div class="mobile-filter-categories-wrapper">
-      <div class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm mobile-filter-categories">
-        {otherCategories.map((cat) => (
+    <div class="filter-dock liquid-glass mobile-filter-dock">
+      <div class="filter-dock__scroll mobile-filter-categories">
+        {categories.map((cat) => (
           <a
             href={cat.href}
-            class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
+            class:list={[
+              "filter-dock__item",
+              { "is-active": cat.id === currentCategory },
+            ]}
             data-category={cat.id}
             data-en={cat.label}
             data-ru={cat.labelRu}
@@ -57,6 +50,13 @@ const hasEndSlot = Astro.slots.has("end");
 </div>
 
 <style>
+  /* ===========================================================================
+     Mobile filter — floating liquid-glass pills above the bottom edge, echoing
+     the condensed header's row of capsules (no full-width bar). The container
+     is just a fixed, transparent stage; the pills animate their OWN transforms
+     because a transform on an ancestor would silently kill their backdrop
+     blur (see the note in PageHeader.astro).
+     =========================================================================== */
   .mobile-filter-bar {
     display: none;
   }
@@ -72,27 +72,28 @@ const hasEndSlot = Astro.slots.has("end");
       z-index: 100;
       padding: 0.75rem 1rem;
       padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
-      background: light-dark(rgba(255, 255, 255, 0.92), rgba(30, 30, 32, 0.92));
-      border-top: 1px solid
-        light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-    }
-
-    @supports (backdrop-filter: blur(20px)) {
-      .mobile-filter-bar {
-        background: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 32, 0.8));
-        backdrop-filter: blur(20px);
-      }
+      pointer-events: none;
     }
 
     .mobile-filter-bar[hidden] {
       display: block;
-      transform: translateY(100%);
     }
 
-    .mobile-filter-bar:not([hidden]) {
-      transform: translateY(0);
+    .mobile-filter-bar :global(.filter-dock),
+    .mobile-filter-end :global(.kit-btn) {
+      pointer-events: auto;
+      transition:
+        transform 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+        opacity 0.3s ease;
+    }
+
+    .mobile-filter-bar[hidden] :global(.filter-dock),
+    .mobile-filter-bar[hidden] .mobile-filter-end :global(.kit-btn) {
+      transform: translateY(
+        calc(100% + 0.75rem + env(safe-area-inset-bottom, 0px))
+      );
+      opacity: 0;
+      pointer-events: none;
     }
   }
 
@@ -103,8 +104,6 @@ const hasEndSlot = Astro.slots.has("end");
     max-width: 100%;
   }
 
-  /* Fixed slot containers */
-  .mobile-filter-start,
   .mobile-filter-end {
     flex-shrink: 0;
     display: flex;
@@ -112,121 +111,11 @@ const hasEndSlot = Astro.slots.has("end");
     gap: 0.5rem;
   }
 
-  .mobile-filter-categories-wrapper {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-  }
-
-  /* Edge fade using mask - both edges by default */
-  .mobile-filter-categories {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black calc(100% - 24px),
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black calc(100% - 24px),
-      transparent
-    );
-  }
-
-  /* At start position - remove left fade */
-  .mobile-filter-categories-wrapper.at-start .mobile-filter-categories {
-    mask-image: linear-gradient(
-      to right,
-      black,
-      black calc(100% - 24px),
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      black,
-      black calc(100% - 24px),
-      transparent
-    );
-  }
-
-  /* At end position - remove right fade */
-  .mobile-filter-categories-wrapper.at-end .mobile-filter-categories {
-    mask-image: linear-gradient(to right, transparent, black 16px, black);
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black
-    );
-  }
-
-  /* At both ends - no fade */
-  .mobile-filter-categories-wrapper.at-start.at-end .mobile-filter-categories {
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-
-  .mobile-filter-categories {
-    display: flex;
-    gap: 0.4rem;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    flex-wrap: nowrap !important;
-    padding: 0.25rem 0;
-    /* Reset kit-toggle-group styles */
-    background: transparent !important;
-  }
-
-  .mobile-filter-categories :global(.kit-toggle-item) {
-    flex-shrink: 0;
-  }
-
-  /* Drag-to-scroll cursor for desktop (only when scrollable) */
-  @media (hover: hover) and (pointer: fine) {
-    .mobile-filter-categories.is-scrollable {
-      cursor: grab;
-    }
-
-    .mobile-filter-categories.is-scrollable:active {
-      cursor: grabbing;
-    }
-  }
-
-  .mobile-filter-categories::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobile-filter-categories .kit-toggle-item:active {
-    transform: scale(0.95);
-  }
-
-
-
   /* Accessibility - Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .mobile-filter-bar {
+    .mobile-filter-bar :global(.filter-dock),
+    .mobile-filter-end :global(.kit-btn) {
       transition: none;
-    }
-  }
-
-  /* Accessibility - Reduced transparency */
-  @media (prefers-reduced-transparency: reduce) {
-    .mobile-filter-bar {
-      background: light-dark(#ffffff, #1e1e20);
-      backdrop-filter: none;
-    }
-  }
-
-  /* Accessibility - Increased contrast */
-  @media (prefers-contrast: more) {
-    .mobile-filter-bar {
-      border-top: 2px solid light-dark(#999, #666);
     }
   }
 </style>
@@ -260,13 +149,15 @@ const hasEndSlot = Astro.slots.has("end");
 
     if (!barEl || !topFiltersEl) return;
 
-    const wrapper = barEl.querySelector<HTMLElement>(".mobile-filter-categories-wrapper");
     const scroller = barEl.querySelector<HTMLElement>(".mobile-filter-categories");
 
-    if (!wrapper || !scroller) return;
+    if (!scroller) return;
 
     // Initialize shared scrollable logic
-    scrollable = initScrollableCategories({ scroller, wrapper });
+    scrollable = initScrollableCategories({
+      scroller,
+      activeSelector: ".filter-dock__item.is-active",
+    });
 
     // Mobile-specific visibility logic
     currentMediaQuery = window.matchMedia("(max-width: 600px)");

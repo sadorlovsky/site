@@ -18,8 +18,6 @@ interface Props {
 }
 
 const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
-
-const allCategory = categories.find((c) => c.id === "all")!;
 ---
 
 <PageLayout title="Wishlist — Zach">
@@ -87,19 +85,6 @@ const allCategory = categories.find((c) => c.id === "all")!;
         showLangSwitcher={false}
       >
         <Button
-          slot="start"
-          variant="ghost"
-          size="sm"
-          href={allCategory.href}
-          class:list={["filter-all-btn", { "is-active": allCategory.id === currentCategory }]}
-          data-category={allCategory.id}
-          data-en={allCategory.label}
-          data-ru={allCategory.labelRu}
-          aria-current={allCategory.id === currentCategory ? "page" : undefined}
-        >
-          {allCategory.label}
-        </Button>
-        <Button
           slot="end"
           variant="secondary"
           size="sm"
@@ -138,19 +123,6 @@ const allCategory = categories.find((c) => c.id === "all")!;
   </main>
 
   <MobileFilterBar categories={categories} currentCategory={currentCategory}>
-    <Button
-      slot="start"
-      variant="ghost"
-      size="sm"
-      href={allCategory.href}
-      class:list={["mobile-filter-all-btn", { "is-active": allCategory.id === currentCategory }]}
-      data-category={allCategory.id}
-      data-en={allCategory.label}
-      data-ru={allCategory.labelRu}
-      aria-current={allCategory.id === currentCategory ? "page" : undefined}
-    >
-      {allCategory.label}
-    </Button>
     <Button
       slot="end"
       variant="secondary"
