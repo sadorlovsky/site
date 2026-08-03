@@ -52,11 +52,12 @@
 .filters {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
 }
 
 /* Fixed slot containers */
+.filters-start,
 .filters-end {
   flex-shrink: 0;
   display: flex;
@@ -64,122 +65,15 @@
   gap: 0.5rem;
 }
 
-/* =============================================================================
-   Category filter dock — ONE liquid-glass capsule holding every category as a
-   transparent pill, mirroring the header capsules (home dock, lang switcher):
-   same 2.7rem capsule height, same resting/hover text colours, and the active
-   category rendered as the capsules' gradient "indicator" pill. The glass
-   shell itself comes from the shared .liquid-glass utility.
-   ============================================================================= */
-.filter-dock {
-  position: relative; /* hosts the .liquid-glass rim */
-  display: inline-flex;
-  align-items: center;
+.filter-categories {
+  flex: 1;
   min-width: 0;
-  max-width: 100%;
-  padding: 0.35rem;
-  border-radius: 999px;
 }
 
-/* Scroll row inside the capsule. Overflowing chips scroll (drag-to-scroll via
-   scrollable-categories) and dissolve at the ends — masking this inner row
-   rather than the capsule keeps the glass shell intact. */
-.filter-dock__scroll {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-  min-width: 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 16px,
-    black calc(100% - 16px),
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    transparent,
-    black 16px,
-    black calc(100% - 16px),
-    transparent
-  );
-}
-
-.filter-dock__scroll::-webkit-scrollbar {
-  display: none;
-}
-
-/* At start position - remove left fade */
-.filter-dock__scroll.at-start {
-  mask-image: linear-gradient(
-    to right,
-    black,
-    black calc(100% - 16px),
-    transparent
-  );
-  -webkit-mask-image: linear-gradient(
-    to right,
-    black,
-    black calc(100% - 16px),
-    transparent
-  );
-}
-
-/* At end position - remove right fade */
-.filter-dock__scroll.at-end {
-  mask-image: linear-gradient(to right, transparent, black 16px, black);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black);
-}
-
-/* At both ends - no fade */
-.filter-dock__scroll.at-start.at-end {
-  mask-image: none;
-  -webkit-mask-image: none;
-}
-
-/* Pill items — dock-item colours at lang-switcher scale (2rem tall pills in a
-   2.7rem capsule). The `a.`-prefixed selectors out-specify the global link
-   and :visited colours. */
-a.filter-dock__item,
-a.filter-dock__item:visited {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  height: 2rem;
-  padding: 0 0.85rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  white-space: nowrap;
-  text-decoration: none;
-  color: light-dark(#555, #b4b4b8);
-  transition: color 0.3s ease;
-}
-
-a.filter-dock__item:hover {
-  color: light-dark(#1a1a1a, #fff);
-}
-
-/* Active category = the dock indicator: opaque accent gradient + its glow. */
-a.filter-dock__item.is-active,
-a.filter-dock__item.is-active:visited,
-a.filter-dock__item.is-active:hover {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
-}
-
-a.filter-dock__item:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
-  outline-offset: 2px;
-}
-
-/* Random-item button — a lone glass circle at header-pill scale (2.7rem),
-   the same pattern as the breadcrumb home pill. */
+/* "All" filter pill and random-item button — the same glass capsule as the
+   category chips (shared tokens, .dock-item text colours). */
+.kit-btn.filter-all-btn,
+.kit-btn.mobile-filter-all-btn,
 .kit-btn.filter-random,
 .kit-btn.mobile-filter-random {
   position: relative;
@@ -191,15 +85,8 @@ a.filter-dock__item:focus-visible {
   color: light-dark(#555, #b4b4b8);
 }
 
-/* Triple class beats the kit's --icon/--sm sizing regardless of stylesheet
-   bundling order. */
-.kit-btn.kit-btn--icon.filter-random,
-.kit-btn.kit-btn--icon.mobile-filter-random {
-  width: 2.7rem;
-  height: 2.7rem;
-  border-radius: 999px;
-}
-
+.kit-btn.filter-all-btn::after,
+.kit-btn.mobile-filter-all-btn::after,
 .kit-btn.filter-random::after,
 .kit-btn.mobile-filter-random::after {
   content: "";
@@ -210,19 +97,32 @@ a.filter-dock__item:focus-visible {
   box-shadow: var(--glass-rim);
 }
 
-/* Hover = the crumb-home accent treatment: gradient fill, white glyph, glow.
-   Also outranks the kit's secondary :hover background. */
+/* Hover re-pins the glass surface: the kit's ghost/secondary :hover rules
+   out-specify the resting rule above and would repaint these buttons with
+   their own flat backgrounds/inset rings. Only the label colour changes. */
+.kit-btn.filter-all-btn:hover:not(.is-active),
+.kit-btn.mobile-filter-all-btn:hover:not(.is-active),
 .kit-btn.filter-random:hover:not(:disabled),
 .kit-btn.mobile-filter-random:hover:not(:disabled) {
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  box-shadow: var(--glass-shadow);
+  color: light-dark(#1a1a1a, #fff);
+}
+
+/* Active "All" = the dock indicator: opaque accent gradient + its glow,
+   glass artefacts off. */
+.kit-btn.filter-all-btn.is-active,
+.kit-btn.mobile-filter-all-btn.is-active {
   background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
   backdrop-filter: none;
   border-color: transparent;
-  color: #fff;
+  color: white;
   box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
 }
 
-.kit-btn.filter-random:hover:not(:disabled)::after,
-.kit-btn.mobile-filter-random:hover:not(:disabled)::after {
+.kit-btn.filter-all-btn.is-active::after,
+.kit-btn.mobile-filter-all-btn.is-active::after {
   box-shadow: none;
 }
 
@@ -554,7 +454,7 @@ a.filter-dock__item:focus-visible {
   padding: 0.6rem 1.25rem;
   font-size: 0.8rem;
   font-weight: 600;
-  border-radius: 999px;
+  border-radius: 10px;
   cursor: pointer;
   box-shadow: var(--glass-shadow);
   transition:
@@ -691,14 +591,17 @@ a.filter-dock__item:focus-visible {
     border-color: transparent;
   }
 
-  /* Filter dock and random-item button — border for visibility */
-  .filter-dock {
-    border: 2px solid light-dark(#999, #666);
-  }
-
+  /* "All" filter pill and random-item button — border for visibility */
+  .kit-btn.filter-all-btn,
+  .kit-btn.mobile-filter-all-btn,
   .kit-btn.filter-random,
   .kit-btn.mobile-filter-random {
     border: 2px solid light-dark(#ccc, #555);
+  }
+
+  .kit-btn.filter-all-btn.is-active,
+  .kit-btn.mobile-filter-all-btn.is-active {
+    border-color: transparent;
   }
 }
 
@@ -767,11 +670,16 @@ a.filter-dock__item:focus-visible {
     backdrop-filter: none;
   }
 
-  /* Random-item button — solid resting surface (hover gradient is already
-     opaque). The filter dock capsule is covered by the .liquid-glass utility's
-     own reduced-transparency fallback. */
+  /* "All" filter pill and random-item button. The hover override matters:
+     the base hover rule re-pins the translucent glass tokens. */
+  .kit-btn.filter-all-btn,
+  .kit-btn.mobile-filter-all-btn,
   .kit-btn.filter-random,
-  .kit-btn.mobile-filter-random {
+  .kit-btn.mobile-filter-random,
+  .kit-btn.filter-all-btn:hover:not(.is-active),
+  .kit-btn.mobile-filter-all-btn:hover:not(.is-active),
+  .kit-btn.filter-random:hover:not(:disabled),
+  .kit-btn.mobile-filter-random:hover:not(:disabled) {
     background-color: light-dark(#fff, #2a2a2d);
     background-image: none;
     backdrop-filter: none;
@@ -782,11 +690,11 @@ a.filter-dock__item:focus-visible {
 /* Responsive */
 /* Drag-to-scroll cursor for desktop (only when scrollable) */
 @media (hover: hover) and (pointer: fine) {
-  .filter-dock__scroll.is-scrollable {
+  .filter-categories.is-scrollable {
     cursor: grab;
   }
 
-  .filter-dock__scroll.is-scrollable:active {
+  .filter-categories.is-scrollable:active {
     cursor: grabbing;
   }
 }
@@ -811,6 +719,69 @@ a.filter-dock__item:focus-visible {
 
   .filters {
     gap: 0.5rem;
+  }
+
+  .filter-categories {
+    flex: 1;
+    min-width: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.4rem;
+    /* Fade both edges by default */
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black calc(100% - 16px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black calc(100% - 16px),
+      transparent
+    );
+  }
+
+  .filter-categories::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* At start position - remove left fade */
+  .filter-categories.at-start {
+    mask-image: linear-gradient(
+      to right,
+      black,
+      black calc(100% - 16px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black,
+      black calc(100% - 16px),
+      transparent
+    );
+  }
+
+  /* At end position - remove right fade */
+  .filter-categories.at-end {
+    mask-image: linear-gradient(to right, transparent, black 16px, black);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 16px,
+      black
+    );
+  }
+
+  /* At both ends - no fade */
+  .filter-categories.at-start.at-end {
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 
   .wishlist-grid {

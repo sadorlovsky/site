@@ -1,4 +1,5 @@
 ---
+import "@styles/kit/toggle-group.css";
 import type { Category } from "@lib/wishlist";
 import LangSwitcher from "@components/LangSwitcher.astro";
 
@@ -10,37 +11,44 @@ interface Props {
 
 const { categories, currentCategory, showLangSwitcher = true } = Astro.props;
 
+const otherCategories = categories.filter((c) => c.id !== "all");
+
 // Check if slots are provided
+const hasStartSlot = Astro.slots.has("start");
 const hasEndSlot = Astro.slots.has("end");
 ---
 
-<div class="filters" data-has-end={hasEndSlot ? "true" : undefined}>
+<div
+  class="filters"
+  data-has-start={hasStartSlot ? "true" : undefined}
+  data-has-end={hasEndSlot ? "true" : undefined}
+>
+  {hasStartSlot && (
+    <div class="filters-start">
+      <slot name="start" />
+    </div>
+  )}
   <nav
-    class="filter-dock liquid-glass"
+    class="kit-toggle-group kit-toggle-group--separated kit-toggle-group--sm filter-categories"
     role="navigation"
     aria-label="Filter by category"
     data-aria-label-en="Filter by category"
     data-aria-label-ru="Фильтр по категории"
   >
-    <div class="filter-dock__scroll filter-categories">
-      {
-        categories.map((cat) => (
-          <a
-            href={cat.href}
-            class:list={[
-              "filter-dock__item",
-              { "is-active": cat.id === currentCategory },
-            ]}
-            data-category={cat.id}
-            data-en={cat.label}
-            data-ru={cat.labelRu}
-            aria-current={cat.id === currentCategory ? "page" : undefined}
-          >
-            {cat.label}
-          </a>
-        ))
-      }
-    </div>
+    {
+      otherCategories.map((cat) => (
+        <a
+          href={cat.href}
+          class:list={["kit-toggle-item", { "is-active": cat.id === currentCategory }]}
+          data-category={cat.id}
+          data-en={cat.label}
+          data-ru={cat.labelRu}
+          aria-current={cat.id === currentCategory ? "page" : undefined}
+        >
+          {cat.label}
+        </a>
+      ))
+    }
   </nav>
   {hasEndSlot && (
     <div class="filters-end">
@@ -74,10 +82,7 @@ const hasEndSlot = Astro.slots.has("end");
     const scroller = document.querySelector<HTMLElement>(".filter-categories");
     if (!scroller) return;
 
-    instance = initScrollableCategories({
-      scroller,
-      activeSelector: ".filter-dock__item.is-active",
-    });
+    instance = initScrollableCategories({ scroller });
 
     // Scroll to active category
     instance.scrollToActive();
