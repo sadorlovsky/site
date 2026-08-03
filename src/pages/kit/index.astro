@@ -639,7 +639,12 @@ import { Icon } from "astro-icon/components";
         <h2>Tooltips</h2>
 
         <h3>Usage</h3>
-        <p>Add <code>data-tooltip</code> attribute to any element.</p>
+        <p>
+          Add a <code>data-tooltip</code> attribute to any element. The tooltip
+          is a liquid-glass bead that trails the cursor while it's over the
+          trigger; on keyboard focus, where there is no cursor, it pins itself
+          above the element instead.
+        </p>
 
         <div class="component-row">
           <Button variant="secondary" data-tooltip="This is a tooltip">
@@ -909,6 +914,10 @@ import { Icon } from "astro-icon/components";
 </style>
 
 <script>
+  // Tooltips — the demo below is inert without this.
+  import { initTooltips } from '@client/tooltip';
+  initTooltips();
+
   // Modal demo
   const openModalBtn = document.getElementById('open-modal-btn');
   const closeModalBtns = document.querySelectorAll('.close-modal-btn, #close-modal-btn');

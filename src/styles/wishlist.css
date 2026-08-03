@@ -101,13 +101,110 @@
    out-specify the resting rule above and would repaint these buttons with
    their own flat backgrounds/inset rings. Only the label colour changes. */
 .kit-btn.filter-all-btn:hover:not(.is-active),
-.kit-btn.mobile-filter-all-btn:hover:not(.is-active),
-.kit-btn.filter-random:hover:not(:disabled),
-.kit-btn.mobile-filter-random:hover:not(:disabled) {
+.kit-btn.mobile-filter-all-btn:hover:not(.is-active) {
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   box-shadow: var(--glass-shadow);
   color: light-dark(#1a1a1a, #fff);
+}
+
+/* =============================================================================
+   Random-item button — a glass bead you roll.
+
+   The only playful control on the page, so it's the one that gets to move: the
+   accent arrives as an indicator scaling up behind the die (the dock's fill,
+   glow and easing) instead of a background swap, the die leans back on hover
+   like it's being wound up, and a click tumbles it a full turn while the page
+   scrolls to the pick. Round, because a die that rolls shouldn't sit in a box.
+   ============================================================================= */
+.kit-btn.filter-random,
+.kit-btn.mobile-filter-random {
+  /* Own stacking context so the z-index:-1 indicator lands above the frost but
+     below the die. */
+  isolation: isolate;
+  border-radius: 50%;
+  transition: color 0.3s ease;
+}
+
+.kit-btn.filter-random::before,
+.kit-btn.mobile-filter-random::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The rim sits above the indicator, and steps aside once it's lit. */
+.kit-btn.filter-random::after,
+.kit-btn.mobile-filter-random::after {
+  z-index: 5;
+}
+
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled),
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled) {
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  box-shadow: var(--glass-shadow);
+  color: #fff;
+}
+
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled)::before,
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(
+    :disabled
+  )::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled)::after,
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled)::after {
+  box-shadow: none;
+}
+
+/* The chrome's focus ring — an accent outline would vanish into the lit fill. */
+.kit-btn.filter-random:focus-visible,
+.kit-btn.mobile-filter-random:focus-visible {
+  outline: 2px solid light-dark(#333, #fff);
+  outline-offset: 2px;
+}
+
+.kit-btn.filter-random svg,
+.kit-btn.mobile-filter-random svg {
+  transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Wound up on hover... */
+.kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled) svg,
+.kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled) svg {
+  transform: rotate(-20deg);
+}
+
+/* ...and released on the click that picks an item (set by wishlist-random.ts).
+   The animation outranks the hover transform for as long as it runs. */
+.kit-btn.filter-random.is-rolling svg,
+.kit-btn.mobile-filter-random.is-rolling svg {
+  animation: die-roll 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes die-roll {
+  0% {
+    transform: rotate(-20deg) scale(1);
+  }
+  55% {
+    transform: rotate(200deg) scale(0.82);
+  }
+  100% {
+    transform: rotate(340deg) scale(1);
+  }
 }
 
 /* Active "All" = the dock indicator: opaque accent gradient + its glow,

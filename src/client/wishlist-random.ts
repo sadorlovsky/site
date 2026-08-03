@@ -164,6 +164,16 @@ export function initRandomButton(selector: string) {
 
   button.addEventListener("click", (e) => {
     e.preventDefault();
+    // Tumble the die for the length of the roll. Re-armed on every click by
+    // dropping the class first, so a rapid second press restarts the animation
+    // instead of being swallowed.
+    button.classList.remove("is-rolling");
+    void button.offsetWidth; // reflow: without it the class re-add is a no-op
+    button.classList.add("is-rolling");
     scrollToRandomItem();
+  });
+
+  button.addEventListener("animationend", () => {
+    button.classList.remove("is-rolling");
   });
 }

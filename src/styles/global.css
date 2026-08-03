@@ -36,7 +36,8 @@
       light-dark(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.32)),
     inset -1.5px -1.5px 1px -1px
       light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.12)),
-    inset 0 0 12px light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
+    inset 0 0 12px
+      light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
 }
 
 /* =============================================================================
@@ -737,45 +738,80 @@ a.btn-danger:active {
   background-position: right 0.85rem center;
 }
 
-/* Floating UI Tooltips */
+/* =============================================================================
+   Tooltips — a bead of the chrome's liquid glass that trails the cursor
+   (tooltip.ts).
+
+   Position and entrance share one `transform` on one element, deliberately: an
+   *ancestor's* transform resets the backdrop-filter root and would silently kill
+   the frost (the same trap documented in PageHeader.astro), so a wrapper moving
+   a glass child is not an option here. The script writes the translate and lets
+   the scale ride on a registered custom property, which is what makes the
+   entrance animatable from CSS.
+
+   No arrow: the bead sits right above the pointer, which is a better pointer
+   than any triangle could be.
+   ============================================================================= */
+@property --tooltip-scale {
+  syntax: "<number>";
+  initial-value: 0.92;
+  inherits: false;
+}
+
 .floating-tooltip {
-  display: none;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  padding: 0.4rem 0.65rem;
+  z-index: 1000;
+  pointer-events: none;
+  visibility: hidden;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
-  color: white;
-  background: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
-  pointer-events: none;
+  color: light-dark(#1a1a1a, #fff);
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  opacity: 0;
+  --tooltip-scale: 0.92;
+  /* `visibility` keeps the bead out of the accessibility tree between uses, and
+     is held back until the fade finishes so leaving isn't a hard cut. */
+  transition:
+    opacity 0.18s ease,
+    --tooltip-scale 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.18s;
 }
 
-.floating-tooltip-arrow {
+.floating-tooltip[data-visible] {
+  visibility: visible;
+  opacity: 1;
+  --tooltip-scale: 1;
+  transition:
+    opacity 0.18s ease,
+    --tooltip-scale 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
+}
+
+/* The refractive rim, same as every other glass capsule. */
+.floating-tooltip::after {
+  content: "";
   position: absolute;
-  width: 0;
-  height: 0;
-  border: 5px solid transparent;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim);
 }
 
-.floating-tooltip-arrow--bottom {
-  border-top-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-}
-
-.floating-tooltip-arrow--top {
-  border-bottom-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-}
-
-.floating-tooltip-arrow--left {
-  border-right-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
-}
-
-.floating-tooltip-arrow--right {
-  border-left-color: light-dark(rgba(0, 0, 0, 0.85), rgba(50, 50, 55, 0.95));
+@media (prefers-reduced-transparency: reduce) {
+  .floating-tooltip {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
+    backdrop-filter: none;
+  }
 }
 
 /* Accessibility - Reduced motion */
