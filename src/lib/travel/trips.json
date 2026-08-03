@@ -250,27 +250,14 @@
   },
   {
     "year": 2024,
-    "month": 9,
-    "endMonth": null,
-    "kind": "outing",
-    "destinations": [
-      {
-        "country": ["kz", "kaz"],
-        "cities": ["Almaty"],
-        "landmarks": ["pervomayskie-prudy"]
-      }
-    ]
-  },
-  {
-    "year": 2024,
     "month": 8,
-    "endMonth": null,
+    "endMonth": 9,
     "kind": "outing",
     "destinations": [
       {
         "country": ["kz", "kaz"],
         "cities": ["Almaty"],
-        "landmarks": ["shymbulak"]
+        "landmarks": ["shymbulak", "pervomayskie-prudy"]
       }
     ]
   },
