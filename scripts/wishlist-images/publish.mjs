@@ -13,6 +13,7 @@
  */
 
 import { access, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { AwsClient } from "aws4fetch";
 import { loadEnv, loadItems, setImageUrl, setImageUrlDark } from "./db.mjs";
@@ -105,18 +106,38 @@ async function main() {
       const darkFile = path.join(args.out, `${path.basename(file, ".jpg")}-dark.jpg`);
       const hasDark = await access(darkFile).then(() => true, () => false);
 
+      // Content hash in the object key: regenerated candidates often reuse a
+      // filename (same item, same v-number), and the CDN caches by URL — same key
+      // means stale bytes at the edge no matter what lands in the bucket.
+      const base = path.basename(file, ".jpg");
+      const hash = createHash("sha1").update(await readFile(path.join(args.out, file))).digest("hex").slice(0, 8);
+      const darkHash = hasDark
+        ? createHash("sha1").update(await readFile(darkFile)).digest("hex").slice(0, 8)
+        : null;
+
       return {
         id,
         title: item.title,
         previous: item.imageUrl,
         previousDark: item.imageUrlDark ?? null,
-        next: `wishlist/styled/${path.basename(file, ".jpg")}.jpg`,
-        nextDark: hasDark ? `wishlist/styled/${path.basename(file, ".jpg")}-dark.jpg` : null,
+        next: `wishlist/styled/${base}-${hash}.jpg`,
+        nextDark: hasDark ? `wishlist/styled/${base}-${darkHash}-dark.jpg` : null,
         file: path.join(args.out, file),
         darkFile: hasDark ? darkFile : null,
       };
     }),
   );
+
+  // Hashed keys make "nothing changed" visible: same content → same key → skip.
+  const plannedAll = plan.length;
+  const changed = plan.filter(
+    (entry) => entry.previous !== entry.next || (entry.previousDark ?? null) !== (entry.nextDark ?? null),
+  );
+  plan.length = 0;
+  plan.push(...changed);
+  if (plannedAll > plan.length) {
+    console.log(`${plannedAll - plan.length} item(s) already current, skipped.`);
+  }
 
   console.log(`${plan.length} item(s) to publish${args.confirm ? "" : " (dry run)"}:\n`);
   for (const entry of plan) {
