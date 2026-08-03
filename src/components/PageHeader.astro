@@ -106,14 +106,22 @@ const hasActions = Astro.slots.has("actions");
       }
     </nav>
 
+    {/* The pill's accessible name leads with the title written on it, so voice
+        control can reach it by what it says — and, less obviously, so it is
+        never the bare string "Back to top". Safari 26 treats an element whose
+        accessible name is exactly that as a distraction and hides it outright:
+        display: none, applied from no stylesheet the page can see, so nothing
+        in the DOM explains it. The Russian label ("Наверх") slipped past the
+        filter, which is why the condensed title used to appear in Russian and
+        vanish in English. Any other wording is fine — the match is exact. */}
     {
       condenseOnScroll && showHeroTitle && (
         <button
           type="button"
           class="condensed-title liquid-glass"
-          aria-label="Back to top"
-          data-aria-label-en="Back to top"
-          data-aria-label-ru="Наверх"
+          aria-label={`${pageTitle.en}, back to top`}
+          data-aria-label-en={`${pageTitle.en}, back to top`}
+          data-aria-label-ru={`${pageTitle.ru}, наверх`}
         >
           <span
             class="condensed-title__text"
