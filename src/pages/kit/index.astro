@@ -464,6 +464,26 @@ import { Icon } from "astro-icon/components";
           <Badge variant="solid-danger">Error</Badge>
         </div>
 
+        <h3>Glass Variant</h3>
+        <p>
+          For badges that sit on top of an image, where a solid gradient chip
+          becomes a second subject competing with the photo. The capsule is the
+          chrome's glass; the state travels on a coloured dot instead of
+          flooding the whole badge. Add <code>dot</code> plus a tone class —
+          <code>kit-badge--dot-success</code> or
+          <code>kit-badge--dot-accent</code>. The tint is dark in both themes,
+          because the backdrop is a photograph rather than the page.
+        </p>
+        <div class="component-row badge-on-photo">
+          <Badge variant="glass" dot class="kit-badge--dot-success">
+            Received
+          </Badge>
+          <Badge variant="glass" dot class="kit-badge--dot-accent">
+            Reserved
+          </Badge>
+          <Badge variant="glass">No dot</Badge>
+        </div>
+
         <h3>Sizes</h3>
         <div class="component-row">
           <Badge variant="solid-success" size="sm">Small</Badge>
@@ -838,6 +858,17 @@ import { Icon } from "astro-icon/components";
     gap: 0.75rem;
     align-items: center;
     margin-bottom: 1.5rem;
+  }
+
+  /* Glass badges are meant to be read against a photo, so the demo gives them
+     something to sit on — a flat swatch would flatter them unfairly. */
+  .badge-on-photo {
+    padding: 1.25rem;
+    border-radius: 16px;
+    background:
+      radial-gradient(circle at 20% 30%, #f0a05a, transparent 55%),
+      radial-gradient(circle at 75% 65%, #5a7cf0, transparent 60%),
+      linear-gradient(135deg, #8a7f6d, #3a3f4a);
   }
 
   .input-demo-grid {

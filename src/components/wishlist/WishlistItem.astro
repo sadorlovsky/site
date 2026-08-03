@@ -1,6 +1,5 @@
 ---
 import { Picture, getImage } from "astro:assets";
-import { Icon } from "astro-icon/components";
 import Badge from "@components/kit/Badge.astro";
 import {
   getCdnImageUrl,
@@ -102,35 +101,39 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
     {
       item.received && (
         <Badge
-          variant="solid-success"
-          class="wishlist-badge"
-          data-en="Received"
-          data-ru="Получено"
+          variant="glass"
+          dot
+          class="wishlist-badge kit-badge--dot-success"
         >
-          <Icon name="check" width={12} height={12} />
-          <span>Received</span>
+          <span class="badge-label" data-en="Received" data-ru="Получено">
+            Received
+          </span>
         </Badge>
       )
     }
     <Badge
-      variant="solid-success"
-      class="wishlist-badge own-reservation-badge"
-      data-en="Reserved by you"
-      data-ru="Вы зарезервировали"
+      variant="glass"
+      dot
+      class="wishlist-badge own-reservation-badge kit-badge--dot-success"
       hidden
     >
-      <Icon name="check" width={12} height={12} />
-      <span>Reserved by you</span>
+      <span
+        class="badge-label"
+        data-en="Reserved by you"
+        data-ru="Вы зарезервировали"
+      >
+        Reserved by you
+      </span>
     </Badge>
     <Badge
-      variant="solid-primary"
-      class="wishlist-badge reserved-badge"
-      data-en="Reserved"
-      data-ru="Зарезервировано"
+      variant="glass"
+      dot
+      class="wishlist-badge reserved-badge kit-badge--dot-accent"
       hidden={!item.isReserved}
     >
-      <Icon name="check" width={12} height={12} />
-      <span>Reserved</span>
+      <span class="badge-label" data-en="Reserved" data-ru="Зарезервировано">
+        Reserved
+      </span>
     </Badge>
   </div>
   <div class="item-content">

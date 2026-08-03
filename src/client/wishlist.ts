@@ -9,6 +9,18 @@ function getVisitorId(): string {
   return localStorage.getItem(VISITOR_ID_KEY) || "";
 }
 
+/**
+ * A badge's translations live on its inner label, not on the badge itself: the
+ * badge also holds a state dot, and anything carrying data-en gets its
+ * textContent rewritten wholesale by LangInit — children and all.
+ */
+function setBadgeLabel(badge: HTMLElement | null, lang: Lang): void {
+  const label = badge?.querySelector<HTMLElement>(".badge-label");
+  if (!label) return;
+  const text = lang === "ru" ? label.dataset.ru : label.dataset.en;
+  if (text) label.textContent = text;
+}
+
 export async function initializeWishlist() {
   // Check if language was set by inline script
   const isRussian = document.documentElement.classList.contains("lang-ru");
@@ -91,13 +103,7 @@ function showButtons() {
         button.disabled = true;
         if (reservedBadge) {
           reservedBadge.hidden = false;
-          const span = reservedBadge.querySelector("span");
-          if (span) {
-            span.textContent =
-              (currentLang === "ru"
-                ? reservedBadge.dataset.ru
-                : reservedBadge.dataset.en) ?? null;
-          }
+          setBadgeLabel(reservedBadge, currentLang);
         }
       } else {
         button.textContent =
@@ -147,14 +153,7 @@ function initializeReserveButtons() {
         button.classList.add("own-reservation");
         if (ownBadge) {
           ownBadge.hidden = false;
-          // Update badge text for current language
-          const span = ownBadge.querySelector("span");
-          if (span) {
-            span.textContent =
-              (currentLang === "ru"
-                ? ownBadge.dataset.ru
-                : ownBadge.dataset.en) ?? null;
-          }
+          setBadgeLabel(ownBadge, currentLang);
         }
         if (reservedBadge) reservedBadge.hidden = true;
       } else {
@@ -164,13 +163,7 @@ function initializeReserveButtons() {
         button.disabled = true;
         if (reservedBadge) {
           reservedBadge.hidden = false;
-          const span = reservedBadge.querySelector("span");
-          if (span) {
-            span.textContent =
-              (currentLang === "ru"
-                ? reservedBadge.dataset.ru
-                : reservedBadge.dataset.en) ?? null;
-          }
+          setBadgeLabel(reservedBadge, currentLang);
         }
         if (ownBadge) ownBadge.hidden = true;
       }
@@ -246,13 +239,7 @@ function initializeReserveButtons() {
         this.classList.add("own-reservation");
         if (itemBadge) {
           itemBadge.hidden = false;
-          const badgeSpan = itemBadge.querySelector("span");
-          if (badgeSpan) {
-            badgeSpan.textContent =
-              (currentLang === "ru"
-                ? itemBadge.dataset.ru
-                : itemBadge.dataset.en) ?? null;
-          }
+          setBadgeLabel(itemBadge, currentLang);
         }
         // Update aria-label
         const cancelAriaLabel =
@@ -344,20 +331,11 @@ function updateLanguage(lang: "en" | "ru") {
 
   translatableElements.forEach((el) => {
     const text = lang === "ru" ? el.dataset.ru : el.dataset.en;
-    if (text !== undefined) {
-      // For elements with children (like received badge), update the text node
-      const span = el.querySelector("span");
-      if (span) {
-        span.textContent = text;
-      } else if (
-        el.childNodes.length === 1 &&
-        el.childNodes[0].nodeType === Node.TEXT_NODE
-      ) {
-        el.textContent = text;
-      } else {
-        el.textContent = text;
-      }
-    }
+    // Writing textContent replaces every child, so the contract is that a
+    // translatable element owns nothing but its own text. Where an element does
+    // have children — a badge with a state dot — the attributes go on the inner
+    // label instead, and that label is what this loop finds.
+    if (text !== undefined) el.textContent = text;
   });
 
   // Update tooltip translations

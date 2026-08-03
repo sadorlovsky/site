@@ -38,6 +38,22 @@
       light-dark(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.12)),
     inset 0 0 12px
       light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
+
+  /* Glass laid over a photograph — badges on wishlist cards, and anything else
+     whose backdrop is an arbitrary image. It can't follow the colour scheme:
+     the light theme's white tint would drop dark text onto a dark photo. So
+     the tint stays dark in both themes and the label stays white, which is
+     also why the rim is the dark-theme edge rather than the bright one.
+
+     The tint is deliberately heavy enough to carry the badge on its own: an
+     ancestor's transform resets the backdrop root, and the wishlist card lifts
+     on hover, so the frost drops out exactly when a card is being looked at. */
+  --glass-bg-on-media: rgba(18, 18, 22, 0.62);
+  --glass-border-on-media: 1px solid rgba(255, 255, 255, 0.14);
+  --glass-rim-on-media:
+    inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.32),
+    inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.12),
+    inset 0 0 12px rgba(255, 255, 255, 0.04);
 }
 
 /* =============================================================================

@@ -1,8 +1,11 @@
+/* The card's own tint. Named --card-* on purpose: it used to be --glass-bg-light
+   and friends, one hex away from global.css's --glass-* and easy to mistake for
+   them, which is how the card ended up with a second dialect of the same
+   material. Everything else the card needs — border, shadow, rim — now comes
+   from the real tokens; only the tint is its own, and heavier (0.7 vs 0.55)
+   because a card is content you read through, not chrome you look past. */
 :root {
-  --glass-bg-light: rgba(255, 255, 255, 0.7);
-  --glass-bg-dark: rgba(40, 40, 45, 0.7);
-  --glass-border-light: rgba(255, 255, 255, 0.5);
-  --glass-border-dark: rgba(255, 255, 255, 0.1);
+  --card-bg: light-dark(rgba(255, 255, 255, 0.7), rgba(40, 40, 45, 0.7));
 }
 
 .wishlist-container {
@@ -229,25 +232,38 @@
   padding-bottom: 3rem;
 }
 
-/* Item card */
+/* Item card. Same material as the chrome — border, shadow and rim all come from
+   the shared tokens — but no backdrop-filter: frost pays for itself over
+   content, and a card *is* the content, sitting on a near-flat background.
+   Dozens of blur layers would cost a great deal and show almost nothing. */
 .wishlist-item {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: light-dark(var(--glass-bg-light), var(--glass-bg-dark));
-  border: 1px solid
-    light-dark(var(--glass-border-light), var(--glass-border-dark));
+  background: var(--card-bg);
+  border: var(--glass-border);
   border-radius: 20px;
   overflow: hidden;
   transition:
     transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow:
-    0 4px 24px -1px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.3)),
-    0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
-      inset;
+  box-shadow: var(--glass-shadow);
   content-visibility: auto;
   contain-intrinsic-size: 300px 400px;
+}
+
+/* The refractive rim — a lens edge lit from the top left, the same one every
+   glass capsule wears. It has to ride on ::before: ::after belongs to the
+   random-pick halo. Above the image and the badges, since it's the card's own
+   edge. */
+.wishlist-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  box-shadow: var(--glass-rim);
 }
 
 /* Where supported, remember the actual rendered size of offscreen cards so
@@ -258,13 +274,15 @@
   }
 }
 
+/* Hover lifts the card and deepens its shadow. No scale: nothing else in the
+   chrome scales, and scaling a card resamples the photograph and the text
+   under it for the length of the transition. */
 @media (hover: hover) and (pointer: fine) {
   .wishlist-item:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-8px);
     box-shadow:
       0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
-      0 0 0 1px light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1))
-        inset;
+      0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
   }
 }
 
@@ -430,8 +448,10 @@
   }
 }
 
-/* Badges */
-.wishlist-badge {
+/* Badges. The double class isn't decoration: the glass variant sets
+   `position: relative` to host its rim, at the same specificity as this rule,
+   so the corner placement has to out-rank it rather than depend on file order. */
+.kit-badge.wishlist-badge {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
@@ -761,12 +781,10 @@
 
 /* Accessibility - Reduced transparency */
 @media (prefers-reduced-transparency: reduce) {
-  /* Glass backgrounds → solid */
+  /* Card tint → solid. The rest of the card's glass (border, rim) is opaque
+     already; global.css takes care of the .liquid-glass surfaces. */
   :root {
-    --glass-bg-light: #ffffff;
-    --glass-bg-dark: #2a2a2d;
-    --glass-border-light: #e0e0e0;
-    --glass-border-dark: #444444;
+    --card-bg: light-dark(#ffffff, #2a2a2d);
   }
 
   /* Ambient blobs — hide */

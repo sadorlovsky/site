@@ -3,9 +3,11 @@ import "@styles/kit/badge.css";
 
 type SubtleVariant = "default" | "primary" | "success" | "warning" | "danger" | "info";
 type SolidVariant = "solid-success" | "solid-primary" | "solid-info" | "solid-warning" | "solid-danger";
+/** For badges laid over an image — pair it with a dot tone for the state. */
+type GlassVariant = "glass";
 
 interface Props {
-  variant?: SubtleVariant | SolidVariant;
+  variant?: SubtleVariant | SolidVariant | GlassVariant;
   size?: "sm" | "md";
   dot?: boolean;
   class?: string;

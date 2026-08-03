@@ -121,6 +121,35 @@
 }
 
 /* =============================================================================
+   Glass — for badges that sit on top of an image.
+
+   A solid gradient chip on a photograph is a second subject competing with the
+   first. This is the chrome's capsule instead: frost, rim and all, with the
+   state carried by a coloured dot rather than by flooding the whole badge.
+   Tokens come from global.css (the --glass-*-on-media set), which is dark in
+   both themes because the backdrop here is a photo, not the page.
+   ============================================================================= */
+
+.kit-badge--glass {
+  position: relative;
+  border-radius: 999px;
+  color: #fff;
+  background-color: var(--glass-bg-on-media);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border-on-media);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
+.kit-badge--glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim-on-media);
+}
+
+/* =============================================================================
    With dot indicator
    ============================================================================= */
 
@@ -128,7 +157,17 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: currentColor;
+  background: var(--badge-dot, currentColor);
+  flex: none;
+}
+
+/* Dot tones — the badge's own colour stays neutral, so the state lives here. */
+.kit-badge--dot-success {
+  --badge-dot: #34d399;
+}
+
+.kit-badge--dot-accent {
+  --badge-dot: var(--accent-start);
 }
 
 /* =============================================================================
@@ -138,5 +177,12 @@
 @media (prefers-contrast: more) {
   .kit-badge {
     border: 1px solid currentColor;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .kit-badge--glass {
+    background-color: rgb(24, 24, 28);
+    backdrop-filter: none;
   }
 }
