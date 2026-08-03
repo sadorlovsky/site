@@ -4,7 +4,9 @@
  */
 
 const HIGHLIGHT_CLASS = "wishlist-item--highlighted";
-const HIGHLIGHT_DURATION = 3500;
+const HIGHLIGHT_DURATION = 1900; // just past the flare, see wishlist.css
+/** Breathing room between the pinned header and the card it lands on. */
+const CARD_GAP = 20;
 
 let currentHighlight: HTMLElement | null = null;
 let highlightTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -21,15 +23,65 @@ function clearHighlight() {
 }
 
 /**
- * Check if element is fully visible in viewport (with padding)
+ * How far from the top of the viewport a card should come to rest: clear of
+ * the pinned header row, whose real height the header publishes as
+ * --sticky-header-offset (page-header-condense.ts). It used to be a flat 120px,
+ * which knew nothing about a header grown taller by wrapped pills.
+ */
+function headerClearance(): number {
+  const main = document.querySelector("main");
+  const published = main
+    ? getComputedStyle(main).getPropertyValue("--sticky-header-offset")
+    : "";
+  const offset = parseFloat(published);
+  return (Number.isFinite(offset) ? offset : 88) + CARD_GAP;
+}
+
+/** Where the page should sit for this card to rest below the header. */
+function scrollTargetFor(el: HTMLElement): number {
+  const top = window.scrollY + el.getBoundingClientRect().top;
+  return Math.max(0, Math.round(top - headerClearance()));
+}
+
+/**
+ * Check if element is fully visible in viewport (below the pinned header)
  */
 function isElementFullyVisible(el: HTMLElement, padding = 20): boolean {
   const rect = el.getBoundingClientRect();
   const windowHeight =
     window.innerHeight || document.documentElement.clientHeight;
 
-  // Element is fully visible if top and bottom are within viewport with padding
-  return rect.top >= padding && rect.bottom <= windowHeight - padding;
+  return rect.top >= headerClearance() && rect.bottom <= windowHeight - padding;
+}
+
+/**
+ * Run once the page has stopped moving. Cards below the fold are laid out from
+ * `contain-intrinsic-size` estimates and get their real heights as the scroll
+ * passes over them, which drags the target along with them — landings were
+ * measured up to 150px off. So the destination is re-checked after the fact
+ * rather than trusted from a single measurement taken before the trip.
+ */
+function onScrollSettled(run: () => void): void {
+  // Read the support check into a variable: testing it inline narrows `window`
+  // itself to `never` in the fallback below.
+  const hasScrollEnd = "onscrollend" in window;
+  if (hasScrollEnd) {
+    window.addEventListener("scrollend", run, { once: true });
+    return;
+  }
+  let last = window.scrollY;
+  let still = 0;
+  const poll = window.setInterval(() => {
+    if (window.scrollY === last) {
+      if (++still >= 4) {
+        window.clearInterval(poll);
+        run();
+      }
+    } else {
+      last = window.scrollY;
+      still = 0;
+    }
+  }, 50);
 }
 
 /**
@@ -120,26 +172,22 @@ function scrollToItem(item: HTMLElement) {
     return;
   }
 
-  // Calculate scroll position to show item with comfortable padding from top
-  const rect = item.getBoundingClientRect();
-  const itemHeight = rect.height;
-  const windowHeight = window.innerHeight;
-  const topPadding = 120; // Comfortable padding from top of viewport
-
-  // Target: position item so its top is at topPadding from viewport top
-  let scrollTarget = window.scrollY + rect.top - topPadding;
-
-  // But also ensure the bottom of the item is visible
-  const bottomPadding = 40;
-  const minScrollToShowBottom =
-    window.scrollY + rect.bottom - windowHeight + bottomPadding;
-
-  // Use whichever scroll position is greater (ensures bottom is visible)
-  scrollTarget = Math.max(scrollTarget, minScrollToShowBottom);
-
+  const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   window.scrollTo({
-    top: Math.max(0, scrollTarget),
-    behavior: "smooth",
+    top: scrollTargetFor(item),
+    behavior: smooth ? "smooth" : "auto",
+  });
+
+  // Nothing here tries to keep a tall card's bottom on screen any more. That
+  // rule used to win whenever a card was taller than the viewport minus its
+  // padding, and it won by pushing the card *up* — measured landing 18px below
+  // the pinned row on a short window, with its top under the pills. For a card
+  // that doesn't fit, showing the top is the right answer anyway.
+  onScrollSettled(() => {
+    const drift = window.scrollY - scrollTargetFor(item);
+    if (Math.abs(drift) > 2) {
+      window.scrollTo({ top: scrollTargetFor(item), behavior: "auto" });
+    }
   });
 
   // Add highlight after a small delay (let scroll start)

@@ -243,7 +243,10 @@
   background: var(--card-bg);
   border: var(--glass-border);
   border-radius: 20px;
-  overflow: hidden;
+  /* Deliberately not `overflow: hidden`. The card's only reason for clipping
+     was to round the photo's square top corners, which .item-image now does
+     itself — and clipping also swallowed the random-pick halo, which blooms
+     8px outside the card by design. */
   transition:
     transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -294,15 +297,43 @@
   }
 }
 
-/* Random item highlight - glow effect */
+/* =============================================================================
+   Random pick — the card the die landed on.
+
+   It flares and settles: the accent ring and glow arrive fast, then decay over
+   about a second and a half. The rim goes with them, lit past even its hover
+   brightness, so the pick reads as the same piece of glass catching a much
+   stronger light rather than as a separate effect layered on the card.
+
+   There used to be a rotating conic halo on ::after underneath all this. It
+   never painted a single pixel: z-index: -1 put it behind the card's own
+   background, and content-visibility: auto contains painting to the card's
+   box, so it was clipped as well. Removing the box-shadow keyframes left a
+   blank card, which is how it was found. It was also the most expensive
+   animation on the page — a blurred conic gradient rotated through a
+   registered custom property, every frame, for three and a half seconds.
+   ============================================================================= */
+/* 1.8s: in over 180ms, held for 810ms, out over the rest. The hold is the
+   whole point — a curve straight from the flare back down reads as a blink,
+   and an expo-out is the worst offender, since it spends most of a segment
+   already arrived. So the rise gets the snappy curve and everything after it
+   eases out from a full stop. */
+.wishlist-item--highlighted {
+  animation: highlight-flare 1.8s ease-out forwards;
+}
+
+.wishlist-item--highlighted::before {
+  animation: highlight-rim 1.8s ease-out forwards;
+}
+
+/* The turning halo, in the site's two accent colours rather than the four it
+   used to sweep through — the indigo and violet appeared nowhere else. It sits
+   behind the card's own tint, so what shows is a colour that moves *through*
+   the glass rather than a ring laid on top of it. */
 @property --glow-angle {
   syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
-}
-
-.wishlist-item--highlighted {
-  animation: highlight-glow 3.5s ease-out forwards;
 }
 
 .wishlist-item--highlighted::after {
@@ -314,33 +345,17 @@
     from var(--glow-angle, 0deg),
     var(--accent-start),
     var(--accent-end),
-    #6366f1,
-    #8b5cf6,
+    var(--accent-start),
+    var(--accent-end),
     var(--accent-start)
   );
   filter: blur(12px);
-  opacity: 0.5;
-  animation:
-    glow-rotate 2s linear infinite,
-    glow-blur-fade-out 3.5s ease-out forwards;
+  opacity: 0;
   pointer-events: none;
   z-index: -1;
-}
-
-@keyframes highlight-glow {
-  0%,
-  50% {
-    box-shadow:
-      0 0 0 3px var(--accent-start),
-      0 0 20px 4px rgba(237, 98, 146, 0.5),
-      0 0 40px 8px rgba(237, 98, 146, 0.25);
-  }
-  100% {
-    box-shadow:
-      0 0 0 0px transparent,
-      0 0 0px 0px transparent,
-      0 0 0px 0px transparent;
-  }
+  animation:
+    glow-rotate 2s linear infinite,
+    glow-fade 1.8s ease-out forwards;
 }
 
 @keyframes glow-rotate {
@@ -352,23 +367,72 @@
   }
 }
 
-@keyframes glow-blur-fade-out {
-  0%,
-  60% {
-    opacity: 0.5;
+/* Same shape as the flare: quick in, held, eased out. */
+@keyframes glow-fade {
+  0% {
+    opacity: 0;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  10%,
+  55% {
+    opacity: 0.55;
   }
   100% {
     opacity: 0;
   }
 }
 
-/* Disable glow animation for reduced motion */
+/* The card's own shadow rides along in every frame: the property is animated
+   whole, so leaving it out would drop the card's glass shadow for the duration
+   and put it back with a jolt. */
+@keyframes highlight-flare {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(237, 98, 146, 0),
+      0 0 0 0 rgba(237, 98, 146, 0),
+      var(--glass-shadow);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  10%,
+  55% {
+    box-shadow:
+      0 0 0 3px var(--accent-start),
+      0 0 32px 6px rgba(237, 98, 146, 0.55),
+      var(--glass-shadow);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgba(237, 98, 146, 0),
+      0 0 0 0 rgba(237, 98, 146, 0),
+      var(--glass-shadow);
+  }
+}
+
+@keyframes highlight-rim {
+  0% {
+    box-shadow: var(--glass-rim);
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  10%,
+  55% {
+    box-shadow:
+      inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.9),
+      inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6),
+      inset 0 0 24px rgba(237, 98, 146, 0.5);
+  }
+  100% {
+    box-shadow: var(--glass-rim);
+  }
+}
+
+/* Reduced motion still needs to answer "which one did it pick?" — the global
+   rule below strips the animations, so the ring is drawn flat instead and
+   lasts as long as the class does. */
 @media (prefers-reduced-motion: reduce) {
   .wishlist-item--highlighted {
-    animation: none;
-  }
-  .wishlist-item--highlighted::after {
-    display: none;
+    box-shadow:
+      0 0 0 3px var(--accent-start),
+      var(--glass-shadow);
   }
 }
 
@@ -398,6 +462,9 @@
   position: relative;
   aspect-ratio: 4/3;
   overflow: hidden;
+  /* The card's radius less its 1px border — this rounds the photo now that the
+     card itself no longer clips its children. */
+  border-radius: 19px 19px 0 0;
   background: light-dark(#f0f0f0, #1a1a1a);
 }
 
