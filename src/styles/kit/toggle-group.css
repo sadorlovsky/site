@@ -151,9 +151,22 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 }
 
 .kit-toggle-group--separated .kit-toggle-item {
-  background: transparent;
-  color: light-dark(#666, #aaa);
-  box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
+  position: relative;
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  color: light-dark(#555, #ddd);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.kit-toggle-group--separated .kit-toggle-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim);
 }
 
 .kit-toggle-group--separated
@@ -161,14 +174,17 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
     .is-active
   ) {
   color: light-dark(#111, #fff);
-  box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
+  border-color: light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.16));
 }
 
 .kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"],
 .kit-toggle-group--separated .kit-toggle-item.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  background-color: light-dark(rgba(237, 92, 121, 0.55), rgba(237, 92, 121, 0.4));
+  background-image: var(--glass-sheen);
   color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  box-shadow:
+    0 4px 14px rgba(237, 87, 96, 0.3),
+    0 2px 6px rgba(237, 87, 96, 0.15);
 }
 
 /* Separated sizes */
@@ -298,5 +314,18 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   .kit-toggle-item[aria-pressed="true"],
   .kit-toggle-item.is-active {
     background: light-dark(#fff, #444);
+  }
+
+  .kit-toggle-group--separated .kit-toggle-item {
+    background-color: light-dark(#fff, #2a2a2d);
+    background-image: none;
+    backdrop-filter: none;
+    border-color: light-dark(#e0e0e0, #444);
+  }
+
+  .kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"],
+  .kit-toggle-group--separated .kit-toggle-item.is-active {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    backdrop-filter: none;
   }
 }
