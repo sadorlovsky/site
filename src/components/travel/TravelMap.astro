@@ -94,12 +94,6 @@ const { mode = "globe" } = Astro.props;
     outline-offset: 2px;
   }
 
-  @media (max-width: 480px) {
-    .map {
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
   .placeholder {
     position: absolute;
     width: 100%;
@@ -136,14 +130,31 @@ const { mode = "globe" } = Astro.props;
     outline: none;
   }
 
-  /* Cooperative gestures is here for one thing — the two-finger minimum on drag
-     pan, so a finger dragged down the globe scrolls the page. Its other half is
-     a panel that flashes "use two fingers to move the map" on every one of
-     those scrolls, which would make a message out of the ordinary act of
-     leaving the map. The gesture teaches itself the moment a second finger
-     lands; the panel is already aria-hidden, so nothing is lost with it gone. */
-  .map .maplibregl-cooperative-gesture-screen {
-    display: none;
+  /* One finger turns the globe, and the page still scrolls under it.
+
+     Those two wants collide on a touchscreen — whichever gets the drag, the
+     other loses it — and the axis is what tells them apart. The globe turns in
+     longitude and the page scrolls in latitude, so a horizontal drag can only
+     mean the map and a vertical one can only mean the page. Nobody has to be
+     taught that; it is how both objects already behave.
+
+     `pan-y` states that split to the browser rather than to us. Vertical drags
+     stay a native scroll, keeping the inertia and rubber-banding no rAF loop of
+     ours would reproduce, while horizontal ones are never claimed and arrive at
+     MapLibre as ordinary pointer events. Pinch is absent from the value, so
+     zoom and rotate go on reaching the map as well.
+
+     This replaces cooperative gestures, whose line was a finger count: one for
+     the page, two for the map. It worked, but it asked for a gesture nobody
+     arrives knowing in order to turn a globe that is visibly turning by itself.
+     With that gone the panel it flashed to explain the rule goes too — there is
+     no rule left to explain.
+
+     Written against #map so it outranks the three-class touch-action rules
+     MapLibre applies to this same container as its handlers register. */
+  #map .maplibregl-canvas-container,
+  #map .maplibregl-canvas {
+    touch-action: pan-y;
   }
 
   /* A label lying on the map is glass over media — the same case as a badge on

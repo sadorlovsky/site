@@ -188,20 +188,79 @@ async function initMap(): Promise<void> {
     { capture: true },
   );
 
-  // Touch has the same trap and less room to escape it: a finger landing on the
-  // globe would drag the map instead of the page. One finger scrolls, two
-  // fingers still zoom and turn it. The globe spins by itself until touched, so
-  // the page keeps its animation either way.
+  // Touch is split by direction rather than by finger count: sideways turns the
+  // globe, up and down scrolls the page. Both of the earlier attempts here
+  // counted fingers instead — dragPan off entirely, then cooperative gestures'
+  // two-finger minimum — and a count is the wrong thing to split on when the
+  // globe turns one way and the page scrolls the other. It also meant the one
+  // gesture people actually reach for, a thumb across the globe, was the one
+  // that did nothing.
   //
-  // Cooperative gestures is the handler that draws that line — it raises drag
-  // pan's minimum to two fingers rather than taking it away, which is what
-  // disabling dragPan outright got wrong: it also cost the two-finger drag, and
-  // with it every way of turning the globe or moving a zoomed-in map by touch.
-  // The screen it flashes to explain itself is hidden in TravelMap.astro; the
-  // gesture is the one the page already teaches by working.
-  if (window.matchMedia("(pointer: coarse)").matches) {
-    map.cooperativeGestures.enable();
-  }
+  // The `touch-action: pan-y` in TravelMap.astro states the split but cannot
+  // enforce it alone: it only makes the browser *willing* to scroll a vertical
+  // drag, and MapLibre calls preventDefault on the first touchmove it sees,
+  // which cancels that scroll before it can start. Measured — a vertical
+  // one-finger drag moved the map 36.7° of latitude and left the page where it
+  // was.
+  //
+  // So the gesture is arbitrated here, in the capture phase, above the canvas
+  // MapLibre listens on. Nothing is forwarded while the direction is still in
+  // doubt, and a drag ruled vertical stays blocked for its whole life: MapLibre
+  // never sees it, never preventDefaults it, and the page scrolls natively —
+  // with the inertia and rubber-banding that only the browser can give.
+  //
+  // Two fingers are never arbitrated. Pinch, rotate and two-finger pan all
+  // belong to the map, and the second finger is unambiguous about that.
+  const DIRECTION_THRESHOLD = 6; // px of travel before the axis is called
+  let gestureOwner: "undecided" | "map" | "page" = "undecided";
+  let gestureStart: { x: number; y: number } | null = null;
+
+  container.addEventListener(
+    "touchstart",
+    (event) => {
+      if (event.touches.length > 1) {
+        gestureOwner = "map";
+        return;
+      }
+      gestureOwner = "undecided";
+      gestureStart = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+      };
+    },
+    { capture: true },
+  );
+
+  container.addEventListener(
+    "touchmove",
+    (event) => {
+      if (event.touches.length > 1) gestureOwner = "map";
+      if (gestureOwner === "map") return;
+
+      if (gestureOwner === "undecided" && gestureStart) {
+        const dx = event.touches[0].clientX - gestureStart.x;
+        const dy = event.touches[0].clientY - gestureStart.y;
+        if (Math.hypot(dx, dy) >= DIRECTION_THRESHOLD) {
+          gestureOwner = Math.abs(dx) > Math.abs(dy) ? "map" : "page";
+          if (gestureOwner === "map") return;
+        }
+      }
+
+      event.stopPropagation();
+    },
+    { capture: true },
+  );
+
+  // Only a gesture that ends releases the verdict. Lifting one finger of a
+  // pinch leaves the map holding what is left, rather than putting the survivor
+  // back through a decision it would have to restart from a stale origin.
+  const releaseGesture = (event: TouchEvent) => {
+    if (event.touches.length > 0) return;
+    gestureOwner = "undecided";
+    gestureStart = null;
+  };
+  container.addEventListener("touchend", releaseGesture, { capture: true });
+  container.addEventListener("touchcancel", releaseGesture, { capture: true });
 
   // The frame only earns its place once the map fills it. Around the globe it
   // would be drawing a box around mostly empty space — a sphere in a 2.7:1
@@ -296,9 +355,14 @@ async function initMap(): Promise<void> {
     };
 
     map.on("mousedown", stopRotation);
-    map.on("touchstart", stopRotation);
     map.on("wheel", stopRotation);
+    // Not "touchstart": a finger landing on the globe on its way to scrolling
+    // the page is not someone taking the globe over, and it used to stop the
+    // rotation for good. These three fire only once the map has actually been
+    // given the gesture, which is the moment the user took control.
     map.on("dragstart", stopRotation);
+    map.on("zoomstart", stopRotation);
+    map.on("rotatestart", stopRotation);
 
     // Pause/resume (not a permanent stop) as the map scrolls in and out of view.
     const rotationObserver = new IntersectionObserver(
