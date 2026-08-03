@@ -33,25 +33,51 @@ const percent = Math.floor((value / max) * 100);
     gap: 0.5em;
   }
 
+  /* A groove cut into the surface it sits on, rather than a flat grey slot.
+     Glass at 8px tall can't be frost — a backdrop-filter on a strip this thin,
+     lying on a card that is nearly flat behind it, costs a layer and shows
+     nothing. What reads at this size is the light: --glass-rim is a lens edge
+     lit from the top left, so a channel sunk into that same surface is the
+     inverse — shadow at the top left, a catch of light along the bottom right. */
   .progress-bar {
     flex: 1;
-    height: 6px;
-    min-height: 6px;
-    background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
-    border-radius: 3px;
+    height: 8px;
+    min-height: 8px;
+    background-color: light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.28));
+    border-radius: 999px;
+    box-shadow:
+      inset 1.5px 1.5px 2px -1px light-dark(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.6)),
+      inset -1px -1px 1px -0.5px
+        light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.07));
     overflow: hidden;
   }
 
+  /* The fill lies in the groove and catches light along its top edge. */
   .progress-fill {
     height: 100%;
-    background-color: light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.6));
-    border-radius: 3px;
+    background-color: light-dark(rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.55));
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0) 55%
+    );
+    border-radius: 999px;
+    box-shadow: inset 0 -1px 1px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.3));
     transition: width 0.3s ease;
-    min-width: 2px;
+    min-width: 3px;
   }
 
+  /* Accent fill glows the way every other lit thing in the chrome does. */
   .progress-fill.accent {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background-color: transparent;
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0) 55%
+      ),
+      linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    box-shadow: 0 0 8px rgba(237, 87, 96, 0.45);
   }
 
   .percent {

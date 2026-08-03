@@ -34,7 +34,7 @@ import {
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
-    <ProgressBar value={countries.size} max={countryListSize} label="Countries visited progress" />
+    <ProgressBar value={countries.size} max={countryListSize} label="Countries visited progress" accent />
   </div>
   <div class="card">
     <h3 data-en="Cities" data-ru="Города">Cities</h3>
@@ -59,7 +59,7 @@ import {
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
     </div>
-    <ProgressBar value={continentsVisited} max={continentsTotal} label="Continents visited progress" />
+    <ProgressBar value={continentsVisited} max={continentsTotal} label="Continents visited progress" accent />
   </div>
 </div>
 
@@ -127,7 +127,7 @@ import {
     display: inline-flex;
     vertical-align: super;
     padding: 0.1rem;
-    border-radius: 4px;
+    border-radius: 999px;
     transition: color 0.2s ease;
   }
 
