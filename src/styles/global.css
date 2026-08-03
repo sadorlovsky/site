@@ -39,6 +39,18 @@
     inset 0 0 12px
       light-dark(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.03));
 
+  /* The same edge with the light source closer — for glass that tilts toward
+     the viewer. The wishlist card is its only consumer today: it wears this
+     while it's lifted on hover. In the light scheme the top-left layer is
+     already at full white, so the brightening there falls to the other two. */
+  --glass-rim-lit:
+    inset 1.5px 1.5px 1px -1px
+      light-dark(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.5)),
+    inset -1.5px -1.5px 1px -1px
+      light-dark(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.2)),
+    inset 0 0 18px
+      light-dark(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.08));
+
   /* Glass laid over a photograph — badges on wishlist cards, and anything else
      whose backdrop is an arbitrary image. It can't follow the colour scheme:
      the light theme's white tint would drop dark text onto a dark photo. So

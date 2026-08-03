@@ -264,6 +264,9 @@
   pointer-events: none;
   z-index: 3;
   box-shadow: var(--glass-rim);
+  /* Same clock as the lift below, so the edge catches the light at the moment
+     the card arrives rather than trailing after it. */
+  transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Where supported, remember the actual rendered size of offscreen cards so
@@ -274,15 +277,20 @@
   }
 }
 
-/* Hover lifts the card and deepens its shadow. No scale: nothing else in the
-   chrome scales, and scaling a card resamples the photograph and the text
-   under it for the length of the transition. */
+/* Hover lifts the card, deepens its shadow, and brightens the rim — which is
+   what a pane of glass does when it tilts toward a light. Nothing scales:
+   nothing else in the chrome does, and scaling a card resamples the photograph
+   and the text under it for the length of the transition. */
 @media (hover: hover) and (pointer: fine) {
   .wishlist-item:hover {
     transform: translateY(-8px);
     box-shadow:
       0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
       0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
+  }
+
+  .wishlist-item:hover::before {
+    box-shadow: var(--glass-rim-lit);
   }
 }
 
@@ -425,27 +433,23 @@
   animation: none;
 }
 
+/* The photograph doesn't move on hover. object-fit: cover plus a zoom crops
+   about 4% off every edge, and on shots where the product fills the frame that
+   takes the subject rather than the backdrop — while the card's lift has
+   already said the card is interactive. The rim brightening above answers the
+   hover in the material's own vocabulary instead. */
 .item-image img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 0;
 }
 
 .item-image.loaded img {
   opacity: 1;
-  transition:
-    opacity 0.3s ease,
-    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .wishlist-item:hover .item-image img {
-    transform: scale(1.08);
-  }
+  transition: opacity 0.3s ease;
 }
 
 /* Badges. The double class isn't decoration: the glass variant sets
