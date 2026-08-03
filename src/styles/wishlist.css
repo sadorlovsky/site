@@ -70,59 +70,59 @@
   min-width: 0;
 }
 
-/* "All" filter pill and random-item button — the same glass capsule as the
-   category chips (shared tokens, .dock-item text colours). */
+/* "All" is a filter like any other, so it reads like one: the same ghost
+   treatment as the category chips next to it (kit/toggle-group.css), not the
+   kit's ghost *button* with its inset ring. Metrics already match — kit-btn--sm
+   and the separated sm chip are both 32px / 0.85rem / 0.75rem. */
 .kit-btn.filter-all-btn,
-.kit-btn.mobile-filter-all-btn,
+.kit-btn.mobile-filter-all-btn {
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 999px;
+  color: light-dark(#666, #9a9aa0);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+/* The `:not(:disabled)` is there to out-specify the kit's own ghost hover. */
+.kit-btn.filter-all-btn:is(:hover, :focus-visible):not(:disabled):not(
+    .is-active
+  ),
+.kit-btn.mobile-filter-all-btn:is(:hover, :focus-visible):not(:disabled):not(
+    .is-active
+  ) {
+  background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+  box-shadow: none;
+  color: light-dark(#111, #fff);
+}
+
+/* =============================================================================
+   Random-item button — a glass bead you roll.
+
+   The one glass object left in the filter row, now that the filters themselves
+   are plain labels — which is the point: it isn't a filter, it's an action, and
+   being the only thing with weight says so. The accent arrives as an indicator
+   scaling up behind the die (the dock's fill, glow and easing) instead of a
+   background swap, the die leans back on hover like it's being wound up, and a
+   click tumbles it a full turn while the page scrolls to the pick. Round,
+   because a die that rolls shouldn't sit in a box.
+   ============================================================================= */
 .kit-btn.filter-random,
 .kit-btn.mobile-filter-random {
   position: relative;
+  /* Own stacking context so the z-index:-1 indicator lands above the frost but
+     below the die. */
+  isolation: isolate;
+  border-radius: 50%;
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
   color: light-dark(#555, #b4b4b8);
-}
-
-.kit-btn.filter-all-btn::after,
-.kit-btn.mobile-filter-all-btn::after,
-.kit-btn.filter-random::after,
-.kit-btn.mobile-filter-random::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: var(--glass-rim);
-}
-
-/* Hover re-pins the glass surface: the kit's ghost/secondary :hover rules
-   out-specify the resting rule above and would repaint these buttons with
-   their own flat backgrounds/inset rings. Only the label colour changes. */
-.kit-btn.filter-all-btn:hover:not(.is-active),
-.kit-btn.mobile-filter-all-btn:hover:not(.is-active) {
-  background-color: var(--glass-bg);
-  background-image: var(--glass-sheen);
-  box-shadow: var(--glass-shadow);
-  color: light-dark(#1a1a1a, #fff);
-}
-
-/* =============================================================================
-   Random-item button — a glass bead you roll.
-
-   The only playful control on the page, so it's the one that gets to move: the
-   accent arrives as an indicator scaling up behind the die (the dock's fill,
-   glow and easing) instead of a background swap, the die leans back on hover
-   like it's being wound up, and a click tumbles it a full turn while the page
-   scrolls to the pick. Round, because a die that rolls shouldn't sit in a box.
-   ============================================================================= */
-.kit-btn.filter-random,
-.kit-btn.mobile-filter-random {
-  /* Own stacking context so the z-index:-1 indicator lands above the frost but
-     below the die. */
-  isolation: isolate;
-  border-radius: 50%;
   transition: color 0.3s ease;
 }
 
@@ -143,10 +143,16 @@
   z-index: -1;
 }
 
-/* The rim sits above the indicator, and steps aside once it's lit. */
+/* The refractive rim, above the indicator — and it steps aside once that's lit. */
 .kit-btn.filter-random::after,
 .kit-btn.mobile-filter-random::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
   z-index: 5;
+  box-shadow: var(--glass-rim);
 }
 
 .kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled),
@@ -207,20 +213,12 @@
   }
 }
 
-/* Active "All" = the dock indicator: opaque accent gradient + its glow,
-   glass artefacts off. */
+/* Active "All" — the same accent capsule the current category chip wears. */
 .kit-btn.filter-all-btn.is-active,
 .kit-btn.mobile-filter-all-btn.is-active {
   background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  backdrop-filter: none;
-  border-color: transparent;
   color: white;
   box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
-}
-
-.kit-btn.filter-all-btn.is-active::after,
-.kit-btn.mobile-filter-all-btn.is-active::after {
-  box-shadow: none;
 }
 
 /* Grid */
@@ -746,17 +744,18 @@
     border-color: transparent;
   }
 
-  /* "All" filter pill and random-item button — border for visibility */
-  .kit-btn.filter-all-btn,
-  .kit-btn.mobile-filter-all-btn,
+  /* Random button — border for visibility. It stays put when lit: the accent
+     indicator fills inside the bead rather than replacing its chrome. */
   .kit-btn.filter-random,
   .kit-btn.mobile-filter-random {
     border: 2px solid light-dark(#ccc, #555);
   }
 
-  .kit-btn.filter-all-btn.is-active,
-  .kit-btn.mobile-filter-all-btn.is-active {
-    border-color: transparent;
+  /* "All" is a ghost label now, so it needs an edge back — except when it's
+     the current filter, where the accent fill already provides one. */
+  .kit-btn.filter-all-btn:not(.is-active),
+  .kit-btn.mobile-filter-all-btn:not(.is-active) {
+    box-shadow: inset 0 0 0 2px light-dark(#999, #666);
   }
 }
 
@@ -825,16 +824,13 @@
     backdrop-filter: none;
   }
 
-  /* "All" filter pill and random-item button. The hover override matters:
-     the base hover rule re-pins the translucent glass tokens. */
-  .kit-btn.filter-all-btn,
-  .kit-btn.mobile-filter-all-btn,
+  /* Random button. The lit override matters: the lit rule re-pins the
+     translucent glass tokens. "All" needs nothing — it carries no frost to
+     fall back from, and its accent capsule is already opaque. */
   .kit-btn.filter-random,
   .kit-btn.mobile-filter-random,
-  .kit-btn.filter-all-btn:hover:not(.is-active),
-  .kit-btn.mobile-filter-all-btn:hover:not(.is-active),
-  .kit-btn.filter-random:hover:not(:disabled),
-  .kit-btn.mobile-filter-random:hover:not(:disabled) {
+  .kit-btn.filter-random:is(:hover, :focus-visible):not(:disabled),
+  .kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled) {
     background-color: light-dark(#fff, #2a2a2d);
     background-image: none;
     backdrop-filter: none;

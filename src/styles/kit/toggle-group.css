@@ -142,72 +142,70 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 /* Default - subtle pill style (for lang switcher) */
 /* Already defined above */
 
-/* Separated - individual bordered buttons (for filter categories) */
+/* =============================================================================
+   Separated — a ghost row (the wishlist filter categories).
+
+   Every item used to carry the full glass recipe, which put ten frosted,
+   shadowed, rim-lit capsules in a single row — as loud as the content they
+   filter, and ten backdrop-filter surfaces to composite. Here the categories
+   are just labels: nothing at rest, a soft wash under the cursor, and a single
+   accent capsule on the one that's currently on. The row stops competing, and
+   the eye goes straight to where it is.
+   ============================================================================= */
 .kit-toggle-group--separated {
   background: transparent;
   padding: 0;
-  gap: 0.5rem;
+  /* Tighter than the glass version: without borders the items need to sit
+     close enough to read as one row, and the padding still keeps them apart. */
+  gap: 0.15rem;
   flex-wrap: wrap;
 }
 
-/* Resting chip: the shared glass recipe, verbatim — same tokens as the dock /
-   lang-switcher capsules. Text colours mirror .dock-item exactly. */
 .kit-toggle-group--separated .kit-toggle-item {
   position: relative;
-  background-color: var(--glass-bg);
-  background-image: var(--glass-sheen);
-  backdrop-filter: var(--glass-filter);
-  color: light-dark(#555, #b4b4b8);
-  border: var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: light-dark(#666, #9a9aa0);
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
-.kit-toggle-group--separated .kit-toggle-item::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: var(--glass-rim);
-}
-
+/* Hover and focus wash — the only thing marking the hit area in a row that has
+   no borders, so it has to arrive immediately and cover the whole capsule. */
 .kit-toggle-group--separated
   .kit-toggle-item:hover:not(:disabled):not([aria-pressed="true"]):not(
     .is-active
-  ) {
-  color: light-dark(#1a1a1a, #fff);
+  ),
+.kit-toggle-group--separated
+  .kit-toggle-item:focus-visible:not([aria-pressed="true"]):not(.is-active) {
+  background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+  color: light-dark(#111, #fff);
 }
 
-/* Active chip = the dock indicator: opaque accent gradient with its glow.
-   Glass artefacts (border, rim, blur) switch off — chrome's gradient pills
-   carry none of them. */
+/* The current filter — the chrome's accent capsule, glow included. The one
+   thing in the row allowed to be loud. */
 .kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"],
 .kit-toggle-group--separated .kit-toggle-item.is-active {
   background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  backdrop-filter: none;
-  border-color: transparent;
   color: white;
   box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
 }
 
-.kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"]::after,
-.kit-toggle-group--separated .kit-toggle-item.is-active::after {
-  box-shadow: none;
-}
-
-/* Separated sizes */
+/* Separated sizes — capsules, like every other pill in the chrome. */
 .kit-toggle-group--separated.kit-toggle-group--sm .kit-toggle-item {
   height: 32px;
   padding: 0 0.85rem;
   font-size: 0.75rem;
-  border-radius: 8px;
+  border-radius: 999px;
 }
 
 .kit-toggle-group--separated.kit-toggle-group--md .kit-toggle-item {
   height: 38px;
   padding: 0 1.1rem;
   font-size: 0.8rem;
-  border-radius: 10px;
+  border-radius: 999px;
 }
 
 /* =============================================================================
@@ -309,11 +307,16 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
     border: 1px solid light-dark(#ccc, #555);
   }
 
-  .kit-toggle-group--separated .kit-toggle-item {
+  /* A ghost row has no edges to find. Here every item gets one back — the
+     current filter excepted, since its accent fill already carries it. */
+  .kit-toggle-group--separated
+    .kit-toggle-item:not([aria-pressed="true"]):not(.is-active) {
     box-shadow: inset 0 0 0 2px light-dark(#999, #666);
   }
 }
 
+/* Nothing for prefers-reduced-transparency: the row is opaque by design now —
+   plain labels and one gradient capsule, no frost to fall back from. */
 @media (prefers-reduced-transparency: reduce) {
   .kit-toggle-group {
     background: light-dark(#f0f0f0, #333);
@@ -322,13 +325,5 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   .kit-toggle-item[aria-pressed="true"],
   .kit-toggle-item.is-active {
     background: light-dark(#fff, #444);
-  }
-
-  /* Active chips need no override — their gradient is already opaque. */
-  .kit-toggle-group--separated .kit-toggle-item {
-    background-color: light-dark(#fff, #2a2a2d);
-    background-image: none;
-    backdrop-filter: none;
-    border-color: light-dark(#e0e0e0, #444);
   }
 }
