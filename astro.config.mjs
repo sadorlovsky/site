@@ -11,9 +11,42 @@ import { browserslistToTargets } from "lightningcss";
 
 // Targets deliberately include Safari/iOS < 17.5 so Lightning CSS lowers
 // light-dark() into @media (prefers-color-scheme) fallbacks at build time.
-const cssTargets = browserslistToTargets(
-  browserslist("defaults, Safari >= 15.4, iOS >= 15.4"),
-);
+const BROWSERS = "defaults, Safari >= 15.4, iOS >= 15.4";
+const cssTargets = browserslistToTargets(browserslist(BROWSERS));
+
+// The same browsers again, restated for build.cssTarget, because Vite does not
+// reuse the targets above when it minifies. It calls Lightning CSS a second
+// time with targets of its own, built from build.cssTarget alone — and that
+// falls back to build.target, which is "esnext", which converts to an empty
+// target set, which Lightning CSS reads as "every browser is current" and
+// takes as licence to delete vendor prefixes. It deleted
+// -webkit-box-decoration-break, and Safari — which still needs it — stopped
+// cloning the padding and radius of a city capsule across a line break. Dev
+// was fine because dev never minifies.
+//
+// Vite's converter only knows these six names and throws on anything else, so
+// the mobile entries in the browserslist result are dropped here; they are all
+// Chromium or Gecko and their desktop counterparts set the floor.
+const VITE_CSS_TARGET_NAMES = {
+  chrome: "chrome",
+  edge: "edge",
+  firefox: "firefox",
+  ios_saf: "ios",
+  opera: "opera",
+  safari: "safari",
+};
+const cssTarget = Object.entries(
+  browserslist(BROWSERS).reduce((oldest, entry) => {
+    const [browser, range] = entry.split(" ");
+    const name = VITE_CSS_TARGET_NAMES[browser];
+    // Versions arrive as "15.4", as a "15.2-15.3" range, or as "TP" for
+    // Safari's preview, which has no number to compare and no floor to set.
+    const version = Number.parseFloat(range);
+    if (!name || Number.isNaN(version)) return oldest;
+    if (!(name in oldest) || version < oldest[name]) oldest[name] = version;
+    return oldest;
+  }, {}),
+).map(([name, version]) => `${name}${version}`);
 
 const { VERCEL_ISR_BYPASS_TOKEN, CDN_DOMAIN, CDN_DEV_DOMAIN } = loadEnv(
   process.env.NODE_ENV,
@@ -44,6 +77,7 @@ export default defineConfig({
     },
     build: {
       target: "esnext",
+      cssTarget,
       cssMinify: "lightningcss",
     },
     ssr: {
