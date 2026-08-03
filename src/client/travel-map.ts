@@ -5,6 +5,8 @@ import { getCityName } from "@lib/travel/cities-i18n";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
 const MOBILE_BREAKPOINT = 480;
+/** How close a city label may come to the window's edge before it stops. */
+const VIEWPORT_EDGE_GAP = 8;
 /** Latitude the globe opens on — also what its zoom floor is measured from. */
 const GLOBE_LATITUDE = 50;
 const VISITED_COLOR = "#ed6292";
@@ -621,11 +623,38 @@ async function initMap(): Promise<void> {
     applyCityColors(e.matches),
   );
 
-  // City hover: track hovered feature and show label tooltip
+  // City hover: track hovered feature and show label tooltip.
+  //
+  // The label hangs off <body> rather than the map. The container rounds its
+  // corners and clips to them — it has to, or the canvas would show through
+  // square — so a label anywhere near an edge used to lose half its name to the
+  // frame, and the cities at the edge are exactly the ones a globe keeps
+  // rotating into view. Outside the container nothing clips it.
   const cityLabel = document.createElement("div");
   cityLabel.className = "city-label-overlay";
   cityLabel.style.display = "none";
-  container.appendChild(cityLabel);
+  document.body.appendChild(cityLabel);
+
+  // Which puts the label in page coordinates while the map hands out canvas
+  // ones, so the container's own offset has to be added. It is measured at the
+  // moment a label appears rather than on every reposition: the label is moved
+  // once a frame while the globe turns, and a getBoundingClientRect between two
+  // style writes is a forced reflow each time. Page coordinates also mean the
+  // label rides the page's scrolling for free — only a resize can move the
+  // container out from under a cached reading, and a resize ends the hover.
+  let mapOrigin = { x: 0, y: 0 };
+  // Half the label's rendered width, which is how far it reaches past the point
+  // it is centred on. Zeroed whenever the name changes, and re-read on the next
+  // draw. Same reasoning as the origin: measure on the events that change it,
+  // not on the frames that use it.
+  let labelHalfWidth = 0;
+  function measureMapOrigin(): void {
+    const rect = container.getBoundingClientRect();
+    mapOrigin = {
+      x: rect.left + window.scrollX,
+      y: rect.top + window.scrollY,
+    };
+  }
 
   let hoveredCityId: number | null = null;
   // Last known cursor position in canvas coords, kept so we can re-evaluate the
@@ -704,12 +733,31 @@ async function initMap(): Promise<void> {
         );
         const lang = (localStorage.getItem("lang") as "en" | "ru") || "en";
         cityLabel.textContent = getCityName(feature.properties!.name, lang);
+        labelHalfWidth = 0;
       }
 
       map.getCanvas().style.cursor = "pointer";
+      // Re-measure only when the label is coming back from hidden — that is
+      // once per hover, not once per frame of one.
+      if (cityLabel.style.display === "none") measureMapOrigin();
       cityLabel.style.display = "flex";
-      cityLabel.style.left = `${point.x}px`;
-      cityLabel.style.top = `${point.y - 30}px`;
+      // And its width once per name, for the same reason. It has to be read
+      // after the display, or a hidden element measures zero.
+      if (labelHalfWidth === 0) labelHalfWidth = cityLabel.offsetWidth / 2;
+
+      // The frame no longer clips the label, but the window still would — and
+      // an element hanging past the right edge of the page is a horizontal
+      // scrollbar on a page that has no other reason for one. The viewport is
+      // the only boundary left, and the label stops at it.
+      const centre = mapOrigin.x + point.x;
+      const minCentre = window.scrollX + labelHalfWidth + VIEWPORT_EDGE_GAP;
+      const maxCentre =
+        window.scrollX +
+        document.documentElement.clientWidth -
+        labelHalfWidth -
+        VIEWPORT_EDGE_GAP;
+      cityLabel.style.left = `${Math.max(minCentre, Math.min(centre, maxCentre))}px`;
+      cityLabel.style.top = `${mapOrigin.y + point.y - 30}px`;
     } else {
       clearHover();
     }
