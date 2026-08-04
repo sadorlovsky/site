@@ -63,7 +63,17 @@
 
 @media (hover: hover) and (pointer: fine) {
   .toast {
-    backdrop-filter: blur(12px);
+    backdrop-filter: var(--glass-filter);
+  }
+}
+
+/* Reduced transparency: the three frosted admin surfaces go solid. The success
+   and error toasts need nothing — their gradients are already opaque, and it's
+   only the neutral one that was letting the page through. */
+@media (prefers-reduced-transparency: reduce) {
+  .toast-info {
+    background: light-dark(#ffffff, #2a2a2d);
+    backdrop-filter: none;
   }
 }
 

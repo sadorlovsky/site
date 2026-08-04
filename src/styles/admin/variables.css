@@ -1,11 +1,14 @@
 /* Admin Panel - CSS Variables */
 
-:root {
-  --glass-bg-light: rgba(255, 255, 255, 0.7);
-  --glass-bg-dark: rgba(40, 40, 45, 0.7);
-  --glass-border-light: rgba(255, 255, 255, 0.5);
-  --glass-border-dark: rgba(255, 255, 255, 0.1);
+/* No --glass-* here. This file used to declare --glass-bg-light/-dark and
+   --glass-border-light/-dark on :root — the same second dialect global.css
+   warns about, with the same names and, to the hundredth, the same values:
+   the two backgrounds were exactly the halves of --card-bg, and the borders
+   sat one hundredth away from --glass-border. The wishlist card was cleaned up
+   and the admin copy outlived it, in the global scope, on pages that load both
+   stylesheets. The consumers now take the shared tokens directly. */
 
+:root {
   /* Semantic colors */
   --color-indigo: #6366f1;
   --color-indigo-dark: #4f46e5;

@@ -42,9 +42,10 @@
 .item-card {
   display: flex;
   flex-direction: column;
-  background: light-dark(var(--glass-bg-light), var(--glass-bg-dark));
-  border: 1px solid
-    light-dark(var(--glass-border-light), var(--glass-border-dark));
+  /* The wishlist card's material, from the shared tokens: a card is content
+     you read, so it takes the heavier tint and no frost of its own. */
+  background: var(--card-bg);
+  border: var(--glass-border);
   border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
@@ -53,9 +54,13 @@
       inset;
 }
 
+/* Frost only where there's a cursor. The admin draws a long grid of these, and
+   a phone compositing sixty blurred surfaces pays for a finish nobody is
+   hovering anyway — a trade the rest of the site doesn't make, kept here
+   because the page is a list rather than a few floating capsules. */
 @media (hover: hover) and (pointer: fine) {
   .item-card {
-    backdrop-filter: blur(16px);
+    backdrop-filter: var(--glass-filter);
   }
 
   .item-card:hover {
@@ -64,6 +69,14 @@
       0 12px 35px -1px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.4)),
       0 0 0 1px light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.08))
         inset;
+  }
+}
+
+/* Reduced transparency: only the frost needs dropping — the tint is --card-bg,
+   which global.css already turns opaque for this case. */
+@media (prefers-reduced-transparency: reduce) {
+  .item-card {
+    backdrop-filter: none;
   }
 }
 

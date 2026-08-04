@@ -22,9 +22,10 @@
 }
 
 .modal {
+  /* Heavier than a card on purpose — a modal is read against whatever the page
+     left behind it — but the edge is the shared one. */
   background: light-dark(rgba(255, 255, 255, 0.95), rgba(30, 30, 35, 0.95));
-  border: 1px solid
-    light-dark(var(--glass-border-light), var(--glass-border-dark));
+  border: var(--glass-border);
   border-radius: 20px;
   width: 100%;
   max-width: 800px;
@@ -40,7 +41,16 @@
 
 @media (hover: hover) and (pointer: fine) {
   .modal {
-    backdrop-filter: blur(20px);
+    backdrop-filter: var(--glass-filter);
+  }
+}
+
+/* Reduced transparency: the modal's own tint is hand-written rather than a
+   token, so unlike the item card it has to answer for itself. */
+@media (prefers-reduced-transparency: reduce) {
+  .modal {
+    background: light-dark(#ffffff, #1e1e23);
+    backdrop-filter: none;
   }
 }
 
