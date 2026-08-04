@@ -1,4 +1,5 @@
 import { Map as MapLibre } from "maplibre-gl";
+import type { LayerSpecification } from "maplibre-gl";
 import type { Feature, Point } from "geojson";
 import { countries, cities, cityCoordinates } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
@@ -12,13 +13,16 @@ const HOVER_RADIUS = 14;
 /** Latitude the globe opens on — also what its zoom floor is measured from. */
 const GLOBE_LATITUDE = 50;
 const VISITED_COLOR = "#ed6292";
-// City dots adapt to color scheme: a white core glows on the dark map, while a
-// deep accent core (with a white ring) stays legible on the light map. The glow
-// halo underneath uses the site accent in both themes.
-const CITY_CORE_DARK = "#ffffff";
-const CITY_CORE_LIGHT = "#b81f54";
+// City markers adapt to the colour scheme: the bead's body is white on the dark
+// map and a deep accent on the light one, where white would have almost no
+// contrast over the pink countries. The halo underneath uses the site accent in
+// both. The rim and the highlight don't change — light striking a piece of
+// glass doesn't take the colour of the page it's on.
+const CITY_BODY_DARK = "#ffffff";
+const CITY_BODY_LIGHT = "#b81f54";
 const CITY_GLOW_DARK = "#ed6292";
 const CITY_GLOW_LIGHT = "#a01848";
+const CITY_RIM = "#ffffff";
 const BORDER_COLOR = "#c74b7a";
 const LIGHT_BG = "#f8f8ff";
 const DARK_BG = "#191919";
@@ -26,6 +30,48 @@ const LIGHT_WATER = "#cad8e6";
 const DARK_WATER = "#2a3a4a";
 const LIGHT_TEXT = "#333333";
 const DARK_TEXT = "#e0e0e0";
+
+/** Values for the four zoom stops every city-marker layer interpolates over. */
+type MarkerStops = [number, number, number, number];
+
+/** Whatever MapLibre accepts for a numeric circle paint property. */
+type CircleNumberValue = NonNullable<
+  Extract<LayerSpecification, { type: "circle" }>["paint"]
+>["circle-radius"];
+
+/**
+ * A marker paint value that grows over zoom, optionally taking a second set of
+ * values while the city is hovered.
+ *
+ * Every layer of the bead shares these stops — the globe, where a city is a
+ * plain dot, and the zoomed-in map, where it is glass — so the parts can never
+ * arrive on different schedules and leave a rim floating around a dot half its
+ * size. The cast is the one the shape needs: MapLibre types these as a union of
+ * literal expression forms, which an array built at runtime can't satisfy.
+ */
+function markerScale(
+  rest: MarkerStops,
+  hover?: MarkerStops,
+): CircleNumberValue {
+  const at = (i: number) =>
+    hover
+      ? ["case", ["boolean", ["feature-state", "hover"], false], hover[i], rest[i]]
+      : rest[i];
+
+  return [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    1,
+    at(0),
+    3,
+    at(1),
+    5,
+    at(2),
+    8,
+    at(3),
+  ] as unknown as CircleNumberValue;
+}
 
 /**
  * The globe's diameter, in pixels, as chosen by the stylesheet (--globe-size on
@@ -569,9 +615,52 @@ async function initMap(): Promise<void> {
     },
   });
 
+  /* ==========================================================================
+     City markers — the chrome's liquid glass, transposed into circles.
+
+     A WebGL circle has no gradient fill and no backdrop-filter, so glass can't
+     be applied here the way .liquid-glass applies it to a pill. It has to be
+     rebuilt from the parts the site's other capsules are made of: a tint the
+     map shows through, a bright rim, a specular highlight in the top-left
+     corner the whole design lights from, and a shadow saying the bead sits
+     above the map rather than being printed on it. Four layers over one
+     source, so a single hover feature-state lights all of them together.
+
+     The material arrives with zoom. On the globe a city is three pixels
+     across: a rim and a highlight are sub-pixel there, and a body wide enough
+     to hold them turns Europe into a chain of touching beads. So the globe
+     keeps the plain dot it always had, and the glass assembles itself as the
+     map is zoomed in — every part of it is a paint property that interpolates
+     over zoom anyway, so this costs a curve rather than a mechanism.
+
+     Hover lights the rim instead of inflating the bead, which is how glass
+     answers a cursor everywhere else on the site (--glass-rim-lit on the
+     wishlist card and the condensed title). It also keeps neighbours from
+     colliding in a dense cluster, where growth is exactly what makes them.
+     ========================================================================== */
+
+  // Drop shadow, offset down — the bead's contact with the map.
+  map.addLayer(
+    {
+      id: "visited-cities-shadow",
+      type: "circle",
+      source: "visited-cities",
+      paint: {
+        "circle-color": "#000000",
+        "circle-blur": 0.9,
+        "circle-translate": [0, 1.3],
+        "circle-radius": markerScale([3, 5.5, 9, 9]),
+        "circle-radius-transition": { duration: 150 },
+        "circle-opacity": markerScale([0, 0.18, 0.3, 0.3]),
+        "circle-opacity-transition": { duration: 200 },
+      },
+    },
+    "label_other",
+  );
+
   // Soft accent glow beneath each city — the "halo" of the beacon. Shares the
-  // visited-cities source, so the hover feature-state lights up glow + core
-  // together. Added before the core so it renders underneath it.
+  // visited-cities source, so the hover feature-state lights up glow + body
+  // together. Added before the body so it renders underneath it.
   map.addLayer(
     {
       id: "visited-cities-glow",
@@ -580,19 +669,7 @@ async function initMap(): Promise<void> {
       paint: {
         "circle-color": CITY_GLOW_DARK,
         "circle-blur": 1,
-        "circle-radius": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          1,
-          ["case", ["boolean", ["feature-state", "hover"], false], 10, 6],
-          3,
-          ["case", ["boolean", ["feature-state", "hover"], false], 16, 11],
-          5,
-          ["case", ["boolean", ["feature-state", "hover"], false], 26, 18],
-          8,
-          ["case", ["boolean", ["feature-state", "hover"], false], 26, 18],
-        ],
+        "circle-radius": markerScale([6, 11, 18, 18], [10, 16, 26, 26]),
         "circle-radius-transition": { duration: 200 },
         "circle-opacity": [
           "case",
@@ -606,28 +683,18 @@ async function initMap(): Promise<void> {
     "label_other",
   );
 
-  // Crisp core dot on top. Color/ring are set per color-scheme by
-  // applyCityColors below; radius/opacity react to the hover feature-state.
+  // The body: a solid dot on the globe that thins into a tint you can read the
+  // map through, wearing the rim as its stroke. Colour is set per colour-scheme
+  // by applyCityColors below. Keeps the layer id — the hover hit test queries
+  // it by name.
   map.addLayer(
     {
       id: "visited-cities",
       type: "circle",
       source: "visited-cities",
       paint: {
-        "circle-color": CITY_CORE_DARK,
-        "circle-radius": [
-          "interpolate",
-          ["linear"],
-          ["zoom"],
-          1,
-          ["case", ["boolean", ["feature-state", "hover"], false], 5, 3],
-          3,
-          ["case", ["boolean", ["feature-state", "hover"], false], 8, 5],
-          5,
-          ["case", ["boolean", ["feature-state", "hover"], false], 12, 8],
-          8,
-          ["case", ["boolean", ["feature-state", "hover"], false], 12, 8],
-        ],
+        "circle-color": CITY_BODY_DARK,
+        "circle-radius": markerScale([3, 5.5, 9, 9], [3.4, 6.2, 10, 10]),
         "circle-radius-transition": { duration: 150 },
         "circle-blur": [
           "case",
@@ -636,39 +703,57 @@ async function initMap(): Promise<void> {
           0.08,
         ],
         "circle-blur-transition": { duration: 150 },
-        "circle-opacity": [
-          "case",
-          ["boolean", ["feature-state", "hover"], false],
-          1,
-          0.95,
-        ],
+        "circle-opacity": markerScale(
+          [0.95, 0.78, 0.52, 0.52],
+          [1, 0.9, 0.68, 0.68],
+        ),
         "circle-opacity-transition": { duration: 150 },
-        "circle-stroke-width": 0,
-        "circle-stroke-color": "rgba(0, 0, 0, 0)",
-        "circle-stroke-opacity": 0.9,
+        // The rim. White in both schemes: light striking a piece of glass
+        // doesn't change colour with the page.
+        "circle-stroke-width": markerScale([0, 0.9, 1.3, 1.3]),
+        "circle-stroke-color": CITY_RIM,
+        "circle-stroke-opacity": markerScale(
+          [0, 0.5, 0.8, 0.8],
+          [0, 0.95, 1, 1],
+        ),
+        "circle-stroke-opacity-transition": { duration: 200 },
       },
     },
     "label_other",
   );
 
-  // White core glows on the dark map; on the light map a white core would be
-  // invisible, so switch to a deep accent core with a thin white ring.
+  // Specular highlight, offset toward the top-left — the same corner every
+  // glass capsule on the site catches its light from.
+  map.addLayer(
+    {
+      id: "visited-cities-specular",
+      type: "circle",
+      source: "visited-cities",
+      paint: {
+        "circle-color": CITY_RIM,
+        "circle-blur": 0.5,
+        "circle-translate": [-1, -1.1],
+        "circle-radius": markerScale([0, 1.9, 3.2, 3.2], [0, 2.2, 3.6, 3.6]),
+        "circle-radius-transition": { duration: 150 },
+        "circle-opacity": markerScale(
+          [0, 0.45, 0.62, 0.62],
+          [0, 0.7, 0.85, 0.85],
+        ),
+        "circle-opacity-transition": { duration: 200 },
+      },
+    },
+    "label_other",
+  );
+
+  // A white body reads on the dark map; over the light map's pink countries it
+  // has almost no contrast, so the tint goes to a deep accent there. The rim
+  // and the highlight stay white either way — only the glass itself is tinted.
   function applyCityColors(isDark: boolean): void {
     if (!map.getLayer("visited-cities")) return;
     map.setPaintProperty(
       "visited-cities",
       "circle-color",
-      isDark ? CITY_CORE_DARK : CITY_CORE_LIGHT,
-    );
-    map.setPaintProperty(
-      "visited-cities",
-      "circle-stroke-width",
-      isDark ? 0 : 1.5,
-    );
-    map.setPaintProperty(
-      "visited-cities",
-      "circle-stroke-color",
-      isDark ? "rgba(0, 0, 0, 0)" : "#ffffff",
+      isDark ? CITY_BODY_DARK : CITY_BODY_LIGHT,
     );
     // On the light map a same-hue glow washes out over the pink countries, so
     // the glow goes deeper and a touch stronger; the dark map keeps the airy
@@ -689,6 +774,48 @@ async function initMap(): Promise<void> {
   applyCityColors(colorSchemeQuery.matches);
   colorSchemeQuery.addEventListener("change", (e) =>
     applyCityColors(e.matches),
+  );
+
+  // Reduced transparency: the bead goes back to being a dot. The tint turns
+  // solid and the two layers that exist only to fake depth — the highlight and
+  // the shadow — go away. The halo stays: it is the map's own beacon, not a
+  // surface laid over content, and nothing has to be read through it.
+  const reducedTransparencyQuery = window.matchMedia(
+    "(prefers-reduced-transparency: reduce)",
+  );
+
+  function applyCityTransparency(reduced: boolean): void {
+    if (!map.getLayer("visited-cities")) return;
+    map.setPaintProperty(
+      "visited-cities",
+      "circle-opacity",
+      reduced
+        ? 1
+        : markerScale([0.95, 0.78, 0.52, 0.52], [1, 0.9, 0.68, 0.68]),
+    );
+    map.setPaintProperty(
+      "visited-cities",
+      "circle-stroke-opacity",
+      reduced
+        ? markerScale([0, 1, 1, 1])
+        : markerScale([0, 0.5, 0.8, 0.8], [0, 0.95, 1, 1]),
+    );
+    for (const layer of ["visited-cities-specular", "visited-cities-shadow"]) {
+      map.setPaintProperty(
+        layer,
+        "circle-opacity",
+        reduced
+          ? 0
+          : layer === "visited-cities-specular"
+            ? markerScale([0, 0.45, 0.62, 0.62], [0, 0.7, 0.85, 0.85])
+            : markerScale([0, 0.18, 0.3, 0.3]),
+      );
+    }
+  }
+
+  applyCityTransparency(reducedTransparencyQuery.matches);
+  reducedTransparencyQuery.addEventListener("change", (e) =>
+    applyCityTransparency(e.matches),
   );
 
   // City hover: track hovered feature and show label tooltip.

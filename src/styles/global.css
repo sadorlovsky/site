@@ -119,6 +119,14 @@
 @media (prefers-reduced-transparency: reduce) {
   :root {
     --card-bg: light-dark(#ffffff, #2a2a2d);
+
+    /* The veil is the page's own colour closing over what scrolls beneath it,
+       so at full strength it is simply the page — there is no tint to invent,
+       and nothing left for a blur to do. Overriding the tokens rather than the
+       two consumers keeps the header's strip and /travel's sticky year from
+       each needing a fallback of their own. */
+    --veil-bg: light-dark(var(--light-bg), var(--dark-bg));
+    --veil-filter: none;
   }
 
   .liquid-glass {
