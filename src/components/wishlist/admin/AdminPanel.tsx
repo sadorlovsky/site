@@ -263,6 +263,7 @@ function AdminPanelInner({
               itemId: id,
               reservedBy: "admin",
               reservedAt: new Date(),
+              message: null,
             });
           } else {
             newMap.delete(id);

@@ -20,6 +20,8 @@ export interface Reservation {
   itemId: number;
   reservedBy: string;
   reservedAt: Date;
+  /** The note the reserver left for the owner. This panel is where it lands. */
+  message: string | null;
 }
 
 export interface ItemFormData {

@@ -508,7 +508,9 @@
 
 .reservation-item {
   display: flex;
-  align-items: center;
+  /* Not centred: a reservation can carry a message, and a two-line block
+     centred against a 48px thumbnail floats away from it. */
+  align-items: flex-start;
   gap: 0.75rem;
   padding: 0.5rem;
   background: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
@@ -543,4 +545,18 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: light-dark(#666, #aaa);
+}
+
+/* What the reserver wrote. Quoted rather than styled as a field: it is someone
+   else's words, and it is the only free text a visitor can put in here. */
+.reservation-item-message {
+  margin: 0.35rem 0 0;
+  padding-left: 0.6rem;
+  border-left: 2px solid
+    light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.16));
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: light-dark(#333, #ccc);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
