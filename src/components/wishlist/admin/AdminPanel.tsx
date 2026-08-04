@@ -336,12 +336,18 @@ function AdminPanelInner({
               full
             />
 
+            {/* The separated variant is the ghost row the public wishlist
+                filters with: nothing at rest, a wash under the cursor, and the
+                accent capsule on the one that's on. The default pill variant
+                put these in a grey tray with a white active chip — a control
+                panel's filter, not this site's. */}
             <ToggleGroup
               items={statusItems}
               value={selectedStatus}
               onChange={(value) =>
                 setSelectedStatus(value as "all" | "reserved" | "received")
               }
+              variant="separated"
               ariaLabel="Filter by status"
             />
 
@@ -349,8 +355,8 @@ function AdminPanelInner({
               items={sortItems}
               value={sortMode}
               onChange={(value) => setSortMode(value as "admin" | "public")}
+              variant="separated"
               ariaLabel="Sort mode"
-              className="admin-sort-toggle"
             />
           </div>
         </div>

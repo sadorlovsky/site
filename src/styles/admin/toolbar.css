@@ -24,16 +24,100 @@
   gap: 0.75rem;
 }
 
+/* =============================================================================
+   The control row, in the site's language.
+
+   The kit's own metrics are right and its behaviour is right; what was wrong
+   here was that every control kept the kit's default rectangle, so the row read
+   as a dashboard's filter bar even after the cards beneath it had become glass.
+   These overrides are scoped to the panel and change two things only: the
+   corner, which becomes the capsule every control on the public side wears, and
+   the material, which becomes the chrome's glass instead of a flat fill.
+
+   Scoped rather than pushed into the kit on purpose — /kit documents the kit's
+   own rectangle, and the public pages use it. The wishlist does the same thing
+   with .filter-all-btn and .filter-random. */
+
 /* Search input - constrained width on desktop */
 .admin-filters .kit-input {
   width: 240px;
   flex-shrink: 0;
+  border-radius: 999px;
+  padding-left: 1.1rem;
+  padding-right: 1.1rem;
 }
 
-/* Category select - constrained width */
+/* Category select - constrained width. Only the left inset moves: the right
+   side belongs to the chevron, which the kit positions from that edge. */
 .admin-filters .kit-select {
   width: 180px;
   flex-shrink: 0;
+  border-radius: 999px;
+  padding-left: 1.1rem;
+}
+
+/* Two ghost rows in a row. Losing the kit's grey tray also lost the thing that
+   said where one control ended and the next began — status and sort ran
+   together into a single row of five chips. Nothing draws a box around them
+   again; they are just held further apart than the chips inside them, which is
+   the whole of what the tray was doing. */
+.admin-filters
+  .kit-toggle-group--separated
+  + .kit-toggle-group--separated {
+  margin-left: 1.25rem;
+}
+
+/* "Clear filters" sits with the heading rather than in the row, but it is the
+   same kind of control and takes the same corner. */
+.filter-header .kit-btn {
+  border-radius: 999px;
+}
+
+/* The two buttons above the filters. Primary keeps its accent gradient — it is
+   the one loud thing on the screen and should be. Secondary becomes glass, the
+   same capsule as the breadcrumb pill it sits under. */
+.toolbar-actions .kit-btn {
+  border-radius: 999px;
+}
+
+.toolbar-actions .kit-btn--secondary {
+  position: relative;
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: light-dark(#555, #b4b4b8);
+}
+
+.toolbar-actions .kit-btn--secondary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim);
+  transition: box-shadow 0.3s ease;
+}
+
+/* Hover lights the rim, the way glass answers a cursor everywhere else here. */
+.toolbar-actions .kit-btn--secondary:hover:not(:disabled) {
+  background-color: var(--glass-bg);
+  color: light-dark(#111, #fff);
+}
+
+.toolbar-actions .kit-btn--secondary:hover:not(:disabled)::after,
+.toolbar-actions .kit-btn--secondary:focus-visible::after {
+  box-shadow: var(--glass-rim-lit);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .toolbar-actions .kit-btn--secondary,
+  .toolbar-actions .kit-btn--secondary:hover:not(:disabled) {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
+    backdrop-filter: none;
+  }
 }
 
 /* The sort toggle used to override the kit with an indigo tray and an
