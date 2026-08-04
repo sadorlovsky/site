@@ -8,13 +8,19 @@
    and the admin copy outlived it, in the global scope, on pages that load both
    stylesheets. The consumers now take the shared tokens directly. */
 
-:root {
-  /* Semantic colors */
-  --color-indigo: #6366f1;
-  --color-indigo-dark: #4f46e5;
-  --color-indigo-light: #a5b4fc;
-  --color-violet: #8b5cf6;
+/* No indigo/violet either. The panel used to carry a second accent — a gradient
+   on the Admin/Public toggle, the active sort, the drag outline, the weight
+   hint — beside the site's own. Two accents on one screen is two answers to
+   "what is the loud thing here", and the glass language already has one: the
+   accent capsule marks what's active, and everything else is glass. What the
+   indigo actually marked (states that don't exist on the public site) is now
+   marked the way the kit marks state everywhere else — a dot, or a rim.
 
+   The status colours below survive, demoted. They no longer flood a surface;
+   they tint a dot, an icon or a word, which is the whole difference between
+   this panel and a dashboard template. */
+
+:root {
   /* Text colors */
   --color-text-primary: #111;
   --color-text-primary-dark: #fafafa;

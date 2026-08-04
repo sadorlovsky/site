@@ -36,17 +36,11 @@
   flex-shrink: 0;
 }
 
-/* Sort toggle variant (indigo/violet gradient for active) */
-.admin-sort-toggle {
-  background: light-dark(rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.15));
-}
-
-.admin-sort-toggle .kit-toggle-item.is-active,
-.admin-sort-toggle .kit-toggle-item[aria-pressed="true"] {
-  color: white;
-  background: linear-gradient(135deg, var(--color-indigo), var(--color-violet));
-  box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.35));
-}
+/* The sort toggle used to override the kit with an indigo tray and an
+   indigo/violet active capsule. Both are gone: the kit's own toggle group
+   already puts the accent capsule on the active item, with the glow, and it is
+   the same control the public wishlist filters with. An override that only
+   changed the colour was the whole of the second accent's claim here. */
 
 /* Filter Header */
 .filter-header {
@@ -61,21 +55,45 @@
   margin: 0;
 }
 
-/* Weight Actions (save/discard reorder) */
+/* Weight Actions (save/discard reorder) — a glass capsule that appears when
+   there is unsaved order to deal with. It floats over the list, so unlike the
+   cards it earns its frost. */
 .weight-actions {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-left: auto;
-  padding: 0.5rem 0.75rem;
-  background: light-dark(rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.15));
-  border-radius: 10px;
+  padding: 0.4rem 0.4rem 0.4rem 0.9rem;
+  border-radius: 999px;
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.weight-actions::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim);
 }
 
 .weight-hint {
   font-size: 0.75rem;
-  color: light-dark(var(--color-indigo), var(--color-indigo-light));
-  font-weight: 500;
+  color: light-dark(#555, #b4b4b8);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .weight-actions {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
+    backdrop-filter: none;
+  }
 }
 
 /* Toolbar Actions */

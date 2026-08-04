@@ -11,19 +11,47 @@
   pointer-events: none;
 }
 
+/* A toast is a capsule that floats over the page, which makes it the chrome's
+   glass and not a coloured slab. Success and error used to be flooded with a
+   saturated gradient and white text — the loudest thing on screen for a
+   message that says "saved". The state travels on a dot now, the way the kit's
+   glass badge carries it, and the capsule stays the same material every other
+   floating thing here is made of. */
 .toast {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
-  border-radius: 12px;
-  box-shadow:
-    0 8px 30px -5px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.4)),
-    0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
-      inset;
+  border-radius: 999px;
+  color: light-dark(#1a1a1a, #fff);
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
   pointer-events: auto;
   animation: toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   max-width: 400px;
+}
+
+/* The lens edge. */
+.toast::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim);
+}
+
+/* The state, as a dot at the head of the message. */
+.toast::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--toast-dot, light-dark(#888, #aaa));
 }
 
 @keyframes toast-slide-in {
@@ -38,27 +66,15 @@
 }
 
 .toast-success {
-  background: linear-gradient(
-    135deg,
-    var(--color-success),
-    var(--color-success-dark)
-  );
-  color: white;
+  --toast-dot: #34d399;
 }
 
 .toast-error {
-  background: linear-gradient(
-    135deg,
-    var(--color-error),
-    var(--color-error-dark)
-  );
-  color: white;
+  --toast-dot: #f87171;
 }
 
 .toast-info {
-  background: light-dark(rgba(255, 255, 255, 0.95), rgba(40, 40, 45, 0.95));
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
-  border: 1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
+  --toast-dot: var(--accent-start);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -67,12 +83,12 @@
   }
 }
 
-/* Reduced transparency: the three frosted admin surfaces go solid. The success
-   and error toasts need nothing — their gradients are already opaque, and it's
-   only the neutral one that was letting the page through. */
+/* All three kinds are the same glass now, so the fallback is one rule rather
+   than one per kind — the dot carries the meaning and needs no help. */
 @media (prefers-reduced-transparency: reduce) {
-  .toast-info {
-    background: light-dark(#ffffff, #2a2a2d);
+  .toast {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
     backdrop-filter: none;
   }
 }
@@ -84,6 +100,8 @@
   line-height: 1.4;
 }
 
+/* One dismiss button for every kind now — it used to need a second rule to
+   undo the white-on-gradient treatment for the neutral toast. */
 .toast-dismiss {
   display: flex;
   align-items: center;
@@ -92,26 +110,21 @@
   height: 24px;
   padding: 0;
   border: none;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  color: inherit;
+  border-radius: 50%;
+  background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
+  color: light-dark(#555, #b4b4b8);
   font-size: 1.1rem;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   flex-shrink: 0;
 }
 
 .toast-dismiss:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.toast-info .toast-dismiss {
-  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-}
-
-.toast-info .toast-dismiss:hover {
-  background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+  background: light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.18));
+  color: light-dark(#111, #fff);
 }
 
 @media (max-width: 500px) {
