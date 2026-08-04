@@ -67,20 +67,23 @@
   margin-left: 1.25rem;
 }
 
-/* "Clear filters" sits with the heading rather than in the row, but it is the
-   same kind of control and takes the same corner. */
+/* Every button in the panel takes the capsule corner — the toolbar's pair, the
+   Logout button up in the header, Discard inside the weight capsule, and
+   "Clear filters" beside the heading. */
+.toolbar-actions .kit-btn,
+.admin-container .page-header .kit-btn,
+.weight-actions .kit-btn,
 .filter-header .kit-btn {
   border-radius: 999px;
 }
 
-/* The two buttons above the filters. Primary keeps its accent gradient — it is
-   the one loud thing on the screen and should be. Secondary becomes glass, the
-   same capsule as the breadcrumb pill it sits under. */
-.toolbar-actions .kit-btn {
-  border-radius: 999px;
-}
-
-.toolbar-actions .kit-btn--secondary {
+/* Glass, though, only where a button floats directly on the page: the toolbar
+   pair and Logout, which sits in the header row beside the breadcrumb pill and
+   should be made of what the pill is made of. Discard is deliberately left out
+   — it lives inside .weight-actions, which is already a glass capsule, and
+   glass on glass is just a lighter rectangle. */
+.toolbar-actions .kit-btn--secondary,
+.admin-container .page-header .kit-btn--secondary {
   position: relative;
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
@@ -90,7 +93,8 @@
   color: light-dark(#555, #b4b4b8);
 }
 
-.toolbar-actions .kit-btn--secondary::after {
+.toolbar-actions .kit-btn--secondary::after,
+.admin-container .page-header .kit-btn--secondary::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -101,19 +105,24 @@
 }
 
 /* Hover lights the rim, the way glass answers a cursor everywhere else here. */
-.toolbar-actions .kit-btn--secondary:hover:not(:disabled) {
+.toolbar-actions .kit-btn--secondary:hover:not(:disabled),
+.admin-container .page-header .kit-btn--secondary:hover:not(:disabled) {
   background-color: var(--glass-bg);
   color: light-dark(#111, #fff);
 }
 
 .toolbar-actions .kit-btn--secondary:hover:not(:disabled)::after,
-.toolbar-actions .kit-btn--secondary:focus-visible::after {
+.toolbar-actions .kit-btn--secondary:focus-visible::after,
+.admin-container .page-header .kit-btn--secondary:hover:not(:disabled)::after,
+.admin-container .page-header .kit-btn--secondary:focus-visible::after {
   box-shadow: var(--glass-rim-lit);
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .toolbar-actions .kit-btn--secondary,
-  .toolbar-actions .kit-btn--secondary:hover:not(:disabled) {
+  .toolbar-actions .kit-btn--secondary:hover:not(:disabled),
+  .admin-container .page-header .kit-btn--secondary,
+  .admin-container .page-header .kit-btn--secondary:hover:not(:disabled) {
     background-color: light-dark(#f0f0f0, #2a2a2e);
     background-image: none;
     backdrop-filter: none;
