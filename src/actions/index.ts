@@ -1,6 +1,7 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
 import { db, Reservation, WishlistItem, eq, sql } from "astro:db";
+import { RESERVATION_MESSAGE_MAX_LENGTH } from "@lib/wishlist";
 
 const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
 
@@ -97,6 +98,55 @@ export const server = {
       await db.delete(Reservation).where(eq(Reservation.itemId, itemId));
 
       return { success: true };
+    },
+  }),
+
+  /**
+   * Write (or clear) the message attached to a reservation.
+   *
+   * One action rather than a save/delete pair: an empty textarea saved over an
+   * existing message means "remove it", and splitting that across two endpoints
+   * only gives the client a way to disagree with itself about which one to call.
+   * The stored value is the trimmed message or null — never an empty string, so
+   * "has a message" is a null check everywhere downstream.
+   */
+  setReservationMessage: defineAction({
+    input: z.object({
+      itemId: z.number(),
+      // Empty is not a visitor: it would otherwise match a reservation whose
+      // reservedBy somehow ended up blank.
+      visitorId: z.string().min(1),
+      message: z.string().max(RESERVATION_MESSAGE_MAX_LENGTH),
+    }),
+    handler: async ({ itemId, visitorId, message }) => {
+      const existingReservation = await db
+        .select()
+        .from(Reservation)
+        .where(eq(Reservation.itemId, itemId));
+
+      if (existingReservation.length === 0) {
+        throw new ActionError({
+          code: "NOT_FOUND",
+          message: "Reservation not found",
+        });
+      }
+
+      // Only the visitor who reserved the item may write on it
+      if (existingReservation[0].reservedBy !== visitorId) {
+        throw new ActionError({
+          code: "FORBIDDEN",
+          message: "You can only leave a message on your own reservation",
+        });
+      }
+
+      const trimmed = message.trim();
+
+      await db
+        .update(Reservation)
+        .set({ message: trimmed || null })
+        .where(eq(Reservation.itemId, itemId));
+
+      return { message: trimmed || null };
     },
   }),
 };

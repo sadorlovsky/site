@@ -35,6 +35,10 @@ const Reservation = defineTable({
     itemId: column.number({ references: () => WishlistItem.columns.id }),
     reservedBy: column.text(), // Name or identifier of person who reserved
     reservedAt: column.date(),
+    // An optional message the reserver leaves for the wishlist owner. Readable
+    // by its author and in the admin panel, and nowhere else — see
+    // src/pages/api/wishlist/reservations.ts.
+    message: column.text({ optional: true }),
   },
   indexes: [{ on: ["itemId"], unique: true }],
 });

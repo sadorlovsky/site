@@ -5,6 +5,7 @@ import LangInit from "@components/LangInit.astro";
 import WishlistItem from "@components/wishlist/WishlistItem.astro";
 import WishlistFilters from "@components/wishlist/WishlistFilters.astro";
 import MobileFilterBar from "@components/wishlist/MobileFilterBar.astro";
+import ReservationMessage from "@components/wishlist/ReservationMessage.astro";
 import Button from "@components/kit/Button.astro";
 import { Icon } from "astro-icon/components";
 import type { WishlistItemWithReservation, Category } from "@lib/wishlist";
@@ -170,9 +171,12 @@ const allCategory = categories.find((c) => c.id === "all")!;
 
   {
     reservationsEnabled && (
-      <script>
-        import("@client/wishlist");
-      </script>
+      <>
+        <ReservationMessage />
+        <script>
+          import("@client/wishlist");
+        </script>
+      </>
     )
   }
 

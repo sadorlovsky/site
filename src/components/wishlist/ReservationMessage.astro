@@ -1,0 +1,90 @@
+---
+/**
+ * The message a reserver leaves for the wishlist owner.
+ *
+ * One popover for the whole page rather than one per card, and rendered as a
+ * direct child of <body> rather than inside the grid. Both follow from the
+ * material: the panel is liquid glass, and `backdrop-filter` is silently killed
+ * by a transform on any ancestor — the cards lift 8px on hover and the Reserve
+ * button is magnetically pulled toward the cursor, so a panel living inside a
+ * card would lose its frost exactly when it was being used. Sitting at the top
+ * of the document also puts it outside the grid's `content-visibility` and
+ * clipping, which is what the per-card version had to fight with `overflow:
+ * visible` and `contain: none` overrides.
+ *
+ * Positioning is Floating UI's job (client/reservation-message.ts), anchored to
+ * the message bead in the card's footer.
+ */
+import { RESERVATION_MESSAGE_MAX_LENGTH } from "@lib/wishlist";
+// The panel borrows the kit's field and buttons rather than growing its own;
+// neither stylesheet is pulled in by anything else the wishlist renders.
+import "@styles/kit/input.css";
+import "@styles/kit/button.css";
+---
+
+<div
+  class="message-popover liquid-glass"
+  id="reservation-message"
+  role="dialog"
+  aria-labelledby="reservation-message-title"
+  hidden
+>
+  <h2
+    class="message-popover-title"
+    id="reservation-message-title"
+    data-en="Leave a message"
+    data-ru="Оставить сообщение"
+  >
+    Leave a message
+  </h2>
+  <p
+    class="message-popover-hint"
+    data-en="Only the owner of the wishlist sees it."
+    data-ru="Его увидит только владелец вишлиста."
+  >
+    Only the owner of the wishlist sees it.
+  </p>
+
+  <textarea
+    class="kit-input kit-input--sm message-popover-input"
+    rows="3"
+    maxlength={RESERVATION_MESSAGE_MAX_LENGTH}
+    placeholder="e.g. I'll bring it to the party!"
+    data-placeholder-en="e.g. I'll bring it to the party!"
+    data-placeholder-ru="напр. Привезу на праздник!"
+    aria-describedby="reservation-message-count"
+  ></textarea>
+
+  <p class="message-popover-error" role="alert" hidden></p>
+
+  <div class="message-popover-footer">
+    <span class="message-popover-count" id="reservation-message-count"
+      >0/{RESERVATION_MESSAGE_MAX_LENGTH}</span
+    >
+    <div class="message-popover-actions">
+      {/*
+        "Skip", not "Cancel": the card underneath already has a Cancel, and it
+        cancels the reservation. Two of them side by side, one closing a panel
+        and one giving the present back, is a trap.
+      */}
+      <button
+        type="button"
+        class="kit-btn kit-btn--ghost kit-btn--sm message-popover-dismiss"
+        data-en-cancel="Skip"
+        data-ru-cancel="Пропустить"
+        data-en-delete="Delete"
+        data-ru-delete="Удалить"
+      >
+        Skip
+      </button>
+      <button
+        type="button"
+        class="kit-btn kit-btn--primary kit-btn--sm message-popover-save"
+        data-en="Save"
+        data-ru="Сохранить"
+      >
+        Save
+      </button>
+    </div>
+  </div>
+</div>

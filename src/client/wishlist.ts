@@ -1,12 +1,30 @@
 import { actions } from "astro:actions";
 import type { Lang } from "@lib/i18n";
 import { initTooltips } from "./tooltip";
+import { getVisitorId } from "./visitor-id";
+import {
+  forgetMessage,
+  hideMessageBead,
+  initReservationMessages,
+  primeMessages,
+  setReservationMessagesLang,
+  showMessageBead,
+} from "./reservation-message";
 
-const VISITOR_ID_KEY = "wishlist-visitor-id";
 let currentLang: Lang = "en";
 
-function getVisitorId(): string {
-  return localStorage.getItem(VISITOR_ID_KEY) || "";
+/**
+ * Whose reservation a card is carrying, as the button's `data-reservation`.
+ *
+ * The server renders "other" for anything taken, because it has no idea who is
+ * looking; the per-visitor fetch below is what promotes a card to "mine". The
+ * button stays hidden (`.reserve-btn--loading`) until that lands, so the
+ * pessimistic first guess is never on screen.
+ */
+type ReservationState = "none" | "mine" | "other";
+
+function reservationOf(button: HTMLElement): ReservationState {
+  return (button.dataset.reservation as ReservationState) || "none";
 }
 
 /**
@@ -35,6 +53,8 @@ export async function initializeWishlist() {
   // Update prices based on language
   updatePricesForLanguage(currentLang);
 
+  initReservationMessages(currentLang);
+
   // Fetch fresh reservations from API and update UI
   await fetchAndApplyReservations();
 
@@ -42,16 +62,25 @@ export async function initializeWishlist() {
   initializeLangChangeListener();
 }
 
+/** One row of /api/wishlist/reservations, which answers per visitor. */
+type ReservationResponse = { mine: boolean; message?: string };
+
 async function fetchAndApplyReservations() {
+  const visitorId = getVisitorId();
+
   try {
-    const response = await fetch("/api/wishlist/reservations");
+    const response = await fetch(
+      `/api/wishlist/reservations?visitor=${encodeURIComponent(visitorId)}`,
+    );
     if (!response.ok) {
       // Still show buttons on error, using SSR data
       showButtons();
       return;
     }
 
-    const reservations: Record<number, string> = await response.json();
+    const reservations: Record<number, ReservationResponse> =
+      await response.json();
+    const ownMessages = new Map<number, string>();
 
     // Update each item's reservation status
     document
@@ -60,10 +89,17 @@ async function fetchAndApplyReservations() {
         const itemId = button.dataset.itemId;
         if (!itemId) return;
 
-        const reservedBy = reservations[parseInt(itemId)] || "";
-        // Update the data attribute with fresh data
-        button.dataset.reservedBy = reservedBy;
+        const id = parseInt(itemId);
+        const state = reservations[id];
+        button.dataset.reservation = !state
+          ? "none"
+          : state.mine
+            ? "mine"
+            : "other";
+        if (state?.mine && state.message) ownMessages.set(id, state.message);
       });
+
+    primeMessages(ownMessages);
 
     // Show buttons after data is loaded
     showButtons();
@@ -74,14 +110,11 @@ async function fetchAndApplyReservations() {
 }
 
 function showButtons() {
-  const visitorId = getVisitorId();
-
   document
     .querySelectorAll<HTMLButtonElement>(".reserve-btn")
     .forEach((button) => {
-      const reservedBy = button.dataset.reservedBy || "";
-      const isReserved = reservedBy.length > 0;
-      const isOwnReservation = isReserved && reservedBy === visitorId;
+      const reservation = reservationOf(button);
+      const isReserved = reservation !== "none";
 
       // Get badge elements
       const article = button.closest("article");
@@ -90,7 +123,7 @@ function showButtons() {
       ) as HTMLElement;
 
       // Set correct text based on language and state
-      if (isReserved && isOwnReservation) {
+      if (reservation === "mine") {
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruCancel
@@ -129,9 +162,7 @@ function initializeReserveButtons() {
       return;
     }
 
-    const reservedBy = button.dataset.reservedBy || "";
-    const isReserved = reservedBy.length > 0;
-    const isOwnReservation = isReserved && reservedBy === visitorId;
+    const reservation = reservationOf(button);
 
     // Get badge elements (in the item-image section)
     const article = button.closest("article");
@@ -143,14 +174,15 @@ function initializeReserveButtons() {
     ) as HTMLElement;
 
     // Set initial button state
-    if (isReserved) {
-      if (isOwnReservation) {
-        // Own reservation - show Cancel and own badge
+    if (reservation !== "none") {
+      if (reservation === "mine") {
+        // Own reservation - show Cancel, own badge, and the message bead
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruCancel
             : button.dataset.enCancel) ?? null;
         button.classList.add("own-reservation");
+        showMessageBead(article);
         if (ownBadge) {
           ownBadge.hidden = false;
           setBadgeLabel(ownBadge, currentLang);
@@ -173,9 +205,7 @@ function initializeReserveButtons() {
       const itemId = this.dataset.itemId;
       if (!itemId) return;
 
-      const currentReservedBy = this.dataset.reservedBy || "";
-      const isCurrentlyReserved = currentReservedBy.length > 0;
-      const isOwn = isCurrentlyReserved && currentReservedBy === visitorId;
+      const current = reservationOf(this);
 
       // Get badge for this item
       const itemArticle = this.closest("article");
@@ -183,23 +213,26 @@ function initializeReserveButtons() {
         ".own-reservation-badge",
       ) as HTMLElement;
 
-      if (isCurrentlyReserved && isOwn) {
+      if (current === "mine") {
         // Cancel reservation - optimistic UI
         const previousState = {
-          reservedBy: this.dataset.reservedBy,
+          reservation: this.dataset.reservation,
           textContent: this.textContent,
           hasClass: this.classList.contains("own-reservation"),
           badgeHidden: itemBadge?.hidden,
         };
 
         // Optimistically update UI
-        this.dataset.reservedBy = "";
+        this.dataset.reservation = "none";
         this.textContent =
           (currentLang === "ru"
             ? this.dataset.ruReserve
             : this.dataset.enReserve) ?? null;
         this.classList.remove("own-reservation");
         if (itemBadge) itemBadge.hidden = true;
+        // The message goes with the reservation, but only once the server has
+        // agreed to delete it — a rollback has to be able to put it back.
+        hideMessageBead(itemArticle, { forget: false });
         // Update aria-label
         const reserveAriaLabel =
           currentLang === "ru"
@@ -215,23 +248,26 @@ function initializeReserveButtons() {
 
         // Rollback on error
         if (error) {
-          this.dataset.reservedBy = previousState.reservedBy;
+          this.dataset.reservation = previousState.reservation;
           this.textContent = previousState.textContent;
           if (previousState.hasClass) this.classList.add("own-reservation");
           if (itemBadge) itemBadge.hidden = previousState.badgeHidden ?? false;
+          showMessageBead(itemArticle);
           alert(error.message || "Failed to cancel reservation");
+        } else {
+          forgetMessage(itemArticle);
         }
-      } else if (!isCurrentlyReserved) {
+      } else if (current === "none") {
         // Make reservation - optimistic UI
         const previousState = {
-          reservedBy: this.dataset.reservedBy,
+          reservation: this.dataset.reservation,
           textContent: this.textContent,
           hasClass: this.classList.contains("own-reservation"),
           badgeHidden: itemBadge?.hidden,
         };
 
         // Optimistically update UI
-        this.dataset.reservedBy = visitorId;
+        this.dataset.reservation = "mine";
         this.textContent =
           (currentLang === "ru"
             ? this.dataset.ruCancel
@@ -256,11 +292,17 @@ function initializeReserveButtons() {
 
         // Rollback on error
         if (error) {
-          this.dataset.reservedBy = previousState.reservedBy;
+          this.dataset.reservation = previousState.reservation;
           this.textContent = previousState.textContent;
           if (!previousState.hasClass) this.classList.remove("own-reservation");
           if (itemBadge) itemBadge.hidden = previousState.badgeHidden ?? true;
           alert(error.message || "Failed to reserve item");
+        } else {
+          // Offering to write on a reservation is only honest once there is one
+          // — `setReservationMessage` has nothing to attach to until the insert
+          // lands. So the bead (and the invitation) waits for the round trip
+          // even though the button itself did not.
+          showMessageBead(itemArticle, { open: true });
         }
       }
     });
@@ -281,6 +323,7 @@ function initializeLangChangeListener() {
     updateLanguage(lang);
     updateAriaLabels(lang);
     updatePricesForLanguage(lang);
+    setReservationMessagesLang(lang);
   }) as EventListener);
 }
 
@@ -353,7 +396,6 @@ function updateLanguage(lang: "en" | "ru") {
   // Update reserve buttons based on their state
   const reserveButtons =
     document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
-  const visitorId = getVisitorId();
 
   reserveButtons.forEach((btn) => {
     // Skip buttons in loading state
@@ -366,9 +408,7 @@ function updateLanguage(lang: "en" | "ru") {
       return;
     }
 
-    const reservedBy = btn.dataset.reservedBy || "";
-    const isReserved = reservedBy.length > 0;
-    const isOwnReservation = isReserved && reservedBy === visitorId;
+    const reservation = reservationOf(btn);
     const isReceived =
       btn.dataset.enReceived &&
       (btn.textContent === "Received" || btn.textContent === "Получено");
@@ -377,10 +417,10 @@ function updateLanguage(lang: "en" | "ru") {
       btn.textContent =
         (lang === "ru" ? btn.dataset.ruReceived : btn.dataset.enReceived) ??
         null;
-    } else if (isReserved && isOwnReservation) {
+    } else if (reservation === "mine") {
       btn.textContent =
         (lang === "ru" ? btn.dataset.ruCancel : btn.dataset.enCancel) ?? null;
-    } else if (isReserved && !isOwnReservation) {
+    } else if (reservation === "other") {
       btn.textContent =
         (lang === "ru" ? btn.dataset.ruReserved : btn.dataset.enReserved) ??
         null;
@@ -407,21 +447,18 @@ function updateAriaLabels(lang: "en" | "ru") {
   // Update reserve buttons aria-labels based on state
   const reserveButtons =
     document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
-  const visitorId = getVisitorId();
 
   reserveButtons.forEach((btn) => {
-    const reservedBy = btn.dataset.reservedBy || "";
-    const isReserved = reservedBy.length > 0;
-    const isOwnReservation = isReserved && reservedBy === visitorId;
+    const reservation = reservationOf(btn);
 
     let ariaLabel: string | undefined;
 
-    if (isReserved && isOwnReservation) {
+    if (reservation === "mine") {
       ariaLabel =
         lang === "ru"
           ? btn.dataset.ariaLabelRuCancel
           : btn.dataset.ariaLabelEnCancel;
-    } else if (isReserved) {
+    } else if (reservation === "other") {
       ariaLabel =
         lang === "ru"
           ? btn.dataset.ariaLabelRuReserved
