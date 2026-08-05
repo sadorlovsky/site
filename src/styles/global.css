@@ -143,10 +143,20 @@
        This is safe to do from the token precisely because none of those rules
        was only turning off the blur: each also names an opaque tint, so no
        surface is left translucent-without-frost, which would be a worse place
-       to land than where they started. What still needs a hand-written
-       fallback is the two surfaces that blur with a literal rather than this
-       token — .priority-badge and the kit modal's scrim — since a token can't
-       reach a value that never referred to it. */
+       to land than where they started.
+
+       Note what does NOT move: --glass-bg stays translucent here, so a chrome
+       surface still owes its own opaque colour. .liquid-glass pays that for
+       anything using the utility; the handful that re-declare the recipe
+       instead — the floating tooltip below, the reserve button and random-item
+       die in wishlist.css, the language switcher, the mobile filter bar — each
+       name theirs by hand.
+
+       Nor does this reach a blur written as a literal, since a token can't
+       reach a value that never referred to it. Two such surfaces have a
+       hand-written fallback (.priority-badge, the kit modal's scrim) and four
+       have none at all — the admin modal, toast and item card, and the blog's
+       back-to-top button. Those four are an existing gap, recorded on /kit. */
     --glass-filter: none;
   }
 

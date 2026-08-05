@@ -250,20 +250,30 @@ import { Icon } from "astro-icon/components";
           The <strong>frost</strong> goes the same way:
           <code>--glass-filter</code> and <code>--veil-filter</code> both become
           <code>none</code> here, so anything drawing its blur from a token
-          loses it without being asked. Nothing that reaches for the tokens owes
-          a fallback at all.
+          loses it without being asked.
         </p>
         <p>
-          What still owes one is a surface that blurs with a
-          <em>literal</em> — <code>backdrop-filter: blur(10px)</code> written
-          out rather than taken from <code>--glass-filter</code>. A token can't
-          reach a value that never referred to it, so those two
-          (<code>.priority-badge</code>, the kit modal's scrim) carry their own
-          <code>backdrop-filter: none</code>. A bespoke tint owes one too: the
-          mobile filter bar and the language switcher both set a background of
-          their own, so they each name the opaque version of it. If you find
-          yourself writing a blur radius by hand, that is the moment to ask
-          whether the token would do.
+          The chrome <strong>tint</strong> is the one that doesn't follow.
+          <code>--glass-bg</code> stays translucent under this media feature, so
+          a chrome surface still names its own opaque colour — which is exactly
+          what <code>.liquid-glass</code> does on your behalf if you use the
+          utility, and what the reserve button, the random-item die, the
+          language switcher and the floating tooltip each do by hand because
+          they can't. Reach for the utility and this is already handled; write
+          the recipe out and the tint is yours to finish.
+        </p>
+        <p>
+          A blur written as a <em>literal</em> is the other case:
+          <code>backdrop-filter: blur(10px)</code> spelled out rather than taken
+          from <code>--glass-filter</code>. A token can't reach a value that
+          never referred to it, so <code>.priority-badge</code> and the kit
+          modal's scrim carry their own <code>backdrop-filter: none</code>. Four
+          more surfaces blur with a literal and have
+          <strong>no fallback at all</strong> — the admin modal, toast and item
+          card, and the blog's back-to-top button. That is a gap, not a rule;
+          they are listed here so the next person doesn't have to rediscover
+          them. If you find yourself writing a blur radius by hand, that is the
+          moment to ask whether the token would do.
         </p>
       </section>
 
