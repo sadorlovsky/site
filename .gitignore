@@ -2,7 +2,10 @@
 dist/
 
 # dependencies
-node_modules/
+# No trailing slash: that form matches directories only, and a git worktree
+# borrowing the main checkout's dependencies does it with a symlink, which
+# sails straight past the rule and into a commit.
+node_modules
 
 # logs
 npm-debug.log*
