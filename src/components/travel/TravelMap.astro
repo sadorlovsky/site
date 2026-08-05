@@ -200,8 +200,8 @@ const { mode = "globe" } = Astro.props;
   }
 
   @media (prefers-reduced-transparency: reduce) {
+    /* The opaque tint comes from --glass-bg-on-media, which goes solid here. */
     .city-label-overlay {
-      background: rgb(24, 24, 28);
       backdrop-filter: none;
     }
   }

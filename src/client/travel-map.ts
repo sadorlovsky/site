@@ -36,8 +36,10 @@ type MarkerStops = [number, number, number, number];
 
 /** Whatever MapLibre accepts for a numeric circle paint property. */
 type CircleNumberValue = NonNullable<
-  Extract<LayerSpecification, { type: "circle" }>["paint"]
->["circle-radius"];
+  NonNullable<
+    Extract<LayerSpecification, { type: "circle" }>["paint"]
+  >["circle-radius"]
+>;
 
 /**
  * A marker paint value that grows over zoom, optionally taking a second set of
@@ -72,6 +74,38 @@ function markerScale(
     at(3),
   ] as unknown as CircleNumberValue;
 }
+
+/**
+ * The opacity curves of the four marker layers, named once.
+ *
+ * These are the only marker values with two homes: the layer definitions below
+ * and applyCityTransparency, which restores them when someone turns reduced
+ * transparency back off. That branch runs on a system-settings toggle and
+ * nowhere else, so a literal drifting out of sync with its twin would go
+ * unnoticed in every ordinary pass over the page — which is the same reason
+ * markerScale exists one level down.
+ */
+const MARKER_BODY_OPACITY = markerScale(
+  [0.95, 0.78, 0.52, 0.52],
+  [1, 0.9, 0.68, 0.68],
+);
+const MARKER_RIM_OPACITY = markerScale([0, 0.5, 0.8, 0.8], [0, 0.95, 1, 1]);
+const MARKER_SPECULAR_OPACITY = markerScale(
+  [0, 0.45, 0.62, 0.62],
+  [0, 0.7, 0.85, 0.85],
+);
+const MARKER_SHADOW_OPACITY = markerScale([0, 0.18, 0.3, 0.3]);
+
+/**
+ * The two that survive prefers-reduced-transparency, since the highlight and
+ * the shadow simply go to zero there and need no curve.
+ *
+ * The body turns solid. The rim stays — it is the bead's edge, not a surface
+ * laid over content — but at full strength from the first zoom stop that can
+ * hold it, so it has no hover pair: there is nothing left to brighten.
+ */
+const MARKER_BODY_OPACITY_REDUCED = 1;
+const MARKER_RIM_OPACITY_REDUCED = markerScale([0, 1, 1, 1]);
 
 /**
  * The globe's diameter, in pixels, as chosen by the stylesheet (--globe-size on
@@ -637,6 +671,18 @@ async function initMap(): Promise<void> {
      answers a cursor everywhere else on the site (--glass-rim-lit on the
      wishlist card and the condensed title). It also keeps neighbours from
      colliding in a dense cluster, where growth is exactly what makes them.
+
+     None of these layers declares a paint transition, and none can: every
+     value here is a zoom curve over a feature-state case, and MapLibre snaps
+     data-driven properties to their new value rather than easing into it
+     (properties.ts, "Transitions to data-driven properties are not
+     supported"). The *-transition entries that used to sit beside them were
+     doing nothing. Hover is instant, and the only way to change that is to
+     stop driving these off feature-state.
+
+     Both offset layers are anchored to the viewport. The default anchor is the
+     map, which turns the offset with the bearing — and a light source that
+     swings around as you rotate the globe is the one thing glass never does.
      ========================================================================== */
 
   // Drop shadow, offset down — the bead's contact with the map.
@@ -649,10 +695,9 @@ async function initMap(): Promise<void> {
         "circle-color": "#000000",
         "circle-blur": 0.9,
         "circle-translate": [0, 1.3],
+        "circle-translate-anchor": "viewport",
         "circle-radius": markerScale([3, 5.5, 9, 9]),
-        "circle-radius-transition": { duration: 150 },
-        "circle-opacity": markerScale([0, 0.18, 0.3, 0.3]),
-        "circle-opacity-transition": { duration: 200 },
+        "circle-opacity": MARKER_SHADOW_OPACITY,
       },
     },
     "label_other",
@@ -670,14 +715,12 @@ async function initMap(): Promise<void> {
         "circle-color": CITY_GLOW_DARK,
         "circle-blur": 1,
         "circle-radius": markerScale([6, 11, 18, 18], [10, 16, 26, 26]),
-        "circle-radius-transition": { duration: 200 },
         "circle-opacity": [
           "case",
           ["boolean", ["feature-state", "hover"], false],
           0.6,
           0.32,
         ],
-        "circle-opacity-transition": { duration: 200 },
       },
     },
     "label_other",
@@ -695,28 +738,18 @@ async function initMap(): Promise<void> {
       paint: {
         "circle-color": CITY_BODY_DARK,
         "circle-radius": markerScale([3, 5.5, 9, 9], [3.4, 6.2, 10, 10]),
-        "circle-radius-transition": { duration: 150 },
         "circle-blur": [
           "case",
           ["boolean", ["feature-state", "hover"], false],
           0,
           0.08,
         ],
-        "circle-blur-transition": { duration: 150 },
-        "circle-opacity": markerScale(
-          [0.95, 0.78, 0.52, 0.52],
-          [1, 0.9, 0.68, 0.68],
-        ),
-        "circle-opacity-transition": { duration: 150 },
+        "circle-opacity": MARKER_BODY_OPACITY,
         // The rim. White in both schemes: light striking a piece of glass
         // doesn't change colour with the page.
         "circle-stroke-width": markerScale([0, 0.9, 1.3, 1.3]),
         "circle-stroke-color": CITY_RIM,
-        "circle-stroke-opacity": markerScale(
-          [0, 0.5, 0.8, 0.8],
-          [0, 0.95, 1, 1],
-        ),
-        "circle-stroke-opacity-transition": { duration: 200 },
+        "circle-stroke-opacity": MARKER_RIM_OPACITY,
       },
     },
     "label_other",
@@ -733,13 +766,9 @@ async function initMap(): Promise<void> {
         "circle-color": CITY_RIM,
         "circle-blur": 0.5,
         "circle-translate": [-1, -1.1],
+        "circle-translate-anchor": "viewport",
         "circle-radius": markerScale([0, 1.9, 3.2, 3.2], [0, 2.2, 3.6, 3.6]),
-        "circle-radius-transition": { duration: 150 },
-        "circle-opacity": markerScale(
-          [0, 0.45, 0.62, 0.62],
-          [0, 0.7, 0.85, 0.85],
-        ),
-        "circle-opacity-transition": { duration: 200 },
+        "circle-opacity": MARKER_SPECULAR_OPACITY,
       },
     },
     "label_other",
@@ -785,31 +814,35 @@ async function initMap(): Promise<void> {
   );
 
   function applyCityTransparency(reduced: boolean): void {
-    if (!map.getLayer("visited-cities")) return;
-    map.setPaintProperty(
-      "visited-cities",
-      "circle-opacity",
-      reduced
-        ? 1
-        : markerScale([0.95, 0.78, 0.52, 0.52], [1, 0.9, 0.68, 0.68]),
-    );
-    map.setPaintProperty(
-      "visited-cities",
-      "circle-stroke-opacity",
-      reduced
-        ? markerScale([0, 1, 1, 1])
-        : markerScale([0, 0.5, 0.8, 0.8], [0, 0.95, 1, 1]),
-    );
-    for (const layer of ["visited-cities-specular", "visited-cities-shadow"]) {
-      map.setPaintProperty(
-        layer,
+    const opacities: [string, string, CircleNumberValue][] = [
+      [
+        "visited-cities",
         "circle-opacity",
-        reduced
-          ? 0
-          : layer === "visited-cities-specular"
-            ? markerScale([0, 0.45, 0.62, 0.62], [0, 0.7, 0.85, 0.85])
-            : markerScale([0, 0.18, 0.3, 0.3]),
-      );
+        reduced ? MARKER_BODY_OPACITY_REDUCED : MARKER_BODY_OPACITY,
+      ],
+      [
+        "visited-cities",
+        "circle-stroke-opacity",
+        reduced ? MARKER_RIM_OPACITY_REDUCED : MARKER_RIM_OPACITY,
+      ],
+      [
+        "visited-cities-specular",
+        "circle-opacity",
+        reduced ? 0 : MARKER_SPECULAR_OPACITY,
+      ],
+      [
+        "visited-cities-shadow",
+        "circle-opacity",
+        reduced ? 0 : MARKER_SHADOW_OPACITY,
+      ],
+    ];
+
+    for (const [layer, property, value] of opacities) {
+      // Guarding each layer rather than probing one and assuming the rest:
+      // setPaintProperty on a missing layer doesn't throw, it fires an error
+      // event, which is a worse thing to leave lying around than a check.
+      if (!map.getLayer(layer)) continue;
+      map.setPaintProperty(layer, property, value);
     }
   }
 

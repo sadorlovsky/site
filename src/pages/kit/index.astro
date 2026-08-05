@@ -240,9 +240,20 @@ import { Icon } from "astro-icon/components";
         <h3>Reduced transparency</h3>
         <p>
           Under <code>prefers-reduced-transparency: reduce</code> every surface
-          drops its frost for an opaque fallback. The tokens handle the card and
-          the veil; <code>.liquid-glass</code> handles itself. Anything that
-          re-declares the recipe by hand owes its own fallback — check it.
+          drops its frost for an opaque fallback. The <strong>tint</strong> is
+          handled at the token: <code>--card-bg</code>, <code>--veil-bg</code>
+          and <code>--glass-bg-on-media</code> all go solid there, so no
+          consumer needs to name a colour twice. <code>.liquid-glass</code>
+          handles itself entirely.
+        </p>
+        <p>
+          What a hand-rolled recipe still owes is the
+          <strong>frost</strong>: <code>--glass-filter</code> deliberately stays
+          a blur, because a few chrome surfaces have no opaque tint of their own
+          yet, and taking the frost off a 0.55 tint would leave them more
+          transparent rather than less. So anything setting
+          <code>backdrop-filter: var(--glass-filter)</code> by hand owes a
+          <code>backdrop-filter: none</code> — the demo tile above included.
         </p>
       </section>
 
@@ -1025,7 +1036,10 @@ import { Icon } from "astro-icon/components";
   .glass-demo__veil {
     position: sticky;
     top: 0;
-    padding: 0.5rem 0;
+    /* Spans the scroller's own padding, or content would slide past it up the
+       left and right edges — with a veil that is the whole thing being shown. */
+    margin-inline: -0.9rem;
+    padding: 0.5rem 0.9rem;
     background-color: var(--veil-bg);
     backdrop-filter: var(--veil-filter);
     border-bottom: var(--glass-border);
@@ -1034,12 +1048,12 @@ import { Icon } from "astro-icon/components";
     color: light-dark(#333, #fafafa);
   }
 
-  /* The demo re-declares the recipe by hand, so it owes its own fallback —
-     exactly the rule this section states. The card and the veil need none:
-     theirs live on the tokens. */
+  /* The tints all live on the tokens and go solid on their own. What a
+     hand-rolled recipe still owes is the frost: --glass-filter stays a blur
+     under reduced transparency, because a couple of chrome consumers have no
+     opaque fallback yet and would come out worse without it. */
   @media (prefers-reduced-transparency: reduce) {
     .glass-demo__tile--media {
-      background-color: #2a2a2e;
       backdrop-filter: none;
     }
   }
