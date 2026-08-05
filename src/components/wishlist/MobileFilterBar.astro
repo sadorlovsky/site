@@ -79,10 +79,15 @@ const hasEndSlot = Astro.slots.has("end");
       transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
     }
 
+    /* The feature query stays a literal — @supports can't test a custom
+       property — but the frost itself comes from the shared token, so this bar
+       blurs and saturates exactly like every other floating capsule. Its tint
+       stays its own: heavier than the chrome's, because it sits at the edge of
+       the screen with content running right up under it. */
     @supports (backdrop-filter: blur(20px)) {
       .mobile-filter-bar {
         background: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 32, 0.8));
-        backdrop-filter: blur(20px);
+        backdrop-filter: var(--glass-filter);
       }
     }
 

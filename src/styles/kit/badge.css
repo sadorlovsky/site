@@ -181,8 +181,8 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
+  /* The opaque tint comes from --glass-bg-on-media, which goes solid here. */
   .kit-badge--glass {
-    background-color: rgb(24, 24, 28);
     backdrop-filter: none;
   }
 }

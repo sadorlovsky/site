@@ -19,6 +19,7 @@ import { Icon } from "astro-icon/components";
           <h3>Foundations</h3>
           <ul>
             <li><a href="#colors">Colors</a></li>
+            <li><a href="#liquid-glass">Liquid glass</a></li>
             <li><a href="#typography">Typography</a></li>
             <li><a href="#links">Links</a></li>
           </ul>
@@ -147,6 +148,113 @@ import { Icon } from "astro-icon/components";
             </div>
           </div>
         </div>
+      </section>
+
+      <!-- ================================================================
+           LIQUID GLASS
+           ================================================================ -->
+      <section id="liquid-glass">
+        <h2>Liquid glass</h2>
+        <p>
+          Every translucent surface on the site is one of four materials, all
+          declared once in <code>global.css</code>. They are not
+          interchangeable: each answers a different question about what is
+          behind the surface. Reach for a token, never a fresh
+          <code>blur()</code> — a second dialect of the same material is how
+          this system went wrong the first time.
+        </p>
+
+        <h3>The four materials</h3>
+        <div class="glass-demo">
+          <div class="glass-demo__stage">
+            <div class="glass-demo__tile liquid-glass">Chrome</div>
+            <div class="glass-demo__tile glass-demo__tile--card">Card</div>
+            <div class="glass-demo__tile glass-demo__tile--media">On media</div>
+            <div class="glass-demo__scroller">
+              <div class="glass-demo__veil">Veil</div>
+              <p>Content passes</p>
+              <p>under the veil</p>
+              <p>and dissolves</p>
+              <p>into the page.</p>
+              <p>Scroll me.</p>
+            </div>
+          </div>
+        </div>
+
+        <dl class="glass-tokens">
+          <dt><code>--glass-*</code> — chrome</dt>
+          <dd>
+            Floating capsules you look <em>through</em>: the nav dock, the home
+            pill, the language switcher, the condensed page title. Light tint
+            (0.55), frost, and a refractive rim. Apply with the
+            <code>.liquid-glass</code> utility.
+          </dd>
+
+          <dt><code>--card-bg</code> — card</dt>
+          <dd>
+            Content you read, not chrome you look past. Heavier tint (0.7),
+            borrows the border, shadow and rim from the chrome tokens, and
+            deliberately carries <strong>no frost</strong> — blur earns its keep
+            over content, and a card <em>is</em> the content.
+          </dd>
+
+          <dt><code>--glass-*-on-media</code> — on media</dt>
+          <dd>
+            Glass over a photograph, where the backdrop is arbitrary. It cannot
+            follow the colour scheme: a light tint would drop dark text onto a
+            dark photo. So the tint stays dark in both themes, the label stays
+            white, and it is heavy enough to carry the label with the frost
+            gone — see the transform trap below.
+          </dd>
+
+          <dt><code>--veil-*</code> — veil</dt>
+          <dd>
+            Not glass at all: the page's own colour closing over what scrolls
+            beneath it. Used by the pinned header strip and
+            <code>/travel</code>'s sticky year. A capsule is a neutral tint you
+            look through; this one belongs to the page.
+          </dd>
+        </dl>
+
+        <h3>The utility</h3>
+        <p>
+          <code>.liquid-glass</code> paints the tint, sheen, frost, border and
+          shadow, and adds the rim as an <code>::after</code>. Two things it
+          leaves to the consumer: the <strong>border-radius</strong>, which the
+          rim inherits, and <strong>position</strong> — the rim needs a
+          positioned host, but forcing <code>relative</code> here would fight
+          consumers that position themselves.
+        </p>
+
+        <h3>The transform trap</h3>
+        <p>
+          A <code>transform</code> on an <em>ancestor</em> resets the
+          backdrop-filter root and silently kills the frost — including the
+          identity matrix a finished transform animation leaves behind. Animate
+          the glass element itself, never a wrapper around it. This is why the
+          header's entrance animation sits on the switcher rather than its
+          shell, and why the badge tint is heavy enough to survive a card
+          lifting on hover.
+        </p>
+
+        <h3>Reduced transparency</h3>
+        <p>
+          Under <code>prefers-reduced-transparency: reduce</code> every surface
+          drops its frost for an opaque fallback. The <strong>tint</strong> is
+          handled at the token: <code>--card-bg</code>, <code>--veil-bg</code>
+          and <code>--glass-bg-on-media</code> all go solid there, so no
+          consumer needs to name a colour twice. <code>.liquid-glass</code>
+          handles itself entirely.
+        </p>
+        <p>
+          What a hand-rolled recipe still owes is the
+          <strong>frost</strong>: <code>--glass-filter</code> deliberately stays
+          a blur, because a few chrome surfaces have no opaque tint of their own
+          yet, and taking the frost off a 0.55 tint would leave them more
+          transparent rather than less. So anything setting
+          <code>backdrop-filter: var(--glass-filter)</code> by hand owes a
+          <code>backdrop-filter: none</code> — the demo tile above included.
+        </p>
       </section>
 
       <!-- ================================================================
@@ -830,6 +938,139 @@ import { Icon } from "astro-icon/components";
     font-size: 0.65rem;
     font-family: var(--font-fira-code);
     color: light-dark(#888, #666);
+  }
+
+  /* Liquid glass demo — the four materials over one busy backdrop, because
+     glass only shows what it is when there is something behind it to disturb.
+     The stage carries the pattern; each tile is the real material, taking the
+     same tokens the site uses, so this page can never drift from it. */
+  .glass-demo {
+    margin-bottom: 1.5rem;
+  }
+
+  .glass-demo__stage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background-color: light-dark(#e8e6ff, #241f2e);
+    background-image:
+      radial-gradient(
+        circle at 18% 30%,
+        var(--accent-start) 0,
+        transparent 42%
+      ),
+      radial-gradient(circle at 78% 70%, #4fc3f7 0, transparent 45%),
+      repeating-linear-gradient(
+        45deg,
+        light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06)) 0 8px,
+        transparent 8px 16px
+      );
+  }
+
+  .glass-demo__tile {
+    position: relative; /* hosts the .liquid-glass rim */
+    display: inline-flex;
+    align-items: center;
+    padding: 0 1.1rem;
+    min-height: 3rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: light-dark(#333, #fafafa);
+  }
+
+  /* Card: the chrome's edge and shadow, its own heavier tint, and no frost. */
+  .glass-demo__tile--card {
+    background: var(--card-bg);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: 14px;
+  }
+
+  .glass-demo__tile--card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: var(--glass-rim);
+  }
+
+  /* On media: the one material that ignores the colour scheme. */
+  .glass-demo__tile--media {
+    background-color: var(--glass-bg-on-media);
+    backdrop-filter: var(--glass-filter);
+    border: var(--glass-border-on-media);
+    color: #fff;
+  }
+
+  .glass-demo__tile--media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: var(--glass-rim-on-media);
+  }
+
+  /* Veil: needs something to scroll under it, so it gets a box of its own. */
+  .glass-demo__scroller {
+    flex: 1 1 12rem;
+    min-width: 10rem;
+    height: 8rem;
+    overflow-y: auto;
+    border-radius: 14px;
+    background: light-dark(var(--light-bg), var(--dark-bg));
+    padding: 0 0.9rem 0.9rem;
+  }
+
+  .glass-demo__scroller p {
+    margin: 0.4rem 0;
+    font-size: 0.8rem;
+    color: light-dark(#555, #b4b4b8);
+  }
+
+  .glass-demo__veil {
+    position: sticky;
+    top: 0;
+    /* Spans the scroller's own padding, or content would slide past it up the
+       left and right edges — with a veil that is the whole thing being shown. */
+    margin-inline: -0.9rem;
+    padding: 0.5rem 0.9rem;
+    background-color: var(--veil-bg);
+    backdrop-filter: var(--veil-filter);
+    border-bottom: var(--glass-border);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: light-dark(#333, #fafafa);
+  }
+
+  /* The tints all live on the tokens and go solid on their own. What a
+     hand-rolled recipe still owes is the frost: --glass-filter stays a blur
+     under reduced transparency, because a couple of chrome consumers have no
+     opaque fallback yet and would come out worse without it. */
+  @media (prefers-reduced-transparency: reduce) {
+    .glass-demo__tile--media {
+      backdrop-filter: none;
+    }
+  }
+
+  .glass-tokens {
+    margin: 0 0 1.5rem;
+  }
+
+  .glass-tokens dt {
+    margin-top: 1rem;
+    font-weight: 600;
+    color: light-dark(#111, #fafafa);
+  }
+
+  .glass-tokens dd {
+    margin: 0.35rem 0 0;
+    color: light-dark(#333, #e0e0e0);
   }
 
   /* Typography demo */
