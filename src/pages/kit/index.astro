@@ -247,13 +247,23 @@ import { Icon } from "astro-icon/components";
           handles itself entirely.
         </p>
         <p>
-          What a hand-rolled recipe still owes is the
-          <strong>frost</strong>: <code>--glass-filter</code> deliberately stays
-          a blur, because a few chrome surfaces have no opaque tint of their own
-          yet, and taking the frost off a 0.55 tint would leave them more
-          transparent rather than less. So anything setting
-          <code>backdrop-filter: var(--glass-filter)</code> by hand owes a
-          <code>backdrop-filter: none</code> — the demo tile above included.
+          The <strong>frost</strong> goes the same way:
+          <code>--glass-filter</code> and <code>--veil-filter</code> both become
+          <code>none</code> here, so anything drawing its blur from a token
+          loses it without being asked. Nothing that reaches for the tokens owes
+          a fallback at all.
+        </p>
+        <p>
+          What still owes one is a surface that blurs with a
+          <em>literal</em> — <code>backdrop-filter: blur(10px)</code> written
+          out rather than taken from <code>--glass-filter</code>. A token can't
+          reach a value that never referred to it, so those two
+          (<code>.priority-badge</code>, the kit modal's scrim) carry their own
+          <code>backdrop-filter: none</code>. A bespoke tint owes one too: the
+          mobile filter bar and the language switcher both set a background of
+          their own, so they each name the opaque version of it. If you find
+          yourself writing a blur radius by hand, that is the moment to ask
+          whether the token would do.
         </p>
       </section>
 
@@ -1046,16 +1056,6 @@ import { Icon } from "astro-icon/components";
     font-size: 0.85rem;
     font-weight: 600;
     color: light-dark(#333, #fafafa);
-  }
-
-  /* The tints all live on the tokens and go solid on their own. What a
-     hand-rolled recipe still owes is the frost: --glass-filter stays a blur
-     under reduced transparency, because a couple of chrome consumers have no
-     opaque fallback yet and would come out worse without it. */
-  @media (prefers-reduced-transparency: reduce) {
-    .glass-demo__tile--media {
-      backdrop-filter: none;
-    }
   }
 
   .glass-tokens {
