@@ -23,7 +23,8 @@ undated trips: 12 (Dubai, Japan, Uzbekistan…) — their cities are drawn nowhe
   and the TBA group in the list is commented out (TravelTripList.astro:14)
 ```
 
-There is also no `click` handler on the map at all.
+There is also no `click` handler on the map at all. (There is now — clusters
+open on click. C still has nothing.)
 
 ### A. Weight by visit count
 
@@ -37,11 +38,19 @@ log) and a ceiling, or the one city at 10 becomes a blob while the 121 cities at
 
 ### B. Cluster at low zoom
 
+**Done** — built in `src/client/travel-map.ts`, together with E, which is why
+they share a source.
+
 MapLibre's built-in clustering on the GeoJSON source. Europe is a smear of
 overlapping dots on the globe; a count is more honest than a blur.
 
 Risk: a numbered cluster bubble reads as data-viz and fights the beacon
 aesthetic. Hover and the label overlay would both need a cluster branch.
+
+The risk was real and the way out was to drop the numeral: a cluster is the
+bead scaled by the square root of its count, and the count itself is said in
+the tooltip, where it was already going to have to be said. Clicking eases to
+the zoom that breaks the group apart — the map's first click handler.
 
 ### C. Click a city → scroll the trip list to it
 
@@ -61,11 +70,19 @@ the list, or clicking a city. Best kept for its own pass.
 
 ### E. Landmarks as a second, quieter mark
 
+**Done** — built in `src/client/travel-map.ts`.
+
 13 landmarks carry coordinates and a `kind` (park, hill, gorge, lake…). Drawn
 smaller and hollow, and only past a zoom threshold, they give the map texture
 that rewards zooming in instead of dumping everything at once.
 
 Cheap: the same zoom interpolation the city layers already use.
+
+Two parts of that did not survive contact. The zoom threshold went: a contour
+has no material to assemble as the map zooms, and on the globe it is the only
+thing marking the place at all. And "quieter" turned out to be the wrong axis —
+a dimmer beacon reads as a further-away city. What separates the classes is
+structure: a ring with a small core against a bead of glass.
 
 ### F. Recency as brightness, or a pulse
 
@@ -89,6 +106,10 @@ in the code.
 E + A are the cheap pair that give the map depth and weight. C is the only one
 that changes what the map is for. B if the density in Europe actually bothers
 the owner. D is the prettiest and the most expensive — its own pass.
+
+B and E are built. A is the obvious next one and now nearly free: clusters
+already scale off a count, so weighting a lone city by its visits is the same
+curve pointed at a different property. C and D are still open.
 
 ## Marker visuals: bringing the dots into liquid glass
 

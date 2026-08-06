@@ -1,7 +1,18 @@
 import { Map as MapLibre } from "maplibre-gl";
-import type { LayerSpecification } from "maplibre-gl";
+import type {
+  FilterSpecification,
+  GeoJSONSource,
+  LayerSpecification,
+} from "maplibre-gl";
 import type { Feature, Point } from "geojson";
-import { countries, cities, cityCoordinates } from "@lib/travel";
+import {
+  countries,
+  cities,
+  cityCoordinates,
+  visitedLandmarks,
+  landmarkData,
+  getLandmarkName,
+} from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
@@ -78,6 +89,47 @@ function markerScale(
 }
 
 /**
+ * A paint value that answers the hover and nothing else.
+ *
+ * The zoom curves above are the shape most marker properties want; the landmark
+ * contour is the exception. Its ring and core are the whole of the mark rather
+ * than material assembling itself as the map is zoomed in, so they hold their
+ * strength at every zoom and only respond to the cursor.
+ */
+function hoverCase(rest: number, hover: number): CircleNumberValue {
+  return [
+    "case",
+    ["boolean", ["feature-state", "hover"], false],
+    hover,
+    rest,
+  ] as unknown as CircleNumberValue;
+}
+
+/**
+ * The bead's geometry, named because the clusters are built from the same
+ * numbers.
+ *
+ * A cluster is not a second kind of marker with dimensions of its own — it is
+ * this bead, scaled by how much it carries — so each of these arrays is read
+ * twice: once by the layer that draws a lone city and once by the layer that
+ * draws a group of them. Left as literals in both places, a bead redrawn on one
+ * side would quietly leave the clusters wearing its old proportions.
+ */
+const BEAD_RADIUS: MarkerStops = [3, 5.5, 9, 9];
+const BEAD_RADIUS_HOVER: MarkerStops = [3.4, 6.2, 10, 10];
+const GLOW_RADIUS: MarkerStops = [6, 11, 18, 18];
+const GLOW_RADIUS_HOVER: MarkerStops = [10, 16, 26, 26];
+const SPECULAR_RADIUS: MarkerStops = [0, 1.9, 3.2, 3.2];
+const SPECULAR_RADIUS_HOVER: MarkerStops = [0, 2.2, 3.6, 3.6];
+/**
+ * The rim's width — the one part of the bead a cluster does not scale. A rim is
+ * the light caught along an edge, and an edge does not thicken because the thing
+ * behind it got bigger; scaled with the count it stopped reading as glass and
+ * started reading as a pie chart with a fat white border.
+ */
+const RIM_WIDTH: MarkerStops = [0, 0.9, 1.3, 1.3];
+
+/**
  * The opacity curves of the four marker layers, named once.
  *
  * These are the only marker values with two homes: the layer definitions below
@@ -86,6 +138,12 @@ function markerScale(
  * nowhere else, so a literal drifting out of sync with its twin would go
  * unnoticed in every ordinary pass over the page — which is the same reason
  * markerScale exists one level down.
+ *
+ * The cluster layers share these curves rather than declaring hover-free twins.
+ * The hover branch is dead weight there — feature-state is never written for a
+ * cluster, so it always resolves to the resting value — but one shared curve is
+ * worth more than a saved comparison: it makes it impossible for a group of
+ * cities to end up more or less solid than a city standing on its own.
  */
 const MARKER_BODY_OPACITY = markerScale(
   [0.95, 0.78, 0.52, 0.52],
@@ -108,6 +166,141 @@ const MARKER_SHADOW_OPACITY = markerScale([0, 0.18, 0.3, 0.3]);
  */
 const MARKER_BODY_OPACITY_REDUCED = 1;
 const MARKER_RIM_OPACITY_REDUCED = markerScale([0, 1, 1, 1]);
+
+/**
+ * How close two markers have to come before they are merged into one.
+ *
+ * A bead's diameter, derived rather than chosen, so "touching" goes on meaning
+ * touching after the bead is next resized. Deliberately not the glow's
+ * diameter: the glow is soft, blurred and translucent, and two of them
+ * overlapping read as two places near each other — which is what they are.
+ * Measured off the glow instead, half of Europe collapses into one dot while
+ * there is still clear daylight between the beads it swallowed.
+ */
+const CLUSTER_RADIUS_PX = BEAD_RADIUS[2] * 2;
+
+/**
+ * Past here every place stands alone. By this zoom even neighbours a few
+ * kilometres apart have visible space between them, and a group still holding
+ * out that far in is hiding exactly the places the reader zoomed in to find.
+ */
+const CLUSTER_MAX_ZOOM = 9;
+
+/**
+ * How much bigger a cluster is drawn than the bead it is made of.
+ *
+ * Driven by the square root of the count, so the painted *area* — which is what
+ * the eye weighs — tracks how many places the marker stands for. Straight
+ * linear growth makes a group of forty ten times the mark a group of four is,
+ * and the map turns into a handful of blots surrounded by specks.
+ *
+ * The stops flatten off above ten because even a square root eventually outruns
+ * the map: a beacon the size of a country has stopped being a marker for the
+ * places under it and started being a region of its own.
+ */
+const CLUSTER_COUNT_SCALE: unknown[] = [
+  "interpolate",
+  ["linear"],
+  ["sqrt", ["get", "point_count"]],
+  Math.sqrt(2),
+  1.5,
+  Math.sqrt(10),
+  2.4,
+  Math.sqrt(50),
+  3.4,
+];
+
+/**
+ * A bead measurement restated for a cluster: the same zoom curve, every stop
+ * multiplied by the count scale, optionally standing off by a constant `gap`.
+ *
+ * The gap is added inside each stop rather than around the finished
+ * interpolation because a zoom expression has to be the outermost thing in a
+ * paint value — wrapping it in a `+` buries it, and MapLibre rejects the layer
+ * outright. Being constant is also what the gap wants to be: the contour should
+ * hug the bead by the same margin whether the cluster holds three places or
+ * thirty, so it reads as an outline of that marker rather than a second marker
+ * behind it.
+ */
+function clusterScale(rest: MarkerStops, gap = 0): CircleNumberValue {
+  const at = (i: number) => {
+    const scaled = ["*", rest[i], CLUSTER_COUNT_SCALE];
+    return gap === 0 ? scaled : ["+", scaled, gap];
+  };
+
+  return [
+    "interpolate",
+    ["linear"],
+    ["zoom"],
+    1,
+    at(0),
+    3,
+    at(1),
+    5,
+    at(2),
+    8,
+    at(3),
+  ] as unknown as CircleNumberValue;
+}
+
+/**
+ * The landmark contour.
+ *
+ * Every landmark is drawn at one size, whatever the real extent of the place:
+ * the mark says "somewhere worth knowing about is here", and how many square
+ * kilometres that somewhere covers is not the question anyone is asking of a
+ * map of trips. An earlier version sized the ring by the place's own extent and
+ * Lake Issyk-Kul's contour reached past the edge of the viewport.
+ *
+ * Hover moves the two parts toward each other — the ring tightens a hair while
+ * the core fills out — so the mark resolves into focus rather than merely
+ * inflating. That is also why the ring's resting radius is the *larger* of its
+ * two values, which reads backwards until you see the pair move.
+ */
+const LANDMARK_RING_RADIUS: MarkerStops = [5.5, 9, 14, 14];
+const LANDMARK_RING_RADIUS_HOVER: MarkerStops = [5.2, 8.5, 13.2, 13.2];
+const LANDMARK_CORE_RADIUS: MarkerStops = [1.5, 2.2, 3.2, 3.2];
+const LANDMARK_CORE_RADIUS_HOVER: MarkerStops = [2.4, 3.5, 5.1, 5.1];
+const LANDMARK_RING_WIDTH = hoverCase(1, 1.3);
+const LANDMARK_RING_OPACITY = hoverCase(0.55, 0.95);
+const LANDMARK_CORE_OPACITY = hoverCase(0.85, 1);
+/** How far outside a cluster's bead its landmark contour is set. */
+const CLUSTER_RING_GAP = 5;
+const CLUSTER_RING_OPACITY = 0.6;
+
+/** Russian plural for a count: 1 город, 2 города, 5 городов. */
+function plural(count: number, one: string, few: string, many: string): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
+}
+
+/**
+ * What a cluster calls itself.
+ *
+ * A cluster of nothing but cities can say so. Once a landmark is in there the
+ * word widens to "places", which is true of both classes — "5 cities" over a
+ * group holding a lake and a gorge would be a plain lie about what opening it
+ * will show.
+ */
+function formatClusterLabel(
+  count: number,
+  landmarkCount: number,
+  lang: "en" | "ru",
+): string {
+  const pureCities = landmarkCount === 0;
+
+  if (lang === "en") {
+    if (pureCities) return `${count} ${count === 1 ? "city" : "cities"}`;
+    return `${count} ${count === 1 ? "place" : "places"}`;
+  }
+
+  return pureCities
+    ? `${count} ${plural(count, "город", "города", "городов")}`
+    : `${count} ${plural(count, "место", "места", "мест")}`;
+}
 
 /**
  * The globe's diameter, in pixels, as chosen by the stylesheet (--globe-size on
@@ -737,26 +930,75 @@ async function initMap(): Promise<void> {
     );
   });
 
-  // Add visited cities source (with numeric ids for feature-state)
+  // Cities and landmarks share ONE source. Clustering only ever merges points
+  // within a single source, so keeping them apart would let a landmark's
+  // contour sit on top of a city cluster it should have joined — the ring and
+  // the bead drawn over each other at the same spot, each with no idea the
+  // other is there. A `kind` property tells the two classes apart again at draw
+  // time, which is all the separation they ever actually needed.
   const cityFeatures = Array.from(cities)
     .filter((city) => cityCoordinates[city])
-    .map((city, i) => ({
+    .map((city) => ({
       type: "Feature" as const,
-      id: i,
       geometry: {
         type: "Point" as const,
         coordinates: cityCoordinates[city],
       },
-      properties: { name: city },
+      properties: { kind: "city", name: city },
     }));
 
-  map.addSource("visited-cities", {
+  const landmarkFeatures = Array.from(visitedLandmarks)
+    .filter((slug) => landmarkData[slug])
+    .map((slug) => ({
+      type: "Feature" as const,
+      geometry: {
+        type: "Point" as const,
+        coordinates: landmarkData[slug].coords,
+      },
+      properties: { kind: "landmark", name: slug },
+    }));
+
+  // Ids are handed out across the combined list so every place has one of its
+  // own for feature-state. They survive clustering: supercluster copies the
+  // input feature's id onto the point it emits, and numbers its own clusters
+  // from above the point count, so a cluster id can never be mistaken for a
+  // place id.
+  const placeFeatures = [...cityFeatures, ...landmarkFeatures].map(
+    (feature, id) => ({ ...feature, id }),
+  );
+
+  map.addSource("visited-places", {
     type: "geojson",
     data: {
       type: "FeatureCollection",
-      features: cityFeatures,
+      features: placeFeatures,
+    },
+    cluster: true,
+    clusterRadius: CLUSTER_RADIUS_PX,
+    clusterMaxZoom: CLUSTER_MAX_ZOOM,
+    // A cluster remembers how many landmarks it swallowed, so its contour and
+    // its tooltip can both say so. The plain total arrives free as point_count.
+    clusterProperties: {
+      landmarkCount: ["+", ["case", ["==", ["get", "kind"], "landmark"], 1, 0]],
     },
   });
+
+  /**
+   * A lone place of one class: not a cluster, and of the given kind.
+   *
+   * Cast because MapLibre types filters as a union of literal expression
+   * shapes, which an array assembled around a parameter cannot satisfy — the
+   * same reason markerScale casts its return.
+   */
+  const singleOf = (kind: "city" | "landmark"): FilterSpecification =>
+    [
+      "all",
+      ["!", ["has", "point_count"]],
+      ["==", ["get", "kind"], kind],
+    ] as FilterSpecification;
+
+  /** Everything that is a group rather than a place. */
+  const CLUSTERS: FilterSpecification = ["has", "point_count"];
 
   /* ==========================================================================
      City markers — the chrome's liquid glass, transposed into circles.
@@ -799,13 +1041,14 @@ async function initMap(): Promise<void> {
     {
       id: "visited-cities-shadow",
       type: "circle",
-      source: "visited-cities",
+      source: "visited-places",
+      filter: singleOf("city"),
       paint: {
         "circle-color": "#000000",
         "circle-blur": 0.9,
         "circle-translate": [0, 1.3],
         "circle-translate-anchor": "viewport",
-        "circle-radius": markerScale([3, 5.5, 9, 9]),
+        "circle-radius": markerScale(BEAD_RADIUS),
         "circle-opacity": MARKER_SHADOW_OPACITY,
       },
     },
@@ -813,17 +1056,18 @@ async function initMap(): Promise<void> {
   );
 
   // Soft accent glow beneath each city — the "halo" of the beacon. Shares the
-  // visited-cities source, so the hover feature-state lights up glow + body
+  // visited-places source, so the hover feature-state lights up glow + body
   // together. Added before the body so it renders underneath it.
   map.addLayer(
     {
       id: "visited-cities-glow",
       type: "circle",
-      source: "visited-cities",
+      source: "visited-places",
+      filter: singleOf("city"),
       paint: {
         "circle-color": CITY_GLOW_DARK,
         "circle-blur": 1,
-        "circle-radius": markerScale([6, 11, 18, 18], [10, 16, 26, 26]),
+        "circle-radius": markerScale(GLOW_RADIUS, GLOW_RADIUS_HOVER),
         "circle-opacity": [
           "case",
           ["boolean", ["feature-state", "hover"], false],
@@ -843,10 +1087,11 @@ async function initMap(): Promise<void> {
     {
       id: "visited-cities",
       type: "circle",
-      source: "visited-cities",
+      source: "visited-places",
+      filter: singleOf("city"),
       paint: {
         "circle-color": CITY_BODY_DARK,
-        "circle-radius": markerScale([3, 5.5, 9, 9], [3.4, 6.2, 10, 10]),
+        "circle-radius": markerScale(BEAD_RADIUS, BEAD_RADIUS_HOVER),
         "circle-blur": [
           "case",
           ["boolean", ["feature-state", "hover"], false],
@@ -856,7 +1101,7 @@ async function initMap(): Promise<void> {
         "circle-opacity": MARKER_BODY_OPACITY,
         // The rim. White in both schemes: light striking a piece of glass
         // doesn't change colour with the page.
-        "circle-stroke-width": markerScale([0, 0.9, 1.3, 1.3]),
+        "circle-stroke-width": markerScale(RIM_WIDTH),
         "circle-stroke-color": CITY_RIM,
         "circle-stroke-opacity": MARKER_RIM_OPACITY,
       },
@@ -870,17 +1115,201 @@ async function initMap(): Promise<void> {
     {
       id: "visited-cities-specular",
       type: "circle",
-      source: "visited-cities",
+      source: "visited-places",
+      filter: singleOf("city"),
       paint: {
         "circle-color": CITY_RIM,
         "circle-blur": 0.5,
         "circle-translate": [-1, -1.1],
         "circle-translate-anchor": "viewport",
-        "circle-radius": markerScale([0, 1.9, 3.2, 3.2], [0, 2.2, 3.6, 3.6]),
+        "circle-radius": markerScale(SPECULAR_RADIUS, SPECULAR_RADIUS_HOVER),
         "circle-opacity": MARKER_SPECULAR_OPACITY,
       },
     },
     "label_other",
+  );
+
+  /* ==========================================================================
+     Clusters — the same bead, carrying more.
+
+     Nothing new is invented for a group of places. It gets the four layers a
+     lone city gets, off the same stops and the same opacity curves, with every
+     radius multiplied by the count scale, because the reader should not have to
+     learn a second mark to understand that one beacon stands for six. What
+     tells a cluster apart is that it is heavier, which is exactly what it is.
+
+     Only the two offsets are constants rather than scaled values.
+     circle-translate takes camera expressions but not data-driven ones, so the
+     shadow cannot fall further and the highlight cannot ride further into the
+     corner as the count grows. They are set once for a middling cluster, which
+     leaves the largest ones lit a touch flatter than they would be if the
+     property allowed it — a smaller error than dropping the depth entirely.
+
+     There is no numeral drawn in the bead. The count is in the tooltip, and the
+     size already says "several" everywhere the exact figure does not matter; a
+     digit knocked into a nine-pixel circle at globe zoom says nothing at all.
+     ========================================================================== */
+
+  map.addLayer(
+    {
+      id: "visited-cities-cluster-shadow",
+      type: "circle",
+      source: "visited-places",
+      filter: CLUSTERS,
+      paint: {
+        "circle-color": "#000000",
+        "circle-blur": 0.9,
+        "circle-translate": [0, 2.2],
+        "circle-translate-anchor": "viewport",
+        "circle-radius": clusterScale(BEAD_RADIUS),
+        "circle-opacity": MARKER_SHADOW_OPACITY,
+      },
+    },
+    "label_other",
+  );
+
+  map.addLayer(
+    {
+      id: "visited-cities-cluster-glow",
+      type: "circle",
+      source: "visited-places",
+      filter: CLUSTERS,
+      paint: {
+        "circle-color": CITY_GLOW_DARK,
+        "circle-blur": 1,
+        "circle-radius": clusterScale(GLOW_RADIUS),
+        "circle-opacity": 0.32,
+      },
+    },
+    "label_other",
+  );
+
+  map.addLayer(
+    {
+      id: "visited-cities-cluster",
+      type: "circle",
+      source: "visited-places",
+      filter: CLUSTERS,
+      paint: {
+        "circle-color": CITY_BODY_DARK,
+        "circle-radius": clusterScale(BEAD_RADIUS),
+        "circle-blur": 0.08,
+        "circle-opacity": MARKER_BODY_OPACITY,
+        "circle-stroke-width": markerScale(RIM_WIDTH),
+        "circle-stroke-color": CITY_RIM,
+        "circle-stroke-opacity": MARKER_RIM_OPACITY,
+      },
+    },
+    "label_other",
+  );
+
+  map.addLayer(
+    {
+      id: "visited-cities-cluster-specular",
+      type: "circle",
+      source: "visited-places",
+      filter: CLUSTERS,
+      paint: {
+        "circle-color": CITY_RIM,
+        "circle-blur": 0.5,
+        "circle-translate": [-2, -2.2],
+        "circle-translate-anchor": "viewport",
+        "circle-radius": clusterScale(SPECULAR_RADIUS),
+        "circle-opacity": MARKER_SPECULAR_OPACITY,
+      },
+    },
+    "label_other",
+  );
+
+  // A cluster that swallowed a landmark wears the landmark's own sign: the same
+  // thin contour, set just outside the bead. The two visual languages compose
+  // rather than one erasing the other, so a group holding Lake Issyk-Kul still
+  // reads as holding something that is not merely another city.
+  //
+  // Unlike a lone landmark's contour, which is drawn beneath the beacons, this
+  // one goes on top of the whole cluster band — it has to clear its own glow,
+  // which is a blurred disc several times the width of the ring and would wash
+  // a line drawn under it back into the background.
+  map.addLayer(
+    {
+      id: "visited-cities-cluster-ring",
+      type: "circle",
+      source: "visited-places",
+      filter: [
+        "all",
+        ["has", "point_count"],
+        [">", ["get", "landmarkCount"], 0],
+      ] as FilterSpecification,
+      paint: {
+        "circle-color": "rgba(0, 0, 0, 0)",
+        "circle-radius": clusterScale(BEAD_RADIUS, CLUSTER_RING_GAP),
+        "circle-stroke-width": 1,
+        "circle-stroke-color": CITY_GLOW_DARK,
+        "circle-stroke-opacity": CLUSTER_RING_OPACITY,
+      },
+    },
+    "label_other",
+  );
+
+  /* ==========================================================================
+     Landmarks — contours, not beacons.
+
+     A landmark is the context a trip happened in; a city is the trip itself. So
+     the two are told apart by structure rather than by weight: a thin ring with
+     a small core against a bead of glass, which keeps a landmark from ever
+     looking like a dimmer, further-away city — the reading a beacon at lower
+     opacity would have given it.
+
+     They are drawn beneath every city layer. On top, as they first were, the
+     ring cut a line straight across each beacon standing on the lake's shore —
+     which is most of them, because a place is usually on the map because
+     someone went to the town beside it.
+     ========================================================================== */
+
+  // The extent ring. Also the hover target: it is the widest part of the mark,
+  // so it gives a generous hit area, and MapLibre's circle hit-testing is
+  // geometric — the transparent interior counts as part of the shape.
+  map.addLayer(
+    {
+      id: "visited-landmarks",
+      type: "circle",
+      source: "visited-places",
+      filter: singleOf("landmark"),
+      paint: {
+        "circle-color": "rgba(0, 0, 0, 0)",
+        "circle-radius": markerScale(
+          LANDMARK_RING_RADIUS,
+          LANDMARK_RING_RADIUS_HOVER,
+        ),
+        "circle-stroke-width": LANDMARK_RING_WIDTH,
+        "circle-stroke-color": CITY_GLOW_DARK,
+        // No zoom fade on the stroke. The city bead earns its curves by
+        // assembling out of nothing as the map is zoomed in; a contour has no
+        // material to assemble and no reason to be absent on the globe, where
+        // it is the only thing marking the place at all.
+        "circle-stroke-opacity": LANDMARK_RING_OPACITY,
+      },
+    },
+    "visited-cities-shadow",
+  );
+
+  // The core.
+  map.addLayer(
+    {
+      id: "visited-landmarks-core",
+      type: "circle",
+      source: "visited-places",
+      filter: singleOf("landmark"),
+      paint: {
+        "circle-color": CITY_GLOW_DARK,
+        "circle-radius": markerScale(
+          LANDMARK_CORE_RADIUS,
+          LANDMARK_CORE_RADIUS_HOVER,
+        ),
+        "circle-opacity": LANDMARK_CORE_OPACITY,
+      },
+    },
+    "visited-cities-shadow",
   );
 
   // A white body reads on the dark map; over the light map's pink countries it
@@ -907,6 +1336,39 @@ async function initMap(): Promise<void> {
       isDark ? 0.6 : 0.65,
       isDark ? 0.32 : 0.45,
     ]);
+
+    // Clusters take the bead's colours, since they are the bead. The glow's
+    // resting strength is lifted on the light map for the same reason the
+    // single one is — a same-hue halo washes out over the pink countries — and
+    // takes the resting value only, there being no hover to state.
+    map.setPaintProperty(
+      "visited-cities-cluster",
+      "circle-color",
+      isDark ? CITY_BODY_DARK : CITY_BODY_LIGHT,
+    );
+    map.setPaintProperty(
+      "visited-cities-cluster-glow",
+      "circle-color",
+      isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT,
+    );
+    map.setPaintProperty(
+      "visited-cities-cluster-glow",
+      "circle-opacity",
+      isDark ? 0.32 : 0.45,
+    );
+
+    // Every contour — the lone landmark's and the one a cluster wears — is
+    // drawn in the accent, and follows the glow's light/dark shift rather than
+    // the bead's: a contour is a halo's worth of accent stated as a line, not a
+    // piece of glass, and the deep accent is what survives the light map.
+    const accent = isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT;
+    map.setPaintProperty("visited-landmarks", "circle-stroke-color", accent);
+    map.setPaintProperty("visited-landmarks-core", "circle-color", accent);
+    map.setPaintProperty(
+      "visited-cities-cluster-ring",
+      "circle-stroke-color",
+      accent,
+    );
   }
 
   applyCityColors(colorSchemeQuery.matches);
@@ -918,6 +1380,12 @@ async function initMap(): Promise<void> {
   // solid and the two layers that exist only to fake depth — the highlight and
   // the shadow — go away. The halo stays: it is the map's own beacon, not a
   // surface laid over content, and nothing has to be read through it.
+  //
+  // The contours turn solid on the same principle and lose nothing by it. Their
+  // faintness was never material — it was there to keep a landmark quieter than
+  // a city — and hover still answers by moving the ring and the core toward
+  // each other, which is a change of shape rather than of strength and survives
+  // here untouched.
   const reducedTransparencyQuery = window.matchMedia(
     "(prefers-reduced-transparency: reduce)",
   );
@@ -943,6 +1411,41 @@ async function initMap(): Promise<void> {
         "visited-cities-shadow",
         "circle-opacity",
         reduced ? 0 : MARKER_SHADOW_OPACITY,
+      ],
+      [
+        "visited-cities-cluster",
+        "circle-opacity",
+        reduced ? MARKER_BODY_OPACITY_REDUCED : MARKER_BODY_OPACITY,
+      ],
+      [
+        "visited-cities-cluster",
+        "circle-stroke-opacity",
+        reduced ? MARKER_RIM_OPACITY_REDUCED : MARKER_RIM_OPACITY,
+      ],
+      [
+        "visited-cities-cluster-specular",
+        "circle-opacity",
+        reduced ? 0 : MARKER_SPECULAR_OPACITY,
+      ],
+      [
+        "visited-cities-cluster-shadow",
+        "circle-opacity",
+        reduced ? 0 : MARKER_SHADOW_OPACITY,
+      ],
+      [
+        "visited-cities-cluster-ring",
+        "circle-stroke-opacity",
+        reduced ? 1 : CLUSTER_RING_OPACITY,
+      ],
+      [
+        "visited-landmarks",
+        "circle-stroke-opacity",
+        reduced ? 1 : LANDMARK_RING_OPACITY,
+      ],
+      [
+        "visited-landmarks-core",
+        "circle-opacity",
+        reduced ? 1 : LANDMARK_CORE_OPACITY,
       ],
     ];
 
@@ -993,7 +1496,10 @@ async function initMap(): Promise<void> {
     };
   }
 
-  let hoveredCityId: number | null = null;
+  // The hovered marker, which may be a place or a group of them. `stateful`
+  // records whether a feature-state was actually written for it, so clearing
+  // does not blindly write one back for a cluster that never had one.
+  let hoveredMarker: { id: number; stateful: boolean } | null = null;
   // Last known cursor position in canvas coords, kept so we can re-evaluate the
   // hover when the map moves under a stationary cursor (pan/zoom/auto-rotation).
   let lastPoint: { x: number; y: number } | null = null;
@@ -1033,7 +1539,7 @@ async function initMap(): Promise<void> {
   }
 
   /**
-   * The city under a screen point, or null if the point is not on one.
+   * The marker under a screen point, or null if the point is not on one.
    *
    * The box handed to queryRenderedFeatures is a coarse filter: it matches
    * anything whose drawn circle overlaps, so a dot answers from further away
@@ -1043,18 +1549,33 @@ async function initMap(): Promise<void> {
    * reading as anything — every city near the edge answers at once, and the
    * name that wins can belong to a dot nowhere near the cursor. So the centre
    * has to be inside the same radius the box was drawn from.
+   *
+   * A cluster is exempt from that last rule, being the one mark that can be
+   * drawn wider than the box it is caught in: a group of fifty runs to thirty
+   * pixels of radius against the box's fourteen, so the same clamp would make
+   * the middle of the bead hoverable and its outer half not. For those,
+   * overlapping the box is the whole test — the query has already done real
+   * geometry against the painted circle — while the distance goes on deciding
+   * which candidate wins.
    */
-  function getClosestCity(point: { x: number; y: number }) {
+  function getClosestMarker(point: { x: number; y: number }) {
     const bbox: [[number, number], [number, number]] = [
       [point.x - HOVER_RADIUS, point.y - HOVER_RADIUS],
       [point.x + HOVER_RADIUS, point.y + HOVER_RADIUS],
     ];
     const features = map.queryRenderedFeatures(bbox, {
-      layers: ["visited-cities"],
+      layers: [
+        "visited-cities",
+        "visited-cities-cluster",
+        // The contour is part of the cluster's mark, so pointing at it hovers
+        // the whole thing rather than only the bead inside it.
+        "visited-cities-cluster-ring",
+        "visited-landmarks",
+      ],
     });
 
     let closest: (typeof features)[number] | null = null;
-    let minDist = HOVER_RADIUS * HOVER_RADIUS;
+    let minDist = Infinity;
     for (const f of features) {
       const coordinates = (f.geometry as Point).coordinates as [number, number];
       if (!facesCamera(coordinates)) continue;
@@ -1062,6 +1583,8 @@ async function initMap(): Promise<void> {
       const dx = projected.x - point.x;
       const dy = projected.y - point.y;
       const dist = dx * dx + dy * dy;
+      const isCluster = f.properties?.point_count !== undefined;
+      if (!isCluster && dist > HOVER_RADIUS * HOVER_RADIUS) continue;
       if (dist < minDist) {
         minDist = dist;
         closest = f;
@@ -1071,12 +1594,14 @@ async function initMap(): Promise<void> {
   }
 
   function clearHover(): void {
-    if (hoveredCityId !== null) {
-      map.setFeatureState(
-        { source: "visited-cities", id: hoveredCityId },
-        { hover: false },
-      );
-      hoveredCityId = null;
+    if (hoveredMarker !== null) {
+      if (hoveredMarker.stateful) {
+        map.setFeatureState(
+          { source: "visited-places", id: hoveredMarker.id },
+          { hover: false },
+        );
+      }
+      hoveredMarker = null;
     }
     map.getCanvas().style.cursor = "";
     cityLabel.style.display = "none";
@@ -1087,26 +1612,53 @@ async function initMap(): Promise<void> {
   // by what currently sits under that point — so it stays correct even when the
   // map moved rather than the cursor.
   function updateHover(point: { x: number; y: number } | null): void {
-    const feature = point ? getClosestCity(point) : null;
+    const feature = point ? getClosestMarker(point) : null;
 
     if (feature && point) {
-      const newId = feature.id as number;
+      const count = feature.properties?.point_count as number | undefined;
+      // A cluster gets the cursor and the tooltip but no feature-state.
+      // Supercluster mints cluster ids per zoom level, so the id a hover was
+      // written against stops existing the moment the map zooms and the marker
+      // is left lit with nothing able to turn it off again. Nothing is lost by
+      // it: what a cluster has to answer with is the count, and the count is in
+      // the tooltip.
+      const next = { id: feature.id as number, stateful: count === undefined };
+      // Compared on both fields. Cluster ids and place ids are drawn from
+      // different number lines and only supercluster's own arithmetic keeps
+      // them from colliding — not something the tooltip should have to trust to
+      // know whether it is looking at the same mark as a moment ago.
+      const isSame =
+        hoveredMarker !== null &&
+        hoveredMarker.id === next.id &&
+        hoveredMarker.stateful === next.stateful;
 
-      if (hoveredCityId !== null && hoveredCityId !== newId) {
+      if (hoveredMarker !== null && !isSame && hoveredMarker.stateful) {
         map.setFeatureState(
-          { source: "visited-cities", id: hoveredCityId },
+          { source: "visited-places", id: hoveredMarker.id },
           { hover: false },
         );
       }
 
-      if (hoveredCityId !== newId) {
-        hoveredCityId = newId;
-        map.setFeatureState(
-          { source: "visited-cities", id: newId },
-          { hover: true },
-        );
+      if (!isSame) {
+        hoveredMarker = next;
+        if (next.stateful) {
+          map.setFeatureState(
+            { source: "visited-places", id: next.id },
+            { hover: true },
+          );
+        }
         const lang = (localStorage.getItem("lang") as "en" | "ru") || "en";
-        cityLabel.textContent = getCityName(feature.properties!.name, lang);
+        const name = feature.properties!.name as string;
+        cityLabel.textContent =
+          count !== undefined
+            ? formatClusterLabel(
+                count,
+                (feature.properties?.landmarkCount as number) ?? 0,
+                lang,
+              )
+            : feature.properties!.kind === "landmark"
+              ? getLandmarkName(name, lang)
+              : getCityName(name, lang);
         labelHalfWidth = 0;
       }
 
@@ -1176,6 +1728,45 @@ async function initMap(): Promise<void> {
       hoverRafPending = false;
       if (cursorInside && lastPoint) updateHover(lastPoint);
     });
+  });
+
+  // A cluster has to open, or it is a dead end: the reader can see that five
+  // places are hiding in there and has no way to reach them. Clicking eases to
+  // exactly the zoom at which supercluster breaks this particular group apart —
+  // asked rather than guessed, because a fixed "+2" either fails to open a
+  // tight group or overshoots a loose one, scattering its beads past the edges
+  // of the view.
+  //
+  // Hit-tested through getClosestMarker rather than by registering the click on
+  // the cluster layer, which would run MapLibre's own test — one that reaches
+  // straight through the planet on the globe and would open a cluster hiding
+  // behind the far limb, the same failure facesCamera exists to prevent.
+  map.on("click", (event) => {
+    const feature = getClosestMarker(event.point);
+    if (!feature) return;
+    const clusterId = feature.properties?.cluster_id;
+    if (typeof clusterId !== "number") return;
+
+    const source = map.getSource("visited-places") as GeoJSONSource | undefined;
+    if (!source) return;
+
+    // Asking for a cluster is taking the globe over, for the reason flyToCity
+    // gives: the rotation turns the globe with setCenter, setCenter goes
+    // through jumpTo, and jumpTo stops whatever animation it lands in. Left
+    // spinning, the camera would set off for the cluster and be dragged off it
+    // one frame later. mousedown already does this for a mouse, but a tap never
+    // raises one.
+    takeOver();
+
+    const center = (feature.geometry as Point).coordinates as [number, number];
+
+    source
+      .getClusterExpansionZoom(clusterId)
+      .then((zoom) => map.easeTo({ center, zoom, duration: 600 }))
+      // A lookup that fails should still take the reader somewhere useful
+      // rather than leaving the click dead — two levels in is enough to see
+      // the group start to come apart.
+      .catch(() => map.easeTo({ center, zoom: map.getZoom() + 2 }));
   });
 
   // Lift the shimmer once something real has been painted. The old signal was
