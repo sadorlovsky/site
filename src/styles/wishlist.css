@@ -889,7 +889,6 @@
   .reserve-btn {
     background: light-dark(#f0f0f0, #3a3a3a);
     background-image: none;
-    backdrop-filter: none;
   }
 
   .reserve-btn.own-reservation {
@@ -898,7 +897,6 @@
 
   .reserve-btn.own-reservation:hover {
     background: light-dark(#dcdcdc, #505050);
-    backdrop-filter: none;
   }
 
   /* Random button. The lit override matters: the lit rule re-pins the
@@ -910,7 +908,6 @@
   .kit-btn.mobile-filter-random:is(:hover, :focus-visible):not(:disabled) {
     background-color: light-dark(#fff, #2a2a2d);
     background-image: none;
-    backdrop-filter: none;
     border-color: light-dark(#e0e0e0, #444);
   }
 }

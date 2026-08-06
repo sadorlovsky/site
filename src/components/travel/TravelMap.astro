@@ -199,13 +199,6 @@ const { mode = "globe" } = Astro.props;
     }
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    /* The opaque tint comes from --glass-bg-on-media, which goes solid here. */
-    .city-label-overlay {
-      backdrop-filter: none;
-    }
-  }
-
   /* iOS Safari specific fixes. Scope to iOS only: -webkit-touch-callout is
      iOS-exclusive, whereas -webkit-appearance also matches desktop Chrome.
      Everything in here establishes a containing block, which resets the

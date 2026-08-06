@@ -179,10 +179,3 @@
     border: 1px solid currentColor;
   }
 }
-
-@media (prefers-reduced-transparency: reduce) {
-  /* The opaque tint comes from --glass-bg-on-media, which goes solid here. */
-  .kit-badge--glass {
-    backdrop-filter: none;
-  }
-}
