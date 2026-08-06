@@ -225,7 +225,15 @@ async function initMap(): Promise<void> {
     style: "https://tiles.openfreemap.org/styles/positron",
     center: initialCenter,
     zoom: initialZoom,
-    minZoom: 1,
+    // Never above the zoom the opening view asks for. A globe on a narrow
+    // viewport is drawn well below 1 — 280px of sphere wants 0.604 — and a flat
+    // floor of 1 clamped it, leaving the resize observer to correct a view that
+    // was never painted. The correction is a real camera write, and everything
+    // downstream then has to tell it apart from a real gesture. Cheaper not to
+    // create it. This is not the globe's floor: that one is above the opening
+    // zoom by the latitude offset, and setting it here would clamp in the other
+    // direction. It goes on after `load`, once the projection is actually globe.
+    minZoom: isGlobe ? Math.min(1, initialZoom) : 1,
     attributionControl: false,
   });
 
@@ -240,6 +248,11 @@ async function initMap(): Promise<void> {
         getGlobeZoomFloor(getGlobeSize(container), GLOBE_LATITUDE),
       );
     } else {
+      // A flat map has no globe to turn, and the rotation would keep panning it
+      // east forever. takeOver rather than a pause: a pause alone leaves the
+      // intersection observer free to start it again the next time the map
+      // scrolls back into view.
+      takeOver();
       map.setProjection({ type: "mercator" });
       map.setMinZoom(1);
       map.setZoom(isMobile ? 1 : 2);
@@ -249,6 +262,63 @@ async function initMap(): Promise<void> {
   // Expose for external use: window.setMapMode("globe") or window.setMapMode("normal")
   (window as unknown as { setMapMode: typeof setProjectionMode }).setMapMode =
     setProjectionMode;
+
+  // Auto-rotation for globe mode. The rAF loop must not run when there is
+  // nothing to see: off-screen (scrolled away), on a hidden tab, or when the
+  // user prefers reduced motion. Otherwise it repaints the WebGL globe every
+  // frame forever — a needless CPU/GPU/battery drain on a page the map only
+  // occupies the top of.
+  //
+  // The controls live out here, above the touch arbiter and flyToCity, because
+  // both of them have a verdict to report and neither can reach inside the
+  // `if (isGlobe)` block below. `shouldRotate` asks for isGlobe itself, so on a
+  // mercator map every one of these is a no-op that costs a comparison.
+  const rotationSpeed = 0.15; // degrees per frame
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  let userStopped = false; // user took control → never auto-resume
+  let inViewport = true; // map container intersects the viewport
+  let rafId: number | null = null;
+
+  const shouldRotate = () =>
+    isGlobe &&
+    !userStopped &&
+    !prefersReducedMotion &&
+    inViewport &&
+    !document.hidden;
+
+  function rotate() {
+    if (!shouldRotate()) {
+      rafId = null;
+      return;
+    }
+    const center = map.getCenter();
+    center.lng += rotationSpeed;
+    map.setCenter(center);
+    rafId = requestAnimationFrame(rotate);
+  }
+
+  function startRotation() {
+    if (rafId === null && shouldRotate()) {
+      rafId = requestAnimationFrame(rotate);
+    }
+  }
+
+  function pauseRotation() {
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+  }
+
+  // The permanent stop. Everything that resumes rotation runs through
+  // startRotation, which asks shouldRotate first, so this is one-way.
+  function takeOver() {
+    userStopped = true;
+    pauseRotation();
+  }
 
   // The globe fills most of the first screen, so a page that let it eat every
   // scroll would be a page you couldn't leave with the cursor where it lands.
@@ -295,11 +365,37 @@ async function initMap(): Promise<void> {
   let gestureOwner: "undecided" | "map" | "page" = "undecided";
   let gestureStart: { x: number; y: number } | null = null;
 
+  // The arbiter also speaks for the rotation, because the rotation and a touch
+  // gesture cannot both be in progress: the rotation turns the globe with
+  // setCenter, setCenter goes through jumpTo, and jumpTo stops every handler
+  // MapLibre has in flight. A finger racing that loop has its pan reset sixty
+  // times a second — and once reset between touchstart and the first move, the
+  // handler stays inactive for the rest of the gesture, so the globe cannot be
+  // dragged at all while it is turning. A mouse never meets this: mousedown
+  // stops the rotation before the drag begins. Touch had the same guard on
+  // touchstart until it was dropped, for the good reason that a finger on its
+  // way down the page is not someone taking the globe over.
+  //
+  // Both wants fit if a landing finger only *pauses* the spin, and the verdict
+  // decides what happens next: a gesture the map ends up owning has taken the
+  // globe over and stops it for good, while one ruled vertical, or a touch that
+  // ends without ever moving, hands it straight back.
+  //
+  // The pause lasts the whole touch, not a fixed window. Usually that is the
+  // moment or two before the axis declares itself; a finger that lands and does
+  // not move holds the spin until it lifts, deliberately — resuming underneath a
+  // finger that is still down would go back to resetting MapLibre's handlers
+  // mid-gesture, which is the exact failure this arrangement exists to avoid.
+
   container.addEventListener(
     "touchstart",
     (event) => {
       if (event.touches.length > 1) {
+        // Two fingers are the map's, but landing is not yet taking over: a
+        // two-finger tap, or a second finger that arrives and lifts without
+        // moving, should leave the globe turning. The first move claims it.
         gestureOwner = "map";
+        pauseRotation();
         return;
       }
       gestureOwner = "undecided";
@@ -307,6 +403,7 @@ async function initMap(): Promise<void> {
         x: event.touches[0].clientX,
         y: event.touches[0].clientY,
       };
+      pauseRotation();
     },
     { capture: true },
   );
@@ -315,14 +412,25 @@ async function initMap(): Promise<void> {
     "touchmove",
     (event) => {
       if (event.touches.length > 1) gestureOwner = "map";
-      if (gestureOwner === "map") return;
+
+      // One place for every way the map ends up owning the gesture — a second
+      // finger, or an axis already ruled sideways — so movement under the map's
+      // ownership is what claims the globe, never the touch that started it.
+      if (gestureOwner === "map") {
+        takeOver();
+        return;
+      }
 
       if (gestureOwner === "undecided" && gestureStart) {
         const dx = event.touches[0].clientX - gestureStart.x;
         const dy = event.touches[0].clientY - gestureStart.y;
         if (Math.hypot(dx, dy) >= DIRECTION_THRESHOLD) {
           gestureOwner = Math.abs(dx) > Math.abs(dy) ? "map" : "page";
-          if (gestureOwner === "map") return;
+          if (gestureOwner === "map") {
+            takeOver();
+            return;
+          }
+          startRotation();
         }
       }
 
@@ -336,6 +444,13 @@ async function initMap(): Promise<void> {
   // back through a decision it would have to restart from a stale origin.
   const releaseGesture = (event: TouchEvent) => {
     if (event.touches.length > 0) return;
+    // A gesture that ended without ever claiming the globe gets the spin back —
+    // a tap, a two-finger tap, a drag ruled vertical. Asking startRotation
+    // rather than reading gestureOwner is what makes that list complete: it
+    // answers "was the globe taken over", which is the actual question, and a
+    // two-finger tap ends with gestureOwner already "map" while having taken
+    // nothing over. Once takeOver has run this is a no-op.
+    startRotation();
     gestureOwner = "undecided";
     gestureStart = null;
   };
@@ -387,51 +502,32 @@ async function initMap(): Promise<void> {
     });
     resizeObserver.observe(container);
 
-    // Auto-rotation for globe mode. The rAF loop must not run when there is
-    // nothing to see: off-screen (scrolled away), on a hidden tab, or when the
-    // user prefers reduced motion. Otherwise it repaints the WebGL globe every
-    // frame forever — a needless CPU/GPU/battery drain on a page the map only
-    // occupies the top of.
-    const rotationSpeed = 0.15; // degrees per frame
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    let userStopped = false; // user interacted → never auto-resume
-    let inViewport = true; // map container intersects the viewport
-    let rafId: number | null = null;
-
-    const shouldRotate = () =>
-      !userStopped && !prefersReducedMotion && inViewport && !document.hidden;
-
-    function rotate() {
-      if (!shouldRotate()) {
-        rafId = null;
-        return;
-      }
-      const center = map.getCenter();
-      center.lng += rotationSpeed;
-      map.setCenter(center);
-      rafId = requestAnimationFrame(rotate);
-    }
-
-    function startRotation() {
-      if (rafId === null && shouldRotate()) {
-        rafId = requestAnimationFrame(rotate);
-      }
-    }
-
-    function pauseRotation() {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-    }
-
-    // Permanent stop once the user takes control of the globe.
-    const stopRotation = () => {
-      userStopped = true;
-      pauseRotation();
+    // Permanent stop once the user takes control of the globe — and only then.
+    //
+    // These events do not belong to gestures alone. MapLibre raises the same
+    // zoomstart, dragstart and rotatestart for the page's own camera writes, and
+    // one of ours used to land during startup on a narrow viewport: a flat
+    // `minZoom: 1` in the constructor sat above the 0.604 a 280px globe is drawn
+    // at, so the opening view was clamped to 1 and the resize observer put it
+    // back a moment later. That correction is a real zoom change and fires a
+    // real zoomstart, and the globe stopped dead before anyone had touched it. A
+    // desktop globe wants zoom 1.382, above the floor, so nothing was clamped,
+    // nothing corrected, and the spin survived — which was the whole shape of
+    // the bug: every phone, no desktop. The constructor no longer clamps, and
+    // this guard means no other programmatic write can do the same again.
+    //
+    // `originalEvent` is what tells the two apart. MapLibre's gesture handlers
+    // pass the DOM event that caused the camera to move; a programmatic setZoom
+    // has none to pass. Reading it here means "took control" is answered by the
+    // user's own input rather than by whatever else moved the camera, so a
+    // resize or a clamp can no longer be mistaken for it. Deliberate camera
+    // moves are a different thing entirely and say so themselves: flyToCity and
+    // setProjectionMode call takeOver directly, because a rotation left running
+    // under a flyTo would abort it — every setCenter goes through jumpTo, and
+    // jumpTo stops whatever animation is playing.
+    const stopRotation = (event: { originalEvent?: unknown }) => {
+      if (!event.originalEvent) return;
+      takeOver();
     };
 
     map.on("mousedown", stopRotation);
@@ -1078,6 +1174,12 @@ async function initMap(): Promise<void> {
   // Function to fly to a city
   function flyToCity(cityName: string): void {
     if (cityCoordinates[cityName]) {
+      // Asking for a city is taking the globe over, even though it arrived as a
+      // call rather than a gesture — and the spin has to stop for the flight to
+      // survive at all: the rotation's setCenter goes through jumpTo, and jumpTo
+      // stops the animation it lands in. The camera would leave for the city and
+      // be dragged off it a frame later.
+      takeOver();
       map.flyTo({
         center: cityCoordinates[cityName] as [number, number],
         zoom: 6,
