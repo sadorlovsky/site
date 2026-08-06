@@ -38,35 +38,78 @@
   font-size: 1rem;
 }
 
-/* Item Card */
+/* Item Card — the wishlist card, at admin density.
+
+   Same material and the same recipe as the public one: the shared tint, the
+   shared edge, the refractive rim on ::before, and a hover that lifts the card
+   and brightens that rim rather than swapping a background. The radius is 20px
+   for the same reason it is there — a card this size wants a generous corner,
+   and 14px was the dashboard's corner, not the site's.
+
+   The hand-written inset highlight that used to sit in the box-shadow is gone:
+   that was the rim, approximated, before the tokens existed. */
 .item-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  background: light-dark(var(--glass-bg-light), var(--glass-bg-dark));
-  border: 1px solid
-    light-dark(var(--glass-border-light), var(--glass-border-dark));
-  border-radius: 14px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow:
-    0 4px 20px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.25)),
-    0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
-      inset;
+  min-width: 0;
+  background: var(--card-bg);
+  border: var(--glass-border);
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow);
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* The lens edge. On ::before, above the image and the badges, because it is
+   the card's own edge — and because ::after is spoken for by the drag markers
+   below. */
+.item-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+  box-shadow: var(--glass-rim);
+  transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Frost only where there's a cursor. The admin draws a long grid of these, and
+   a phone compositing sixty blurred surfaces pays for a finish nobody is
+   hovering anyway — a trade the rest of the site doesn't make, kept here
+   because the page is a list rather than a few floating capsules. */
 @media (hover: hover) and (pointer: fine) {
   .item-card {
-    backdrop-filter: blur(16px);
+    backdrop-filter: var(--glass-filter);
   }
 
+  /* The lift is shallower than the public card's 8px: these sit in a six-column
+     grid where a big rise reads as the row breaking apart. */
   .item-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
     box-shadow:
-      0 12px 35px -1px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.4)),
-      0 0 0 1px light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.08))
-        inset;
+      0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
+      0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
+  }
+
+  .item-card:hover::before {
+    box-shadow: var(--glass-rim-lit);
   }
 }
 
+/* Reduced transparency: only the frost needs dropping — the tint is --card-bg,
+   which global.css already turns opaque for this case. */
+@media (prefers-reduced-transparency: reduce) {
+  .item-card {
+    backdrop-filter: none;
+  }
+}
+
+/* Reserved and received are already said out loud by the badge on the photo.
+   Here they only need to be visible while scanning the grid, so the card tints
+   its own edge rather than changing colour: the glass stays glass. */
 .item-card.reserved {
   border-color: light-dark(rgba(245, 158, 11, 0.5), rgba(217, 119, 6, 0.5));
 }
@@ -89,18 +132,23 @@
   transform: scale(0.98);
 }
 
-/* Keyboard moving state */
+/* Keyboard moving state — the accent ring and glow the wishlist's random pick
+   wears, which is the site's way of saying "this one, right now". */
 .item-card.keyboard-moving {
-  outline: 3px solid var(--color-indigo);
+  outline: 3px solid var(--accent-start);
   outline-offset: 2px;
   box-shadow:
-    0 0 0 6px light-dark(rgba(99, 102, 241, 0.2), rgba(99, 102, 241, 0.3)),
-    0 4px 20px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.25));
+    0 0 0 6px rgba(237, 87, 96, 0.22),
+    var(--glass-shadow);
+}
+
+.item-card.keyboard-moving::before {
+  box-shadow: var(--glass-rim-lit);
 }
 
 /* Focus styles for keyboard navigation */
 .item-card.draggable:focus {
-  outline: 2px solid var(--color-indigo);
+  outline: 2px solid var(--accent-start);
   outline-offset: 2px;
 }
 
@@ -108,16 +156,17 @@
   outline: none;
 }
 
+/* Drop markers — the accent bar on the side the card would land. */
 .item-card.drag-over-before {
   box-shadow:
-    -4px 0 0 0 var(--color-indigo),
-    0 4px 20px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.25));
+    -4px 0 0 0 var(--accent-start),
+    var(--glass-shadow);
 }
 
 .item-card.drag-over-after {
   box-shadow:
-    4px 0 0 0 var(--color-indigo),
-    0 4px 20px -1px light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.25));
+    4px 0 0 0 var(--accent-start),
+    var(--glass-shadow);
 }
 
 .items-list.drag-enabled {
@@ -128,7 +177,9 @@
 .item-image {
   position: relative;
   overflow: hidden;
-  border-radius: 14px 14px 0 0;
+  /* One less than the card's 20px: an inner corner has to sit inside the
+     border to stay concentric with it, or the photo's arc crosses the edge. */
+  border-radius: 19px 19px 0 0;
 }
 
 .item-image img {
@@ -149,34 +200,65 @@
   left: 0.6rem;
 }
 
+/* The badge sits on a product photograph, which is exactly the case the
+   --glass-*-on-media tokens exist for — and exactly what the kit's glass badge
+   already says: a solid gradient chip on a photo is a second subject competing
+   with the first. So the capsule is neutral in both schemes and the state
+   travels on a dot, the same way it does on the public wishlist card.
+
+   The dot is drawn here rather than added to the markup: these badges are
+   rendered by React in two components, and a pseudo-element keeps the change
+   in one file. */
 .status-badge {
+  position: relative;
   display: inline-flex;
-  padding: 0.3rem 0.6rem;
-  border-radius: 6px;
+  align-items: center;
+  gap: 6px;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  color: #fff;
+  background-color: var(--glass-bg-on-media);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border-on-media);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-dot, currentColor);
+  flex: none;
+}
+
+/* The lens edge, matching every other capsule on a photo. */
+.status-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: var(--glass-rim-on-media);
 }
 
 .status-received {
-  background: linear-gradient(
-    135deg,
-    var(--color-success),
-    var(--color-success-dark)
-  );
-  color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  --status-dot: #34d399;
 }
 
 .status-reserved {
-  background: linear-gradient(
-    135deg,
-    var(--color-warning),
-    var(--color-warning-dark)
-  );
-  color: white;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+  --status-dot: #fbbf24;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .status-badge {
+    background-color: rgb(24, 24, 28);
+    backdrop-filter: none;
+  }
 }
 
 /* Item Content */
@@ -249,9 +331,9 @@
   font-weight: 700;
   color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
   white-space: nowrap;
-  padding: 0.2rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  border-radius: 6px;
+  border-radius: 999px;
 }
 
 .item-price-rub {
@@ -275,7 +357,7 @@
   gap: 0.25rem;
   padding: 0.5rem;
   background: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.03));
-  border-radius: 6px;
+  border-radius: 10px;
   margin-top: 0.25rem;
 }
 
@@ -335,43 +417,51 @@
   gap: 0.35rem;
 }
 
+/* Tags — capsules, and quiet ones. A card can carry four of these at once, so
+   only the one that ranks (priority) gets any colour, and it gets it on a dot.
+   Category used to be an indigo chip; a category is a label, not a state. */
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.45rem;
-  border-radius: 5px;
+  gap: 5px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-}
-
-.tag-category {
-  background: light-dark(rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.25));
-  color: light-dark(var(--color-indigo-dark), var(--color-indigo-light));
+  background: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+  color: light-dark(#555, #b4b4b8);
 }
 
 .tag-priority {
   text-transform: capitalize;
 }
 
+/* Priority carries a dot; the capsule underneath stays the neutral one above. */
+.tag-priority::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tag-dot, transparent);
+  flex: none;
+}
+
 .tag-priority-high {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
+  --tag-dot: var(--accent-start);
+  color: light-dark(#333, #fff);
 }
 
 .tag-priority-medium {
-  background: light-dark(rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.3));
-  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
+  --tag-dot: #fbbf24;
 }
 
 .tag-priority-low {
-  background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
-  color: light-dark(#666, #999);
+  --tag-dot: light-dark(#bbb, #666);
 }
 
 .tag-weight {
-  background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.08));
   color: light-dark(#888, #777);
   font-family: ui-monospace, monospace;
   font-size: 0.6rem;
@@ -387,76 +477,139 @@
     light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
 }
 
+/* Four buttons in a row, one per card, sixty-four cards on screen: two hundred
+   and fifty saturated blocks, which is what made the grid read as a control
+   panel rather than a list of things. They are glass capsules now, and the
+   colour they used to be filled with lives in the icon instead.
+
+   The recipe is the wishlist's reserve button: a neutral capsule with a
+   coloured indicator behind it that glides in on hover, its own rim stepping
+   aside as the fill arrives. Each button names its own indicator colour, so
+   destructive still reads as destructive the moment the cursor is on it. */
 .action-btn {
+  position: relative;
+  /* Own stacking context: the z-index:-1 indicator has to land above the card
+     but below the icon. */
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
   padding: 0.45rem 0.65rem;
-  border: none;
-  border-radius: 8px;
+  border: var(--glass-border);
+  border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  background-color: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.05));
+  color: light-dark(#555, #b4b4b8);
+  transition:
+    color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.action-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--action-fill);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The lens edge, above the indicator and stepping aside once it is lit. */
+.action-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: var(--glass-rim);
+  transition: box-shadow 0.3s ease;
+}
+
+.action-btn:hover::before,
+.action-btn:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.action-btn:hover,
+.action-btn:focus-visible {
+  color: #fff;
+}
+
+.action-btn:hover::after,
+.action-btn:focus-visible::after {
+  box-shadow: none;
+}
+
+.action-btn:focus-visible {
+  outline: 2px solid light-dark(#333, #fff);
+  outline-offset: 2px;
 }
 
 .action-edit {
   flex: 1;
-  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  color: light-dark(#333, #ddd);
-}
-
-.action-edit:hover {
-  background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+  --action-fill: linear-gradient(
+    135deg,
+    var(--accent-start),
+    var(--accent-end)
+  );
 }
 
 .action-reserved {
   width: 34px;
-  background: light-dark(rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.15));
-  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
-}
-
-.action-reserved:hover {
-  background: light-dark(rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.25));
-}
-
-.action-reserved.active {
-  background: linear-gradient(
+  --action-fill: linear-gradient(
     135deg,
     var(--color-warning),
     var(--color-warning-dark)
   );
-  color: white;
+  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
 }
 
 .action-received {
   width: 34px;
-  background: light-dark(rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.15));
-  color: light-dark(var(--color-success-dark), var(--color-success-light));
-}
-
-.action-received:hover {
-  background: light-dark(rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.25));
-}
-
-.action-received.active {
-  background: linear-gradient(
+  --action-fill: linear-gradient(
     135deg,
     var(--color-success),
     var(--color-success-dark)
   );
-  color: white;
+  color: light-dark(var(--color-success-dark), var(--color-success-light));
 }
 
 .action-delete {
   width: 34px;
-  background: light-dark(rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.15));
+  --action-fill: linear-gradient(
+    135deg,
+    var(--color-error),
+    var(--color-error-dark)
+  );
   color: light-dark(var(--color-error-dark), var(--color-error-light));
 }
 
-.action-delete:hover {
-  background: light-dark(rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.25));
+/* Already reserved / already received. A toggle that is on has to look on, but
+   flooding it with its gradient puts a solid saturated disc between two panes
+   of glass — the loudest thing on a card whose photo is supposed to be the
+   subject, and said twice over, since the badge on that photo and the card's
+   own tinted edge have both already said it.
+
+   So "on" is a pressed pane: the glass darkens the way the wishlist's own
+   toggle does when you cancel a reservation, the icon keeps its colour, and
+   the rim stays lit rather than stepping aside. */
+.action-btn.active {
+  background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
+}
+
+.action-btn.active::after {
+  box-shadow: var(--glass-rim-lit);
 }
 
 /* Reservations Modal */
@@ -472,7 +625,7 @@
 
 .reservation-group {
   background: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.03));
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 1rem;
 }
 
@@ -496,8 +649,8 @@
   font-size: 0.8rem;
   color: light-dark(#666, #999);
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  padding: 0.25rem 0.6rem;
-  border-radius: 20px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
 }
 
 .reservation-items {
@@ -512,14 +665,14 @@
   gap: 0.75rem;
   padding: 0.5rem;
   background: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .reservation-item img {
   width: 48px;
   height: 48px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 10px;
   flex-shrink: 0;
 }
 

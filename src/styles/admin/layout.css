@@ -30,17 +30,17 @@
     opacity: light-dark(0.12, 0.15);
   }
 
+  /* Both blobs are the site accent now. The second one used to be indigo and
+     violet, which is what made the panel's background a different room from
+     the rest of the site. Weaker and further away than the first, so the pair
+     still reads as two lights rather than one. */
   .admin-container::after {
     width: 400px;
     height: 400px;
-    background: linear-gradient(
-      135deg,
-      var(--color-indigo),
-      var(--color-violet)
-    );
+    background: linear-gradient(135deg, var(--accent-end), var(--accent-start));
     bottom: 100px;
     left: -100px;
-    opacity: light-dark(0.08, 0.12);
+    opacity: light-dark(0.07, 0.1);
   }
 }
 
@@ -48,8 +48,8 @@
 .admin-container .page-header {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid
-    light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+  border-bottom: var(--glass-border);
+  border-width: 0 0 1px;
 }
 
 /* Admin Sections */

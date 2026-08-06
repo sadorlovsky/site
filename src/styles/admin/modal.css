@@ -22,9 +22,12 @@
 }
 
 .modal {
+  /* Heavier than a card on purpose — a modal is read against whatever the page
+     left behind it — but the edge is the shared one, and it wears the rim like
+     every other pane of glass here. */
+  position: relative;
   background: light-dark(rgba(255, 255, 255, 0.95), rgba(30, 30, 35, 0.95));
-  border: 1px solid
-    light-dark(var(--glass-border-light), var(--glass-border-dark));
+  border: var(--glass-border);
   border-radius: 20px;
   width: 100%;
   max-width: 800px;
@@ -32,15 +35,36 @@
   overflow-y: auto;
   transform: translateY(20px) scale(0.98);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow:
-    0 25px 60px -10px light-dark(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.6)),
-    0 0 0 1px light-dark(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.05))
-      inset;
+  /* Deeper than --glass-shadow: a modal is further off the page than a pill. */
+  box-shadow: 0 25px 60px -10px
+    light-dark(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.6));
+}
+
+/* The hand-written inset highlight this used to carry was the rim, guessed at.
+   Now it is the rim. `position: sticky` on the header means the modal scrolls
+   its own body, so the edge rides above on its own layer. */
+.modal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow: var(--glass-rim);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .modal {
-    backdrop-filter: blur(20px);
+    backdrop-filter: var(--glass-filter);
+  }
+}
+
+/* Reduced transparency: the modal's own tint is hand-written rather than a
+   token, so unlike the item card it has to answer for itself. */
+@media (prefers-reduced-transparency: reduce) {
+  .modal {
+    background: light-dark(#ffffff, #1e1e23);
+    backdrop-filter: none;
   }
 }
 
@@ -66,22 +90,58 @@
   background-clip: text;
 }
 
+/* A round glass button, like the home pill and the random-pick die: it answers
+   with the accent arriving behind it rather than by growing. Nothing in the
+   chrome scales under a cursor. */
 .modal-close {
-  background: none;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
   border: none;
-  font-size: 1.75rem;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
   cursor: pointer;
   color: light-dark(#999, #666);
-  padding: 0;
-  line-height: 1;
-  transition:
-    color 0.2s,
-    transform 0.2s;
+  transition: color 0.25s ease;
 }
 
-.modal-close:hover {
-  color: light-dark(#333, #ccc);
-  transform: scale(1.1);
+.modal-close::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  color: #fff;
+}
+
+.modal-close:hover::before,
+.modal-close:focus-visible::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-close:focus-visible {
+  outline: 2px solid light-dark(#333, #fff);
+  outline-offset: 2px;
 }
 
 .modal-body {
