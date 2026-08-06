@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Checkbox from "@components/kit/Checkbox";
 import type { WishlistItem, ItemFormData, Category } from "./types";
 
 interface ItemModalProps {
@@ -377,16 +378,15 @@ export function ItemModal({
 
             <div className="form-group">
               <label>Categories *</label>
-              <div className="category-checkboxes">
+              <div className="kit-checkbox-group">
                 {itemCategories.map((cat) => (
-                  <label key={cat.id} className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(cat.id)}
-                      onChange={() => handleCategoryToggle(cat.id)}
-                    />
-                    <span className="checkbox-text">{cat.label}</span>
-                  </label>
+                  <Checkbox
+                    key={cat.id}
+                    size="sm"
+                    label={cat.label}
+                    checked={selectedCategories.includes(cat.id)}
+                    onChange={() => handleCategoryToggle(cat.id)}
+                  />
                 ))}
               </div>
             </div>

@@ -4,6 +4,7 @@ import Button from "@components/kit/Button.astro";
 import ToggleGroup from "@components/kit/ToggleGroup.astro";
 import Select from "@components/kit/Select.astro";
 import Input from "@components/kit/Input.astro";
+import Checkbox from "@components/kit/Checkbox.astro";
 import Badge from "@components/kit/Badge.astro";
 import ProgressBar from "@components/kit/ProgressBar.astro";
 import "@styles/kit/modal.css";
@@ -31,6 +32,7 @@ import { Icon } from "astro-icon/components";
             <li><a href="#toggle-group">ToggleGroup</a></li>
             <li><a href="#select">Select</a></li>
             <li><a href="#input">Input</a></li>
+            <li><a href="#checkbox">Checkbox</a></li>
             <li><a href="#badge">Badge</a></li>
             <li><a href="#progress-bar">ProgressBar</a></li>
             <li><a href="#modal">Modal</a></li>
@@ -559,6 +561,48 @@ import { Icon } from "astro-icon/components";
         <h3>Textarea</h3>
         <div style="max-width: 400px;">
           <textarea class="kit-input kit-input--md" placeholder="Enter description..." rows="3"></textarea>
+        </div>
+      </section>
+
+      <!-- ================================================================
+           CHECKBOX
+           ================================================================ -->
+      <section id="checkbox">
+        <h2>Checkbox</h2>
+        <p class="component-import">
+          <code>import Checkbox from "@components/kit/Checkbox.astro"</code><br />
+          <code>import {`{ Checkbox }`} from "@components/kit/Checkbox"</code> (React)
+        </p>
+        <p>
+          The <strong>pill</strong> variant is a ghost-row capsule — for picking
+          several tags out of a row, like the wishlist categories.
+          The <strong>box</strong> variant is for a single standalone boolean,
+          where an unchecked capsule and an absent one would look the same.
+        </p>
+
+        <h3>Pill</h3>
+        <div class="kit-checkbox-group">
+          <Checkbox size="sm" checked>Games</Checkbox>
+          <Checkbox size="sm">Books</Checkbox>
+          <Checkbox size="sm">Merch</Checkbox>
+          <Checkbox size="sm" disabled>Disabled</Checkbox>
+        </div>
+
+        <h3>Box</h3>
+        <div class="kit-checkbox-group kit-checkbox-group--vertical">
+          <Checkbox variant="box" checked>Received</Checkbox>
+          <Checkbox variant="box">Reserved</Checkbox>
+          <Checkbox variant="box" disabled>Disabled</Checkbox>
+        </div>
+
+        <h3>Sizes</h3>
+        <div class="kit-checkbox-group">
+          <Checkbox size="sm" checked>SM (32px)</Checkbox>
+          <Checkbox size="md" checked>MD (38px)</Checkbox>
+        </div>
+        <div class="kit-checkbox-group">
+          <Checkbox variant="box" size="sm" checked>SM</Checkbox>
+          <Checkbox variant="box" size="md" checked>MD</Checkbox>
         </div>
       </section>
 

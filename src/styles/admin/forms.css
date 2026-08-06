@@ -64,53 +64,9 @@
   cursor: pointer;
 }
 
-/* Category Checkboxes */
-.category-checkboxes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-/* The wishlist's ghost row, in checkbox form: nothing at rest, a wash under the
-   cursor, and the accent capsule with its glow on the ones that are on. A row
-   of bordered boxes was as loud as the categories themselves — the same reason
-   the public filter chips stopped being glass capsules each. */
-.checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.85rem;
-  background: transparent;
-  border: none;
-  border-radius: 999px;
-  color: light-dark(#666, #9a9aa0);
-  cursor: pointer;
-  transition:
-    background-color 0.25s ease,
-    color 0.25s ease;
-  user-select: none;
-}
-
-.checkbox-label:hover:not(:has(input:checked)),
-.checkbox-label:focus-within:not(:has(input:checked)) {
-  background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
-  color: light-dark(#111, #fff);
-}
-
-.checkbox-label:has(input:checked) {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
-}
-
-.checkbox-label input {
-  display: none;
-}
-
-.checkbox-text {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
+/* The category picker is the kit's pill Checkbox now — see
+   src/styles/kit/checkbox.css, where this row's ghost-capsule treatment was
+   lifted to so the rest of the site can use it too. */
 
 .form-row {
   display: grid;

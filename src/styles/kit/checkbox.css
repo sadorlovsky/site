@@ -1,0 +1,249 @@
+/* =============================================================================
+   Checkbox Component Styles
+
+   Variants:
+   - pill: a ghost-row capsule (default) — for picking several tags out of a row
+   - box: a conventional square + checkmark — for a single standalone boolean
+
+   Sizes (height, matches buttons and inputs):
+   - sm: 32px
+   - md: 38px (default)
+
+   Every state is driven off `:has(input:checked)` rather than a class the
+   caller has to keep in sync. The Astro component renders once and never runs
+   again, so a class would freeze at its initial value and the capsule would
+   never light up; `:checked` follows the live DOM property, which is also what
+   React writes when it controls the input. One selector serves both.
+   ============================================================================= */
+
+.kit-checkbox {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+
+  /* Animation */
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+/* =============================================================================
+   The input
+
+   Visually hidden rather than `display: none`. A display-none input is removed
+   from the tab order and from the accessibility tree, which costs the control
+   its keyboard operation and its announcement — for a checkbox, everything.
+   ============================================================================= */
+
+.kit-checkbox__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.kit-checkbox__text {
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* The label carries the focus ring, because the thing that actually takes
+   focus is a pixel wide and invisible. */
+.kit-checkbox:has(.kit-checkbox__input:focus-visible) {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+.kit-checkbox:has(.kit-checkbox__input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =============================================================================
+   Pill variant (default)
+
+   The wishlist's ghost row, in checkbox form: nothing at rest, a wash under the
+   cursor, and the accent capsule with its glow on the ones that are on. A row
+   of bordered boxes is as loud as the categories themselves — the same reason
+   the public filter chips stopped being glass capsules each.
+   ============================================================================= */
+
+.kit-checkbox--pill {
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: light-dark(#666, #9a9aa0);
+}
+
+/* The wash is the only thing marking the hit area in a row that has no borders,
+   so it has to cover the whole capsule. */
+.kit-checkbox--pill:hover:not(:has(.kit-checkbox__input:checked)):not(
+    :has(.kit-checkbox__input:disabled)
+  ),
+.kit-checkbox--pill:has(.kit-checkbox__input:focus-visible):not(
+    :has(.kit-checkbox__input:checked)
+  ) {
+  background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+  color: light-dark(#111, #fff);
+}
+
+.kit-checkbox--pill:has(.kit-checkbox__input:checked) {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: white;
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+}
+
+.kit-checkbox--pill.kit-checkbox--sm {
+  height: 32px;
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+}
+
+.kit-checkbox--pill.kit-checkbox--md {
+  height: 38px;
+  padding: 0 1.1rem;
+  font-size: 0.8rem;
+}
+
+/* =============================================================================
+   Box variant
+
+   A lone boolean has no row to belong to, so the capsule has nothing to say —
+   an unchecked capsule and an absent one look the same. The box states its own
+   emptiness.
+   ============================================================================= */
+
+.kit-checkbox--box {
+  gap: 0.5rem;
+  color: light-dark(#333, #ccc);
+}
+
+.kit-checkbox__box {
+  position: relative;
+  flex-shrink: 0;
+  background: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
+  box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kit-checkbox--box:hover:not(:has(.kit-checkbox__input:disabled))
+  .kit-checkbox__box {
+  box-shadow: inset 0 0 0 2px light-dark(#bbb, #555);
+}
+
+.kit-checkbox--box:has(.kit-checkbox__input:checked) .kit-checkbox__box {
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+}
+
+/* The checkmark grows into place rather than appearing, so the eye can follow
+   what changed when a whole column of them is on screen. */
+.kit-checkbox__box svg {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.kit-checkbox--box:has(.kit-checkbox__input:checked) .kit-checkbox__box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.kit-checkbox--box.kit-checkbox--sm {
+  font-size: 0.75rem;
+}
+
+.kit-checkbox--box.kit-checkbox--sm .kit-checkbox__box {
+  width: 16px;
+  height: 16px;
+  border-radius: 5px;
+}
+
+.kit-checkbox--box.kit-checkbox--sm .kit-checkbox__box svg {
+  width: 10px;
+  height: 10px;
+}
+
+.kit-checkbox--box.kit-checkbox--md {
+  font-size: 0.8rem;
+}
+
+.kit-checkbox--box.kit-checkbox--md .kit-checkbox__box {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+}
+
+.kit-checkbox--box.kit-checkbox--md .kit-checkbox__box svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* =============================================================================
+   Group
+   ============================================================================= */
+
+.kit-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.kit-checkbox-group--vertical {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* =============================================================================
+   Accessibility
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-checkbox,
+  .kit-checkbox__box,
+  .kit-checkbox__box svg {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  /* A ghost row has no edges to find. Here every capsule gets one back — the
+     checked ones excepted, since the accent fill already carries it. */
+  .kit-checkbox--pill:not(:has(.kit-checkbox__input:checked)) {
+    box-shadow: inset 0 0 0 2px light-dark(#999, #666);
+  }
+
+  .kit-checkbox__box {
+    box-shadow: inset 0 0 0 2px light-dark(#999, #777);
+  }
+
+  .kit-checkbox--box:has(.kit-checkbox__input:checked) .kit-checkbox__box {
+    box-shadow: inset 0 0 0 2px light-dark(#333, #ccc);
+  }
+}
+
+/* The glow is the one soft thing here; without it the checked state still
+   reads, so only the shadow goes. */
+@media (prefers-reduced-transparency: reduce) {
+  .kit-checkbox--pill:has(.kit-checkbox__input:checked),
+  .kit-checkbox--box:has(.kit-checkbox__input:checked) .kit-checkbox__box {
+    box-shadow: none;
+  }
+
+  .kit-checkbox__box {
+    background: light-dark(#fff, #2a2a2e);
+  }
+}
