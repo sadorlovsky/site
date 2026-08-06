@@ -30,6 +30,8 @@ const LIGHT_WATER = "#cad8e6";
 const DARK_WATER = "#2a3a4a";
 const LIGHT_TEXT = "#333333";
 const DARK_TEXT = "#e0e0e0";
+// How long the loading shimmer may stay up before it is lifted regardless.
+const PLACEHOLDER_TIMEOUT_MS = 4000;
 
 /** Values for the four zoom stops every city-marker layer interpolates over. */
 type MarkerStops = [number, number, number, number];
@@ -232,12 +234,23 @@ async function initMap(): Promise<void> {
     // downstream then has to tell it apart from a real gesture. Cheaper not to
     // create it. This is not the globe's floor: that one is above the opening
     // zoom by the latitude offset, and setting it here would clamp in the other
-    // direction. It goes on after `load`, once the projection is actually globe.
+    // direction. It goes on once the style is up and the projection is actually
+    // globe.
     minZoom: isGlobe ? Math.min(1, initialZoom) : 1,
     attributionControl: false,
   });
 
-  await new Promise<void>((resolve) => map.on("load", resolve));
+  // `load` does not fire until the first *visually complete* render, which in
+  // turn waits on every tile in view — and the planet tiles run to megabytes
+  // each at low zoom. Blocking setup on it means that on a slow link the layers
+  // below are never even added. `style.load` is all this code actually needs:
+  // the style's own layers exist from that point on, and tiles can keep
+  // arriving afterwards.
+  if (!map.isStyleLoaded()) {
+    await new Promise<void>((resolve) =>
+      map.once("style.load", () => resolve()),
+    );
+  }
 
   function setProjectionMode(mode: "globe" | "normal") {
     if (mode === "globe") {
@@ -1165,11 +1178,28 @@ async function initMap(): Promise<void> {
     });
   });
 
-  // Hide placeholder when map is fully rendered
-  map.once("idle", () => {
+  // Lift the shimmer once something real has been painted. The old signal was
+  // `idle`, the strictest event MapLibre has: it waits for every tile to draw
+  // AND the camera to come to rest. Neither is guaranteed here — in globe mode
+  // the auto-rotation moves the camera on every frame, forever, so the map is
+  // never at rest, and a single stalled tile is enough to withhold the event on
+  // its own. When it never arrives the shimmer covers the map indefinitely.
+  let revealed = false;
+  function revealMap(): void {
+    if (revealed) return;
+    revealed = true;
     const placeholder = document.getElementById("placeholder");
     if (placeholder) placeholder.style.opacity = "0";
+  }
+
+  map.on("render", () => {
+    if (map.areTilesLoaded()) revealMap();
   });
+
+  // Backstop: a stalled tile must not be able to strand the shimmer on screen.
+  // A partly-drawn map is worth more to the reader than a shimmer that never
+  // resolves.
+  setTimeout(revealMap, PLACEHOLDER_TIMEOUT_MS);
 
   // Function to fly to a city
   function flyToCity(cityName: string): void {
