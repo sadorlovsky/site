@@ -22,6 +22,26 @@ function setBadgeLabel(badge: HTMLElement | null, lang: Lang): void {
 }
 
 export async function initializeWishlist() {
+  // Every category is its own page, so moving between them is a navigation
+  // like any other and this has to run again on each one — the incoming cards
+  // are server-rendered with their buttons still in .reserve-btn--loading and
+  // nothing bound to them. It also runs on pages that are not the wishlist at
+  // all, because astro:page-load does not know where it is; the grid is the
+  // cheapest thing to ask, and asking it here keeps a needless round-trip to
+  // /api/wishlist/reservations off every other page on the site.
+  const grid = document.getElementById("wishlist-grid");
+  if (!grid) return;
+
+  // And exactly once per grid. On a cold load this runs twice — as the page's
+  // module is evaluated, and again from astro:page-load on window load — which
+  // would fetch the reservations twice and, worse, leave two click listeners
+  // on every Reserve button, so one press would place the reservation and the
+  // second handler would immediately read it back as its own and cancel it.
+  // The flag rides on the grid rather than on the module because a swapped-in
+  // page brings a new grid and clears itself.
+  if (grid.dataset.wishlistReady === "true") return;
+  grid.dataset.wishlistReady = "true";
+
   // Check if language was set by inline script
   const isRussian = document.documentElement.classList.contains("lang-ru");
   currentLang = isRussian ? "ru" : "en";
@@ -267,7 +287,20 @@ function initializeReserveButtons() {
   });
 }
 
+/**
+ * Once per session, not once per page.
+ *
+ * The listener is on the window and does its work through document-wide
+ * queries, so it needs no rebinding when the body is swapped — and re-adding
+ * it on every arrival would mean a language switch re-running the whole
+ * translation pass once for every wishlist page ever visited.
+ */
+let langChangeListenerAdded = false;
+
 function initializeLangChangeListener() {
+  if (langChangeListenerAdded) return;
+  langChangeListenerAdded = true;
+
   // Listen for lang-change event from LangSwitcher component
   window.addEventListener("lang-change", ((
     event: CustomEvent<{ lang: Lang; storageKey: string }>,
@@ -439,6 +472,13 @@ function updateAriaLabels(lang: "en" | "ru") {
   });
 }
 
+function initAll() {
+  void initializeWishlist();
+  // A no-op after the first call: the tooltip machinery is delegated off the
+  // document and stays wired across navigations by itself.
+  initTooltips();
+}
+
 // Initialize immediately - module is dynamically imported after DOMContentLoaded
-initializeWishlist();
-initTooltips();
+initAll();
+document.addEventListener("astro:page-load", initAll);

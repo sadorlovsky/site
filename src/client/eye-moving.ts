@@ -180,6 +180,23 @@ function throttle<T extends (...args: never[]) => void>(
   };
 }
 
+// The eyes are only on the home page, but the listeners below are on the
+// document, which outlives it — so they are registered once and left alone
+// rather than re-bound per navigation. On any other page every lookup by id
+// misses and the handlers cost a throttled no-op.
+//
+// What does have to be reset is where the eyes think they are. The positions
+// are module state and the SVG is not: coming back to the home page brings a
+// fresh pair of eyes drawn at rest, while `currentPositions` still holds
+// wherever the cursor left them, and the first lerp would swing them across
+// from a place they were never in.
+function resetGaze() {
+  currentPositions = { left: { x: 0, y: 0 }, right: { x: 0, y: 0 } };
+  targetPositions = { left: { x: 0, y: 0 }, right: { x: 0, y: 0 } };
+}
+
+document.addEventListener("astro:after-swap", resetGaze);
+
 // Only add event listeners if user doesn't prefer reduced motion
 if (!prefersReducedMotion) {
   // Throttled handler - updates every 16ms (~60fps)

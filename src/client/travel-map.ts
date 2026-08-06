@@ -199,9 +199,67 @@ function getZoomForFullFrame(
   return Math.log2((diagonal * GLOBE_SCALE_FACTOR) / 512);
 }
 
-async function initMap(): Promise<void> {
-  const container = document.getElementById("map")!;
-  if (!container) return;
+/* ===========================================================================
+   Lifetime.
+
+   Client-side routing keeps the document and replaces the body, so this module
+   is evaluated once and the map it builds has to be built again on every
+   arrival at /travel and taken apart on every departure. Left alone, a single
+   visit leaves behind a WebGL context on a canvas that is no longer in the
+   page, a rotation loop repainting it sixty times a second, two observers, a
+   floating label parented to the old <body>, and four matchMedia listeners
+   still writing paint properties into it — the browser only grants a handful
+   of WebGL contexts before it starts dropping the oldest, so a few laps
+   through the site would be enough to kill the live map.
+
+   Nothing here can be an element-scoped listener's problem: those go out with
+   the element. This is the list of things that outlive it.
+   =========================================================================== */
+
+/** Undo callbacks for the map currently on the page, newest last. */
+let teardown: (() => void)[] = [];
+
+function onTeardown(undo: () => void): void {
+  teardown.push(undo);
+}
+
+/**
+ * Which build of the map is current. Bumped by every teardown so an init that
+ * is still waiting on the style — a navigation away from /travel before the
+ * first tile arrives is entirely ordinary — can tell that the page it was
+ * decorating has gone and stop rather than address a map that no longer exists.
+ */
+let generation = 0;
+
+/**
+ * A matchMedia listener that is handed back when the page goes.
+ *
+ * The quietest of the leaks, and the reason none of the four below are written
+ * inline any more: a MediaQueryList with a listener attached is kept alive by
+ * the browser, so a handler left behind is not merely idle. It fires on the
+ * next colour-scheme or transparency switch and writes paint properties into a
+ * map that was removed several pages ago.
+ */
+function watchMedia(
+  query: MediaQueryList,
+  onChange: (matches: boolean) => void,
+): void {
+  const handler = (event: MediaQueryListEvent) => onChange(event.matches);
+  query.addEventListener("change", handler);
+  onTeardown(() => query.removeEventListener("change", handler));
+}
+
+function runTeardown(): void {
+  generation++;
+  const pending = teardown;
+  teardown = [];
+  // Reverse order, so the rotation loop and the observers that drive it are
+  // stopped before the map they call into is destroyed.
+  for (let i = pending.length - 1; i >= 0; i--) pending[i]();
+}
+
+async function initMap(container: HTMLElement): Promise<void> {
+  const token = generation;
 
   const mode = (container.dataset.mode || "normal") as "normal" | "globe";
   const isGlobe = mode === "globe";
@@ -223,7 +281,7 @@ async function initMap(): Promise<void> {
   const initialZoom = getInitialZoom();
 
   const map = new MapLibre({
-    container: "map",
+    container,
     style: "https://tiles.openfreemap.org/styles/positron",
     center: initialCenter,
     zoom: initialZoom,
@@ -240,6 +298,12 @@ async function initMap(): Promise<void> {
     attributionControl: false,
   });
 
+  // Registered before the first await, because the wait below is exactly where
+  // a navigation is most likely to land: the map has to be destroyable while
+  // it is still fetching its style. remove() releases the WebGL context and
+  // drops every listener MapLibre put on the window and the canvas.
+  onTeardown(() => map.remove());
+
   // `load` does not fire until the first *visually complete* render, which in
   // turn waits on every tile in view — and the planet tiles run to megabytes
   // each at low zoom. Blocking setup on it means that on a slow link the layers
@@ -247,10 +311,20 @@ async function initMap(): Promise<void> {
   // the style's own layers exist from that point on, and tiles can keep
   // arriving afterwards.
   if (!map.isStyleLoaded()) {
-    await new Promise<void>((resolve) =>
-      map.once("style.load", () => resolve()),
-    );
+    await new Promise<void>((resolve) => {
+      map.once("style.load", () => resolve());
+      // A style that never arrives — or a map removed out from under the
+      // request — must not leave this promise pending for the rest of the
+      // session with the map, the container and every closure below it hanging
+      // off it. Teardown settles it so the guard that follows can run.
+      onTeardown(resolve);
+    });
   }
+
+  // The page this was building for has been swapped away. Everything past this
+  // point addresses a map that remove() has already emptied — addSource and
+  // addLayer would throw on it — so there is nothing left to do but leave.
+  if (token !== generation) return;
 
   function setProjectionMode(mode: "globe" | "normal") {
     if (mode === "globe") {
@@ -273,8 +347,11 @@ async function initMap(): Promise<void> {
   }
 
   // Expose for external use: window.setMapMode("globe") or window.setMapMode("normal")
-  (window as unknown as { setMapMode: typeof setProjectionMode }).setMapMode =
+  (window as unknown as { setMapMode?: typeof setProjectionMode }).setMapMode =
     setProjectionMode;
+  onTeardown(() => {
+    delete (window as unknown as { setMapMode?: unknown }).setMapMode;
+  });
 
   // Auto-rotation for globe mode. The rAF loop must not run when there is
   // nothing to see: off-screen (scrolled away), on a hidden tab, or when the
@@ -332,6 +409,11 @@ async function initMap(): Promise<void> {
     userStopped = true;
     pauseRotation();
   }
+
+  // A loop that repaints the map every frame is the one thing that must not
+  // survive the page it was drawn on: takeOver rather than pauseRotation,
+  // because a pause leaves the intersection observer free to start it again.
+  onTeardown(takeOver);
 
   // The globe fills most of the first screen, so a page that let it eat every
   // scroll would be a page you couldn't leave with the cursor where it lands.
@@ -514,6 +596,7 @@ async function initMap(): Promise<void> {
       syncFrame();
     });
     resizeObserver.observe(container);
+    onTeardown(() => resizeObserver.disconnect());
 
     // Permanent stop once the user takes control of the globe — and only then.
     //
@@ -563,13 +646,21 @@ async function initMap(): Promise<void> {
       { threshold: 0 },
     );
     rotationObserver.observe(container);
+    onTeardown(() => rotationObserver.disconnect());
 
     // Same for tab visibility — a backgrounded tab throttles rAF anyway, but
     // this stops the work outright and resumes cleanly on return.
-    document.addEventListener("visibilitychange", () => {
+    const onVisibilityChange = () => {
       if (document.hidden) pauseRotation();
       else startRotation();
-    });
+    };
+    // The document outlives the page, so this one has to be taken back by hand
+    // — otherwise every visit to /travel leaves another handler behind, each
+    // holding its own dead map.
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    onTeardown(() =>
+      document.removeEventListener("visibilitychange", onVisibilityChange),
+    );
 
     startRotation();
   }
@@ -654,9 +745,7 @@ async function initMap(): Promise<void> {
   }
 
   applyColorScheme(colorSchemeQuery.matches);
-  colorSchemeQuery.addEventListener("change", (e) =>
-    applyColorScheme(e.matches),
-  );
+  watchMedia(colorSchemeQuery, applyColorScheme);
 
   // // Fade in country labels at higher zoom levels
   // const countryLabelLayers = [
@@ -729,11 +818,11 @@ async function initMap(): Promise<void> {
   );
 
   // Update crimea mask on color scheme change
-  colorSchemeQuery.addEventListener("change", (e) => {
+  watchMedia(colorSchemeQuery, (matches) => {
     map.setPaintProperty(
       "crimea-mask",
       "fill-color",
-      e.matches ? DARK_BG : LIGHT_BG,
+      matches ? DARK_BG : LIGHT_BG,
     );
   });
 
@@ -910,9 +999,7 @@ async function initMap(): Promise<void> {
   }
 
   applyCityColors(colorSchemeQuery.matches);
-  colorSchemeQuery.addEventListener("change", (e) =>
-    applyCityColors(e.matches),
-  );
+  watchMedia(colorSchemeQuery, applyCityColors);
 
   // Reduced transparency: the bead goes back to being a dot. The tint turns
   // solid and the two layers that exist only to fake depth — the highlight and
@@ -956,9 +1043,7 @@ async function initMap(): Promise<void> {
   }
 
   applyCityTransparency(reducedTransparencyQuery.matches);
-  reducedTransparencyQuery.addEventListener("change", (e) =>
-    applyCityTransparency(e.matches),
-  );
+  watchMedia(reducedTransparencyQuery, applyCityTransparency);
 
   // City hover: track hovered feature and show label tooltip.
   //
@@ -971,6 +1056,10 @@ async function initMap(): Promise<void> {
   cityLabel.className = "city-label-overlay";
   cityLabel.style.display = "none";
   document.body.appendChild(cityLabel);
+  // The swap replaces <body> wholesale, so this would go with it on its own —
+  // but it is removed here anyway, before the swap, so a label left showing at
+  // the moment of a click cannot flash over the outgoing page.
+  onTeardown(() => cityLabel.remove());
 
   // Which puts the label in page coordinates while the map hands out canvas
   // ones, so the container's own offset has to be added. It is measured at the
@@ -1199,7 +1288,8 @@ async function initMap(): Promise<void> {
   // Backstop: a stalled tile must not be able to strand the shimmer on screen.
   // A partly-drawn map is worth more to the reader than a shimmer that never
   // resolves.
-  setTimeout(revealMap, PLACEHOLDER_TIMEOUT_MS);
+  const revealTimer = setTimeout(revealMap, PLACEHOLDER_TIMEOUT_MS);
+  onTeardown(() => clearTimeout(revealTimer));
 
   // Function to fly to a city
   function flyToCity(cityName: string): void {
@@ -1219,7 +1309,10 @@ async function initMap(): Promise<void> {
   }
 
   // Expose flyToCity globally for external use
-  (window as unknown as { flyToCity: typeof flyToCity }).flyToCity = flyToCity;
+  (window as unknown as { flyToCity?: typeof flyToCity }).flyToCity = flyToCity;
+  onTeardown(() => {
+    delete (window as unknown as { flyToCity?: unknown }).flyToCity;
+  });
 }
 
 // Defer the (heavy) MapLibre instantiation until the map is actually near the
@@ -1230,20 +1323,33 @@ function scheduleInit(): void {
   const container = document.getElementById("map");
   if (!container) return;
 
+  // The dataset flag rather than a module-level boolean: it is carried by the
+  // element, so it says "this container already has a map" and nothing else.
+  // A module flag would have to be cleared by teardown and would be wrong for
+  // the one call that happens twice on a cold load — this module is evaluated
+  // as the body is parsed, and astro:page-load then fires on window load with
+  // the same container still in place.
+  if (container.dataset.mapReady === "true") return;
+  container.dataset.mapReady = "true";
+
   const observer = new IntersectionObserver(
     (entries) => {
       if (entries.some((entry) => entry.isIntersecting)) {
         observer.disconnect();
-        void initMap();
+        void initMap(container);
       }
     },
     { rootMargin: "200px" },
   );
   observer.observe(container);
+  // A map that was never near the viewport still left an observer watching a
+  // container that has since been swapped out.
+  onTeardown(() => observer.disconnect());
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", scheduleInit);
-} else {
-  scheduleInit();
-}
+scheduleInit();
+document.addEventListener("astro:page-load", scheduleInit);
+// Before, not after: the swap is what detaches the container, and the map has
+// to be dismantled while it still has one. astro:after-swap would already be
+// looking at the next page's DOM.
+document.addEventListener("astro:before-swap", runTeardown);

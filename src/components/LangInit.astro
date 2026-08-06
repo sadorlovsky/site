@@ -19,24 +19,32 @@
 
 <script is:inline>
   (() => {
-    let lang = localStorage.getItem("lang");
+    function getLang() {
+      let lang = localStorage.getItem("lang");
 
-    // Detect from browser if no saved lang
-    if (!lang) {
-      const browserLangs = navigator.languages || [navigator.language];
-      const isRussian = browserLangs.some((l) => l.startsWith("ru"));
-      lang = isRussian ? "ru" : "en";
-      localStorage.setItem("lang", lang);
+      // Detect from browser if no saved lang
+      if (!lang) {
+        const browserLangs = navigator.languages || [navigator.language];
+        const isRussian = browserLangs.some((l) => l.startsWith("ru"));
+        lang = isRussian ? "ru" : "en";
+        localStorage.setItem("lang", lang);
+      }
+      return lang;
     }
 
-    // Set lang attribute and class immediately (before DOM ready)
-    document.documentElement.lang = lang;
-    if (lang === "ru") {
-      document.documentElement.classList.add("lang-ru");
+    // The half that has to happen before the browser paints anything: the
+    // stylesheet keys off these, and .lang-content is transparent until
+    // lang-ready lands.
+    function markRoot(lang) {
+      document.documentElement.lang = lang;
+      document.documentElement.classList.toggle("lang-ru", lang === "ru");
     }
 
     // Apply translations when DOM is ready
     function applyTranslations() {
+      const lang = getLang();
+      markRoot(lang);
+
       document.querySelectorAll("[data-" + lang + "]").forEach((el) => {
         const text = el.getAttribute("data-" + lang);
         if (text) el.textContent = text;
@@ -60,9 +68,31 @@
     }
 
     if (document.readyState === "loading") {
+      // Set lang + lang-ru before DOM ready so nothing renders in the wrong
+      // language; the text itself waits for the elements to exist.
+      markRoot(getLang());
       document.addEventListener("DOMContentLoaded", applyTranslations);
     } else {
       applyTranslations();
+    }
+
+    // Client-side navigation drops all of the above on the floor twice over:
+    // Astro strips every attribute off <html> and re-applies the incoming
+    // document's (swapRootAttributes), so lang-ru and lang-ready go with them,
+    // and the incoming body is server-rendered in English. Without this the
+    // next page arrives untranslated and — because .lang-content is
+    // transparent until lang-ready — invisible. astro:after-swap runs inside
+    // the transition's update callback, before the new frame is painted, so
+    // the correction is never seen happening.
+    //
+    // The guard is not decoration. Astro only suppresses a re-run of an inline
+    // script it has already seen swapped in, and its record starts empty: the
+    // copy that ran on the first page load is not in it, so the first
+    // navigation to another page carrying this same script executes it a
+    // second time and would register a second listener.
+    if (!window.__langSwapListenerAdded) {
+      window.__langSwapListenerAdded = true;
+      document.addEventListener("astro:after-swap", applyTranslations);
     }
   })();
 </script>
