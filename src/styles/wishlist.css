@@ -481,7 +481,12 @@
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite ease-in-out;
-  z-index: 1;
+  /* Under the photograph, not over it. The image used to sit at `auto` beneath
+     this layer and was held at opacity 0 until a script said otherwise, so a
+     picture that had already arrived and decoded stayed invisible until the
+     JavaScript ran. Now it covers the shimmer the moment it paints, on its
+     own. */
+  z-index: 0;
 }
 
 @keyframes shimmer {
@@ -493,12 +498,16 @@
   }
 }
 
+/* The photograph covers this layer by itself now, so the class no longer
+   decides whether anything is visible — it retires the shimmer once the image
+   is in, so 63 cards stop invalidating paint on every frame forever, and
+   clears the way for a picture with transparency. Both happen underneath the
+   image, which is also why `animation: none` landing before the 300ms fade has
+   finished is no longer a visible jolt. */
 .item-image.loaded .skeleton {
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
-  /* Stop the infinite shimmer once the image is in — otherwise every
-     card keeps invalidating paint on each frame forever */
   animation: none;
 }
 
@@ -513,12 +522,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-}
-
-.item-image.loaded img {
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  /* Above .skeleton (0), below .wishlist-badge (2). */
+  z-index: 1;
 }
 
 /* Badges. The double class isn't decoration: the glass variant sets

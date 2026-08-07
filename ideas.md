@@ -3,6 +3,72 @@
 A parking lot for things worth doing, with enough reasoning attached that the
 decision doesn't have to be made twice. Nothing here is committed to.
 
+## Reservations without the round trip
+
+### Where they stand
+
+A reserve button's state has two halves. "Is this taken" the server knows and
+renders into `data-reservation` (`WishlistItem.astro:300`). "Is it *yours*" it
+cannot know — the HTML is one cached copy for everybody — so it guesses
+pessimistically, says `other` for anything taken, and a per-visitor fetch
+promotes a card to `mine` (`client/wishlist.ts:78-115`).
+
+That fetch is now off the critical path for almost everyone: free cards and
+first-time visitors are settled before it is sent, and only a taken card seen by
+a returning visitor still waits. What it costs when it does wait:
+
+```
+/api/wishlist/reservations   365-415 ms warm, 2.26 s cold, x-vercel-cache: MISS always
+the query behind it         one SELECT, 4 rows, 0.5 ms
+the response, in production {}          (no live reservations at all today)
+the function it lives in    28 MB, of which 17.5 MB is libvips via sharp
+```
+
+So the remaining wait is a cold Node function, not a database. Two ways to
+remove what is left, independent of each other.
+
+### A. Remember your own reservations locally
+
+The client knows the item id at the moment it reserves something — it is what it
+just sent. Writing that set to `localStorage` makes `mine` answerable
+synchronously, before any network at all, and the last card stops waiting too.
+
+The fetch stays, as reconciliation: a reservation can be cancelled from the
+admin panel, or made from another device, and the local set would not hear about
+either. So this is a real change of model — optimistic local state, corrected on
+arrival — rather than a cache. The failure it introduces is a card that says
+"Cancel" for a few hundred milliseconds before the answer downgrades it, which
+is the mirror image of the flash the current design exists to prevent. Worth
+having only if that direction is the acceptable one: claiming something is yours
+and being corrected, versus being told it is someone else's when it is yours.
+
+Note that the private `message` on a reservation cannot come from here — the
+endpoint deliberately only ever returns it to its author
+(`api/wishlist/reservations.ts:21-24`).
+
+### B. Move the endpoint off the Node function
+
+One SELECT of four rows does not need a 28 MB serverless function whose bulk is
+an image library it never calls. The 2.26 s is that function's cold start.
+
+Edge runtime is the obvious target — `@libsql/client` speaks HTTP, and the
+response is already per-visitor and uncacheable, so nothing about the caching
+story changes. Worth checking first: whether the Drizzle/libSQL import chain is
+edge-clean, and whether it is worth splitting this route out rather than
+shrinking the shared bundle, since `sharp` is dragged in by the image endpoint
+that genuinely needs it.
+
+This one is invisible when the function is warm and decisive when it is not, so
+its value depends entirely on how often the wishlist is the first page a visitor
+touches after a quiet spell.
+
+### Suggested order
+
+B is the smaller change and carries no product decision — it makes the existing
+design faster without altering what anyone sees. A is worth doing only if the
+optimistic direction is deliberately chosen; it is the only one that removes the
+wait entirely.
+
 ## Travel map markers
 
 ### Where they stand

@@ -11,3 +11,17 @@ const VISITOR_ID_KEY = "wishlist-visitor-id";
 export function getVisitorId(): string {
   return localStorage.getItem(VISITOR_ID_KEY) || "";
 }
+
+/**
+ * True when that inline script had to mint the id rather than read one back.
+ *
+ * A visitor seeing this page for the first time holds no reservations, so the
+ * server's guess — "taken" means "someone else's" — cannot be wrong about them,
+ * and their buttons need not wait for the per-visitor fetch to confirm it.
+ * Someone who cleared their storage lands here too, and the answer is still
+ * right: their old id is gone, so the fetch would call those cards other's
+ * anyway.
+ */
+export function isFirstVisit(): boolean {
+  return document.documentElement.dataset.wishlistNewVisitor === "true";
+}

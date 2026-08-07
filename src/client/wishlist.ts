@@ -1,7 +1,7 @@
 import { actions } from "astro:actions";
 import type { Lang } from "@lib/i18n";
 import { initTooltips } from "./tooltip";
-import { getVisitorId } from "./visitor-id";
+import { getVisitorId, isFirstVisit } from "./visitor-id";
 import {
   forgetMessage,
   hideMessageBead,
@@ -17,9 +17,14 @@ let currentLang: Lang = "en";
  * Whose reservation a card is carrying, as the button's `data-reservation`.
  *
  * The server renders "other" for anything taken, because it has no idea who is
- * looking; the per-visitor fetch below is what promotes a card to "mine". The
- * button stays hidden (`.reserve-btn--loading`) until that lands, so the
- * pessimistic first guess is never on screen.
+ * looking; the per-visitor fetch below is what promotes a card to "mine". A
+ * taken card's button stays hidden (`.reserve-btn--loading`) until that lands,
+ * so the pessimistic first guess is never on screen.
+ *
+ * Only a taken card, though. A free one says "none", which no answer can
+ * contradict — nobody's reservation is going to appear out of a request — so it
+ * is shown straight away rather than held back with the rest. Same for every
+ * card on a first visit: see isFirstVisit().
  */
 type ReservationState = "none" | "mine" | "other";
 
@@ -65,11 +70,24 @@ export async function initializeWishlist() {
 
   initReservationMessages(currentLang);
 
-  // Fetch fresh reservations from API and update UI
-  await fetchAndApplyReservations();
+  // Everything the fetch cannot contradict goes on screen now. A free card is
+  // one of those: "nobody has it" is the server's to know, and no answer turns
+  // it into someone's reservation — so it has no business waiting on a request
+  // that took 365-415ms warm and 2.26s on a cold function, to say `{}`. On a
+  // first visit the taken cards are safe too, since a visitor with a fresh id
+  // owns none of them.
+  showButtons(isFirstVisit() ? "all" : "free");
 
+  // Ahead of the fetch as well: a button that is already on screen should
+  // answer a click, and neither of these needs to know whose reservation is
+  // whose.
   initializeReserveButtons();
   initializeLangChangeListener();
+
+  // What is genuinely per-visitor still comes from the network, and the cards
+  // it can still change — someone else's reservation that is really this
+  // visitor's — stay hidden until it lands, exactly as before.
+  await fetchAndApplyReservations();
 }
 
 /** One row of /api/wishlist/reservations, which answers per visitor. */
@@ -144,12 +162,25 @@ function setRetryLabel(button: HTMLButtonElement, lang: Lang): void {
   if (text) button.setAttribute("aria-label", text);
 }
 
-function showButtons() {
+/**
+ * Which buttons this pass is allowed to reveal.
+ *
+ * "free" is the pass that runs before the fetch: it settles the cards whose
+ * answer is already known and leaves every taken one hidden, so the server's
+ * pessimistic "someone else's" still never reaches the screen. "all" is the
+ * pass after the fetch — and the first-visit pass, where there is nothing left
+ * to learn.
+ */
+type ButtonScope = "free" | "all";
+
+function showButtons(scope: ButtonScope = "all") {
   document
     .querySelectorAll<HTMLButtonElement>(".reserve-btn")
     .forEach((button) => {
       const reservation = reservationOf(button);
       const isReserved = reservation !== "none";
+
+      if (scope === "free" && isReserved) return;
 
       // Get badge elements
       const article = button.closest("article");
