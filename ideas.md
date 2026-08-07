@@ -3,6 +3,55 @@
 A parking lot for things worth doing, with enough reasoning attached that the
 decision doesn't have to be made twice. Nothing here is committed to.
 
+## MapLibre v6, and what ESM is actually worth here
+
+### Where it stands
+
+We are on 5.24.0, which ships UMD and nothing else: `main: dist/maplibre-gl.js`,
+no `module` field, no `exports` map, not one `.mjs` in the package. 6.2.0 is the
+mirror image — `type: "module"`, `module: dist/maplibre-gl.mjs`, and an
+`exports` map whose only condition is `import`. The UMD bundles are gone.
+
+The reason for looking was to get maplibre off /travel's critical path, and
+that turned out not to need v6 at all: Vite code-splits the UMD build perfectly
+well, and the dynamic import in `initMap` already took the page's own script
+from 1 076 086 bytes to 48 802.
+
+### What the upgrade buys, measured
+
+Both versions built, same chunk compared:
+
+```
+                 raw          brotli       gzip
+v5.24.0 (UMD)    1 027 616    219 942      269 227
+v6.2.0  (ESM)      925 013    195 456      236 504
+```
+
+About 24 KB over the wire, ~11%. Real, but an order below what deferring the
+whole library already achieved.
+
+### What it costs
+
+Cheap in code. `astro check` against v6 produced exactly one error:
+`travel-map.ts` passes a paint property name as `string`, and v6 types it as
+`keyof AllPaintProperties` — one of the deliberate improvements in that release.
+The build itself passed. None of the removed APIs are used here: `map.transform`,
+`styleimagemissing`, `GeoJSONSource.setData`'s second argument and `addProtocol`
+have zero occurrences in this repo.
+
+The risk is elsewhere. **v6 drops WebGL 1 entirely and requires WebGL2.** The
+browserslist targets (Safari ≥ 15.4, iOS ≥ 15.4) are nominally fine, but that
+is a claim about support tables, not about this globe. `setProjection({ type:
+"globe" })` is the centre of this page and was never exercised against v6 —
+the upgrade was measured, not run.
+
+### If it is picked up
+
+Do it on its own, not folded into anything else, and open the map in a real
+browser: globe projection, the zoom floor maths in `getGlobeZoomFloor`, the
+feature-state hover on the city beads, and the reduced-transparency branch.
+Those are the parts that talk to the renderer, and the renderer is what changed.
+
 ## Reservations without the round trip
 
 ### Where they stand

@@ -140,6 +140,15 @@ export default defineConfig({
       target: "esnext",
       cssTarget,
       cssMinify: "lightningcss",
+      // Every flag in flag-icons is a file under the inline limit, so Vite was
+      // turning all 439 of them into data: URIs and welding them into the
+      // stylesheet: 500 639 bytes of render-blocking CSS on /travel, where 34
+      // flags are actually shown. Left as files they are fetched only when a
+      // rule that uses one applies, they no longer hold up the first paint, and
+      // they are hashed — so the immutable rule further down caches them for a
+      // year. Everything else keeps Vite's default judgement.
+      assetsInlineLimit: (filePath) =>
+        filePath.includes("flag-icons") ? false : undefined,
     },
     ssr: {
       noExternal: ["@simplewebauthn/server"],
