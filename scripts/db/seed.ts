@@ -1032,6 +1032,24 @@ async function seed() {
       received: false,
       createdAt: now,
     },
+    {
+      id: 73,
+      title: "Andrew Tanenbaum — Computer Networks",
+      titleRu: "Книга «Компьютерные сети», Эндрю Таненбаум",
+      // Tenge: no rate on file, so this one sits out the cheapest-option
+      // comparison and the card falls back to the Amazon price.
+      price: "₸25,940",
+      imageUrl: "tanenbaum-computer-networks.jpg",
+      url: "https://www.meloman.kz/tanenbaum-je-s-fimster-n-komp-juternye-seti-6-e-izd.html",
+      description:
+        "The sixth edition. Physical layer up to applications, security chapter rewritten",
+      descriptionRu:
+        "Шестое издание. От физического уровня до прикладного, глава о безопасности переписана",
+      category: "books",
+      priority: "low",
+      received: false,
+      createdAt: now,
+    },
   ]);
 
   // A couple of items that can be bought in more than one place. The item's own
@@ -1062,6 +1080,15 @@ async function seed() {
       labelRu: "Discogs, запечатанный",
       price: "$72",
       url: "https://www.discogs.com/sell/item/3742200592",
+      position: 0,
+    },
+    {
+      id: 4,
+      itemId: 73, // Tanenbaum — Computer Networks
+      label: "Pearson, Global Edition, English",
+      labelRu: "Pearson, Global Edition, на английском",
+      price: "$60.88",
+      url: "https://www.amazon.com/dp/1292374063",
       position: 0,
     },
   ]);
