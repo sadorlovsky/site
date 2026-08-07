@@ -86,15 +86,33 @@ function initSwitcher(group: HTMLElement) {
 
   // Rest on the active language from the start, and re-home when it changes.
   setActive(activeLangButton());
-  window.addEventListener("lang-change", () => {
+  const onLangChange = () => {
     // Re-home onto the newly-selected language (aria-pressed already updated).
     setActive(activeLangButton());
-  });
+  };
+  window.addEventListener("lang-change", onLangChange);
 
   // Keep the indicator aligned if the switcher reflows.
-  window.addEventListener("resize", () => {
+  const realign = () => {
     if (activeItem) moveIndicatorTo(activeItem);
-  });
+  };
+  window.addEventListener("resize", realign);
+
+  // Both of those are on the window, and the window outlives the page. The
+  // switcher itself is replaced on every client-side navigation, so without
+  // this each visit would leave two more handlers behind, each holding a
+  // detached set of buttons — and the lang-change one is not merely idle: it
+  // would go on writing is-active and indicator geometry into switchers that
+  // left the document pages ago. The element-scoped listeners above need no
+  // such thing; they go out with the elements.
+  document.addEventListener(
+    "astro:before-swap",
+    () => {
+      window.removeEventListener("lang-change", onLangChange);
+      window.removeEventListener("resize", realign);
+    },
+    { once: true },
+  );
 
   if (prefersReducedMotion) return;
 

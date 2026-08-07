@@ -923,4 +923,17 @@ a.btn-danger:active {
   *:active * {
     transform: none !important;
   }
+
+  /* The page-to-page cross-fade the ClientRouter sets up. It has to be named
+     separately because the ::view-transition pseudo-elements live outside the
+     document tree, so the `*` above never reaches them — the browser's own
+     default cross-fade would keep running under a setting that asks for no
+     animation at all. Killing the animations doesn't cancel the transition:
+     the snapshots are still taken and still swapped, they just cut over on the
+     first frame instead of blending. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }

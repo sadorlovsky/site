@@ -25,6 +25,12 @@ function lerp(start: number, end: number, factor: number): number {
 }
 
 function initDock(dock: HTMLElement) {
+  // Guard against double-init: this module is evaluated as the body is parsed
+  // and astro:page-load fires again on window load with the same dock still in
+  // place. Every listener below would otherwise be attached twice.
+  if (dock.dataset.dockReady === "ready") return;
+  dock.dataset.dockReady = "ready";
+
   const indicator = dock.querySelector<HTMLElement>(".dock-indicator");
   const items: DockItemState[] = Array.from(
     dock.querySelectorAll<HTMLElement>(".dock-item"),
@@ -141,12 +147,28 @@ function initDock(dock: HTMLElement) {
   });
 
   // Keep the indicator aligned if the dock reflows (e.g. orientation change).
-  window.addEventListener("resize", () => {
+  //
+  // Every other listener in here is on the dock or its items and goes out with
+  // them when the page is swapped. This one is on the window, which outlives
+  // the page, so it has to be handed back explicitly — otherwise each visit to
+  // a page with a dock leaves another resize handler behind, each one pinning
+  // a detached dock and writing custom properties into it forever.
+  const realign = () => {
     if (activeItem) moveIndicatorTo(activeItem);
-  });
+  };
+  window.addEventListener("resize", realign);
+  document.addEventListener(
+    "astro:before-swap",
+    () => window.removeEventListener("resize", realign),
+    { once: true },
+  );
 }
 
-const docks = document.querySelectorAll<HTMLElement>("[data-dock]");
-docks.forEach(initDock);
+function initAll() {
+  document.querySelectorAll<HTMLElement>("[data-dock]").forEach(initDock);
+}
+
+initAll();
+document.addEventListener("astro:page-load", initAll);
 
 export {};

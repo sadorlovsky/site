@@ -1026,38 +1026,69 @@ const breadcrumbSchema = {
 </style>
 
 <script>
-  // Back to top button
-  const backToTopBtn = document.getElementById("back-to-top");
+  // Both buttons belong to the post that is currently on screen, and one post
+  // links straight to the next — so this has to be re-bound on every arrival.
+  // The module itself is only ever evaluated once (Astro re-inserts the tag
+  // after a swap, but a module already in the map is not re-run), which is why
+  // the work lives in a function called from both places rather than at the
+  // top level, where it would bind the first post's buttons and leave every
+  // post after it with a dead back-to-top pill.
   const threshold = 300;
 
-  if (backToTopBtn) {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+  // The scroll handler is on the window, which outlives the post. Kept in a
+  // module-level slot so each re-init can take the previous one back before
+  // adding its own — otherwise reading five posts leaves five handlers running
+  // on every scroll frame, four of them toggling classes on detached buttons.
+  let onScroll: (() => void) | null = null;
 
-    window.addEventListener("scroll", () => {
-      const shouldShow = window.scrollY > threshold;
-      backToTopBtn.classList.toggle("visible", shouldShow);
-      backToTopBtn.hidden = !shouldShow;
-    });
+  function initPostControls() {
+    // Reached twice on a cold load — once as the module is evaluated, once
+    // from astro:page-load on window load — and the click handlers below would
+    // otherwise be doubled up. The flag rides on <body>, which the swap
+    // replaces, so the next post starts clean.
+    if (document.body.dataset.postControlsReady === "true") return;
+    document.body.dataset.postControlsReady = "true";
 
-    backToTopBtn.addEventListener("click", () => {
-      window.scrollTo({
-        top: 0,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
+    if (onScroll) {
+      window.removeEventListener("scroll", onScroll);
+      onScroll = null;
+    }
+
+    // Back to top button
+    const backToTopBtn = document.getElementById("back-to-top");
+
+    if (backToTopBtn) {
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+      onScroll = () => {
+        const shouldShow = window.scrollY > threshold;
+        backToTopBtn.classList.toggle("visible", shouldShow);
+        backToTopBtn.hidden = !shouldShow;
+      };
+      window.addEventListener("scroll", onScroll);
+
+      backToTopBtn.addEventListener("click", () => {
+        window.scrollTo({
+          top: 0,
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+        });
       });
-    });
+    }
+
+    // Copy link button
+    const copyLinkBtn = document.getElementById("copy-link");
+
+    if (copyLinkBtn) {
+      copyLinkBtn.addEventListener("click", async () => {
+        await navigator.clipboard.writeText(window.location.href);
+        copyLinkBtn.classList.add("copied");
+        setTimeout(() => copyLinkBtn.classList.remove("copied"), 2000);
+      });
+    }
   }
 
-  // Copy link button
-  const copyLinkBtn = document.getElementById("copy-link");
-
-  if (copyLinkBtn) {
-    copyLinkBtn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(window.location.href);
-      copyLinkBtn.classList.add("copied");
-      setTimeout(() => copyLinkBtn.classList.remove("copied"), 2000);
-    });
-  }
-
+  initPostControls();
+  document.addEventListener("astro:page-load", initPostControls);
 </script>

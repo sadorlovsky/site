@@ -229,6 +229,11 @@ export function initTooltips() {
   createTooltipElements();
 
   // pointerover/pointerout bubble, so one listener each covers every trigger.
+  // All six are on the document, which survives a client-side navigation
+  // intact — and they are delegated, so they pick up the incoming page's
+  // triggers with nothing to re-bind. That is why this whole function is a
+  // one-time singleton and stays one: re-running it per page would only stack
+  // duplicate handlers on the same document.
   document.addEventListener("pointerover", handlePointerOver);
   document.addEventListener("pointerout", handlePointerOut);
   document.addEventListener("pointermove", handlePointerMove, {
@@ -239,4 +244,17 @@ export function initTooltips() {
 
   // The trigger can slide out from under a pinned bead while the page scrolls.
   document.addEventListener("scroll", hideTooltip, true);
+
+  // The one thing that does not survive: the bead is parented to <body>, and
+  // the swap replaces <body> wholesale. Left alone, tooltips would work on the
+  // first page of a session and silently do nothing on every page after it —
+  // the listeners still fire, they just write into a detached div. Hiding it
+  // before the swap also keeps a bead that happens to be up at the moment of a
+  // click from riding over the outgoing page.
+  document.addEventListener("astro:before-swap", hideTooltip);
+  document.addEventListener("astro:after-swap", () => {
+    if (tooltipEl && !tooltipEl.isConnected) {
+      document.body.appendChild(tooltipEl);
+    }
+  });
 }

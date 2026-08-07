@@ -2,6 +2,7 @@
 import "@styles/global.css";
 import { Font } from "astro:assets";
 import { SEO } from "astro-seo";
+import { ClientRouter } from "astro:transitions";
 
 interface AlternateLink {
   lang: string;
@@ -58,6 +59,14 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
         image: ogImage,
       }}
     />
+    {/* Client-side routing for every page that uses this layout. The two
+        layouts that don't — AdminLayout and MarkdownLayout — stay on ordinary
+        browser navigation, and that is deliberate rather than an oversight:
+        the router refuses to swap into a document that carries no
+        astro-view-transitions-enabled meta and falls back to a full load, so
+        /wishlist/~ keeps its no-store caching and its own CSP without this
+        file having to know about either. */}
+    <ClientRouter />
     <link rel="icon" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#000000" />
     <meta
@@ -78,6 +87,22 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
   </head>
   <body>
     <slot />
+    <script>
+      // The chrome's entrance animations belong to a document opening, not to
+      // a click inside one. The breadcrumb pill and the language switcher each
+      // slide in over 0.7s (barIn, PageHeader.astro); replaying that on every
+      // in-site navigation would have the same two capsules re-introduce
+      // themselves while they are already sitting on screen, which is the
+      // opposite of what a persistent chrome should look like. The flag is a
+      // class rather than a one-time stylesheet swap because Astro strips
+      // every attribute off <html> on each swap (swapRootAttributes) and
+      // replaces them with the incoming document's, so it has to be re-stamped
+      // after each one — and after-swap is early enough that it lands before
+      // the new frame is painted.
+      const markNavigated = () =>
+        document.documentElement.classList.add("is-navigated");
+      document.addEventListener("astro:after-swap", markNavigated);
+    </script>
     <script
       defer
       src="https://static.cloudflareinsights.com/beacon.min.js"

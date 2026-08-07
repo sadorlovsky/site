@@ -1255,26 +1255,59 @@ import { Icon } from "astro-icon/components";
   import { initTooltips } from '@client/tooltip';
   initTooltips();
 
-  // Modal demo
-  const openModalBtn = document.getElementById('open-modal-btn');
-  const closeModalBtns = document.querySelectorAll('.close-modal-btn, #close-modal-btn');
-  const modal = document.getElementById('demo-modal');
+  const toastMessages = {
+    success: { title: 'Success', message: 'Action completed successfully.' },
+    error: { title: 'Error', message: 'Something went wrong.' },
+    warning: { title: 'Warning', message: 'Please review your input.' },
+    info: { title: 'Info', message: 'Here is some information.' },
+  };
 
-  openModalBtn?.addEventListener('click', () => {
-    modal?.classList.add('is-open');
-  });
+  const toastIcons = {
+    success: '✓',
+    error: '✕',
+    warning: '!',
+    info: 'i',
+  };
 
-  closeModalBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      modal?.classList.remove('is-open');
+  // Every demo below binds to elements of this page, and this page can be left
+  // and come back to without the document ever unloading — at which point the
+  // module is long since evaluated and will not run again on its own. So the
+  // bindings live in a function that is called on arrival, not at the top
+  // level, where a second visit would find every demo inert.
+  function initKitDemos() {
+    // …and exactly once per arrival: on a cold load this is reached twice,
+    // once as the module is evaluated and once from astro:page-load, which
+    // fires on window load. Two listeners on a toast trigger is two toasts per
+    // click. The flag rides on <body> because the swap brings a new one.
+    if (document.body.dataset.kitDemosReady === 'true') return;
+    document.body.dataset.kitDemosReady = 'true';
+
+    // Modal demo
+    const openModalBtn = document.getElementById('open-modal-btn');
+    const closeModalBtns = document.querySelectorAll('.close-modal-btn, #close-modal-btn');
+    const modal = document.getElementById('demo-modal');
+
+    openModalBtn?.addEventListener('click', () => {
+      modal?.classList.add('is-open');
     });
-  });
 
-  modal?.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.remove('is-open');
-    }
-  });
+    closeModalBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modal?.classList.remove('is-open');
+      });
+    });
+
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('is-open');
+      }
+    });
+
+    initToggleGroup('toggle-pill-demo');
+    initToggleGroup('toggle-separated-demo');
+    initToggleGroup('toggle-icons-demo');
+    initToastDemo();
+  }
 
   // ToggleGroup demo
   function initToggleGroup(containerId: string) {
@@ -1296,67 +1329,54 @@ import { Icon } from "astro-icon/components";
     });
   }
 
-  initToggleGroup('toggle-pill-demo');
-  initToggleGroup('toggle-separated-demo');
-  initToggleGroup('toggle-icons-demo');
-
   // Toast demo
-  const toastContainer = document.getElementById('toast-container');
-  const toastTriggers = document.querySelectorAll('.toast-trigger');
-  const positionSelect = document.getElementById('toast-position-select') as HTMLSelectElement;
+  function initToastDemo() {
+    const toastContainer = document.getElementById('toast-container');
+    const toastTriggers = document.querySelectorAll('.toast-trigger');
+    const positionSelect = document.getElementById('toast-position-select') as HTMLSelectElement;
 
-  const toastMessages = {
-    success: { title: 'Success', message: 'Action completed successfully.' },
-    error: { title: 'Error', message: 'Something went wrong.' },
-    warning: { title: 'Warning', message: 'Please review your input.' },
-    info: { title: 'Info', message: 'Here is some information.' },
-  };
-
-  const toastIcons = {
-    success: '✓',
-    error: '✕',
-    warning: '!',
-    info: 'i',
-  };
-
-  // Position change handler
-  positionSelect?.addEventListener('change', () => {
-    if (!toastContainer) return;
-    // Remove all position classes
-    toastContainer.className = 'kit-toast-container';
-    // Add selected position class
-    if (positionSelect.value) {
-      toastContainer.classList.add(positionSelect.value);
-    }
-  });
-
-  toastTriggers.forEach(trigger => {
-    trigger.addEventListener('click', () => {
-      const variant = (trigger as HTMLElement).dataset.variant as keyof typeof toastMessages;
-      const { title, message } = toastMessages[variant];
-      const icon = toastIcons[variant];
-
-      const toast = document.createElement('div');
-      toast.className = `kit-toast kit-toast--${variant}`;
-      toast.innerHTML = `
-        <span class="kit-toast-icon">${icon}</span>
-        <div class="kit-toast-content">
-          <p class="kit-toast-title">${title}</p>
-          <p class="kit-toast-message">${message}</p>
-        </div>
-        <button class="kit-toast-dismiss">&times;</button>
-      `;
-
-      toastContainer?.appendChild(toast);
-
-      const dismiss = toast.querySelector('.kit-toast-dismiss');
-      const removeToast = () => {
-        toast.classList.add('is-leaving');
-        setTimeout(() => toast.remove(), 200);
-      };
-
-      dismiss?.addEventListener('click', removeToast);
-      setTimeout(removeToast, 4000);
+    // Position change handler
+    positionSelect?.addEventListener('change', () => {
+      if (!toastContainer) return;
+      // Remove all position classes
+      toastContainer.className = 'kit-toast-container';
+      // Add selected position class
+      if (positionSelect.value) {
+        toastContainer.classList.add(positionSelect.value);
+      }
     });
-  });
+
+    toastTriggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const variant = (trigger as HTMLElement).dataset.variant as keyof typeof toastMessages;
+        const { title, message } = toastMessages[variant];
+        const icon = toastIcons[variant];
+
+        const toast = document.createElement('div');
+        toast.className = `kit-toast kit-toast--${variant}`;
+        toast.innerHTML = `
+          <span class="kit-toast-icon">${icon}</span>
+          <div class="kit-toast-content">
+            <p class="kit-toast-title">${title}</p>
+            <p class="kit-toast-message">${message}</p>
+          </div>
+          <button class="kit-toast-dismiss">&times;</button>
+        `;
+
+        toastContainer?.appendChild(toast);
+
+        const dismiss = toast.querySelector('.kit-toast-dismiss');
+        const removeToast = () => {
+          toast.classList.add('is-leaving');
+          setTimeout(() => toast.remove(), 200);
+        };
+
+        dismiss?.addEventListener('click', removeToast);
+        setTimeout(removeToast, 4000);
+      });
+    });
+  }
+
+  initKitDemos();
+  document.addEventListener('astro:page-load', initKitDemos);
 </script>

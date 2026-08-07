@@ -206,9 +206,24 @@ function highlightItem(item: HTMLElement) {
   }, HIGHLIGHT_DURATION);
 }
 
+// A highlight is a class on a card plus a 1.9s timer to take it off again. If
+// the reader clicks a category while one is running, the card goes with the
+// page and the timer is left holding it — harmless in itself, but it keeps a
+// detached card reachable and, worse, the module would still be pointing at it
+// as `currentHighlight` when the next roll asks for the previous one to be
+// cleared. Dropping both at the swap keeps that state honest.
+document.addEventListener("astro:before-swap", clearHighlight);
+
 export function initRandomButton(selector: string) {
   const button = document.querySelector<HTMLElement>(selector);
   if (!button) return;
+
+  // Called twice for the same button on a cold load: once as the page's module
+  // is evaluated, and again from astro:page-load, which the router fires on
+  // window load. Two click listeners on the die would roll it twice — two
+  // random items, the second overwriting the first's highlight mid-scroll.
+  if (button.dataset.randomReady === "true") return;
+  button.dataset.randomReady = "true";
 
   button.addEventListener("click", (e) => {
     e.preventDefault();

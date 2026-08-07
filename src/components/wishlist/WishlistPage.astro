@@ -71,8 +71,23 @@ const allCategory = categories.find((c) => c.id === "all")!;
         applyPrices();
       }
 
-      // Re-apply prices on language change
-      window.addEventListener("lang-change", applyPrices);
+      // Each category is its own page, so switching between them replaces
+      // every card — and the incoming ones are server-rendered with the
+      // original currency. after-swap is early enough that the correction
+      // lands before the new frame is painted, so nobody sees dollars turn
+      // into roubles.
+      //
+      // Both listeners are guarded because this is an inline script, and Astro
+      // only suppresses a re-run of one it has already seen swapped in: the
+      // copy that ran on the initial page load is not in that record, so the
+      // first navigation between two wishlist pages executes this a second
+      // time and would double up on both.
+      if (!window.__wishlistPricesListenersAdded) {
+        window.__wishlistPricesListenersAdded = true;
+        document.addEventListener("astro:after-swap", applyPrices);
+        // Re-apply prices on language change
+        window.addEventListener("lang-change", applyPrices);
+      }
     })();
   </script>
 

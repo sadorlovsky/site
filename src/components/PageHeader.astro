@@ -50,7 +50,15 @@ const hasActions = Astro.slots.has("actions");
   class:list={["page-header", { "page-header--condense": condenseOnScroll }]}
 >
   {condenseOnScroll && <div class="page-header__veil" aria-hidden="true" />}
-  <div class="header-row">
+  {/* The one row that is on every page and looks the same on all of them, so
+      it gets its own view-transition layer instead of being cross-faded along
+      with the page body. Without a name the row is captured inside the root
+      snapshot at whatever scroll offset it was pinned at, and leaving a
+      scrolled page makes the pills appear to jump; named, they hold their
+      place while the content underneath changes. There is exactly one
+      PageHeader per page, which is what keeps this name unique — two elements
+      claiming the same view-transition-name abort the whole transition. */}
+  <div class="header-row" transition:name="page-header">
     <nav
       class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
       aria-label="Breadcrumb"
@@ -338,6 +346,16 @@ const hasActions = Astro.slots.has("actions");
      backdrop, only an ancestor's does. */
   .lang-shell :global(.lang-switcher) {
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* …but only for the document that opened here. Both capsules are chrome:
+     identical on every page, and under client-side routing they are still on
+     screen when the next page's markup arrives. Sliding them down from -12px
+     again would announce a fresh arrival for something that never left. The
+     flag is stamped on <html> after each swap (PageLayout.astro). */
+  :global(html.is-navigated) .crumbs,
+  :global(html.is-navigated) .lang-shell :global(.lang-switcher) {
+    animation: none;
   }
 
   /* Hero title */

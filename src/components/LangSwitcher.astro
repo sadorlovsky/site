@@ -247,6 +247,22 @@ const { storageKey, size = "sm" } = Astro.props;
     }
 
     setupLangSwitchers();
+
+    // The buttons these listeners are bound to are thrown away with the rest
+    // of the body on a client-side navigation, and the incoming switcher
+    // arrives inert — server-rendered with ENG pressed and nothing listening
+    // for a click. Re-binding after the swap is the whole fix; nothing has to
+    // be torn down first, because the listeners went out with the elements
+    // that carried them.
+    //
+    // Guarded for the same reason as LangInit's: Astro's "already executed"
+    // record does not include the copy that ran on the initial page load, so
+    // the first navigation to another page with this switcher runs this script
+    // a second time.
+    if (!window.__langSwitcherListenerAdded) {
+      window.__langSwitcherListenerAdded = true;
+      document.addEventListener("astro:after-swap", setupLangSwitchers);
+    }
   })();
 </script>
 
