@@ -443,6 +443,14 @@
   color: light-dark(#555, #aaa);
 }
 
+/* A received card is dimmer, not dead: its links still go somewhere, so they
+   still light up. This rule exists because the one above outranks
+   `.item-url:hover` on specificity and was quietly holding the resting colour
+   through the hover — the underline appeared, the colour never moved. */
+.wishlist-item.item-received .item-url:hover {
+  color: light-dark(#111, #fff);
+}
+
 .wishlist-item.item-received .item-description {
   color: light-dark(#555, #bbb);
 }
@@ -580,21 +588,50 @@
   line-height: 1.4;
 }
 
+/* A shop link: the name, then the mark that says this leaves the site. The two
+   are laid out as a row so the name can ellipsize on its own while the arrow
+   keeps its place at the end — an arrow inside the truncated text would be the
+   first thing to disappear. */
 .item-url,
 .item-url:visited {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
   font-size: 0.75rem;
   color: light-dark(#555, #aaa);
   text-decoration: none;
-  margin-bottom: 0.75rem;
+}
+
+.item-url__label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
 .item-url:hover {
   color: light-dark(#111, #fff);
+}
+
+/* Underlining the label rather than the link keeps the rule off the arrow */
+.item-url:hover .item-url__label {
   text-decoration: underline;
+}
+
+/* The arrow rests quieter than the name it follows, and leans the way it points
+   when the link is under the cursor. */
+.item-url__icon {
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition:
+    opacity 0.25s ease,
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.item-url:hover .item-url__icon {
+  opacity: 1;
+  transform: translate(1px, -1px);
 }
 
 /* Where to buy — one shop or five, always this list. A card with a single shop
@@ -632,7 +669,6 @@
 .item-option .item-url {
   flex: 1;
   min-width: 0;
-  margin-bottom: 0;
 }
 
 .item-option-price {

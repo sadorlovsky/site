@@ -180,6 +180,9 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
         <ul class="item-options">
           {options.map((option) => (
             <li class="item-option">
+              {/* The translations go on the inner label, never on the link
+                  itself: LangInit rewrites a data-en element's textContent
+                  wholesale, which would take the icon with it. */}
               {option.url && option.labelEn && (
                 <a
                   href={option.url}
@@ -189,19 +192,33 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
                   aria-label={`Open ${option.labelEn} for ${item.title} (opens in new tab)`}
                   data-aria-label-en={`Open ${option.labelEn} for ${item.title} (opens in new tab)`}
                   data-aria-label-ru={`Открыть ${option.labelRu} для ${item.titleRu || item.title} (откроется в новой вкладке)`}
-                  data-en={option.labelEn}
-                  data-ru={option.labelRu}
                 >
-                  {option.labelEn}
+                  <span
+                    class="item-url__label"
+                    data-en={option.labelEn}
+                    data-ru={option.labelRu}
+                  >
+                    {option.labelEn}
+                  </span>
+                  <Icon
+                    class="item-url__icon"
+                    name="arrow-up-right"
+                    width={12}
+                    height={12}
+                    aria-hidden="true"
+                  />
                 </a>
               )}
+              {/* No link, so no icon — this option is a shop you walk into */}
               {!option.url && option.labelEn && (
-                <span
-                  class="item-url"
-                  data-en={option.labelEn}
-                  data-ru={option.labelRu}
-                >
-                  {option.labelEn}
+                <span class="item-url">
+                  <span
+                    class="item-url__label"
+                    data-en={option.labelEn}
+                    data-ru={option.labelRu}
+                  >
+                    {option.labelEn}
+                  </span>
                 </span>
               )}
               {showOptionPrices && (
