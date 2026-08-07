@@ -2,6 +2,10 @@ import { Map as MapLibre } from "maplibre-gl";
 import type { LayerSpecification } from "maplibre-gl";
 import type { Feature, Point } from "geojson";
 import { countries, cities, cityCoordinates } from "@lib/travel";
+import {
+  PERSIST_MAP_ACROSS_NAVIGATION,
+  MAP_PERSIST_NAME,
+} from "@lib/travel/map-strategy";
 import { getCityName } from "@lib/travel/cities-i18n";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
@@ -1352,4 +1356,19 @@ document.addEventListener("astro:page-load", scheduleInit);
 // Before, not after: the swap is what detaches the container, and the map has
 // to be dismantled while it still has one. astro:after-swap would already be
 // looking at the next page's DOM.
-document.addEventListener("astro:before-swap", runTeardown);
+document.addEventListener("astro:before-swap", (event) => {
+  // Under the persist strategy the map is not being detached at all — Astro
+  // carries this very element into the next page, camera and WebGL context
+  // intact — and dismantling it here would empty a canvas that then stays on
+  // screen. But the element only survives if the destination has somewhere to
+  // put it, so the incoming document is what decides: leaving /travel for a
+  // page with no map falls through to the teardown below, exactly as before.
+  if (PERSIST_MAP_ACROSS_NAVIGATION) {
+    const { newDocument } = event as Event & { newDocument: Document };
+    const survives = newDocument.querySelector(
+      `[data-astro-transition-persist="${MAP_PERSIST_NAME}"]`,
+    );
+    if (survives) return;
+  }
+  runTeardown();
+});

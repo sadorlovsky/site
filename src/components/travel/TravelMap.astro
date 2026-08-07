@@ -1,6 +1,10 @@
 ---
 import "flag-icons/css/flag-icons.min.css";
 import "maplibre-gl/dist/maplibre-gl.css";
+import {
+  PERSIST_MAP_ACROSS_NAVIGATION,
+  MAP_PERSIST_NAME,
+} from "@lib/travel/map-strategy";
 
 interface Props {
   mode?: "normal" | "globe";
@@ -9,9 +13,29 @@ interface Props {
 const { mode = "globe" } = Astro.props;
 ---
 
-<div id="map" class="map" data-testid="map" data-mode={mode}>
-  <div id="placeholder" class="placeholder"></div>
-</div>
+{
+  /* The two containers are the same element; only the directive differs, and a
+     directive cannot be spread in from an object the way an attribute can — so
+     the branch is written out rather than computed. See map-strategy.ts for
+     which one runs and why. */
+}
+{
+  PERSIST_MAP_ACROSS_NAVIGATION ? (
+    <div
+      id="map"
+      class="map"
+      data-testid="map"
+      data-mode={mode}
+      transition:persist={MAP_PERSIST_NAME}
+    >
+      <div id="placeholder" class="placeholder" />
+    </div>
+  ) : (
+    <div id="map" class="map" data-testid="map" data-mode={mode}>
+      <div id="placeholder" class="placeholder" />
+    </div>
+  )
+}
 
 <style>
   /* Note the absence of `transform: translateZ(0)` here. It was an iOS Safari
