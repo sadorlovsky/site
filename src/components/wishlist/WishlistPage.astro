@@ -36,25 +36,31 @@ const allCategory = categories.find((c) => c.id === "all")!;
         localStorage.setItem("wishlist-visitor-id", id);
       }
 
-      // Apply prices based on language
+      // Apply prices based on language. Every price on a card carries the same
+      // attributes — the footer's and each purchase option's — so they all get
+      // the same treatment here. Kept in step with updatePricesForLanguage in
+      // client/wishlist.ts, which redoes this once the module lands.
       function applyPrices() {
         const lang = localStorage.getItem("lang") || "en";
-        document.querySelectorAll(".item-price").forEach((el) => {
+        document.querySelectorAll("[data-price-original]").forEach((el) => {
           const originalPrice = el.getAttribute("data-price-original") || "";
           const priceRub = el.getAttribute("data-price-rub");
+          // "from", where the footer price is the cheapest of several options
+          const prefix =
+            el.getAttribute(lang === "ru" ? "data-price-prefix-ru" : "data-price-prefix-en") || "";
 
+          let price = originalPrice;
           if (lang === "ru" && priceRub) {
             // Format RUB price with space separator
             const match = priceRub.match(/₽(\d+)/);
             if (match) {
               const num = parseInt(match[1], 10);
               const rounded = Math.round(num / 10) * 10;
-              const formatted = rounded.toLocaleString("ru-RU");
-              el.textContent = formatted + " ₽";
+              price = rounded.toLocaleString("ru-RU") + " ₽";
             }
-          } else {
-            el.textContent = originalPrice;
           }
+
+          el.textContent = prefix ? prefix + " " + price : price;
         });
       }
 

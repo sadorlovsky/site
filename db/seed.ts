@@ -1,4 +1,10 @@
-import { db, WishlistItem, ExchangeRate, Reservation } from "astro:db";
+import {
+  db,
+  WishlistItem,
+  ItemOption,
+  ExchangeRate,
+  Reservation,
+} from "astro:db";
 
 // https://astro.build/db/seed
 export default async function seed() {
@@ -997,6 +1003,38 @@ export default async function seed() {
       priority: "low",
       received: false,
       createdAt: now,
+    },
+  ]);
+
+  // A couple of items that can be bought in more than one place. The item's own
+  // price/url is the first option; these are the alternatives.
+  await db.insert(ItemOption).values([
+    {
+      id: 1,
+      itemId: 50, // Foucault — Discipline and Punish
+      label: "Ad Marginem, hardcover",
+      labelRu: "Ad Marginem, твёрдая обложка",
+      price: "₽1290",
+      url: "https://admarginem.ru/product/nadzirat-i-nakazyvat/",
+      position: 0,
+    },
+    {
+      id: 2,
+      itemId: 50,
+      label: "Penguin, English",
+      labelRu: "Penguin, на английском",
+      price: "$18",
+      url: "https://a.co/d/8Qk2rLp",
+      position: 1,
+    },
+    {
+      id: 3,
+      itemId: 17, // 555 Soundtrack Vinyl LP
+      label: "Discogs, sealed",
+      labelRu: "Discogs, запечатанный",
+      price: "$72",
+      url: "https://www.discogs.com/sell/item/3742200592",
+      position: 0,
     },
   ]);
 

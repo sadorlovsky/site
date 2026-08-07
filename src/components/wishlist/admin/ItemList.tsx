@@ -188,6 +188,15 @@ function ItemCard({
               <span className="item-price-rub">{formatRub(priceRub)}</span>
             )}
           </div>
+          {/* The alternatives, in brief — the public card lists them in full,
+              and the modal is where they get edited. */}
+          {item.options.length > 0 && (
+            <p className="item-options-summary">
+              +{item.options.length} option
+              {item.options.length > 1 ? "s" : ""}:{" "}
+              {item.options.map((option) => option.price).join(" · ")}
+            </p>
+          )}
         </div>
 
         {/* Categories */}

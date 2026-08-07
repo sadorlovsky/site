@@ -398,20 +398,26 @@ function formatRubPrice(price: string): string {
 }
 
 function updatePricesForLanguage(lang: "en" | "ru") {
-  const priceElements = document.querySelectorAll<HTMLElement>(".item-price");
+  // Every price on a card, the footer's and the per-option ones alike — they
+  // carry the same data attributes and want the same treatment.
+  const priceElements = document.querySelectorAll<HTMLElement>(
+    "[data-price-original]",
+  );
 
   priceElements.forEach((el) => {
     const originalPrice = el.dataset.priceOriginal || "";
     const priceUsd = el.dataset.priceUsd;
     const priceRub = el.dataset.priceRub;
     const isOriginalUsd = el.dataset.originalIsUsd === "true";
+    // "from", on a footer price that is the cheapest of several options
+    const prefix =
+      (lang === "ru" ? el.dataset.pricePrefixRu : el.dataset.pricePrefixEn) ??
+      "";
 
     // Set displayed price based on language
-    if (lang === "ru" && priceRub) {
-      el.textContent = formatRubPrice(priceRub);
-    } else {
-      el.textContent = originalPrice;
-    }
+    const price =
+      lang === "ru" && priceRub ? formatRubPrice(priceRub) : originalPrice;
+    el.textContent = prefix ? `${prefix} ${price}` : price;
 
     // Tooltip logic:
     // - RU language: no tooltip
