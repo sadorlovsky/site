@@ -73,6 +73,14 @@ async function seed() {
       rate: 1,
       updatedAt: new Date(),
     },
+    {
+      id: 6,
+      fromCurrency: "KZT",
+      toCurrency: "RUB",
+      // Under a rouble to the tenge, which is the reason the column is real.
+      rate: 0.15,
+      updatedAt: new Date(),
+    },
   ]);
 
   const now = new Date();
@@ -1063,6 +1071,17 @@ async function seed() {
       price: "$72",
       url: "https://www.discogs.com/sell/item/3742200592",
       position: 0,
+    },
+    {
+      id: 4,
+      itemId: 50, // Foucault — Discipline and Punish, again
+      // Cheapest of the item's three options once its tenge are read, which is
+      // why it is here: it is what the card's "from" price has to land on.
+      label: "Meloman, Almaty",
+      labelRu: "Меломан, Алматы",
+      price: "₸3,900",
+      url: "https://www.meloman.kz/nadzirat-i-nakazyvat.html",
+      position: 2,
     },
   ]);
 

@@ -13,6 +13,7 @@ const currencyPrefixes = [
   { prefix: "£", currency: "GBP" },
   { prefix: "€", currency: "EUR" },
   { prefix: "₹", currency: "INR" },
+  { prefix: "₸", currency: "KZT" },
 ] as const;
 
 // Parse price string and convert to RUB

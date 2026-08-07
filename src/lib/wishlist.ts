@@ -24,7 +24,7 @@ export function getCdnImageUrl(filename: string): string {
 export const RESERVATION_MESSAGE_MAX_LENGTH = 200;
 
 // Types
-export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR" | "RUB";
+export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR" | "RUB" | "KZT";
 
 export type ParsedPrice = {
   amount: number; // In cents
@@ -147,9 +147,10 @@ const currencyPrefixes: { prefix: string; currency: Currency }[] = [
   { prefix: "€", currency: "EUR" },
   { prefix: "₹", currency: "INR" },
   { prefix: "₽", currency: "RUB" },
+  { prefix: "₸", currency: "KZT" },
 ];
 
-// Parse price string like "$64", "£25", "€300", "AU$140", "₽768"
+// Parse price string like "$64", "£25", "€300", "AU$140", "₽768", "₸25,940"
 export function parsePrice(price: string): ParsedPrice | null {
   const trimmed = price.trim();
 
@@ -166,6 +167,39 @@ export function parsePrice(price: string): ParsedPrice | null {
   }
 
   return null;
+}
+
+/**
+ * The rates as the ExchangeRate table holds them: roubles for one unit of the
+ * currency, which is a fraction below a rouble's worth (a tenge is about 0.15).
+ */
+export type RubRates = Partial<Record<Currency, number>>;
+
+/**
+ * What a price string is worth in US cents, or null if nothing on file can say
+ * — an unreadable price, or a currency with no rate. Null is not zero: an
+ * option priced this way sits out the comparison that picks an item's cheapest
+ * way to buy rather than winning it.
+ */
+export function priceInUsdCents(
+  price: string,
+  toRubRates: RubRates,
+): number | null {
+  const parsed = parsePrice(price);
+  const usdToRub = toRubRates.USD;
+  if (!parsed || !usdToRub) return null;
+
+  if (parsed.currency === "USD") {
+    return parsed.amount;
+  }
+
+  // Convert to USD: amount_in_currency * (rate_to_rub / usd_to_rub_rate). Both
+  // rates are real numbers, so the rounding happens once, at the end, on a
+  // count of cents — not on the rate that got us there.
+  const rateToRub = toRubRates[parsed.currency];
+  if (!rateToRub) return null;
+
+  return Math.round((parsed.amount * rateToRub) / usdToRub);
 }
 
 /** How a shop link reads on a card: bare host and path, no scheme, no trailing slash. */
@@ -200,7 +234,7 @@ export async function getWishlistItems(
     ]);
 
   // Build exchange rate lookup from DB: currency -> rate to RUB
-  const toRubRates: Partial<Record<Currency, number>> = {
+  const toRubRates: RubRates = {
     // Not a row anyone would store, and every rouble price needs it to take
     // part in the comparison that picks an item's cheapest option.
     RUB: 1,
@@ -223,30 +257,16 @@ export async function getWishlistItems(
     else extraOptions.set(option.itemId, [option]);
   }
 
-  // Compute priceUsd from original price
-  function computePriceUsd(price: string): number | null {
-    const parsed = parsePrice(price);
-    if (!parsed || !usdToRub) return null;
-
-    if (parsed.currency === "USD") {
-      return parsed.amount;
-    }
-
-    // Convert to USD: amount_in_currency * (rate_to_rub / usd_to_rub_rate)
-    const rateToRub = toRubRates[parsed.currency];
-    if (!rateToRub) return null;
-
-    return Math.round((parsed.amount * rateToRub) / usdToRub);
-  }
-
   // Price a single way of buying, in both the currencies the card can show
   function priceOf(
     price: string,
   ): Pick<WishlistOption, "priceUsd" | "priceRub"> {
-    const priceUsd = computePriceUsd(price);
+    const priceUsd = priceInUsdCents(price, toRubRates);
     return {
       priceUsd,
-      priceRub: priceUsd && usdToRub ? priceUsd * usdToRub : null,
+      // Rounded, because a fractional USD→RUB rate would otherwise leave
+      // fractions of a kopeck in a field the rest of the code counts in cents.
+      priceRub: priceUsd && usdToRub ? Math.round(priceUsd * usdToRub) : null,
     };
   }
 
