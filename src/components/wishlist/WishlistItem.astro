@@ -1,5 +1,5 @@
 ---
-import { Picture, getImage } from "astro:assets";
+import { Image, getImage } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Badge from "@components/kit/Badge.astro";
 import {
@@ -24,12 +24,20 @@ const {
 } = Astro.props;
 const imageUrl = getCdnImageUrl(item.imageUrl);
 
-// Items with a dark-theme render get a hand-built <picture> with media-gated
-// sources (Astro's <Picture> can't do art direction). Others keep <Picture>.
+// Items with a dark-theme render get a hand-built <picture> with a media-gated
+// source (Astro's <Image> can't do art direction). Others are a plain <Image>.
+//
+// One format and three widths, because every extra variant is a separate cache
+// key at the edge and there are 124 source images behind this page. The second
+// format used to double the count for about a kilobyte: measured on production,
+// avif loses to webp at 400w, ties at 560w and wins by ~1.2 KB at 800w — worth
+// nothing against a cache miss, which costs seconds while the image is fetched
+// from R2 and re-encoded. 1200w went for a simpler reason: the sources are
+// 1024px, so it was upscaling, and it was the most expensive miss of the four.
 const imageOpts = {
   width: 560,
   height: 420,
-  widths: [400, 560, 800, 1200],
+  widths: [400, 560, 800],
   quality: 65,
 };
 const imageSizes =
@@ -65,13 +73,12 @@ const options = item.options
   .filter((option) => option.labelEn || showOptionPrices);
 
 const darkImageUrl = item.imageUrlDark ? getCdnImageUrl(item.imageUrlDark) : null;
-const [darkAvif, lightAvif, lightWebp] = darkImageUrl
+const [darkWebp, lightWebp] = darkImageUrl
   ? await Promise.all([
-      getImage({ src: darkImageUrl, ...imageOpts, format: "avif" }),
-      getImage({ src: imageUrl, ...imageOpts, format: "avif" }),
+      getImage({ src: darkImageUrl, ...imageOpts, format: "webp" }),
       getImage({ src: imageUrl, ...imageOpts, format: "webp" }),
     ])
-  : [null, null, null];
+  : [null, null];
 ---
 
 <article
@@ -85,17 +92,12 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
   <div class="item-image">
     <div class="skeleton"></div>
     {
-      darkAvif && lightAvif && lightWebp ? (
+      darkWebp && lightWebp ? (
         <picture>
           <source
             media="(prefers-color-scheme: dark)"
-            type="image/avif"
-            srcset={darkAvif.srcSet.attribute}
-            sizes={imageSizes}
-          />
-          <source
-            type="image/avif"
-            srcset={lightAvif.srcSet.attribute}
+            type="image/webp"
+            srcset={darkWebp.srcSet.attribute}
             sizes={imageSizes}
           />
           <img
@@ -112,16 +114,15 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
           />
         </picture>
       ) : (
-        <Picture
+        <Image
           class="wishlist-img"
           src={imageUrl}
           alt={item.title}
           width={560}
           height={420}
-          widths={[400, 560, 800, 1200]}
+          widths={imageOpts.widths}
           sizes={imageSizes}
-          formats={["avif"]}
-          fallbackFormat="webp"
+          format="webp"
           quality={65}
           loading={eager ? "eager" : "lazy"}
           decoding="async"
