@@ -3,6 +3,121 @@
 A parking lot for things worth doing, with enough reasoning attached that the
 decision doesn't have to be made twice. Nothing here is committed to.
 
+## MapLibre v6, and what ESM is actually worth here
+
+### Where it stands
+
+We are on 5.24.0, which ships UMD and nothing else: `main: dist/maplibre-gl.js`,
+no `module` field, no `exports` map, not one `.mjs` in the package. 6.2.0 is the
+mirror image — `type: "module"`, `module: dist/maplibre-gl.mjs`, and an
+`exports` map whose only condition is `import`. The UMD bundles are gone.
+
+The reason for looking was to get maplibre off /travel's critical path, and
+that turned out not to need v6 at all: Vite code-splits the UMD build perfectly
+well, and the dynamic import in `initMap` already took the page's own script
+from 1 076 086 bytes to 48 802.
+
+### What the upgrade buys, measured
+
+Both versions built, same chunk compared:
+
+```
+                 raw          brotli       gzip
+v5.24.0 (UMD)    1 027 616    219 942      269 227
+v6.2.0  (ESM)      925 013    195 456      236 504
+```
+
+About 24 KB over the wire, ~11%. Real, but an order below what deferring the
+whole library already achieved.
+
+### What it costs
+
+Cheap in code. `astro check` against v6 produced exactly one error:
+`travel-map.ts` passes a paint property name as `string`, and v6 types it as
+`keyof AllPaintProperties` — one of the deliberate improvements in that release.
+The build itself passed. None of the removed APIs are used here: `map.transform`,
+`styleimagemissing`, `GeoJSONSource.setData`'s second argument and `addProtocol`
+have zero occurrences in this repo.
+
+The risk is elsewhere. **v6 drops WebGL 1 entirely and requires WebGL2.** The
+browserslist targets (Safari ≥ 15.4, iOS ≥ 15.4) are nominally fine, but that
+is a claim about support tables, not about this globe. `setProjection({ type:
+"globe" })` is the centre of this page and was never exercised against v6 —
+the upgrade was measured, not run.
+
+### If it is picked up
+
+Do it on its own, not folded into anything else, and open the map in a real
+browser: globe projection, the zoom floor maths in `getGlobeZoomFloor`, the
+feature-state hover on the city beads, and the reduced-transparency branch.
+Those are the parts that talk to the renderer, and the renderer is what changed.
+
+## Reservations without the round trip
+
+### Where they stand
+
+A reserve button's state has two halves. "Is this taken" the server knows and
+renders into `data-reservation` (`WishlistItem.astro:300`). "Is it *yours*" it
+cannot know — the HTML is one cached copy for everybody — so it guesses
+pessimistically, says `other` for anything taken, and a per-visitor fetch
+promotes a card to `mine` (`client/wishlist.ts:78-115`).
+
+That fetch is now off the critical path for almost everyone: free cards and
+first-time visitors are settled before it is sent, and only a taken card seen by
+a returning visitor still waits. What it costs when it does wait:
+
+```
+/api/wishlist/reservations   365-415 ms warm, 2.26 s cold, x-vercel-cache: MISS always
+the query behind it         one SELECT, 4 rows, 0.5 ms
+the response, in production {}          (no live reservations at all today)
+the function it lives in    28 MB, of which 17.5 MB is libvips via sharp
+```
+
+So the remaining wait is a cold Node function, not a database. Two ways to
+remove what is left, independent of each other.
+
+### A. Remember your own reservations locally
+
+The client knows the item id at the moment it reserves something — it is what it
+just sent. Writing that set to `localStorage` makes `mine` answerable
+synchronously, before any network at all, and the last card stops waiting too.
+
+The fetch stays, as reconciliation: a reservation can be cancelled from the
+admin panel, or made from another device, and the local set would not hear about
+either. So this is a real change of model — optimistic local state, corrected on
+arrival — rather than a cache. The failure it introduces is a card that says
+"Cancel" for a few hundred milliseconds before the answer downgrades it, which
+is the mirror image of the flash the current design exists to prevent. Worth
+having only if that direction is the acceptable one: claiming something is yours
+and being corrected, versus being told it is someone else's when it is yours.
+
+Note that the private `message` on a reservation cannot come from here — the
+endpoint deliberately only ever returns it to its author
+(`api/wishlist/reservations.ts:21-24`).
+
+### B. Move the endpoint off the Node function
+
+One SELECT of four rows does not need a 28 MB serverless function whose bulk is
+an image library it never calls. The 2.26 s is that function's cold start.
+
+Edge runtime is the obvious target — `@libsql/client` speaks HTTP, and the
+response is already per-visitor and uncacheable, so nothing about the caching
+story changes. Worth checking first: whether the Drizzle/libSQL import chain is
+edge-clean, and whether it is worth splitting this route out rather than
+shrinking the shared bundle, since `sharp` is dragged in by the image endpoint
+that genuinely needs it.
+
+This one is invisible when the function is warm and decisive when it is not, so
+its value depends entirely on how often the wishlist is the first page a visitor
+touches after a quiet spell.
+
+### Suggested order
+
+B is the smaller change and carries no product decision — it makes the existing
+design faster without altering what anyone sees. A is worth doing only if the
+optimistic direction is deliberately chosen; it is the only one that removes the
+wait entirely.
+
 ## Travel map markers
 
 ### Where they stand

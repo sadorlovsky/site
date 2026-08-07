@@ -34,6 +34,10 @@ const allCategory = categories.find((c) => c.id === "all")!;
           crypto.randomUUID?.() ??
           Date.now().toString(36) + Math.random().toString(36).slice(2);
         localStorage.setItem("wishlist-visitor-id", id);
+        // Nobody with a brand new id holds a reservation, so client/wishlist.ts
+        // can trust what the server rendered and show every button at once
+        // instead of waiting to hear who owns what. See isFirstVisit().
+        document.documentElement.dataset.wishlistNewVisitor = "true";
       }
 
       // Apply prices based on language. Every price on a card carries the same
@@ -62,6 +66,13 @@ const allCategory = categories.find((c) => c.id === "all")!;
 
           el.textContent = prefix ? prefix + " " + price : price;
         });
+
+        // Every price now says what it will keep saying. Until this point a
+        // rouble reader is looking at dollars, so the stylesheet keeps them
+        // covered — see .price-pending in wishlist.css. LangInit's own
+        // `lang-ready` cannot stand in for this: it is set by a listener
+        // registered earlier, so it lands before this function has run.
+        document.documentElement.classList.add("prices-ready");
       }
 
       // Apply when DOM is ready
