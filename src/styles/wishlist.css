@@ -473,14 +473,8 @@
 .skeleton {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    light-dark(#e0e0e0, #2a2a2a) 0%,
-    light-dark(#f0f0f0, #3a3a3a) 50%,
-    light-dark(#e0e0e0, #2a2a2a) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite ease-in-out;
+  background: light-dark(#e0e0e0, #2a2a2a);
+  overflow: hidden;
   /* Under the photograph, not over it. The image used to sit at `auto` beneath
      this layer and was held at opacity 0 until a script said otherwise, so a
      picture that had already arrived and decoded stayed invisible until the
@@ -489,12 +483,31 @@
   z-index: 0;
 }
 
+/* The travelling highlight, as a band that moves rather than a gradient whose
+   position is redrawn. `background-position` cannot be composited: every frame
+   of it repainted the card's whole 4:3 image area, inside an overflow clip and
+   a rounded corner, on each card still waiting for its photograph. A transform
+   on a pseudo-element is handed to the compositor and never touches the main
+   thread. The look is the same band of light crossing the same tile. */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    light-dark(#f0f0f0, #3a3a3a) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
+  from {
+    transform: translateX(-100%);
   }
-  100% {
-    background-position: -200% 0;
+  to {
+    transform: translateX(100%);
   }
 }
 
@@ -504,11 +517,14 @@
    clears the way for a picture with transparency. Both happen underneath the
    image, which is also why `animation: none` landing before the 300ms fade has
    finished is no longer a visible jolt. */
+.item-image.loaded .skeleton::after {
+  animation: none;
+}
+
 .item-image.loaded .skeleton {
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
-  animation: none;
 }
 
 /* The photograph doesn't move on hover. object-fit: cover plus a zoom crops
@@ -744,7 +760,10 @@
   cursor: pointer;
   box-shadow: var(--glass-shadow);
   transition: color 0.3s ease;
-  will-change: transform; /* magnetic pull toward the cursor */
+  /* The magnetic pull's `will-change: transform` is set by client/reserve-magnet.ts
+     when the pointer enters the card and dropped when the button settles.
+     Declared here it applied to every button at once, for as long as the page
+     was open. */
 }
 
 /* Sliding gradient indicator — the dock's "magic line", sized to the whole

@@ -17,6 +17,23 @@ function lerp(start: number, end: number, factor: number): number {
   return start + (end - start) * factor;
 }
 
+/**
+ * Bumped whenever anything could have moved a button on screen.
+ *
+ * A button's position changes when the page scrolls or resizes — never because
+ * the cursor moved. Reading it on every pointermove meant calling
+ * getBoundingClientRect immediately after the animation frame had written
+ * `style.transform` to the same element, which is a read straight after a
+ * write: the browser has to flush layout before it can answer. That is a
+ * forced reflow in the hottest path on the page, once per mouse movement.
+ */
+let geometryEpoch = 0;
+const invalidateGeometry = () => {
+  geometryEpoch += 1;
+};
+window.addEventListener("scroll", invalidateGeometry, { passive: true });
+window.addEventListener("resize", invalidateGeometry, { passive: true });
+
 function initMagnet(button: HTMLButtonElement) {
   if (button.dataset.magnet === "ready") return;
   button.dataset.magnet = "ready";
@@ -29,6 +46,21 @@ function initMagnet(button: HTMLButtonElement) {
   const target = { x: 0, y: 0 };
   let running = false;
 
+  /** The button's centre with any magnetic drift taken back out. */
+  const centre = { x: 0, y: 0 };
+  let centreEpoch = -1;
+
+  function readCentre() {
+    const rect = button.getBoundingClientRect();
+    // Subtracting the current offset gives the centre the button would have at
+    // rest. Measuring the drifted position instead fed the pull back into
+    // itself: the closer the button came to the cursor, the closer its centre
+    // appeared to be, and the target shrank as it travelled.
+    centre.x = rect.left + rect.width / 2 - current.x;
+    centre.y = rect.top + rect.height / 2 - current.y;
+    centreEpoch = geometryEpoch;
+  }
+
   function animate() {
     current.x = lerp(current.x, target.x, SMOOTH);
     current.y = lerp(current.y, target.y, SMOOTH);
@@ -40,6 +72,11 @@ function initMagnet(button: HTMLButtonElement) {
       requestAnimationFrame(animate);
     } else {
       running = false;
+      // Hand the layer back. Held permanently — as `will-change: transform` in
+      // the stylesheet did — this promoted all 57 buttons on the page to
+      // compositor layers for the whole session, to pay for an animation that
+      // only ever runs under the cursor.
+      button.style.willChange = "";
     }
   }
 
@@ -50,6 +87,15 @@ function initMagnet(button: HTMLButtonElement) {
     }
   }
 
+  // The layer is asked for on the way in, a frame or more before the first
+  // transform lands, so the compositor has time to prepare it — requesting it
+  // in the same breath as the change is most of the way to not asking at all.
+  scope.addEventListener("pointerenter", () => {
+    if (button.disabled) return;
+    button.style.willChange = "transform";
+    readCentre();
+  });
+
   scope.addEventListener("pointermove", (e) => {
     // Received items and other people's reservations render a disabled (or
     // hidden) button — it shouldn't twitch under the cursor.
@@ -59,11 +105,9 @@ function initMagnet(button: HTMLButtonElement) {
       kick();
       return;
     }
-    const rect = button.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = e.clientX - cx;
-    const dy = e.clientY - cy;
+    if (centreEpoch !== geometryEpoch) readCentre();
+    const dx = e.clientX - centre.x;
+    const dy = e.clientY - centre.y;
     if (Math.hypot(dx, dy) < MAGNET_RADIUS) {
       target.x = Math.max(
         -MAGNET_MAX,
