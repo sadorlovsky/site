@@ -6,7 +6,13 @@ import { Icon } from "astro-icon/components";
 import { AdminPanel } from "@components/wishlist/admin";
 import { verifySession } from "@lib/admin/auth";
 import { categories } from "@lib/wishlist";
-import { db, WishlistItem, Reservation, ExchangeRate } from "astro:db";
+import {
+  db,
+  WishlistItem,
+  ItemOption,
+  Reservation,
+  ExchangeRate,
+} from "astro:db";
 import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 export const prerender = false;
@@ -25,12 +31,35 @@ const cdnDomain = (import.meta.env.PROD
   ? CDN_DOMAIN
   : (CDN_DEV_DOMAIN ?? CDN_DOMAIN)) ?? "";
 
-// Fetch all items, reservations, and exchange rates
-const [items, reservations, exchangeRates] = await Promise.all([
+// Fetch all items, options, reservations, and exchange rates
+const [itemRows, optionRows, reservations, exchangeRates] = await Promise.all([
   db.select().from(WishlistItem),
+  db.select().from(ItemOption),
   db.select().from(Reservation),
   db.select().from(ExchangeRate),
 ]);
+
+// Attach each item's extra buying options, in display order
+const optionsByItem = new Map<number, (typeof optionRows)[number][]>();
+for (const option of [...optionRows].sort(
+  (a, b) => a.position - b.position || a.id - b.id,
+)) {
+  const forItem = optionsByItem.get(option.itemId);
+  if (forItem) forItem.push(option);
+  else optionsByItem.set(option.itemId, [option]);
+}
+
+const items = itemRows.map((item) => ({
+  ...item,
+  options: (optionsByItem.get(item.id) ?? []).map((option) => ({
+    id: option.id,
+    label: option.label,
+    labelRu: option.labelRu,
+    price: option.price,
+    url: option.url,
+    position: option.position,
+  })),
+}));
 
 // Build exchange rates map: { USD: rate, EUR: rate, ... }
 const exchangeRatesMap: Record<string, number> = {};

@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { revalidateWishlist } from "@lib/admin/revalidate";
-import { db, WishlistItem, Reservation, eq, sql } from "astro:db";
+import { itemOptionSchema, replaceItemOptions } from "@lib/admin/item-options";
+import { db, WishlistItem, ItemOption, Reservation, eq, sql } from "astro:db";
 import { z } from "zod";
 
 export const prerender = false;
@@ -18,6 +19,9 @@ const updateItemSchema = z.object({
   priority: z.enum(["high", "medium", "low"]).optional().or(z.literal("")),
   weight: z.number().optional(),
   received: z.boolean().optional(),
+  // Absent leaves the item's options alone; present replaces them wholesale,
+  // so an empty array is how the last one gets removed.
+  options: z.array(itemOptionSchema).optional(),
 });
 
 // UPDATE item
@@ -88,10 +92,15 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
         .where(eq(WishlistItem.id, itemId));
     }
 
+    const options =
+      data.options !== undefined
+        ? await replaceItemOptions(itemId, data.options)
+        : undefined;
+
     // Revalidate ISR
     await revalidateWishlist();
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, options }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -136,8 +145,9 @@ export const DELETE: APIRoute = async ({ params, request, cookies }) => {
       });
     }
 
-    // Delete any reservations for this item first
+    // Delete anything pointing at this item first
     await db.delete(Reservation).where(eq(Reservation.itemId, itemId));
+    await db.delete(ItemOption).where(eq(ItemOption.itemId, itemId));
 
     // Delete the item
     await db.delete(WishlistItem).where(eq(WishlistItem.id, itemId));

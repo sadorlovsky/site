@@ -19,6 +19,34 @@ const WishlistItem = defineTable({
   },
 });
 
+/**
+ * An extra place the same gift can be bought — a second edition of a book, the
+ * same record from another shop. The gift is still one gift: reservations stay
+ * on the item (see Reservation's unique index), and an option only says "here
+ * is another way to get it, for this much".
+ *
+ * The item's own `price`/`url` are the first option, unlabelled; a row here is
+ * always an addition to those, never a replacement. An item with no rows here
+ * behaves exactly as it did before options existed.
+ */
+const ItemOption = defineTable({
+  columns: {
+    id: column.number({ primaryKey: true }),
+    itemId: column.number({ references: () => WishlistItem.columns.id }),
+    // What distinguishes this one — "Penguin hardcover", "signed". Optional:
+    // with no label the card falls back to the shop's hostname, which is what
+    // it shows for the item's own url anyway.
+    label: column.text({ optional: true }),
+    labelRu: column.text({ optional: true }),
+    price: column.text(), // same format as WishlistItem.price — "$24", "€300"
+    url: column.text({ optional: true }),
+    // Display order within the item, ascending. Not WishlistItem's `weight`,
+    // which sorts descending and means importance.
+    position: column.number({ default: 0 }),
+  },
+  indexes: [{ on: ["itemId"] }],
+});
+
 const ExchangeRate = defineTable({
   columns: {
     id: column.number({ primaryKey: true }),
@@ -70,6 +98,7 @@ const AdminSession = defineTable({
 export default defineDb({
   tables: {
     WishlistItem,
+    ItemOption,
     Reservation,
     ExchangeRate,
     AdminCredential,

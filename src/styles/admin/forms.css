@@ -174,8 +174,10 @@
 }
 
 /* A round glass button whose danger arrives behind it on hover — the same
-   recipe the card's own delete wears, so the two read as the same action. */
-.btn-remove-image {
+   recipe the card's own delete wears, so the two read as the same action.
+   Removing a purchase option is that same action, so it wears it too. */
+.btn-remove-image,
+.btn-remove-option {
   position: relative;
   isolation: isolate;
   display: flex;
@@ -195,7 +197,8 @@
   transition: color 0.25s ease;
 }
 
-.btn-remove-image::before {
+.btn-remove-image::before,
+.btn-remove-option::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -214,7 +217,8 @@
   z-index: -1;
 }
 
-.btn-remove-image::after {
+.btn-remove-image::after,
+.btn-remove-option::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -226,19 +230,65 @@
 }
 
 .btn-remove-image:hover::before,
-.btn-remove-image:focus-visible::before {
+.btn-remove-image:focus-visible::before,
+.btn-remove-option:hover::before,
+.btn-remove-option:focus-visible::before {
   opacity: 1;
   transform: scale(1);
 }
 
 .btn-remove-image:hover::after,
-.btn-remove-image:focus-visible::after {
+.btn-remove-image:focus-visible::after,
+.btn-remove-option:hover::after,
+.btn-remove-option:focus-visible::after {
   box-shadow: none;
 }
 
 .btn-remove-image:hover,
-.btn-remove-image:focus-visible {
+.btn-remove-image:focus-visible,
+.btn-remove-option:hover,
+.btn-remove-option:focus-visible {
   color: #fff;
+}
+
+/* Purchase options — the repeater of alternative places to buy one item. Each
+   row is that option's four fields and the button that drops it; the fields
+   themselves are the modal's ordinary inputs, styled above. */
+.option-hint {
+  margin: -0.2rem 0 0.75rem 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: light-dark(#666, #aaa);
+}
+
+.option-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
+  border-radius: 10px;
+}
+
+.option-fields {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+@media (max-width: 700px) {
+  .option-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Focus styles */

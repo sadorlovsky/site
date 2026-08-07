@@ -343,6 +343,14 @@
   white-space: nowrap;
 }
 
+/* The other places this item can be bought, as a one-line tally */
+.item-options-summary {
+  margin: 0.35rem 0 0 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: light-dark(#666, #999);
+}
+
 /* Categories */
 .item-categories {
   display: flex;

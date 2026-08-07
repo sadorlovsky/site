@@ -3,6 +3,7 @@ import { Picture, getImage } from "astro:assets";
 import { Icon } from "astro-icon/components";
 import Badge from "@components/kit/Badge.astro";
 import {
+  formatHostLabel,
   getCdnImageUrl,
   type WishlistItemWithReservation,
 } from "@lib/wishlist";
@@ -33,6 +34,35 @@ const imageOpts = {
 };
 const imageSizes =
   "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px";
+
+// Where to buy this. One shop or five, it is the same list rendered the same
+// way — a lone shop link is a one-row list, not a different piece of markup,
+// which is what keeps the two visually identical.
+//
+// Each row names its option: the owner's label where there is one, the shop's
+// hostname otherwise. Per-row prices only appear when there is a choice to
+// make; with one row the price belongs in the footer and nowhere else.
+const showOptionPrices = item.options.length > 1;
+
+const options = item.options
+  .map((option) => {
+    const host = option.url ? formatHostLabel(option.url) : "";
+    return {
+      ...option,
+      labelEn: option.label || host,
+      labelRu: option.labelRu || option.label || host,
+      priceUsdLabel: option.priceUsd
+        ? `$${(option.priceUsd / 100).toFixed(0)}`
+        : null,
+      priceRubLabel: option.priceRub
+        ? `₽${(option.priceRub / 100).toFixed(0)}`
+        : null,
+    };
+  })
+  // A row with no label and no price of its own would be an empty line: that
+  // is the sole option of an item nobody gave a link to, and its price is
+  // already in the footer.
+  .filter((option) => option.labelEn || showOptionPrices);
 
 const darkImageUrl = item.imageUrlDark ? getCdnImageUrl(item.imageUrlDark) : null;
 const [darkAvif, lightAvif, lightWebp] = darkImageUrl
@@ -146,18 +176,50 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
       {item.title}
     </h2>
     {
-      item.url && (
-        <a
-          href={item.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="item-url"
-          aria-label={`Open ${item.title} on external site (opens in new tab)`}
-          data-aria-label-en={`Open ${item.title} on external site (opens in new tab)`}
-          data-aria-label-ru={`Открыть ${item.titleRu || item.title} на внешнем сайте (откроется в новой вкладке)`}
-        >
-          {item.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")}
-        </a>
+      options.length > 0 && (
+        <ul class="item-options">
+          {options.map((option) => (
+            <li class="item-option">
+              {option.url && option.labelEn && (
+                <a
+                  href={option.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="item-url"
+                  aria-label={`Open ${option.labelEn} for ${item.title} (opens in new tab)`}
+                  data-aria-label-en={`Open ${option.labelEn} for ${item.title} (opens in new tab)`}
+                  data-aria-label-ru={`Открыть ${option.labelRu} для ${item.titleRu || item.title} (откроется в новой вкладке)`}
+                  data-en={option.labelEn}
+                  data-ru={option.labelRu}
+                >
+                  {option.labelEn}
+                </a>
+              )}
+              {!option.url && option.labelEn && (
+                <span
+                  class="item-url"
+                  data-en={option.labelEn}
+                  data-ru={option.labelRu}
+                >
+                  {option.labelEn}
+                </span>
+              )}
+              {showOptionPrices && (
+                <span
+                  class="item-option-price"
+                  data-price-original={option.price}
+                  data-price-usd={option.priceUsdLabel}
+                  data-price-rub={option.priceRubLabel}
+                  data-original-is-usd={
+                    option.price.startsWith("$") ? "true" : null
+                  }
+                >
+                  {option.price}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
       )
     }
     {
@@ -172,6 +234,8 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
       )
     }
     <div class="item-footer">
+      {/* With options on the card this is the cheapest of them, so it says
+          "from" — the price above is a floor, not the price. */}
       <span
         class="item-price"
         data-price-original={item.price}
@@ -182,8 +246,10 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
           ? `₽${(item.priceRub / 100).toFixed(0)}`
           : null}
         data-original-is-usd={item.price.startsWith("$") ? "true" : null}
+        data-price-prefix-en={showOptionPrices ? "from" : null}
+        data-price-prefix-ru={showOptionPrices ? "от" : null}
       >
-        {item.price}
+        {showOptionPrices ? `from ${item.price}` : item.price}
       </span>
 
       {

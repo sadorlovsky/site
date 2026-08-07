@@ -128,7 +128,8 @@ function AdminPanelInner({
 
       // Update state locally instead of reloading
       if (isEdit) {
-        // Update existing item
+        // Update existing item. The options come back from the server rather
+        // than from `data`: their ids are minted by the insert.
         setItems((prev) =>
           prev.map((item) =>
             item.id === id
@@ -140,6 +141,7 @@ function AdminPanelInner({
                   descriptionRu: data.descriptionRu || null,
                   url: data.url || null,
                   priority: data.priority || null,
+                  options: result.options ?? item.options,
                 }
               : item,
           ),
@@ -160,6 +162,7 @@ function AdminPanelInner({
           weight: data.weight ?? 0,
           received: false,
           createdAt: new Date(),
+          options: result.options ?? [],
         };
         setItems((prev) => [newItem, ...prev]);
       }

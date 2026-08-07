@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { revalidateWishlist } from "@lib/admin/revalidate";
+import { itemOptionSchema, replaceItemOptions } from "@lib/admin/item-options";
 import { db, WishlistItem, sql } from "astro:db";
 import { z } from "zod";
 
@@ -17,6 +18,7 @@ const createItemSchema = z.object({
   category: z.string().min(1),
   priority: z.enum(["high", "medium", "low"]).optional().or(z.literal("")),
   weight: z.number().default(0),
+  options: z.array(itemOptionSchema).default([]),
 });
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -66,10 +68,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Get the inserted ID
     const newId = Number(result.lastInsertRowid);
 
+    const options =
+      data.options.length > 0
+        ? await replaceItemOptions(newId, data.options)
+        : [];
+
     // Revalidate ISR
     await revalidateWishlist();
 
-    return new Response(JSON.stringify({ success: true, id: newId }), {
+    return new Response(JSON.stringify({ success: true, id: newId, options }), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });

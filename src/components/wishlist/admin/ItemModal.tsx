@@ -1,6 +1,18 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Checkbox from "@components/kit/Checkbox";
-import type { WishlistItem, ItemFormData, Category } from "./types";
+import type {
+  WishlistItem,
+  ItemFormData,
+  ItemOptionFormData,
+  Category,
+} from "./types";
+
+const emptyOption = (): ItemOptionFormData => ({
+  label: "",
+  labelRu: "",
+  price: "",
+  url: "",
+});
 
 interface ItemModalProps {
   isOpen: boolean;
@@ -36,6 +48,7 @@ export function ItemModal({
     category: "",
     priority: "",
     weight: 0,
+    options: [],
   }));
 
   // Selected categories as array for multi-select
@@ -68,6 +81,12 @@ export function ItemModal({
         category: item.category,
         priority: item.priority || "",
         weight: item.weight,
+        options: item.options.map((option) => ({
+          label: option.label || "",
+          labelRu: option.labelRu || "",
+          price: option.price,
+          url: option.url || "",
+        })),
       });
       setSelectedCategories(cats);
       setImagePreview(`https://${cdnDomain}/${item.imageUrl}`);
@@ -83,6 +102,7 @@ export function ItemModal({
         category: "",
         priority: "",
         weight: 0,
+        options: [],
       });
       setSelectedCategories([]);
       setImagePreview(null);
@@ -127,6 +147,33 @@ export function ItemModal({
     setFormData((prev) => ({
       ...prev,
       [name]: name === "weight" ? parseInt(value, 10) || 0 : value,
+    }));
+  };
+
+  const addOption = () => {
+    setFormData((prev) => ({
+      ...prev,
+      options: [...prev.options, emptyOption()],
+    }));
+  };
+
+  const updateOption = (
+    index: number,
+    field: keyof ItemOptionFormData,
+    value: string,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      options: prev.options.map((option, i) =>
+        i === index ? { ...option, [field]: value } : option,
+      ),
+    }));
+  };
+
+  const removeOption = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      options: prev.options.filter((_, i) => i !== index),
     }));
   };
 
@@ -220,12 +267,32 @@ export function ItemModal({
       return;
     }
 
+    // A row the admin added and never filled in is nothing to save; one with a
+    // shop but no price would leave the card unable to say what it costs there.
+    const options = formData.options
+      .map((option) => ({
+        label: option.label.trim(),
+        labelRu: option.labelRu.trim(),
+        price: option.price.trim(),
+        url: option.url.trim(),
+      }))
+      .filter(
+        (option) =>
+          option.label || option.labelRu || option.price || option.url,
+      );
+
+    if (options.some((option) => !option.price)) {
+      alert("Every purchase option needs a price");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
       const dataToSave = {
         ...formData,
         category: selectedCategories.join(", "),
+        options,
       };
       await onSave(dataToSave, item?.id);
     } catch (error) {
@@ -302,6 +369,83 @@ export function ItemModal({
                   onChange={handleInputChange}
                 />
               </div>
+            </div>
+
+            {/* One gift, several places to buy it. The price and URL above are
+                the first option; these are the alternatives. A reservation
+                still covers the item as a whole — whoever takes it picks a
+                shop themselves. */}
+            <div className="form-group">
+              <label>Purchase options</label>
+              <p className="option-hint">
+                Other places this can be bought — a second edition, another
+                shop. The card lists them all and prices the item from the
+                cheapest.
+              </p>
+
+              {formData.options.length > 0 && (
+                <div className="option-rows">
+                  {formData.options.map((option, index) => (
+                    <div className="option-row" key={index}>
+                      <div className="option-fields">
+                        <input
+                          type="text"
+                          placeholder="Label (EN) — Penguin hardcover"
+                          aria-label={`Option ${index + 1} label (EN)`}
+                          value={option.label}
+                          onChange={(e) =>
+                            updateOption(index, "label", e.target.value)
+                          }
+                        />
+                        <input
+                          type="text"
+                          placeholder="Label (RU)"
+                          aria-label={`Option ${index + 1} label (RU)`}
+                          value={option.labelRu}
+                          onChange={(e) =>
+                            updateOption(index, "labelRu", e.target.value)
+                          }
+                        />
+                        <input
+                          type="text"
+                          placeholder="$24, ₽1290"
+                          aria-label={`Option ${index + 1} price`}
+                          value={option.price}
+                          onChange={(e) =>
+                            updateOption(index, "price", e.target.value)
+                          }
+                        />
+                        <input
+                          type="url"
+                          placeholder="https://..."
+                          aria-label={`Option ${index + 1} URL`}
+                          value={option.url}
+                          onChange={(e) =>
+                            updateOption(index, "url", e.target.value)
+                          }
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-remove-option"
+                        title="Remove option"
+                        aria-label={`Remove option ${index + 1}`}
+                        onClick={() => removeOption(index)}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={addOption}
+              >
+                + Add option
+              </button>
             </div>
 
             <div className="form-group">
