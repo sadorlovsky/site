@@ -1,6 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
-import { db, Reservation, WishlistItem, eq, sql } from "astro:db";
+import { db, Reservation, WishlistItem, and, eq, sql } from "astro:db";
 import { RESERVATION_MESSAGE_MAX_LENGTH } from "@lib/wishlist";
 
 const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
@@ -119,6 +119,13 @@ export const server = {
       message: z.string().max(RESERVATION_MESSAGE_MAX_LENGTH),
     }),
     handler: async ({ itemId, visitorId, message }) => {
+      if (!reservationsEnabled) {
+        throw new ActionError({
+          code: "FORBIDDEN",
+          message: "Reservations are currently disabled",
+        });
+      }
+
       const existingReservation = await db
         .select()
         .from(Reservation)
@@ -141,10 +148,19 @@ export const server = {
 
       const trimmed = message.trim();
 
+      // `reservedBy` is repeated in the WHERE rather than trusted from the SELECT
+      // above: between the two statements the reservation can be cancelled and
+      // the item taken by someone else, and this write would then land the first
+      // visitor's note on the second one's reservation.
       await db
         .update(Reservation)
         .set({ message: trimmed || null })
-        .where(eq(Reservation.itemId, itemId));
+        .where(
+          and(
+            eq(Reservation.itemId, itemId),
+            eq(Reservation.reservedBy, visitorId),
+          ),
+        );
 
       return { message: trimmed || null };
     },

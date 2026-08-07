@@ -27,6 +27,16 @@ function reservationOf(button: HTMLElement): ReservationState {
   return (button.dataset.reservation as ReservationState) || "none";
 }
 
+/** Backoff between attempts at the reservations fetch, in ms. */
+const RESERVATION_RETRY_DELAYS = [300, 1000, 2500];
+
+/**
+ * False once the fetch above has given up. Nothing on the page knows whose
+ * reservations are whose at that point — the SSR attribute says "other" for
+ * everything taken, because the server has no idea who is looking.
+ */
+let reservationsKnown = true;
+
 /**
  * A badge's translations live on its inner label, not on the badge itself: the
  * badge also holds a state dot, and anything carrying data-en gets its
@@ -65,18 +75,16 @@ export async function initializeWishlist() {
 /** One row of /api/wishlist/reservations, which answers per visitor. */
 type ReservationResponse = { mine: boolean; message?: string };
 
-async function fetchAndApplyReservations() {
+async function loadReservations(): Promise<boolean> {
   const visitorId = getVisitorId();
 
   try {
-    const response = await fetch(
-      `/api/wishlist/reservations?visitor=${encodeURIComponent(visitorId)}`,
-    );
-    if (!response.ok) {
-      // Still show buttons on error, using SSR data
-      showButtons();
-      return;
-    }
+    // The id travels as a header, not a query parameter: it is this feature's
+    // only credential, and a URL ends up in every access log on the way.
+    const response = await fetch("/api/wishlist/reservations", {
+      headers: { "X-Visitor-Id": visitorId },
+    });
+    if (!response.ok) return false;
 
     const reservations: Record<number, ReservationResponse> =
       await response.json();
@@ -100,13 +108,40 @@ async function fetchAndApplyReservations() {
       });
 
     primeMessages(ownMessages);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
+async function fetchAndApplyReservations() {
+  if (await loadReservations()) {
     // Show buttons after data is loaded
     showButtons();
-  } catch {
-    // Still show buttons on error, using SSR data
-    showButtons();
+    return;
   }
+
+  for (const delay of RESERVATION_RETRY_DELAYS) {
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    if (await loadReservations()) {
+      showButtons();
+      return;
+    }
+  }
+
+  // Falling back to the SSR attribute here used to tell the visitor holding a
+  // reservation that it was someone else's — disabled button, no Cancel, no
+  // bead, no way back short of a reload. Say so instead, and offer the reload.
+  reservationsKnown = false;
+  showButtons();
+}
+
+/** The retry button's label doubles as its accessible name. */
+function setRetryLabel(button: HTMLButtonElement, lang: Lang): void {
+  const text =
+    (lang === "ru" ? button.dataset.ruRetry : button.dataset.enRetry) ?? null;
+  button.textContent = text;
+  if (text) button.setAttribute("aria-label", text);
 }
 
 function showButtons() {
@@ -121,6 +156,22 @@ function showButtons() {
       const reservedBadge = article?.querySelector(
         ".reserved-badge",
       ) as HTMLElement;
+
+      // The fetch never landed, so on a taken card "whose" is unknown rather
+      // than "someone else's" — the SSR attribute only ever says the latter.
+      // The badge stays (it is true either way) but the button stays live and
+      // asks for another try instead of locking the holder out of their Cancel.
+      // A free card needs none of this: "nobody has it" is the server's to know.
+      if (!reservationsKnown && isReserved) {
+        setRetryLabel(button, currentLang);
+        button.classList.add("reserve-btn--retry");
+        if (reservedBadge) {
+          reservedBadge.hidden = false;
+          setBadgeLabel(reservedBadge, currentLang);
+        }
+        button.classList.remove("reserve-btn--loading");
+        return;
+      }
 
       // Set correct text based on language and state
       if (reservation === "mine") {
@@ -157,6 +208,13 @@ function initializeReserveButtons() {
   const visitorId = getVisitorId();
 
   reserveButtons.forEach((button) => {
+    // The reservations fetch gave up. Reserving or cancelling blind would be a
+    // guess; fetching again on a fresh page is not.
+    if (button.classList.contains("reserve-btn--retry")) {
+      button.addEventListener("click", () => location.reload());
+      return;
+    }
+
     // Skip received items
     if (button.disabled) {
       return;
@@ -408,6 +466,12 @@ function updateLanguage(lang: "en" | "ru") {
       return;
     }
 
+    // A retry button has no reservation state to render — only its own label.
+    if (btn.classList.contains("reserve-btn--retry")) {
+      setRetryLabel(btn, lang);
+      return;
+    }
+
     const reservation = reservationOf(btn);
     const isReceived =
       btn.dataset.enReceived &&
@@ -449,6 +513,9 @@ function updateAriaLabels(lang: "en" | "ru") {
     document.querySelectorAll<HTMLButtonElement>(".reserve-btn");
 
   reserveButtons.forEach((btn) => {
+    // updateLanguage already gave it one, matching what it says.
+    if (btn.classList.contains("reserve-btn--retry")) return;
+
     const reservation = reservationOf(btn);
 
     let ariaLabel: string | undefined;

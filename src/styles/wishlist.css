@@ -1145,6 +1145,16 @@ textarea.message-popover-input:focus {
     backdrop-filter: none;
   }
 
+  /* The message bead. It carries the glass tokens itself rather than the
+     .liquid-glass class, so global.css's override never reaches it — and left
+     out, it would be the one frosted thing in a row of opaque controls. Matches
+     the reserve pill it sits against, not the .liquid-glass default. */
+  .message-btn {
+    background-color: light-dark(#f0f0f0, #3a3a3a);
+    background-image: none;
+    backdrop-filter: none;
+  }
+
   /* Random button. The lit override matters: the lit rule re-pins the
      translucent glass tokens. "All" needs nothing — it carries no frost to
      fall back from, and its accent capsule is already opaque. */
@@ -1276,7 +1286,11 @@ textarea.message-popover-input:focus {
     align-items: stretch;
   }
 
+  /* The stacked footer stretches .reserve-actions, not the pill inside it, so
+     the pill has to claim the rest of the row for itself — otherwise it shrinks
+     to its label and huddles against the bead. */
   .reserve-btn {
+    flex: 1;
     text-align: center;
   }
 }

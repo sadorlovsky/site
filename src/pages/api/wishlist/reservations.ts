@@ -13,6 +13,11 @@ export const prerender = false;
  * used to, let anyone cancel anyone's reservation by reading them back. Now the
  * caller's own id goes in and only a verdict comes out.
  *
+ * It goes in as a header rather than a query parameter: a URL is written to
+ * every access log along the way — Vercel's, the edge's, any proxy's — and a
+ * credential does not belong in any of them. `no-store, private` keeps it out of
+ * caches but has nothing to say about logs.
+ *
  * `message` rides along for the same reason it can't be server-rendered into the
  * card: it is a note to the wishlist owner, not to the other visitors, so it
  * only ever reaches the person who wrote it (and the admin panel, which reads
@@ -25,9 +30,9 @@ type ReservationState = {
   message?: string;
 };
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ request }) => {
   const start = Date.now();
-  const visitorId = url.searchParams.get("visitor") ?? "";
+  const visitorId = request.headers.get("x-visitor-id") ?? "";
 
   const reservations = await db.select().from(Reservation);
   const dbTime = Date.now() - start;
@@ -49,8 +54,11 @@ export const GET: APIRoute = async ({ url }) => {
     status: 200,
     headers: {
       "Content-Type": "application/json",
-      // Per-visitor now, so it must never be shared by a cache
+      // Per-visitor now, so it must never be shared by a cache. Every caller
+      // hits the same URL, so `Vary` is what keeps that true if `no-store` is
+      // ever relaxed.
       "Cache-Control": "no-store, private",
+      Vary: "X-Visitor-Id",
       "Server-Timing": `db;dur=${dbTime}, total;dur=${totalTime}`,
     },
   });

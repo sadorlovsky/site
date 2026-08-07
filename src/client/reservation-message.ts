@@ -29,6 +29,8 @@ let saveBtn: HTMLButtonElement | null = null;
 let anchor: HTMLButtonElement | null = null;
 let stopFollowing: (() => void) | null = null;
 let closeTimer: number | undefined;
+/** A write is in flight. `setBusy` disables the buttons; this covers the rest. */
+let saving = false;
 
 /** itemId → the message this visitor saved on their own reservation. */
 const messages = new Map<number, string>();
@@ -256,6 +258,9 @@ function closePopover({ restoreFocus = true } = {}) {
 
 /** Writes the textarea's contents (or, when empty, removes what was there). */
 async function commit() {
+  // ⌘/Ctrl+Enter reaches the textarea, which `setBusy` leaves enabled, so a held
+  // shortcut would otherwise stack round trips on top of each other.
+  if (saving) return;
   if (!textarea || !anchor) return;
   const bead = anchor;
   const itemId = itemIdOf(bead);
@@ -270,27 +275,38 @@ async function commit() {
 
   setError(null);
   setBusy(true);
+  saving = true;
   const { data, error } = await actions.setReservationMessage({
     itemId,
     visitorId,
     message: value,
   });
-  setBusy(false);
+  saving = false;
+
+  // One panel serves every card, and clicking another bead re-anchors it while
+  // this request is open — only the buttons were disabled, not the beads. If
+  // that happened, the panel now belongs to a different reservation: its busy
+  // state, its error line and its unsaved text are none of this write's
+  // business. The bead and the cache still are, since both are keyed by item.
+  const stillOurs = anchor === bead;
+  if (stillOurs) setBusy(false);
 
   // Stay open on failure: the panel is holding text that exists nowhere else.
   if (error) {
-    setError(
-      lang === "ru"
-        ? "Не удалось сохранить. Попробуйте ещё раз."
-        : "Couldn't save that. Try again.",
-    );
+    if (stillOurs) {
+      setError(
+        lang === "ru"
+          ? "Не удалось сохранить. Попробуйте ещё раз."
+          : "Couldn't save that. Try again.",
+      );
+    }
     return;
   }
 
   if (data.message) messages.set(itemId, data.message);
   else messages.delete(itemId);
   syncBead(bead);
-  closePopover();
+  if (stillOurs) closePopover();
 }
 
 /* -------------------------------------------------------------------------
