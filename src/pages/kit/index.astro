@@ -720,6 +720,28 @@ import { Icon } from "astro-icon/components";
           <ProgressBar value={42} max={195} label="42 of 195 countries" />
           <ProgressBar value={5} max={7} label="5 of 7 continents" />
         </div>
+
+        <h3>Extra Attributes</h3>
+        <p>
+          Anything beyond the props above lands on the inner element — the one
+          carrying <code>role="progressbar"</code> — rather than on the row, so
+          it reaches the thing a screen reader actually announces. That is how a
+          bilingual page translates the label: <code>label</code> renders the
+          bar's <code>aria-label</code>, and <code>data-aria-label-en</code> /
+          <code>data-aria-label-ru</code> let <code>LangInit</code> swap it on
+          load. Without them the label stays in whichever language it was
+          written in, whatever the rest of the page is reading as.
+        </p>
+        <div class="progress-demo">
+          <ProgressBar
+            value={23}
+            max={44}
+            label="Europe: 23 of 44 countries visited"
+            data-aria-label-en="Europe: 23 of 44 countries visited"
+            data-aria-label-ru="Европа: посещено 23 из 44 стран"
+            accent
+          />
+        </div>
       </section>
 
       <!-- ================================================================

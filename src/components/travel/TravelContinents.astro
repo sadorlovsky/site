@@ -36,6 +36,8 @@ const remaining = continents.filter(
           showPercent={false}
           accent
           label={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+          data-aria-label-en={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+          data-aria-label-ru={`${continent.name.ru}: посещено ${continent.visited} из ${continent.total} стран`}
         />
         <ul class="countries" role="list">
           {continent.countries.map((country) => (

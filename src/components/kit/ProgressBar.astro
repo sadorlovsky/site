@@ -6,13 +6,20 @@ interface Props {
   showPercent?: boolean;
   accent?: boolean;
   class?: string;
+  /** Anything else lands on the bar itself — see the note below. */
+  [key: string]: unknown;
 }
 
-const { value, max = 100, label, showPercent = true, accent = false, class: className } = Astro.props;
+const { value, max = 100, label, showPercent = true, accent = false, class: className, ...rest } = Astro.props;
 const percent = Math.floor((value / max) * 100);
 ---
 
 <div class:list={["progress-row", className]}>
+  {/* Leftover props go on the bar, not the row, because the only thing worth
+      addressing from outside is the element carrying role="progressbar" — a
+      bilingual page hands it data-aria-label-en/ru so LangInit can translate
+      the label it would otherwise be stuck with in one language. Spread last
+      so a caller can override aria-label outright. */}
   <div
     class="progress-bar"
     role="progressbar"
@@ -20,6 +27,7 @@ const percent = Math.floor((value / max) * 100);
     aria-valuemin="0"
     aria-valuemax="100"
     aria-label={label}
+    {...rest}
   >
     <div class:list={["progress-fill", { accent }]} style={`width: ${percent}%`}></div>
   </div>

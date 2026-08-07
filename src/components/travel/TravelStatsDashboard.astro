@@ -11,6 +11,12 @@ import "flag-icons/css/flag-icons.min.css";
 
 const facts = getTravelFacts(datedTrips);
 
+// Both "most visited" cards are counted in visits rather than trips. The number
+// is the same either way — a journey that touches a place counts once, however
+// many stops it makes there — but a card headed "Most visited country" that
+// answers "17 trips" reads as if it were answering some other question. The
+// busiest-year card below really is about trips and keeps the word.
+
 // The bars are read against the busiest year rather than against a round
 // number, so the tallest one always reaches the end of its groove and the
 // shape of the decade is legible instead of a row of stubs.
@@ -68,10 +74,10 @@ const busiestYear = facts.tripsByYear.reduce(
           </div>
           <span
             class="detail"
-            data-en={formatTripCount(facts.mostVisitedCountry.visits, "en")}
-            data-ru={formatTripCount(facts.mostVisitedCountry.visits, "ru")}
+            data-en={formatVisitCount(facts.mostVisitedCountry.visits, "en")}
+            data-ru={formatVisitCount(facts.mostVisitedCountry.visits, "ru")}
           >
-            {formatTripCount(facts.mostVisitedCountry.visits, "en")}
+            {formatVisitCount(facts.mostVisitedCountry.visits, "en")}
           </span>
         </div>
       )
@@ -156,6 +162,8 @@ const busiestYear = facts.tripsByYear.reduce(
                   showPercent={false}
                   accent={entry.trips === busiestYear}
                   label={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
+                  data-aria-label-en={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
+                  data-aria-label-ru={`${entry.year}: ${formatTripCount(entry.trips, "ru")}`}
                 />
                 <span class="year-count">{entry.trips}</span>
               </li>
