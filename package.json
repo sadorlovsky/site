@@ -25,7 +25,7 @@
     "@simplewebauthn/server": "^13.3.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "astro": "^7.1.6",
+    "astro": "^7.2.0",
     "astro-expressive-code": "^0.44.1",
     "astro-icon": "^1.1.5",
     "astro-seo": "^1.1.0",
