@@ -20,12 +20,12 @@ export function loadEnv() {
 }
 
 function endpoint() {
-  const url = process.env.ASTRO_DB_REMOTE_URL;
-  const token = process.env.ASTRO_DB_APP_TOKEN;
+  const url = process.env.TURSO_DATABASE_URL;
+  const token = process.env.TURSO_AUTH_TOKEN;
 
   if (!url || !token) {
     throw new Error(
-      "ASTRO_DB_REMOTE_URL and ASTRO_DB_APP_TOKEN must be set (see .env.example)",
+      "TURSO_DATABASE_URL and TURSO_AUTH_TOKEN must be set (see .env.example)",
     );
   }
 

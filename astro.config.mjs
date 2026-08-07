@@ -4,7 +4,6 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import vercel from "@astrojs/vercel";
 import sitemap from "@astrojs/sitemap";
-import db from "@astrojs/db";
 import { loadEnv } from "vite";
 import browserslist from "browserslist";
 import { browserslistToTargets } from "lightningcss";
@@ -99,7 +98,6 @@ export default defineConfig({
     icon(),
     mdx(),
     react(),
-    db(),
     sitemap({
       filter: (page) => !page.includes("/wishlist/~"),
     }),
@@ -151,6 +149,20 @@ export default defineConfig({
   ],
   env: {
     schema: {
+      // Turso. Optional because a non-production build never reads them — it
+      // talks to the local SQLite file (see src/lib/db/index.ts) — while
+      // migrations and scripts read them straight from process.env, outside
+      // this schema, since they run without Astro.
+      TURSO_DATABASE_URL: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
+      TURSO_AUTH_TOKEN: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true,
+      }),
       CDN_DEV_DOMAIN: envField.string({
         context: "server",
         access: "secret",

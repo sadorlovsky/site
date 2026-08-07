@@ -4,7 +4,7 @@ import {
   ItemOption,
   Reservation,
   ExchangeRate,
-} from "astro:db";
+} from "@lib/db";
 import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 // CDN domain helper - uses production domain in prod, dev domain otherwise

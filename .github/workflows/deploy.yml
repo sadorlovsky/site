@@ -1,0 +1,53 @@
+name: Deploy
+
+# Migrations run before the code that needs them ships.
+#
+# Vercel's own build for this push has already bowed out: its Ignored Build Step
+# (scripts/db/check-pending.mjs, wired up in vercel.json) sees a migration the
+# database has not got yet and skips. This workflow applies it and then asks for
+# the deploy — so the order is always schema first, code second, with no window
+# where a released page queries a table that does not exist.
+#
+# A push carrying no new migration is left alone entirely: the check passes,
+# Vercel builds as usual, and the deploy-hook step below is skipped.
+
+on:
+  push:
+    branches: [main]
+
+# One at a time, and never cancel a run mid-migration: an interrupted migration
+# is exactly the state this workflow exists to avoid.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  migrate-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - name: Apply migrations
+        id: migrate
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: bun run db:migrate:remote
+
+      # Only when the schema actually moved — the migrate script reports how
+      # many it applied. Otherwise Vercel is already building this commit on its
+      # own and a hook would just build it a second time.
+      - name: Trigger the deploy
+        if: steps.migrate.outputs.applied != '0'
+        run: |
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}" ]; then
+            echo "::error::VERCEL_DEPLOY_HOOK_URL is not set — migrations are applied but nothing was deployed"
+            exit 1
+          fi
+          curl --fail --silent --show-error -X POST "${{ secrets.VERCEL_DEPLOY_HOOK_URL }}"

@@ -1,4 +1,4 @@
-import { db, ItemOption, eq, sql } from "astro:db";
+import { db, ItemOption, eq, sql } from "@lib/db";
 import { z } from "zod";
 
 /** One extra way to buy an item, as the admin form sends it. */

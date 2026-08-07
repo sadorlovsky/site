@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { revalidateWishlist } from "@lib/admin/revalidate";
 import { itemOptionSchema, replaceItemOptions } from "@lib/admin/item-options";
-import { db, WishlistItem, ItemOption, Reservation, eq, sql } from "astro:db";
+import { db, WishlistItem, ItemOption, Reservation, eq, sql } from "@lib/db";
 import { z } from "zod";
 
 export const prerender = false;

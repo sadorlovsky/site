@@ -1,4 +1,4 @@
-import { db, AdminSession, eq } from "astro:db";
+import { db, AdminSession, eq } from "@lib/db";
 import { ADMIN_SESSION_SECRET } from "astro:env/server";
 import type { AstroCookies } from "astro";
 import { timingSafeEqual, generateSecureId } from "./crypto";
