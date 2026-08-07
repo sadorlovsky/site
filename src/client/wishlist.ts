@@ -187,6 +187,9 @@ function showButtons(scope: ButtonScope = "all") {
       const reservedBadge = article?.querySelector(
         ".reserved-badge",
       ) as HTMLElement;
+      const ownBadge = article?.querySelector(
+        ".own-reservation-badge",
+      ) as HTMLElement;
 
       // The fetch never landed, so on a taken card "whose" is unknown rather
       // than "someone else's" — the SSR attribute only ever says the latter.
@@ -210,6 +213,18 @@ function showButtons(scope: ButtonScope = "all") {
           (currentLang === "ru"
             ? button.dataset.ruCancel
             : button.dataset.enCancel) ?? null;
+        // The whole of "this one is yours" is settled here, not split with
+        // initializeReserveButtons as it used to be. That split is what broke
+        // an own reservation on reload: the buttons were wired before the
+        // per-visitor answer arrived, read the server's pessimistic "other",
+        // and hid themselves with inline styles that this pass never removed —
+        // leaving a card with no button and no badge at all.
+        button.classList.add("own-reservation");
+        showMessageBead(article);
+        if (ownBadge) {
+          ownBadge.hidden = false;
+          setBadgeLabel(ownBadge, currentLang);
+        }
         if (reservedBadge) reservedBadge.hidden = true;
       } else if (isReserved) {
         // Someone else's reservation - hide button, show badge
@@ -220,12 +235,14 @@ function showButtons(scope: ButtonScope = "all") {
           reservedBadge.hidden = false;
           setBadgeLabel(reservedBadge, currentLang);
         }
+        if (ownBadge) ownBadge.hidden = true;
       } else {
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruReserve
             : button.dataset.enReserve) ?? null;
         if (reservedBadge) reservedBadge.hidden = true;
+        if (ownBadge) ownBadge.hidden = true;
       }
 
       // Show button
@@ -251,45 +268,9 @@ function initializeReserveButtons() {
       return;
     }
 
-    const reservation = reservationOf(button);
-
-    // Get badge elements (in the item-image section)
-    const article = button.closest("article");
-    const ownBadge = article?.querySelector(
-      ".own-reservation-badge",
-    ) as HTMLElement;
-    const reservedBadge = article?.querySelector(
-      ".reserved-badge",
-    ) as HTMLElement;
-
-    // Set initial button state
-    if (reservation !== "none") {
-      if (reservation === "mine") {
-        // Own reservation - show Cancel, own badge, and the message bead
-        button.textContent =
-          (currentLang === "ru"
-            ? button.dataset.ruCancel
-            : button.dataset.enCancel) ?? null;
-        button.classList.add("own-reservation");
-        showMessageBead(article);
-        if (ownBadge) {
-          ownBadge.hidden = false;
-          setBadgeLabel(ownBadge, currentLang);
-        }
-        if (reservedBadge) reservedBadge.hidden = true;
-      } else {
-        // Someone else's reservation - hide button, show reserved badge
-        button.style.visibility = "hidden";
-        button.style.pointerEvents = "none";
-        button.disabled = true;
-        if (reservedBadge) {
-          reservedBadge.hidden = false;
-          setBadgeLabel(reservedBadge, currentLang);
-        }
-        if (ownBadge) ownBadge.hidden = true;
-      }
-    }
-
+    // What the card looks like is showButtons' business alone. This function
+    // runs before the per-visitor fetch has answered, so anything it decided
+    // here would be decided from the server's pessimistic guess.
     button.addEventListener("click", async function () {
       const itemId = this.dataset.itemId;
       if (!itemId) return;

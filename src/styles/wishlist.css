@@ -459,6 +459,19 @@
   color: light-dark(#555, #aaa);
 }
 
+/* A price is rendered in dollars and rewritten to roubles by the inline script
+   in WishlistPage.astro, so for a Russian reader the server's version is not
+   the final one. It used to be covered by the blanket .lang-content rule, along
+   with the entire grid; now that only the translated text is covered, prices
+   need saying so themselves — they carry no data-ru, because the number is
+   computed rather than translated.
+
+   Keyed to `prices-ready` rather than LangInit's `lang-ready`: the two run from
+   separate DOMContentLoaded listeners, and LangInit's was registered first. */
+html.lang-ru:not(.prices-ready) [data-price-original] {
+  opacity: 0;
+}
+
 /* Item image */
 .item-image {
   position: relative;
