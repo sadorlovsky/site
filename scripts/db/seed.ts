@@ -1041,10 +1041,6 @@ async function seed() {
       price: "₸25,940",
       imageUrl: "tanenbaum-computer-networks.jpg",
       url: "https://www.meloman.kz/tanenbaum-je-s-fimster-n-komp-juternye-seti-6-e-izd.html",
-      description:
-        "The sixth edition. Physical layer up to applications, security chapter rewritten",
-      descriptionRu:
-        "Шестое издание. От физического уровня до прикладного, глава о безопасности переписана",
       category: "books",
       priority: "low",
       received: false,

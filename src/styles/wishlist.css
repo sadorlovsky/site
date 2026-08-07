@@ -688,8 +688,15 @@
   line-height: 1.5;
 }
 
+/* The price never shrinks — it is nowrap, and a flex item's automatic minimum
+   size is its min-content, which for unwrappable text is the whole string — so
+   on a 280px column (the grid's floor) the squeeze lands entirely on the pill
+   and pushes it out through the card's padding. Let the row break instead: the
+   pill drops under the price and both stay whole. It is the shape the ≤768px
+   layout already stacks into, arrived at by content rather than by viewport. */
 .item-footer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
@@ -871,6 +878,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  /* Holds the pill at the right edge on a wrapped line too, where it is the
+     only thing on the row and space-between has nothing to push it against. */
+  margin-left: auto;
 }
 
 .message-btn {
@@ -1365,6 +1375,13 @@ textarea.message-popover-input:focus {
   .item-footer {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  /* A cross-axis auto margin suppresses `align-items: stretch`, which is what
+     the stacked footer relies on — the pill has to span the card, not hug the
+     right edge. */
+  .reserve-actions {
+    margin-left: 0;
   }
 
   /* The stacked footer stretches .reserve-actions, not the pill inside it, so
