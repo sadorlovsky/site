@@ -78,7 +78,7 @@ export function ReservationsModal({
                     </span>
                   </div>
                   <div className="reservation-items">
-                    {userItems.map(({ item }) => (
+                    {userItems.map(({ item, reservation }) => (
                       <div key={item.id} className="reservation-item">
                         <img
                           src={`https://${cdnDomain}/${item.imageUrl}`}
@@ -91,6 +91,11 @@ export function ReservationsModal({
                           <span className="reservation-item-price">
                             {item.price}
                           </span>
+                          {reservation.message && (
+                            <p className="reservation-item-message">
+                              {reservation.message}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

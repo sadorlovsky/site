@@ -770,6 +770,250 @@
   }
 }
 
+/* =============================================================================
+   Reservation message — a bead beside the Reserve pill, and the panel it opens.
+
+   The bead is the random-pick die's recipe at footer scale: a round glass
+   capsule whose accent arrives as an indicator scaling up behind the glyph
+   rather than as a background swap. Round because the pill next to it is a
+   capsule and a square would be the only cornered thing in the footer.
+
+   It has no tooltip CSS of its own. The site has one tooltip — the glass bead
+   that trails the cursor (client/tooltip.ts) — and this is a `data-tooltip`
+   trigger like every other, which is also why the label can switch between
+   "Leave a message" and "Edit your message" from script.
+   ============================================================================= */
+.reserve-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.message-btn {
+  position: relative;
+  /* Own stacking context, so the z-index:-1 indicator lands above the frost and
+     below the glyph. */
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: light-dark(#555, #b4b4b8);
+  transition: color 0.3s ease;
+}
+
+.message-btn[hidden] {
+  display: none;
+}
+
+.message-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  opacity: 0;
+  transform: scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The refractive rim, above the indicator — and out of the way once it's lit. */
+.message-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: var(--glass-rim);
+}
+
+.message-btn:is(:hover, :focus-visible)::before,
+.message-btn[aria-expanded="true"]::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.message-btn:is(:hover, :focus-visible),
+.message-btn[aria-expanded="true"] {
+  color: #fff;
+}
+
+.message-btn:is(:hover, :focus-visible)::after,
+.message-btn[aria-expanded="true"]::after {
+  box-shadow: none;
+}
+
+.message-btn:focus-visible {
+  outline: 2px solid light-dark(#333, #fff);
+  outline-offset: 2px;
+}
+
+/* A message already written: the glyph takes the accent so the bead reads as
+   holding something, without lighting the full indicator that means "active". */
+.message-btn.has-message {
+  color: light-dark(var(--accent-end), var(--accent-start));
+}
+
+.message-btn.has-message:is(:hover, :focus-visible),
+.message-btn.has-message[aria-expanded="true"] {
+  color: #fff;
+}
+
+/* -----------------------------------------------------------------------------
+   The panel.
+
+   Position and entrance share the element, deliberately: the frost is on this
+   box, and a wrapper scaling it would reset the backdrop root and drop the
+   frost — the same trap the cursor tooltip documents. So Floating UI writes
+   left/top and the scale rides on a registered custom property, animated out of
+   whichever corner the bead ended up on (--popover-origin).
+   ----------------------------------------------------------------------------- */
+@property --popover-scale {
+  syntax: "<number>";
+  initial-value: 0.94;
+  inherits: false;
+}
+
+.message-popover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  box-sizing: border-box;
+  width: min(320px, calc(100vw - 2rem));
+  padding: 1rem;
+  border-radius: 18px;
+  transform-origin: var(--popover-origin, center bottom);
+  transform: scale(var(--popover-scale));
+  opacity: 0;
+  --popover-scale: 0.94;
+  transition:
+    opacity 0.18s ease,
+    --popover-scale 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.message-popover.is-open {
+  opacity: 1;
+  --popover-scale: 1;
+}
+
+.message-popover[hidden] {
+  display: none;
+}
+
+/* The shared rim rides on ::after at z-index 5, which is above the label of a
+   button but above the *content* of a panel — it would lay a white inner glow
+   over the field and the copy. A negative index still paints it over the
+   panel's own frost and sheen, just under everything written on top. */
+.message-popover::after {
+  z-index: -1;
+}
+
+.message-popover-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: light-dark(#111, #fafafa);
+}
+
+.message-popover-hint {
+  margin: 0.2rem 0 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: light-dark(#555, #9a9aa0);
+}
+
+/* The field sits *inside* frosted glass, so it can't be the kit's opaque input:
+   a solid white box would punch a hole in the panel. Tint only, and the focus
+   ring is the kit's accent inset. */
+textarea.message-popover-input {
+  resize: none;
+  background-color: light-dark(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0.22));
+  box-shadow: inset 0 0 0 1px
+    light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.14));
+}
+
+textarea.message-popover-input:hover:not(:disabled):not(:focus) {
+  box-shadow: inset 0 0 0 1px
+    light-dark(rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.24));
+}
+
+textarea.message-popover-input:focus {
+  box-shadow: inset 0 0 0 2px var(--accent-start);
+}
+
+.message-popover-error {
+  margin: 0.5rem 0 0;
+  font-size: 0.7rem;
+  color: light-dark(#dc2626, #f87171);
+}
+
+.message-popover-error[hidden] {
+  display: none;
+}
+
+.message-popover-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.message-popover-count {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: light-dark(#888, #777);
+}
+
+.message-popover-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Dismiss keeps the ghost *row* treatment the filter chips were given, not the
+   kit's ghost button: a second ring inside a panel that already has a rim reads
+   as a box in a box. */
+.message-popover .kit-btn--ghost {
+  background: transparent;
+  box-shadow: none;
+  color: light-dark(#666, #9a9aa0);
+}
+
+.message-popover .kit-btn--ghost:is(:hover, :focus-visible):not(:disabled) {
+  background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+  box-shadow: none;
+  color: light-dark(#111, #fff);
+}
+
+.message-popover[aria-busy="true"] {
+  cursor: progress;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-btn,
+  .message-btn::before,
+  .message-popover {
+    transition: none;
+  }
+}
+
 /* Accessibility - Focus styles. The reserve pill wears the chrome's focus ring
    (same as .dock-item / .lang-switcher__btn) since its accent fill is now the
    hover/focus indicator. */
@@ -897,6 +1141,16 @@
 
   .reserve-btn.own-reservation:hover {
     background: light-dark(#dcdcdc, #505050);
+  }
+
+  /* The message bead. It carries the glass tokens itself rather than the
+     .liquid-glass class, so global.css's override never reaches it — and left
+     out, it would be the one frosted thing in a row of opaque controls. Matches
+     the reserve pill it sits against, not the .liquid-glass default. */
+  .message-btn {
+    background-color: light-dark(#f0f0f0, #3a3a3a);
+    background-image: none;
+    backdrop-filter: none;
   }
 
   /* Random button. The lit override matters: the lit rule re-pins the
@@ -1029,7 +1283,11 @@
     align-items: stretch;
   }
 
+  /* The stacked footer stretches .reserve-actions, not the pill inside it, so
+     the pill has to claim the rest of the row for itself — otherwise it shrinks
+     to its label and huddles against the bead. */
   .reserve-btn {
+    flex: 1;
     text-align: center;
   }
 }

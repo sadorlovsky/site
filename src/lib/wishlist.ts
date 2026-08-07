@@ -10,6 +10,13 @@ export function getCdnImageUrl(filename: string): string {
   return `https://${cdnDomain}/${filename}`;
 }
 
+/**
+ * Length ceiling for the message a reserver may leave. Enforced by the action
+ * and mirrored onto the textarea's `maxlength`; the client reads it back off
+ * the element rather than importing this module, which is server-only.
+ */
+export const RESERVATION_MESSAGE_MAX_LENGTH = 200;
+
 // Types
 export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR";
 
@@ -36,7 +43,13 @@ export type WishlistItemWithReservation = {
   createdAt: Date;
   weight: number;
   isReserved: boolean;
-  reservedBy: string | null;
+  /**
+   * Deliberately no `reservedBy`. A visitor id is the credential that lets its
+   * holder cancel a reservation or write on it, and this type is rendered into
+   * a page every visitor can read — the card only needs to know that the item
+   * is taken. Whose it is arrives per-visitor from
+   * /api/wishlist/reservations.
+   */
 };
 
 export type Category = {
@@ -167,7 +180,6 @@ export async function getWishlistItems(
       priceUsd,
       priceRub,
       isReserved: !!reservation,
-      reservedBy: reservation?.reservedBy ?? null,
     };
   });
 

@@ -128,7 +128,7 @@ function isItemReserved(item: HTMLElement): boolean {
 
   // Check reserve button data attribute
   const reserveBtn = item.querySelector<HTMLElement>(".reserve-btn");
-  if (reserveBtn && reserveBtn.dataset.reservedBy) {
+  if (reserveBtn && (reserveBtn.dataset.reservation ?? "none") !== "none") {
     return true;
   }
 
