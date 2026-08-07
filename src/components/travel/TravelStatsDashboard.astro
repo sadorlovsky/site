@@ -7,6 +7,7 @@ import {
   formatVisitCount,
   getTravelFacts,
 } from "@lib/travel";
+import "@styles/travel.css";
 import "flag-icons/css/flag-icons.min.css";
 
 const facts = getTravelFacts(datedTrips);
@@ -26,14 +27,20 @@ const busiestYear = facts.tripsByYear.reduce(
 );
 ---
 
-<div class="facts">
-  <div class="cards">
+<div class="travel-sections">
+  <div class="facts">
     {
       facts.mostVisitedCity && (
-        <div class="card">
-          <h3 data-en="Most visited city" data-ru="Самый посещаемый город">
-            Most visited city
-          </h3>
+        <section>
+          <header class="travel-section-head">
+            <h3
+              class="travel-section-title"
+              data-en="Most visited city"
+              data-ru="Самый посещаемый город"
+            >
+              Most visited city
+            </h3>
+          </header>
           <div class="value">
             <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
             <span
@@ -44,22 +51,28 @@ const busiestYear = facts.tripsByYear.reduce(
             </span>
           </div>
           <span
-            class="detail"
+            class="travel-metric"
             data-en={formatVisitCount(facts.mostVisitedCity.visits, "en")}
             data-ru={formatVisitCount(facts.mostVisitedCity.visits, "ru")}
           >
             {formatVisitCount(facts.mostVisitedCity.visits, "en")}
           </span>
-        </div>
+        </section>
       )
     }
 
     {
       facts.mostVisitedCountry && (
-        <div class="card">
-          <h3 data-en="Most visited country" data-ru="Самая посещаемая страна">
-            Most visited country
-          </h3>
+        <section>
+          <header class="travel-section-head">
+            <h3
+              class="travel-section-title"
+              data-en="Most visited country"
+              data-ru="Самая посещаемая страна"
+            >
+              Most visited country
+            </h3>
+          </header>
           <div class="value">
             <span
               class={`fi fi-${facts.mostVisitedCountry.a2}`}
@@ -73,40 +86,52 @@ const busiestYear = facts.tripsByYear.reduce(
             </span>
           </div>
           <span
-            class="detail"
+            class="travel-metric"
             data-en={formatVisitCount(facts.mostVisitedCountry.visits, "en")}
             data-ru={formatVisitCount(facts.mostVisitedCountry.visits, "ru")}
           >
             {formatVisitCount(facts.mostVisitedCountry.visits, "en")}
           </span>
-        </div>
+        </section>
       )
     }
 
     {
       facts.mostActiveYear && (
-        <div class="card">
-          <h3 data-en="Busiest year" data-ru="Самый активный год">
-            Busiest year
-          </h3>
+        <section>
+          <header class="travel-section-head">
+            <h3
+              class="travel-section-title"
+              data-en="Busiest year"
+              data-ru="Самый активный год"
+            >
+              Busiest year
+            </h3>
+          </header>
           <div class="value">{facts.mostActiveYear.year}</div>
           <span
-            class="detail"
+            class="travel-metric"
             data-en={formatTripCount(facts.mostActiveYear.trips, "en")}
             data-ru={formatTripCount(facts.mostActiveYear.trips, "ru")}
           >
             {formatTripCount(facts.mostActiveYear.trips, "en")}
           </span>
-        </div>
+        </section>
       )
     }
 
     {
       facts.latestNewCountry && (
-        <div class="card">
-          <h3 data-en="Latest new country" data-ru="Последняя новая страна">
-            Latest new country
-          </h3>
+        <section>
+          <header class="travel-section-head">
+            <h3
+              class="travel-section-title"
+              data-en="Latest new country"
+              data-ru="Последняя новая страна"
+            >
+              Latest new country
+            </h3>
+          </header>
           <div class="value">
             <span
               class={`fi fi-${facts.latestNewCountry.a2}`}
@@ -120,7 +145,7 @@ const busiestYear = facts.tripsByYear.reduce(
             </span>
           </div>
           <span
-            class="detail"
+            class="travel-metric"
             data-en={formatMonthYear(
               facts.latestNewCountry.year,
               facts.latestNewCountry.month,
@@ -138,24 +163,30 @@ const busiestYear = facts.tripsByYear.reduce(
               "en",
             )}
           </span>
-        </div>
+        </section>
       )
     }
   </div>
 
   {
     facts.tripsByYear.length > 0 && (
-      <section class="card chart">
-        <h3 data-en="Trips by year" data-ru="Поездки по годам">
-          Trips by year
-        </h3>
+      <section>
+        <header class="travel-section-head">
+          <h3
+            class="travel-section-title"
+            data-en="Trips by year"
+            data-ru="Поездки по годам"
+          >
+            Trips by year
+          </h3>
+        </header>
         <ol class="years" role="list">
           {facts.tripsByYear
             .slice()
             .reverse()
             .map((entry) => (
               <li class="year">
-                <span class="year-label">{entry.year}</span>
+                <span class="travel-metric">{entry.year}</span>
                 <ProgressBar
                   value={entry.trips}
                   max={busiestYear}
@@ -165,7 +196,7 @@ const busiestYear = facts.tripsByYear.reduce(
                   data-aria-label-en={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
                   data-aria-label-ru={`${entry.year}: ${formatTripCount(entry.trips, "ru")}`}
                 />
-                <span class="year-count">{entry.trips}</span>
+                <span class="travel-metric year-count">{entry.trips}</span>
               </li>
             ))}
         </ol>
@@ -175,55 +206,16 @@ const busiestYear = facts.tripsByYear.reduce(
 </div>
 
 <style>
+  /* Two facts across, on the same rhythm the sections stack at, so the gap
+     between the columns matches the gap above and below them. */
   .facts {
-    display: flex;
-    flex-direction: column;
-    /* The page's own grid gap, so the dashboard sits on the same rhythm as the
-       stat strip above it rather than a tighter one of its own. */
-    gap: 1.25rem;
-  }
-
-  .cards {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
-  /* The same material as the stat strip and a wishlist card: tint, border,
-     shadow and rim all from the shared tokens, and the same 20px radius so the
-     three read as one family of surfaces. */
-  .card {
-    position: relative;
-    background: var(--card-bg);
-    border: var(--glass-border);
-    border-radius: 20px;
-    box-shadow: var(--glass-shadow);
-    padding: 1rem 1.1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4em;
-    /* The card is a grid item; without this a long country name would widen the
-       column past the page instead of wrapping inside it. */
-    min-width: 0;
-  }
-
-  /* The refractive rim — a lens edge lit from the top left. */
-  .card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    box-shadow: var(--glass-rim);
-  }
-
-  .card h3 {
-    margin: 0;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: light-dark(#666, #9a9aa0);
-  }
-
+  /* The one place a number is the answer rather than the annotation, so it is
+     the one place these views set type larger than the body. */
   .value {
     display: flex;
     align-items: center;
@@ -232,7 +224,10 @@ const busiestYear = facts.tripsByYear.reduce(
     font-size: 1.25rem;
     font-variant-numeric: tabular-nums;
     color: light-dark(#111, #fff);
+    /* A grid item without this widens its column past the page rather than
+       letting a long country name ellipsize inside it. */
     min-width: 0;
+    margin-bottom: 0.2em;
   }
 
   .value .fi {
@@ -245,12 +240,6 @@ const busiestYear = facts.tripsByYear.reduce(
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .detail {
-    font-size: 0.8rem;
-    color: light-dark(#888, #8a8a90);
-    font-variant-numeric: tabular-nums;
   }
 
   .years {
@@ -272,25 +261,13 @@ const busiestYear = facts.tripsByYear.reduce(
     gap: 0.6rem;
   }
 
-  .year-label,
-  .year-count {
-    font-size: 0.75rem;
-    color: light-dark(#888, #8a8a90);
-    font-variant-numeric: tabular-nums;
-  }
-
   .year-count {
     text-align: right;
   }
 
-  @media (max-width: 480px) {
-    .cards {
+  @media (max-width: 520px) {
+    .facts {
       grid-template-columns: 1fr;
-      gap: 16px;
-    }
-
-    .card {
-      padding: 0.85rem 0.9rem;
     }
 
     .value {

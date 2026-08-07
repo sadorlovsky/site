@@ -1,0 +1,132 @@
+/* The design code shared by the views behind /travel's switcher.
+   ============================================================================
+
+   Five views draw the same handful of things — a section with a label and a
+   count, a country as a flag and a name and a number — and until this file
+   they each drew them their own way. Measured on the page, one country's name
+   came out at 14.4px/600/#111 in the countries view, 13.6px/400/#111 in the
+   continents view and 13.6px/400/#555 in the checklist; its flag at three
+   sizes on two different baselines; the count beside it as a 9.6px filled
+   chip, as plain 12.8px/500, and as "(17)" at 12.8px/400. None of that was a
+   decision anyone made — it is three components written on three days.
+
+   The rules below are the page's own, not a new invention:
+
+   - The rhythm and the hairline come from the timeline's year heading
+     (YearGroup.astro), which is the oldest view and the one the page opens on.
+     1.5rem between blocks, and --glass-border for the rule, rather than the
+     hand-written `1px solid rgba(0,0,0,.1)` the checklist had grown.
+   - Nothing here paints a surface. The four counters above the switcher are
+     the page's only cards; the continents and stats views had grown a second
+     set in the same material, directly under them, which read as the counter
+     strip printed twice. Below the switcher the page is flat.
+   - The section label is an eyebrow, not a heading: a year is a landmark and
+     stays 1.25rem, but "Europe" and "Trips by year" are labels for what
+     follows and sit at the size of the numbers they introduce. */
+
+/* The stack of sections a view is made of. */
+.travel-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Label left, count right, hairline under — the year heading without the
+   sticky positioning, which only the timeline needs because only the timeline
+   is long enough to scroll a heading out of view.
+
+   The rule is NOT --glass-border, which is what the year heading uses. That
+   token is the lit edge of a glass capsule: rgba(255,255,255,0.7) in the light
+   scheme, which is a highlight, not a line. Measured against the page it draws
+   70%-white on rgb(248,248,255) and disappears entirely; the year heading gets
+   away with it only because it is sticky and has the veil behind it. A divider
+   lying on the page has to be darker than the page. */
+.travel-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid
+    light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.1));
+}
+
+.travel-section-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: light-dark(#666, #888);
+}
+
+/* Every number in these views: the count in a section head, the cities beside
+   a country, the trips in a year. One size, one colour, always tabular so
+   columns of them line up instead of wandering with the digit widths. */
+.travel-metric {
+  font-size: 0.8rem;
+  color: light-dark(#888, #8a8a90);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Pushed to the end of its row so the numbers line up down the column rather
+   than trailing each name at a different offset. */
+.travel-metric--trailing {
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+/* Countries in columns. Multi-column rather than grid so a sorted list fills
+   downwards and the reader can scan one column at a time — the continents view
+   is sorted by size, so its first column is the countries worth reading and
+   the second is the one-city tail. `columns` also balances the last block
+   itself, which a grid cannot do without knowing the row count. */
+.travel-grid {
+  columns: var(--travel-columns, 2);
+  column-gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* break-inside keeps a row whole at the column boundary, which multi-column
+   layout will otherwise split mid-line. */
+.travel-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0;
+  break-inside: avoid;
+  font-size: 0.85rem;
+}
+
+.travel-flag {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+
+/* Medium rather than semibold. In the countries view the name leads a line
+   that goes on to list cities, which is why it used to be 600 there and 400
+   in the other two; but the "—" and the colour already separate it from the
+   cities, so one weight in the middle carries both jobs. */
+.travel-name {
+  font-weight: 500;
+  color: light-dark(#111, #eee);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A name that is a place still to go rather than one that has been. */
+.travel-name--muted {
+  color: light-dark(#666, #9a9aa0);
+}
+
+@media (max-width: 520px) {
+  .travel-grid {
+    columns: 1;
+  }
+}
