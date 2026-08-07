@@ -1,0 +1,203 @@
+---
+import Badge from "@components/kit/Badge.astro";
+import ProgressBar from "@components/kit/ProgressBar.astro";
+import {
+  datedTrips,
+  formatCityCount,
+  getCountriesByContinent,
+} from "@lib/travel";
+import "flag-icons/css/flag-icons.min.css";
+
+const continents = getCountriesByContinent(datedTrips);
+
+// Seven glass cards where five of them say nothing would drown the two that do,
+// so the untouched continents collapse into one closing card. They are still
+// named — half the point of a continents view is what is left to go, and a
+// missing Africa would read as a rendering bug rather than as zero.
+const visited = continents.filter((continent) => continent.countries.length > 0);
+const remaining = continents.filter(
+  (continent) => continent.countries.length === 0,
+);
+---
+
+<div class="continents">
+  {
+    visited.map((continent) => (
+      <section class="card">
+        <header class="head">
+          <h2 data-en={continent.name.en} data-ru={continent.name.ru}>
+            {continent.name.en}
+          </h2>
+          <Badge size="sm">{continent.visited} / {continent.total}</Badge>
+        </header>
+        <ProgressBar
+          value={continent.visited}
+          max={continent.total}
+          showPercent={false}
+          accent
+          label={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+        />
+        <ul class="countries" role="list">
+          {continent.countries.map((country) => (
+            <li class="country">
+              <span class={`fi fi-${country.a2}`} aria-hidden="true" />
+              <span
+                class="name"
+                data-en={country.name.en}
+                data-ru={country.name.ru}
+              >
+                {country.name.en}
+              </span>
+              <span
+                class="cities"
+                data-en={formatCityCount(country.cities.length, "en")}
+                data-ru={formatCityCount(country.cities.length, "ru")}
+              >
+                {formatCityCount(country.cities.length, "en")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    remaining.length > 0 && (
+      <section class="card">
+        <header class="head">
+          <h2 data-en="Still to go" data-ru="Ещё предстоит">
+            Still to go
+          </h2>
+        </header>
+        <ul class="countries" role="list">
+          {remaining.map((continent) => (
+            <li class="country">
+              <span
+                class="name muted"
+                data-en={continent.name.en}
+                data-ru={continent.name.ru}
+              >
+                {continent.name.en}
+              </span>
+              {/* Antarctica has no countries to count, so a fraction there
+                  would be a hollow "0 / 0" rather than a target. */}
+              <span class="cities">
+                {continent.total > 0 ? `0 / ${continent.total}` : "—"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</div>
+
+<style>
+  .continents {
+    display: flex;
+    flex-direction: column;
+    /* The page's own grid gap, so the cards sit on the same rhythm as the stat
+       strip and the map rather than a tighter one of their own. */
+    gap: 1.25rem;
+  }
+
+  /* The same material as the stat strip and a wishlist card: tint, border,
+     shadow and rim all from the shared tokens, and the same 20px radius so the
+     three read as one family of surfaces. */
+  .card {
+    position: relative;
+    background: var(--card-bg);
+    border: var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    padding: 1rem 1.1rem;
+  }
+
+  /* The refractive rim — a lens edge lit from the top left. */
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: var(--glass-rim);
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .head h2 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: light-dark(#666, #9a9aa0);
+  }
+
+  /* Two columns on a card this wide: 23 European countries in a single stack
+     is a scroll, and each row is a flag, a short name and a small number. */
+  .countries {
+    columns: 2;
+    column-gap: 1.5rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* break-inside keeps a row from being split across the column boundary,
+     which multi-column layout will otherwise do mid-line. */
+  .country {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding: 0.2rem 0;
+    break-inside: avoid;
+    font-size: 0.85rem;
+  }
+
+  .country .fi {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    border-radius: 2px;
+    /* The flag is a box on the text baseline, so it needs nudging back down to
+       sit with the letters rather than on top of them. */
+    transform: translateY(0.1em);
+  }
+
+  .name {
+    color: light-dark(#111, #eee);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .name.muted {
+    color: light-dark(#666, #9a9aa0);
+  }
+
+  /* Pushed to the right edge of its column so the counts line up down the list
+     instead of trailing each name at a different offset. */
+  .cities {
+    margin-left: auto;
+    padding-left: 0.5rem;
+    font-size: 0.8rem;
+    color: light-dark(#888, #8a8a90);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 520px) {
+    .countries {
+      columns: 1;
+    }
+
+    .card {
+      padding: 0.85rem 0.9rem;
+    }
+  }
+</style>

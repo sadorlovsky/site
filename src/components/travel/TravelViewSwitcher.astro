@@ -21,15 +21,33 @@ const items = [
     icon: "flag",
   },
   {
+    id: "continents",
+    label: "Continents",
+    labelRu: "Континенты",
+    icon: "continent",
+  },
+  {
+    id: "stats",
+    label: "Stats",
+    labelRu: "Статистика",
+    icon: "stats",
+  },
+  {
     id: "checklist",
     label: "Checklist",
     labelRu: "Чеклист",
     icon: "checklist",
   },
 ];
+
+// The script below used to carry its own copy of this list to validate the
+// URL hash against. Adding a view meant editing both, and forgetting the copy
+// left the new view reachable by its button but not by its own link — the hash
+// fell through to the default and the page opened on the timeline instead.
+const viewIds = items.map((item) => item.id).join(" ");
 ---
 
-<nav class="view-switcher" data-current={currentView}>
+<nav class="view-switcher" data-current={currentView} data-views={viewIds}>
   <ToggleGroup
     items={items}
     value={currentView}
@@ -50,8 +68,9 @@ const items = [
 
     // Get initial view from URL hash or default
     const hash = window.location.hash.slice(1);
-    const validViews = ["timeline", "countries", "checklist"];
-    const initialView = validViews.includes(hash) ? hash : "timeline";
+    const validViews = (switcher.getAttribute("data-views") ?? "").split(" ");
+    const defaultView = validViews[0];
+    const initialView = validViews.includes(hash) ? hash : defaultView;
 
     function setView(viewId: string) {
       // Update buttons
@@ -73,7 +92,11 @@ const items = [
       });
 
       // Update URL hash without scrolling
-      history.replaceState(null, "", viewId === "timeline" ? "/travel" : `/travel#${viewId}`);
+      history.replaceState(
+        null,
+        "",
+        viewId === defaultView ? "/travel" : `/travel#${viewId}`,
+      );
     }
 
     // Set initial view
@@ -91,7 +114,7 @@ const items = [
     // Handle hash changes
     window.addEventListener("hashchange", () => {
       const hash = window.location.hash.slice(1);
-      const viewId = validViews.includes(hash) ? hash : "timeline";
+      const viewId = validViews.includes(hash) ? hash : defaultView;
       setView(viewId);
     });
   }

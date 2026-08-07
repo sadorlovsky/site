@@ -1,0 +1,292 @@
+---
+import ProgressBar from "@components/kit/ProgressBar.astro";
+import {
+  datedTrips,
+  formatMonthYear,
+  formatTripCount,
+  formatVisitCount,
+  getTravelFacts,
+} from "@lib/travel";
+import "flag-icons/css/flag-icons.min.css";
+
+const facts = getTravelFacts(datedTrips);
+
+// The bars are read against the busiest year rather than against a round
+// number, so the tallest one always reaches the end of its groove and the
+// shape of the decade is legible instead of a row of stubs.
+const busiestYear = facts.tripsByYear.reduce(
+  (max, entry) => Math.max(max, entry.trips),
+  0,
+);
+---
+
+<div class="facts">
+  <div class="cards">
+    {
+      facts.mostVisitedCity && (
+        <div class="card">
+          <h3 data-en="Most visited city" data-ru="Самый посещаемый город">
+            Most visited city
+          </h3>
+          <div class="value">
+            <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
+            <span
+              data-en={facts.mostVisitedCity.name.en}
+              data-ru={facts.mostVisitedCity.name.ru}
+            >
+              {facts.mostVisitedCity.name.en}
+            </span>
+          </div>
+          <span
+            class="detail"
+            data-en={formatVisitCount(facts.mostVisitedCity.visits, "en")}
+            data-ru={formatVisitCount(facts.mostVisitedCity.visits, "ru")}
+          >
+            {formatVisitCount(facts.mostVisitedCity.visits, "en")}
+          </span>
+        </div>
+      )
+    }
+
+    {
+      facts.mostVisitedCountry && (
+        <div class="card">
+          <h3 data-en="Most visited country" data-ru="Самая посещаемая страна">
+            Most visited country
+          </h3>
+          <div class="value">
+            <span
+              class={`fi fi-${facts.mostVisitedCountry.a2}`}
+              aria-hidden="true"
+            />
+            <span
+              data-en={facts.mostVisitedCountry.name.en}
+              data-ru={facts.mostVisitedCountry.name.ru}
+            >
+              {facts.mostVisitedCountry.name.en}
+            </span>
+          </div>
+          <span
+            class="detail"
+            data-en={formatTripCount(facts.mostVisitedCountry.visits, "en")}
+            data-ru={formatTripCount(facts.mostVisitedCountry.visits, "ru")}
+          >
+            {formatTripCount(facts.mostVisitedCountry.visits, "en")}
+          </span>
+        </div>
+      )
+    }
+
+    {
+      facts.mostActiveYear && (
+        <div class="card">
+          <h3 data-en="Busiest year" data-ru="Самый активный год">
+            Busiest year
+          </h3>
+          <div class="value">{facts.mostActiveYear.year}</div>
+          <span
+            class="detail"
+            data-en={formatTripCount(facts.mostActiveYear.trips, "en")}
+            data-ru={formatTripCount(facts.mostActiveYear.trips, "ru")}
+          >
+            {formatTripCount(facts.mostActiveYear.trips, "en")}
+          </span>
+        </div>
+      )
+    }
+
+    {
+      facts.latestNewCountry && (
+        <div class="card">
+          <h3 data-en="Latest new country" data-ru="Последняя новая страна">
+            Latest new country
+          </h3>
+          <div class="value">
+            <span
+              class={`fi fi-${facts.latestNewCountry.a2}`}
+              aria-hidden="true"
+            />
+            <span
+              data-en={facts.latestNewCountry.name.en}
+              data-ru={facts.latestNewCountry.name.ru}
+            >
+              {facts.latestNewCountry.name.en}
+            </span>
+          </div>
+          <span
+            class="detail"
+            data-en={formatMonthYear(
+              facts.latestNewCountry.year,
+              facts.latestNewCountry.month,
+              "en",
+            )}
+            data-ru={formatMonthYear(
+              facts.latestNewCountry.year,
+              facts.latestNewCountry.month,
+              "ru",
+            )}
+          >
+            {formatMonthYear(
+              facts.latestNewCountry.year,
+              facts.latestNewCountry.month,
+              "en",
+            )}
+          </span>
+        </div>
+      )
+    }
+  </div>
+
+  {
+    facts.tripsByYear.length > 0 && (
+      <section class="card chart">
+        <h3 data-en="Trips by year" data-ru="Поездки по годам">
+          Trips by year
+        </h3>
+        <ol class="years" role="list">
+          {facts.tripsByYear
+            .slice()
+            .reverse()
+            .map((entry) => (
+              <li class="year">
+                <span class="year-label">{entry.year}</span>
+                <ProgressBar
+                  value={entry.trips}
+                  max={busiestYear}
+                  showPercent={false}
+                  accent={entry.trips === busiestYear}
+                  label={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
+                />
+                <span class="year-count">{entry.trips}</span>
+              </li>
+            ))}
+        </ol>
+      </section>
+    )
+  }
+</div>
+
+<style>
+  .facts {
+    display: flex;
+    flex-direction: column;
+    /* The page's own grid gap, so the dashboard sits on the same rhythm as the
+       stat strip above it rather than a tighter one of its own. */
+    gap: 1.25rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  /* The same material as the stat strip and a wishlist card: tint, border,
+     shadow and rim all from the shared tokens, and the same 20px radius so the
+     three read as one family of surfaces. */
+  .card {
+    position: relative;
+    background: var(--card-bg);
+    border: var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    /* The card is a grid item; without this a long country name would widen the
+       column past the page instead of wrapping inside it. */
+    min-width: 0;
+  }
+
+  /* The refractive rim — a lens edge lit from the top left. */
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: var(--glass-rim);
+  }
+
+  .card h3 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: light-dark(#666, #9a9aa0);
+  }
+
+  .value {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    color: light-dark(#111, #fff);
+    min-width: 0;
+  }
+
+  .value .fi {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    border-radius: 3px;
+  }
+
+  .value > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .detail {
+    font-size: 0.8rem;
+    color: light-dark(#888, #8a8a90);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .years {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Three fixed tracks rather than a flex row: the year and the count are
+     tabular numerals of known width, so pinning their columns keeps every
+     groove starting and ending on the same two lines down the whole list. */
+  .year {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) 1.25rem;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .year-label,
+  .year-count {
+    font-size: 0.75rem;
+    color: light-dark(#888, #8a8a90);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .year-count {
+    text-align: right;
+  }
+
+  @media (max-width: 480px) {
+    .cards {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      padding: 0.85rem 0.9rem;
+    }
+
+    .value {
+      font-size: 1.1rem;
+    }
+  }
+</style>
