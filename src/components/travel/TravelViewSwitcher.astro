@@ -7,37 +7,17 @@ interface Props {
 
 const { currentView } = Astro.props;
 
+// No icons. ToggleGroup draws one before the label when an item asks for it,
+// and five of them across a row this wide were five more things to read than
+// the five words already there — a flag, a globe, a bar chart and a tick that
+// each restated their own label. The words are short and unambiguous in both
+// languages, so the icons were decoration on a control, not a way into it.
 const items = [
-  {
-    id: "timeline",
-    label: "Timeline",
-    labelRu: "Хронология",
-    icon: "timeline",
-  },
-  {
-    id: "countries",
-    label: "Countries",
-    labelRu: "Страны",
-    icon: "flag",
-  },
-  {
-    id: "continents",
-    label: "Continents",
-    labelRu: "Континенты",
-    icon: "continent",
-  },
-  {
-    id: "stats",
-    label: "Stats",
-    labelRu: "Статистика",
-    icon: "stats",
-  },
-  {
-    id: "checklist",
-    label: "Checklist",
-    labelRu: "Чеклист",
-    icon: "checklist",
-  },
+  { id: "timeline", label: "Timeline", labelRu: "Хронология" },
+  { id: "countries", label: "Countries", labelRu: "Страны" },
+  { id: "continents", label: "Continents", labelRu: "Континенты" },
+  { id: "stats", label: "Stats", labelRu: "Статистика" },
+  { id: "checklist", label: "Checklist", labelRu: "Чеклист" },
 ];
 
 // The script below used to carry its own copy of this list to validate the
