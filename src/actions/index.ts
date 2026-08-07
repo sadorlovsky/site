@@ -1,6 +1,6 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
-import { db, Reservation, WishlistItem, and, eq, sql } from "astro:db";
+import { db, Reservation, WishlistItem, and, eq, sql } from "@lib/db";
 import { RESERVATION_MESSAGE_MAX_LENGTH } from "@lib/wishlist";
 
 const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";

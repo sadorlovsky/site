@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { db, Reservation } from "astro:db";
+import { db, Reservation } from "@lib/db";
 
 export const prerender = false;
 

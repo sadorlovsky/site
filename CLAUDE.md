@@ -11,8 +11,8 @@ Personal portfolio and blog website at **orlovsky.dev** built with Astro. Featur
 - **Framework**: Astro 7 (SSR mode)
 - **Language**: TypeScript (strict)
 - **UI**: React 19 (for interactive components)
-- **Database**: Astro DB + Turso (LibSQL)
-- **Deployment**: Vercel with ISR
+- **Database**: Turso (libSQL) via Drizzle ORM, migrations by drizzle-kit
+- **Deployment**: Vercel with ISR, deployed from CI after migrations
 - **Package Manager**: Bun
 
 ## Commands
@@ -23,16 +23,23 @@ bun build        # Production build
 bun preview      # Preview production build
 bun test         # Run Vitest tests
 astro check      # TypeScript checking
-astro db push    # Apply local schema changes
-astro db push --remote  # Apply schema to production
+
+bun db:generate  # Write a migration for the current schema.ts
+bun db:migrate   # Apply pending migrations to ./local.db
+bun db:seed      # Refill the local database with dev data
+bun db:reset     # Delete local.db, migrate, seed
+
+bun db:migrate:remote   # Apply them to Turso. CI's job — see below
 ```
 
-`bun build` fails without a database to build against. Point it at the local
-one — `ASTRO_DATABASE_FILE=.astro/content.db bun build` — or pass `--remote` to
-build against production.
+Everything local by default, production only when spelled out. Dev talks to
+`./local.db` whatever `.env` says (`src/lib/db/index.ts`), `db:seed` is pinned
+to that file because it truncates every table, and migrations reach Turso only
+via the explicit `--remote`. bun loads `.env` automatically, so the Turso
+credentials are always in scope — nothing may treat that as permission.
 
-The dev server reseeds `.astro/content.db` from `db/seed.ts` on start, so
-editing the seed means restarting it.
+Start a fresh checkout with `bun db:reset`; there is no database until you do,
+because nothing rebuilds it on dev server start.
 
 To reach the admin panel locally, `POST /api/~/auth/dev-login` sets a session
 cookie without a passkey. It only answers on localhost.
@@ -50,6 +57,7 @@ src/
 ├── layouts/         # Page layouts
 ├── client/          # Browser-side scripts (loaded by pages, not bundled UI)
 ├── lib/             # Utilities
+│   ├── db/          # Drizzle schema and the libSQL handle everything queries through
 │   ├── admin/       # Auth, WebAuthn, crypto, R2, rate-limit, ISR revalidation
 │   ├── travel/      # Countries and trip stats (has the repo's unit tests)
 │   ├── blog.ts      # Post collection helpers
@@ -60,9 +68,8 @@ src/
 ├── icons/           # SVG icons for astro-icon (Lucide style, 24×24, stroke)
 ├── assets/          # Images processed by Astro
 └── styles/          # CSS files
-db/
-├── config.ts        # Database schema
-└── seed.ts          # Dev seed data
+db/migrations/       # Generated SQL, applied in order — never edited by hand
+scripts/db/          # migrate, seed, and the build-skip check Vercel runs
 ```
 
 ## Path Aliases
@@ -79,12 +86,33 @@ db/
 ## Key Patterns
 
 ### Database
-- Schema defined in `db/config.ts`
-- Use Astro DB ORM: `import { db, WishlistItem } from 'astro:db'`
+- Schema in `src/lib/db/schema.ts`; query with `import { db, WishlistItem, eq } from "@lib/db"`
+  — tables and Drizzle's operators are re-exported there, so a query takes one import
 - Tables: WishlistItem, ItemOption, Reservation, ExchangeRate, AdminCredential, AdminSession
+- Dates are ISO text, not epoch integers (a `customType` in the schema converts
+  to and from `Date`). This is how Astro DB wrote them and the existing rows
+  still read that way — do not "fix" it to `integer({ mode: "timestamp" })`
 - `ItemOption` holds the extra places one gift can be bought. The item's own
   price/url is the first option and owns no row there; a reservation stays on
   the item, because the gift is one gift whichever shop it comes from
+
+### Changing the Schema
+
+1. Edit `src/lib/db/schema.ts`
+2. `bun db:generate` — writes SQL into `db/migrations/`; commit it with the code
+3. `bun db:reset` to rebuild the local database, or `bun db:migrate` to keep the data
+
+Production is never migrated by hand. Merging to `main` does it: Vercel's
+Ignored Build Step (`scripts/db/check-pending.mjs`) sees a migration the
+database has not got and **skips the build**, then `.github/workflows/deploy.yml`
+applies migrations and calls the deploy hook. Code therefore never ships ahead
+of the schema it needs. A push with no new migration skips the hook and lets
+Vercel build as usual.
+
+This needs `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in three places — GitHub
+Actions secrets (to migrate), Vercel (for the runtime *and* for the ignore
+step), and `.env` locally (for scripts) — plus `VERCEL_DEPLOY_HOOK_URL` as an
+Actions secret.
 
 ### Environment Variables
 - Server secrets: `import { SECRET_NAME } from 'astro:env/server'`

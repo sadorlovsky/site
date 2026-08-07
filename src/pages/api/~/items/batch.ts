@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { verifySession } from "@lib/admin/auth";
 import { revalidateWishlist } from "@lib/admin/revalidate";
-import { db, WishlistItem, eq } from "astro:db";
+import { db, WishlistItem, eq } from "@lib/db";
 import { z } from "zod";
 
 export const prerender = false;

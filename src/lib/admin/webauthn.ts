@@ -9,7 +9,7 @@ import type {
   AuthenticationResponseJSON,
   AuthenticatorTransportFuture,
 } from "@simplewebauthn/types";
-import { db, AdminCredential, eq } from "astro:db";
+import { db, AdminCredential, eq } from "@lib/db";
 import { ADMIN_RP_ID, ADMIN_RP_NAME } from "astro:env/server";
 
 // Get RP configuration from environment

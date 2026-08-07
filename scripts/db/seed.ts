@@ -1,13 +1,41 @@
+/**
+ * Fill the local database with something to look at.
+ *
+ * Dev data only, and it refuses to run against anything but a local file — the
+ * first thing it does is delete every row, and pointing that at Turso would
+ * empty the real wishlist. Astro DB used to rebuild and reseed on every dev
+ * server start; local.db persists now, so this is a command you run when you
+ * want the data reset.
+ */
+
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import {
-  db,
   WishlistItem,
   ItemOption,
   ExchangeRate,
   Reservation,
-} from "astro:db";
+  AdminSession,
+  AdminCredential,
+} from "../../src/lib/db/schema";
 
-// https://astro.build/db/seed
-export default async function seed() {
+// Hardcoded, not read from the environment: this deletes every row, and bun
+// loads .env automatically, so a TURSO_DATABASE_URL in scope must never be able
+// to become the target.
+const url = "file:local.db";
+
+const db = drizzle(createClient({ url }));
+
+async function seed() {
+  // Reset first: seeding assigns fixed ids, so a second run would collide.
+  // Order respects the foreign keys — children before the rows they point at.
+  await db.delete(AdminSession);
+  await db.delete(Reservation);
+  await db.delete(ItemOption);
+  await db.delete(WishlistItem);
+  await db.delete(ExchangeRate);
+  await db.delete(AdminCredential);
+
   // Insert exchange rates (to RUB)
   await db.insert(ExchangeRate).values([
     {
@@ -1066,3 +1094,6 @@ export default async function seed() {
     },
   ]);
 }
+
+await seed();
+console.log(`seeded ${url}`);
