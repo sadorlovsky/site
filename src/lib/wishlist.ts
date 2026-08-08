@@ -5,6 +5,7 @@ import {
   Reservation,
   ExchangeRate,
 } from "@lib/db";
+import { priceInUsdCents, type Currency, type RubRates } from "@lib/price";
 import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 // CDN domain helper - uses production domain in prod, dev domain otherwise
@@ -24,13 +25,6 @@ export function getCdnImageUrl(filename: string): string {
 export const RESERVATION_MESSAGE_MAX_LENGTH = 200;
 
 // Types
-export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR" | "RUB" | "KZT";
-
-export type ParsedPrice = {
-  amount: number; // In cents
-  currency: Currency;
-};
-
 /**
  * One way to buy an item. The item's own price/url is one of these (with a null
  * id and no label); ItemOption rows are the rest.
@@ -139,69 +133,6 @@ const priorityOrder: Record<string, number> = {
   low: 2,
 };
 
-// Currency prefixes mapping
-const currencyPrefixes: { prefix: string; currency: Currency }[] = [
-  { prefix: "AU$", currency: "AUD" },
-  { prefix: "$", currency: "USD" },
-  { prefix: "£", currency: "GBP" },
-  { prefix: "€", currency: "EUR" },
-  { prefix: "₹", currency: "INR" },
-  { prefix: "₽", currency: "RUB" },
-  { prefix: "₸", currency: "KZT" },
-];
-
-// Parse price string like "$64", "£25", "€300", "AU$140", "₽768", "₸25,940"
-export function parsePrice(price: string): ParsedPrice | null {
-  const trimmed = price.trim();
-
-  for (const { prefix, currency } of currencyPrefixes) {
-    if (trimmed.startsWith(prefix)) {
-      // parseFloat, not parseInt: "€6.20" and "€6.50" both read as 6 otherwise,
-      // and picking the cheapest of an item's options has to be able to tell
-      // them apart.
-      const amount = parseFloat(trimmed.slice(prefix.length).replace(/,/g, ""));
-      return isNaN(amount)
-        ? null
-        : { amount: Math.round(amount * 100), currency };
-    }
-  }
-
-  return null;
-}
-
-/**
- * The rates as the ExchangeRate table holds them: roubles for one unit of the
- * currency, which is a fraction below a rouble's worth (a tenge is about 0.15).
- */
-export type RubRates = Partial<Record<Currency, number>>;
-
-/**
- * What a price string is worth in US cents, or null if nothing on file can say
- * — an unreadable price, or a currency with no rate. Null is not zero: an
- * option priced this way sits out the comparison that picks an item's cheapest
- * way to buy rather than winning it.
- */
-export function priceInUsdCents(
-  price: string,
-  toRubRates: RubRates,
-): number | null {
-  const parsed = parsePrice(price);
-  const usdToRub = toRubRates.USD;
-  if (!parsed || !usdToRub) return null;
-
-  if (parsed.currency === "USD") {
-    return parsed.amount;
-  }
-
-  // Convert to USD: amount_in_currency * (rate_to_rub / usd_to_rub_rate). Both
-  // rates are real numbers, so the rounding happens once, at the end, on a
-  // count of cents — not on the rate that got us there.
-  const rateToRub = toRubRates[parsed.currency];
-  if (!rateToRub) return null;
-
-  return Math.round((parsed.amount * rateToRub) / usdToRub);
-}
-
 /** How a shop link reads on a card: bare host and path, no scheme, no trailing slash. */
 export function formatUrlLabel(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
@@ -264,9 +195,14 @@ export async function getWishlistItems(
     const priceUsd = priceInUsdCents(price, toRubRates);
     return {
       priceUsd,
-      // Rounded, because a fractional USD→RUB rate would otherwise leave
-      // fractions of a kopeck in a field the rest of the code counts in cents.
-      priceRub: priceUsd && usdToRub ? Math.round(priceUsd * usdToRub) : null,
+      // `!== null`, not truthiness: a price small enough to round to 0 cents is
+      // still a price, and the comparison below admits it on `!== null` — so
+      // treating it as absent here would let it win the item's "from" price and
+      // then have no roubles to show for it. Rounded, because a fractional
+      // USD→RUB rate would otherwise leave fractions of a kopeck in a field the
+      // rest of the code counts in cents.
+      priceRub:
+        priceUsd !== null && usdToRub ? Math.round(priceUsd * usdToRub) : null,
     };
   }
 

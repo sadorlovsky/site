@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { parsePrice } from "@lib/price";
 import type {
   WishlistItem,
   Reservation,
@@ -6,39 +7,21 @@ import type {
   ExchangeRates,
 } from "./types";
 
-// Currency prefixes for parsing prices
-const currencyPrefixes = [
-  { prefix: "AU$", currency: "AUD" },
-  { prefix: "$", currency: "USD" },
-  { prefix: "£", currency: "GBP" },
-  { prefix: "€", currency: "EUR" },
-  { prefix: "₹", currency: "INR" },
-  { prefix: "₸", currency: "KZT" },
-] as const;
-
-// Parse price string and convert to RUB
+// Parse price string and convert to RUB. The parser is the one the public cards
+// use — the dashboard had its own until it drifted (parseInt there, parseFloat
+// here) and every price with cents in it came out short.
 function convertToRub(
   price: string,
   exchangeRates: ExchangeRates,
 ): number | null {
-  const trimmed = price.trim();
+  const parsed = parsePrice(price);
+  if (!parsed) return null;
 
-  for (const { prefix, currency } of currencyPrefixes) {
-    if (trimmed.startsWith(prefix)) {
-      const amount = parseInt(
-        trimmed.slice(prefix.length).replace(/,/g, ""),
-        10,
-      );
-      if (isNaN(amount)) return null;
+  const rate = exchangeRates[parsed.currency];
+  if (!rate) return null;
 
-      const rate = exchangeRates[currency];
-      if (!rate) return null;
-
-      return Math.round(amount * rate);
-    }
-  }
-
-  return null;
+  // parsePrice counts in cents; this row of the dashboard shows whole roubles.
+  return Math.round((parsed.amount * rate) / 100);
 }
 
 // Format number as RUB price
