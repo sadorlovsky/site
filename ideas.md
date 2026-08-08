@@ -23,7 +23,8 @@ undated trips: 12 (Dubai, Japan, Uzbekistan…) — their cities are drawn nowhe
   and the TBA group in the list is commented out (TravelTripList.astro:14)
 ```
 
-There is also no `click` handler on the map at all.
+There is also no `click` handler on the map at all. (There is now — clusters
+open on click. C still has nothing.)
 
 ### A. Weight by visit count
 
@@ -37,11 +38,18 @@ log) and a ceiling, or the one city at 10 becomes a blob while the 121 cities at
 
 ### B. Cluster at low zoom
 
+**Done** — built in `src/client/travel-map.ts`.
+
 MapLibre's built-in clustering on the GeoJSON source. Europe is a smear of
 overlapping dots on the globe; a count is more honest than a blur.
 
 Risk: a numbered cluster bubble reads as data-viz and fights the beacon
 aesthetic. Hover and the label overlay would both need a cluster branch.
+
+The risk was real and the way out was to drop the numeral: a cluster is the
+bead scaled by the square root of its count, and the count itself is said in
+the tooltip, where it was already going to have to be said. Clicking eases to
+the zoom that breaks the group apart — the map's first click handler.
 
 ### C. Click a city → scroll the trip list to it
 
@@ -67,6 +75,13 @@ that rewards zooming in instead of dumping everything at once.
 
 Cheap: the same zoom interpolation the city layers already use.
 
+Built once and taken back out: a ring with a small core, drawn beneath the
+beads. It worked as a mark and still made the map worse — thirteen contours
+scattered among 88 beacons read as a second map laid over the first, and the
+question the page answers is where the trips went. The mark is in the history
+if it is ever wanted back; what it needs first is a reason for a reader to care
+which lake is which.
+
 ### F. Recency as brightness, or a pulse
 
 Drive brightness from the most recent year per city, so "where I've been lately"
@@ -89,6 +104,11 @@ in the code.
 E + A are the cheap pair that give the map depth and weight. C is the only one
 that changes what the map is for. B if the density in Europe actually bothers
 the owner. D is the prettiest and the most expensive — its own pass.
+
+B is built; E was built and then dropped. A is the obvious next one and now
+nearly free: clusters already scale off a count, so weighting a lone city by
+its visits is the same curve pointed at a different property. C and D are still
+open.
 
 ## Marker visuals: bringing the dots into liquid glass
 
