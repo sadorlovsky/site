@@ -5,6 +5,7 @@ import {
   Reservation,
   ExchangeRate,
 } from "@lib/db";
+import { priceInUsdCents, type Currency, type RubRates } from "@lib/price";
 import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 // CDN domain helper - uses production domain in prod, dev domain otherwise
@@ -24,13 +25,6 @@ export function getCdnImageUrl(filename: string): string {
 export const RESERVATION_MESSAGE_MAX_LENGTH = 200;
 
 // Types
-export type Currency = "USD" | "EUR" | "GBP" | "AUD" | "INR" | "RUB";
-
-export type ParsedPrice = {
-  amount: number; // In cents
-  currency: Currency;
-};
-
 /**
  * One way to buy an item. The item's own price/url is one of these (with a null
  * id and no label); ItemOption rows are the rest.
@@ -139,35 +133,6 @@ const priorityOrder: Record<string, number> = {
   low: 2,
 };
 
-// Currency prefixes mapping
-const currencyPrefixes: { prefix: string; currency: Currency }[] = [
-  { prefix: "AU$", currency: "AUD" },
-  { prefix: "$", currency: "USD" },
-  { prefix: "£", currency: "GBP" },
-  { prefix: "€", currency: "EUR" },
-  { prefix: "₹", currency: "INR" },
-  { prefix: "₽", currency: "RUB" },
-];
-
-// Parse price string like "$64", "£25", "€300", "AU$140", "₽768"
-export function parsePrice(price: string): ParsedPrice | null {
-  const trimmed = price.trim();
-
-  for (const { prefix, currency } of currencyPrefixes) {
-    if (trimmed.startsWith(prefix)) {
-      // parseFloat, not parseInt: "€6.20" and "€6.50" both read as 6 otherwise,
-      // and picking the cheapest of an item's options has to be able to tell
-      // them apart.
-      const amount = parseFloat(trimmed.slice(prefix.length).replace(/,/g, ""));
-      return isNaN(amount)
-        ? null
-        : { amount: Math.round(amount * 100), currency };
-    }
-  }
-
-  return null;
-}
-
 /** How a shop link reads on a card: bare host and path, no scheme, no trailing slash. */
 export function formatUrlLabel(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
@@ -200,7 +165,7 @@ export async function getWishlistItems(
     ]);
 
   // Build exchange rate lookup from DB: currency -> rate to RUB
-  const toRubRates: Partial<Record<Currency, number>> = {
+  const toRubRates: RubRates = {
     // Not a row anyone would store, and every rouble price needs it to take
     // part in the comparison that picks an item's cheapest option.
     RUB: 1,
@@ -223,30 +188,21 @@ export async function getWishlistItems(
     else extraOptions.set(option.itemId, [option]);
   }
 
-  // Compute priceUsd from original price
-  function computePriceUsd(price: string): number | null {
-    const parsed = parsePrice(price);
-    if (!parsed || !usdToRub) return null;
-
-    if (parsed.currency === "USD") {
-      return parsed.amount;
-    }
-
-    // Convert to USD: amount_in_currency * (rate_to_rub / usd_to_rub_rate)
-    const rateToRub = toRubRates[parsed.currency];
-    if (!rateToRub) return null;
-
-    return Math.round((parsed.amount * rateToRub) / usdToRub);
-  }
-
   // Price a single way of buying, in both the currencies the card can show
   function priceOf(
     price: string,
   ): Pick<WishlistOption, "priceUsd" | "priceRub"> {
-    const priceUsd = computePriceUsd(price);
+    const priceUsd = priceInUsdCents(price, toRubRates);
     return {
       priceUsd,
-      priceRub: priceUsd && usdToRub ? priceUsd * usdToRub : null,
+      // `!== null`, not truthiness: a price small enough to round to 0 cents is
+      // still a price, and the comparison below admits it on `!== null` — so
+      // treating it as absent here would let it win the item's "from" price and
+      // then have no roubles to show for it. Rounded, because a fractional
+      // USD→RUB rate would otherwise leave fractions of a kopeck in a field the
+      // rest of the code counts in cents.
+      priceRub:
+        priceUsd !== null && usdToRub ? Math.round(priceUsd * usdToRub) : null,
     };
   }
 
