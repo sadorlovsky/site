@@ -38,8 +38,7 @@ log) and a ceiling, or the one city at 10 becomes a blob while the 121 cities at
 
 ### B. Cluster at low zoom
 
-**Done** — built in `src/client/travel-map.ts`, together with E, which is why
-they share a source.
+**Done** — built in `src/client/travel-map.ts`.
 
 MapLibre's built-in clustering on the GeoJSON source. Europe is a smear of
 overlapping dots on the globe; a count is more honest than a blur.
@@ -70,19 +69,18 @@ the list, or clicking a city. Best kept for its own pass.
 
 ### E. Landmarks as a second, quieter mark
 
-**Done** — built in `src/client/travel-map.ts`.
-
 13 landmarks carry coordinates and a `kind` (park, hill, gorge, lake…). Drawn
 smaller and hollow, and only past a zoom threshold, they give the map texture
 that rewards zooming in instead of dumping everything at once.
 
 Cheap: the same zoom interpolation the city layers already use.
 
-Two parts of that did not survive contact. The zoom threshold went: a contour
-has no material to assemble as the map zooms, and on the globe it is the only
-thing marking the place at all. And "quieter" turned out to be the wrong axis —
-a dimmer beacon reads as a further-away city. What separates the classes is
-structure: a ring with a small core against a bead of glass.
+Built once and taken back out: a ring with a small core, drawn beneath the
+beads. It worked as a mark and still made the map worse — thirteen contours
+scattered among 88 beacons read as a second map laid over the first, and the
+question the page answers is where the trips went. The mark is in the history
+if it is ever wanted back; what it needs first is a reason for a reader to care
+which lake is which.
 
 ### F. Recency as brightness, or a pulse
 
@@ -107,9 +105,10 @@ E + A are the cheap pair that give the map depth and weight. C is the only one
 that changes what the map is for. B if the density in Europe actually bothers
 the owner. D is the prettiest and the most expensive — its own pass.
 
-B and E are built. A is the obvious next one and now nearly free: clusters
-already scale off a count, so weighting a lone city by its visits is the same
-curve pointed at a different property. C and D are still open.
+B is built; E was built and then dropped. A is the obvious next one and now
+nearly free: clusters already scale off a count, so weighting a lone city by
+its visits is the same curve pointed at a different property. C and D are still
+open.
 
 ## Marker visuals: bringing the dots into liquid glass
 
