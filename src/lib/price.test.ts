@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePrice, priceInUsdCents, type RubRates } from "./wishlist";
+import { parsePrice, priceInUsdCents, type RubRates } from "./price";
 
 describe("parsePrice", () => {
   it("reads every currency the wishlist writes prices in", () => {
@@ -17,6 +17,24 @@ describe("parsePrice", () => {
     expect(parsePrice("€6.50")).toEqual({ amount: 650, currency: "EUR" });
   });
 
+  it("groups thousands with a space as readily as with a comma", () => {
+    // How a Kazakh shop prints it, and how it arrives when pasted. The second
+    // is escaped because a paste carries a non-breaking space, which reads
+    // exactly like an ordinary one in every editor.
+    expect(parsePrice("₸3 900")).toEqual({
+      amount: 390000,
+      currency: "KZT",
+    });
+    expect(parsePrice("₸3\u00a0900")).toEqual({
+      amount: 390000,
+      currency: "KZT",
+    });
+    expect(parsePrice("₸25 940.50")).toEqual({
+      amount: 2594050,
+      currency: "KZT",
+    });
+  });
+
   it("prefers AU$ to the $ it starts with", () => {
     expect(parsePrice("AU$140")?.currency).toBe("AUD");
   });
@@ -25,6 +43,14 @@ describe("parsePrice", () => {
     expect(parsePrice("free")).toBeNull();
     expect(parsePrice("64")).toBeNull();
     expect(parsePrice("$")).toBeNull();
+  });
+
+  it("reads no part of a price it cannot read whole", () => {
+    // The alternative is worse than nothing: an option read as 3 rather than
+    // rejected wins the cheapest-option comparison outright.
+    expect(parsePrice("$64 or so")).toBeNull();
+    expect(parsePrice("₸3 900 tenge")).toBeNull();
+    expect(parsePrice("$12.34.56")).toBeNull();
   });
 });
 
@@ -41,6 +67,11 @@ describe("priceInUsdCents", () => {
 
   it("takes a USD price as it stands", () => {
     expect(priceInUsdCents("$64", rates)).toBe(6400);
+  });
+
+  it("takes a USD price even with no rouble rate on file", () => {
+    // It needs no conversion, so the missing row is none of its business
+    expect(priceInUsdCents("$64", {})).toBe(6400);
   });
 
   it("converts through roubles", () => {
@@ -60,6 +91,13 @@ describe("priceInUsdCents", () => {
     const meloman = priceInUsdCents("₸25,940", rates);
     expect(meloman).not.toBeNull();
     expect(meloman!).toBeLessThan(amazon!);
+  });
+
+  it("says a price costs 0 cents rather than that it has none", () => {
+    // A fractional rate puts real prices within rounding distance of zero, and
+    // 0 has to stay 0: null would drop the option out of the comparison, which
+    // is not the same answer.
+    expect(priceInUsdCents("₸2", rates)).toBe(0);
   });
 
   it("has nothing to say without a rate on file", () => {

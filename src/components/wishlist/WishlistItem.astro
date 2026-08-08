@@ -51,12 +51,16 @@ const options = item.options
       ...option,
       labelEn: option.label || host,
       labelRu: option.labelRu || option.label || host,
-      priceUsdLabel: option.priceUsd
-        ? `$${(option.priceUsd / 100).toFixed(0)}`
-        : null,
-      priceRubLabel: option.priceRub
-        ? `₽${(option.priceRub / 100).toFixed(0)}`
-        : null,
+      // `!== null`: null is "no price we can read", 0 is a price that rounds to
+      // nothing, and only the first of those should leave the label off.
+      priceUsdLabel:
+        option.priceUsd !== null
+          ? `$${(option.priceUsd / 100).toFixed(0)}`
+          : null,
+      priceRubLabel:
+        option.priceRub !== null
+          ? `₽${(option.priceRub / 100).toFixed(0)}`
+          : null,
     };
   })
   // A row with no label and no price of its own would be an empty line: that
@@ -256,10 +260,10 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
       <span
         class="item-price"
         data-price-original={item.price}
-        data-price-usd={item.priceUsd
+        data-price-usd={item.priceUsd !== null
           ? `$${(item.priceUsd / 100).toFixed(0)}`
           : null}
-        data-price-rub={item.priceRub
+        data-price-rub={item.priceRub !== null
           ? `₽${(item.priceRub / 100).toFixed(0)}`
           : null}
         data-original-is-usd={item.price.startsWith("$") ? "true" : null}
