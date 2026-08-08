@@ -1,0 +1,277 @@
+---
+import ProgressBar from "@components/kit/ProgressBar.astro";
+import {
+  datedTrips,
+  formatMonthYear,
+  formatTripCount,
+  formatVisitCount,
+  getTravelFacts,
+} from "@lib/travel";
+import "@styles/travel.css";
+import "flag-icons/css/flag-icons.min.css";
+
+const facts = getTravelFacts(datedTrips);
+
+// Both "most visited" cards are counted in visits rather than trips. The number
+// is the same either way — a journey that touches a place counts once, however
+// many stops it makes there — but a card headed "Most visited country" that
+// answers "17 trips" reads as if it were answering some other question. The
+// busiest-year card below really is about trips and keeps the word.
+
+// The bars are read against the busiest year rather than against a round
+// number, so the tallest one always reaches the end of its groove and the
+// shape of the decade is legible instead of a row of stubs.
+const busiestYear = facts.tripsByYear.reduce(
+  (max, entry) => Math.max(max, entry.trips),
+  0,
+);
+---
+
+<div class="travel-sections">
+  <div class="facts">
+    {
+      facts.mostVisitedCity && (
+        <section>
+          <header class="travel-section-head">
+            <h2
+              class="travel-section-title"
+              data-en="Most visited city"
+              data-ru="Самый посещаемый город"
+            >
+              Most visited city
+            </h2>
+          </header>
+          <div class="value">
+            <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
+            <span
+              data-en={facts.mostVisitedCity.name.en}
+              data-ru={facts.mostVisitedCity.name.ru}
+            >
+              {facts.mostVisitedCity.name.en}
+            </span>
+          </div>
+          <span
+            class="travel-metric"
+            data-en={formatVisitCount(facts.mostVisitedCity.visits, "en")}
+            data-ru={formatVisitCount(facts.mostVisitedCity.visits, "ru")}
+          >
+            {formatVisitCount(facts.mostVisitedCity.visits, "en")}
+          </span>
+        </section>
+      )
+    }
+
+    {
+      facts.mostVisitedCountry && (
+        <section>
+          <header class="travel-section-head">
+            <h2
+              class="travel-section-title"
+              data-en="Most visited country"
+              data-ru="Самая посещаемая страна"
+            >
+              Most visited country
+            </h2>
+          </header>
+          <div class="value">
+            <span
+              class={`fi fi-${facts.mostVisitedCountry.a2}`}
+              aria-hidden="true"
+            />
+            <span
+              data-en={facts.mostVisitedCountry.name.en}
+              data-ru={facts.mostVisitedCountry.name.ru}
+            >
+              {facts.mostVisitedCountry.name.en}
+            </span>
+          </div>
+          <span
+            class="travel-metric"
+            data-en={formatVisitCount(facts.mostVisitedCountry.visits, "en")}
+            data-ru={formatVisitCount(facts.mostVisitedCountry.visits, "ru")}
+          >
+            {formatVisitCount(facts.mostVisitedCountry.visits, "en")}
+          </span>
+        </section>
+      )
+    }
+
+    {
+      facts.mostActiveYear && (
+        <section>
+          <header class="travel-section-head">
+            <h2
+              class="travel-section-title"
+              data-en="Busiest year"
+              data-ru="Самый активный год"
+            >
+              Busiest year
+            </h2>
+          </header>
+          <div class="value">{facts.mostActiveYear.year}</div>
+          <span
+            class="travel-metric"
+            data-en={formatTripCount(facts.mostActiveYear.trips, "en")}
+            data-ru={formatTripCount(facts.mostActiveYear.trips, "ru")}
+          >
+            {formatTripCount(facts.mostActiveYear.trips, "en")}
+          </span>
+        </section>
+      )
+    }
+
+    {
+      facts.latestNewCountry && (
+        <section>
+          <header class="travel-section-head">
+            <h2
+              class="travel-section-title"
+              data-en="Latest new country"
+              data-ru="Последняя новая страна"
+            >
+              Latest new country
+            </h2>
+          </header>
+          <div class="value">
+            <span
+              class={`fi fi-${facts.latestNewCountry.a2}`}
+              aria-hidden="true"
+            />
+            <span
+              data-en={facts.latestNewCountry.name.en}
+              data-ru={facts.latestNewCountry.name.ru}
+            >
+              {facts.latestNewCountry.name.en}
+            </span>
+          </div>
+          <span
+            class="travel-metric"
+            data-en={formatMonthYear(
+              facts.latestNewCountry.year,
+              facts.latestNewCountry.month,
+              "en",
+            )}
+            data-ru={formatMonthYear(
+              facts.latestNewCountry.year,
+              facts.latestNewCountry.month,
+              "ru",
+            )}
+          >
+            {formatMonthYear(
+              facts.latestNewCountry.year,
+              facts.latestNewCountry.month,
+              "en",
+            )}
+          </span>
+        </section>
+      )
+    }
+  </div>
+
+  {
+    facts.tripsByYear.length > 0 && (
+      <section>
+        <header class="travel-section-head">
+          <h2
+            class="travel-section-title"
+            data-en="Trips by year"
+            data-ru="Поездки по годам"
+          >
+            Trips by year
+          </h2>
+        </header>
+        <ol class="years" role="list">
+          {facts.tripsByYear
+            .slice()
+            .reverse()
+            .map((entry) => (
+              <li class="year">
+                <span class="travel-metric">{entry.year}</span>
+                <ProgressBar
+                  value={entry.trips}
+                  max={busiestYear}
+                  showPercent={false}
+                  accent={entry.trips === busiestYear}
+                  label={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
+                  data-aria-label-en={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
+                  data-aria-label-ru={`${entry.year}: ${formatTripCount(entry.trips, "ru")}`}
+                />
+                <span class="travel-metric year-count">{entry.trips}</span>
+              </li>
+            ))}
+        </ol>
+      </section>
+    )
+  }
+</div>
+
+<style>
+  /* Two facts across, on the same rhythm the sections stack at, so the gap
+     between the columns matches the gap above and below them. */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  /* The one place a number is the answer rather than the annotation, so it is
+     the one place these views set type larger than the body. */
+  .value {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    color: light-dark(#111, #fff);
+    /* A grid item without this widens its column past the page rather than
+       letting a long country name ellipsize inside it. */
+    min-width: 0;
+    margin-bottom: 0.2em;
+  }
+
+  .value .fi {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    border-radius: 3px;
+  }
+
+  .value > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .years {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Three fixed tracks rather than a flex row: the year and the count are
+     tabular numerals of known width, so pinning their columns keeps every
+     groove starting and ending on the same two lines down the whole list. */
+  .year {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) 1.25rem;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .year-count {
+    text-align: right;
+  }
+
+  @media (max-width: 520px) {
+    .facts {
+      grid-template-columns: 1fr;
+    }
+
+    .value {
+      font-size: 1.1rem;
+    }
+  }
+</style>

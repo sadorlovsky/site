@@ -1,6 +1,7 @@
 ---
 import { datedTrips, getCountriesWithCities } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
+import "@styles/travel.css";
 import "flag-icons/css/flag-icons.min.css";
 
 const countriesWithCities = getCountriesWithCities(datedTrips);
@@ -11,14 +12,14 @@ const countriesWithCities = getCountriesWithCities(datedTrips);
     countriesWithCities.map((country) => (
       <div class="country-row">
         <span
-          class={`flag fi fi-${country.a2}`}
-          role="img"
-          aria-label={`${country.name.en} flag`}
+          class={`travel-flag flag fi fi-${country.a2}`}
+          aria-hidden="true"
         /><span
-          class="country-name"
+          class="travel-name country-name"
           data-en={country.name.en}
           data-ru={country.name.ru}
         >{country.name.en}</span>
+        <span class="travel-metric city-count">({country.cities.length})</span>
         <span class="separator" aria-hidden="true">—</span>
         {country.cities.map((city, i) => (
           <>
@@ -53,18 +54,17 @@ const countriesWithCities = getCountriesWithCities(datedTrips);
     background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
   }
 
+  /* The shared flag is written for a flex row, where the browser puts it on
+     the centre line for you. Here it sits in running text and has to be told. */
   .flag {
-    font-size: 0.9rem;
-    border-radius: 2px;
     margin-right: 0.4rem;
     vertical-align: middle;
   }
 
-  .country-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: light-dark(#111, #fff);
-    white-space: nowrap;
+  /* How many cities the row is about to list. Sits inline after the name
+     rather than at the end of the row, because the row keeps going. */
+  .city-count {
+    margin-left: 0.2rem;
   }
 
   .separator {

@@ -5,13 +5,11 @@ import LangInit from "@components/LangInit.astro";
 import TravelMap from "@components/travel/TravelMap.astro";
 import TravelStats from "@components/travel/TravelStats.astro";
 import TravelTripList from "@components/travel/TravelTripList.astro";
-// import TravelViewSwitcher from "@components/travel/TravelViewSwitcher.astro";
-// import TravelCountries from "@components/travel/TravelCountries.astro";
-// import TravelChecklist from "@components/travel/TravelChecklist.astro";
-// import TravelContinents from "@components/travel/TravelContinents.astro";
-// import TravelStatsDashboard from "@components/travel/TravelStatsDashboard.astro";
-// import TravelFirstVisits from "@components/travel/TravelFirstVisits.astro";
-// import TravelRepeatDestinations from "@components/travel/TravelRepeatDestinations.astro";
+import TravelViewSwitcher from "@components/travel/TravelViewSwitcher.astro";
+import TravelCountries from "@components/travel/TravelCountries.astro";
+import TravelContinents from "@components/travel/TravelContinents.astro";
+import TravelStatsDashboard from "@components/travel/TravelStatsDashboard.astro";
+import TravelChecklist from "@components/travel/TravelChecklist.astro";
 
 export const prerender = true;
 ---
@@ -39,17 +37,17 @@ export const prerender = true;
       condenseOnScroll
     />
     <TravelMap />
+    {/* The four counters stay outside the switcher: they answer "how much" for
+        the whole page, and the map and every view below are read against them.
+        The stats view answers a different question — which city, which country,
+        which year — and is a panel you go and look at. */}
     <TravelStats />
-    <TravelTripList />
-    <!-- <TravelViewSwitcher currentView="timeline" />
+    <TravelViewSwitcher currentView="timeline" />
     <div id="view-timeline" class="travel-view" data-view="timeline">
       <TravelTripList />
     </div>
     <div id="view-countries" class="travel-view" data-view="countries" hidden>
       <TravelCountries />
-    </div>
-    <div id="view-checklist" class="travel-view" data-view="checklist" hidden>
-      <TravelChecklist />
     </div>
     <div id="view-continents" class="travel-view" data-view="continents" hidden>
       <TravelContinents />
@@ -57,12 +55,9 @@ export const prerender = true;
     <div id="view-stats" class="travel-view" data-view="stats" hidden>
       <TravelStatsDashboard />
     </div>
-    <div id="view-first-visits" class="travel-view" data-view="first-visits" hidden>
-      <TravelFirstVisits />
+    <div id="view-checklist" class="travel-view" data-view="checklist" hidden>
+      <TravelChecklist />
     </div>
-    <div id="view-repeats" class="travel-view" data-view="repeats" hidden>
-      <TravelRepeatDestinations />
-    </div> -->
   </main>
 </PageLayout>
 
