@@ -7,6 +7,14 @@ import type {
 import type { Feature, Point } from "geojson";
 import { countries, cities, cityCoordinates } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
+import { formatClusterLabel } from "@lib/travel/cluster-label";
+import {
+  facesCamera as facesCameraFrom,
+  getGlobeZoomFloor,
+  getZoomForFullFrame,
+  getZoomForGlobe,
+  latitudeZoomOffset,
+} from "@lib/travel/globe";
 import crimeaGeoJson from "@lib/travel/crimea.geo.json";
 
 const MOBILE_BREAKPOINT = 480;
@@ -162,6 +170,9 @@ const CLUSTER_RADIUS_PX = BEAD_RADIUS[2] * 2;
  */
 const CLUSTER_MAX_ZOOM = 9;
 
+/** How long the camera takes to open a cluster that was clicked. */
+const CLUSTER_EASE_MS = 600;
+
 /**
  * How much bigger a cluster is drawn than the bead it is made of.
  *
@@ -213,22 +224,6 @@ function clusterScale(rest: MarkerStops): CircleNumberValue {
   ] as unknown as CircleNumberValue;
 }
 
-/** Russian plural for a count: 1 город, 2 города, 5 городов. */
-function plural(count: number, one: string, few: string, many: string): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
-}
-
-/** What a cluster calls itself: the count and the word for what it holds. */
-function formatClusterLabel(count: number, lang: "en" | "ru"): string {
-  return lang === "en"
-    ? `${count} ${count === 1 ? "city" : "cities"}`
-    : `${count} ${plural(count, "город", "города", "городов")}`;
-}
-
 /**
  * The globe's diameter, in pixels, as chosen by the stylesheet (--globe-size on
  * .map). The container's height is that plus a gap above and below, so reading
@@ -245,34 +240,6 @@ function getGlobeSize(container: HTMLElement): number {
   return Math.min(container.clientWidth, container.clientHeight);
 }
 
-// MapLibre's rendered globe is ≈ 512 * 2^zoom / GLOBE_SCALE_FACTOR pixels
-// across, so zoom = log2(diameter * GLOBE_SCALE_FACTOR / 512).
-//
-// The factor is measured, not derived. It was 2.7, which asked for a diameter
-// and got about 97% of it — invisible while the container had 50px of padding
-// to hide the shortfall, and plain once the container became the globe. Read
-// off the rendered sphere's width at its widest point at three container
-// sizes: 480→466, 440→428, 280→272, all landing within 0.002 of the same
-// ratio.
-const GLOBE_SCALE_FACTOR = 2.78;
-
-function getZoomForGlobe(diameter: number): number {
-  return Math.log2((diameter * GLOBE_SCALE_FACTOR) / 512);
-}
-
-/**
- * Mercator's scale factor at a latitude, in zoom levels.
- *
- * Under the globe projection getZoom()/setZoom() speak in mercator-equivalent
- * units for the centre's latitude, while the transform — and with it the size
- * the sphere is drawn at — does not. The two differ by exactly this: 0.64 zoom
- * levels at 50°N, 2.5 at 80°N. Anything comparing a zoom against a size has to
- * account for it, or it holds at one latitude and drifts everywhere else.
- */
-function latitudeZoomOffset(latitude: number): number {
-  return Math.log2(1 / Math.cos((latitude * Math.PI) / 180));
-}
-
 /**
  * The reported zoom, restated in the units the sphere's size was measured in —
  * those of GLOBE_LATITUDE — so a threshold in those units means the same thing
@@ -284,39 +251,6 @@ function sizeZoom(map: MapLibre): number {
     latitudeZoomOffset(map.getCenter().lat) -
     latitudeZoomOffset(GLOBE_LATITUDE)
   );
-}
-
-/**
- * The floor to hand to setMinZoom so gestures can enlarge the globe but never
- * shrink it below `diameter` on screen.
- *
- * minZoom is compared against the transform's zoom, so the offset above has to
- * be added to a value that came from getZoomForGlobe. Measured: a floor of
- * 1.382 let the sphere shrink to a reported 0.745, while 1.382 + 0.637 stops it
- * at exactly 1.382.
- *
- * Apply it only once the globe projection is active. In the constructor, where
- * the map is still mercator, the same number clamps the opening view instead
- * and the globe starts half again too large.
- */
-function getGlobeZoomFloor(diameter: number, latitude: number): number {
-  return getZoomForGlobe(diameter) + latitudeZoomOffset(latitude);
-}
-
-/**
- * Zoom at which the sphere reaches into the container's corners — the point
- * where the map has filled its frame and a border stops being a box drawn
- * around empty space. Derived from the container's diagonal with the same
- * empirical scale factor as above, rather than a number picked by eye, so it
- * follows the viewport instead of being right at one width only. The 0.9 gives
- * it a little lead: the frame should be there as the corners fill, not after.
- */
-function getZoomForFullFrame(
-  containerWidth: number,
-  containerHeight: number,
-): number {
-  const diagonal = Math.hypot(containerWidth, containerHeight) * 0.9;
-  return Math.log2((diagonal * GLOBE_SCALE_FACTOR) / 512);
 }
 
 async function initMap(): Promise<void> {
@@ -1111,12 +1045,30 @@ async function initMap(): Promise<void> {
     "label_other",
   );
 
+  /**
+   * A paint write that tolerates the layer not being there.
+   *
+   * Both of the functions below run off a media-query change and touch every
+   * marker layer, singles and clusters alike, so each of them writes to layers
+   * added somewhere other than where the write lives. setPaintProperty on a
+   * missing layer doesn't throw, it fires an error event — a worse thing to
+   * leave lying around than a check — so the guard sits here once rather than
+   * being remembered at eight call sites.
+   */
+  function setMarkerPaint(
+    layer: string,
+    property: string,
+    value: unknown,
+  ): void {
+    if (!map.getLayer(layer)) return;
+    map.setPaintProperty(layer, property, value);
+  }
+
   // A white body reads on the dark map; over the light map's pink countries it
   // has almost no contrast, so the tint goes to a deep accent there. The rim
   // and the highlight stay white either way — only the glass itself is tinted.
   function applyCityColors(isDark: boolean): void {
-    if (!map.getLayer("visited-cities")) return;
-    map.setPaintProperty(
+    setMarkerPaint(
       "visited-cities",
       "circle-color",
       isDark ? CITY_BODY_DARK : CITY_BODY_LIGHT,
@@ -1124,12 +1076,12 @@ async function initMap(): Promise<void> {
     // On the light map a same-hue glow washes out over the pink countries, so
     // the glow goes deeper and a touch stronger; the dark map keeps the airy
     // accent glow that already looks right.
-    map.setPaintProperty(
+    setMarkerPaint(
       "visited-cities-glow",
       "circle-color",
       isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT,
     );
-    map.setPaintProperty("visited-cities-glow", "circle-opacity", [
+    setMarkerPaint("visited-cities-glow", "circle-opacity", [
       "case",
       ["boolean", ["feature-state", "hover"], false],
       isDark ? 0.6 : 0.65,
@@ -1140,22 +1092,21 @@ async function initMap(): Promise<void> {
     // resting strength is lifted on the light map for the same reason the
     // single one is — a same-hue halo washes out over the pink countries — and
     // takes the resting value only, there being no hover to state.
-    map.setPaintProperty(
+    setMarkerPaint(
       "visited-cities-cluster",
       "circle-color",
       isDark ? CITY_BODY_DARK : CITY_BODY_LIGHT,
     );
-    map.setPaintProperty(
+    setMarkerPaint(
       "visited-cities-cluster-glow",
       "circle-color",
       isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT,
     );
-    map.setPaintProperty(
+    setMarkerPaint(
       "visited-cities-cluster-glow",
       "circle-opacity",
       isDark ? 0.32 : 0.45,
     );
-
   }
 
   applyCityColors(colorSchemeQuery.matches);
@@ -1216,11 +1167,7 @@ async function initMap(): Promise<void> {
     ];
 
     for (const [layer, property, value] of opacities) {
-      // Guarding each layer rather than probing one and assuming the rest:
-      // setPaintProperty on a missing layer doesn't throw, it fires an error
-      // event, which is a worse thing to leave lying around than a check.
-      if (!map.getLayer(layer)) continue;
-      map.setPaintProperty(layer, property, value);
+      setMarkerPaint(layer, property, value);
     }
   }
 
@@ -1277,31 +1224,12 @@ async function initMap(): Promise<void> {
 
   /**
    * Whether a coordinate is on the half of the globe turned towards the viewer.
-   * A flat map has no far side, so everything on it faces the camera.
-   *
-   * The globe hides half the world behind itself, but the cities back there are
-   * still in the source and still project to a screen position — one that lands
-   * inside the visible disc, near whichever limb they sit behind. A query near
-   * the limb therefore reaches straight through the planet, which is how a
-   * cursor at the edge of the Atlantic came back holding Krasnodar.
+   * A flat map has no far side, so everything on it faces the camera; the
+   * geometry for when there is one lives in @lib/travel/globe.
    */
   function facesCamera(lngLat: [number, number]): boolean {
     if (map.getProjection().type !== "globe") return true;
-    const centre = map.getCenter();
-    const toRadians = Math.PI / 180;
-    const centreLat = centre.lat * toRadians;
-    const pointLat = lngLat[1] * toRadians;
-    const deltaLng = (lngLat[0] - centre.lng) * toRadians;
-    // Cosine of the angle between the two points' surface normals: positive on
-    // the hemisphere facing the camera, negative on the one facing away. The
-    // real horizon of a perspective camera falls a little short of ninety
-    // degrees, so a sliver at the very edge stays hoverable — which is the
-    // forgiving side to err on for something you are trying to point at.
-    return (
-      Math.sin(centreLat) * Math.sin(pointLat) +
-        Math.cos(centreLat) * Math.cos(pointLat) * Math.cos(deltaLng) >
-      0
-    );
+    return facesCameraFrom(lngLat, map.getCenter());
   }
 
   /**
@@ -1407,11 +1335,13 @@ async function initMap(): Promise<void> {
           );
         }
         const lang = (localStorage.getItem("lang") as "en" | "ru") || "en";
-        const name = feature.properties!.name as string;
+        // Only a lone city carries a name — a cluster's properties hold the
+        // count and nothing else — so the lookup belongs inside the branch
+        // that has one rather than above the two.
         cityLabel.textContent =
           count !== undefined
             ? formatClusterLabel(count, lang)
-            : getCityName(name, lang);
+            : getCityName(feature.properties?.name as string, lang);
         labelHalfWidth = 0;
       }
 
@@ -1515,11 +1445,19 @@ async function initMap(): Promise<void> {
 
     source
       .getClusterExpansionZoom(clusterId)
-      .then((zoom) => map.easeTo({ center, zoom, duration: 600 }))
+      .then((zoom) => map.easeTo({ center, zoom, duration: CLUSTER_EASE_MS }))
       // A lookup that fails should still take the reader somewhere useful
       // rather than leaving the click dead — two levels in is enough to see
-      // the group start to come apart.
-      .catch(() => map.easeTo({ center, zoom: map.getZoom() + 2 }));
+      // the group start to come apart. Same duration either way: whether the
+      // zoom was answered or guessed is not something the reader should be
+      // able to feel in how the camera moves.
+      .catch(() =>
+        map.easeTo({
+          center,
+          zoom: map.getZoom() + 2,
+          duration: CLUSTER_EASE_MS,
+        }),
+      );
   });
 
   // Lift the shimmer once something real has been painted. The old signal was
