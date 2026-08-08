@@ -1040,6 +1040,20 @@ async function seed() {
       received: false,
       createdAt: now,
     },
+    {
+      id: 73,
+      title: "Andrew Tanenbaum — Computer Networks",
+      titleRu: "Книга «Компьютерные сети», Эндрю Таненбаум",
+      // About $47 once the tenge are read, against $60.88 for the Amazon
+      // option, so this is the price the card's "from" lands on.
+      price: "₸25,940",
+      imageUrl: "tanenbaum-computer-networks.jpg",
+      url: "https://www.meloman.kz/tanenbaum-je-s-fimster-n-komp-juternye-seti-6-e-izd.html",
+      category: "books",
+      priority: "low",
+      received: false,
+      createdAt: now,
+    },
   ]);
 
   // A couple of items that can be bought in more than one place. The item's own
@@ -1082,6 +1096,15 @@ async function seed() {
       price: "₸3,900",
       url: "https://www.meloman.kz/nadzirat-i-nakazyvat.html",
       position: 2,
+    },
+    {
+      id: 5,
+      itemId: 73, // Tanenbaum — Computer Networks
+      label: "Pearson, Global Edition, English",
+      labelRu: "Pearson, Global Edition, на английском",
+      price: "$60.88",
+      url: "https://www.amazon.com/dp/1292374063",
+      position: 0,
     },
   ]);
 
