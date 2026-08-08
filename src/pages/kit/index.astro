@@ -715,22 +715,33 @@ import { Icon } from "astro-icon/components";
         </div>
 
         <h3>Custom Values</h3>
-        <p>Pass <code>value</code> and <code>max</code> — percent is calculated automatically.</p>
+        <p>
+          Pass <code>value</code> and <code>max</code> — percent is calculated
+          automatically. A <code>max</code> of <code>0</code> reads as 0% rather
+          than as the <code>NaN</code> the division would otherwise put in
+          <code>aria-valuenow</code> and in the fill's width; a bar with nothing
+          to measure against is usually better left unrendered, but it will not
+          break the page.
+        </p>
         <div class="progress-demo">
           <ProgressBar value={42} max={195} label="42 of 195 countries" />
           <ProgressBar value={5} max={7} label="5 of 7 continents" />
+          <ProgressBar value={0} max={0} label="Nothing to measure" />
         </div>
 
         <h3>Extra Attributes</h3>
         <p>
-          Anything beyond the props above lands on the inner element — the one
-          carrying <code>role="progressbar"</code> — rather than on the row, so
-          it reaches the thing a screen reader actually announces. That is how a
+          A <code>data-*</code> attribute, or an <code>aria-label</code> of your
+          own, lands on the inner element — the one carrying
+          <code>role="progressbar"</code> — rather than on the row, so it
+          reaches the thing a screen reader actually announces. That is how a
           bilingual page translates the label: <code>label</code> renders the
           bar's <code>aria-label</code>, and <code>data-aria-label-en</code> /
           <code>data-aria-label-ru</code> let <code>LangInit</code> swap it on
           load. Without them the label stays in whichever language it was
-          written in, whatever the rest of the page is reading as.
+          written in, whatever the rest of the page is reading as. Nothing else
+          gets through, so a misspelled prop is a type error here rather than a
+          stray attribute in the HTML and a default silently left in place.
         </p>
         <div class="progress-demo">
           <ProgressBar

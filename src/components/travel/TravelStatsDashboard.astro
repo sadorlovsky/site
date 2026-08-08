@@ -33,13 +33,13 @@ const busiestYear = facts.tripsByYear.reduce(
       facts.mostVisitedCity && (
         <section>
           <header class="travel-section-head">
-            <h3
+            <h2
               class="travel-section-title"
               data-en="Most visited city"
               data-ru="Самый посещаемый город"
             >
               Most visited city
-            </h3>
+            </h2>
           </header>
           <div class="value">
             <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
@@ -65,13 +65,13 @@ const busiestYear = facts.tripsByYear.reduce(
       facts.mostVisitedCountry && (
         <section>
           <header class="travel-section-head">
-            <h3
+            <h2
               class="travel-section-title"
               data-en="Most visited country"
               data-ru="Самая посещаемая страна"
             >
               Most visited country
-            </h3>
+            </h2>
           </header>
           <div class="value">
             <span
@@ -100,13 +100,13 @@ const busiestYear = facts.tripsByYear.reduce(
       facts.mostActiveYear && (
         <section>
           <header class="travel-section-head">
-            <h3
+            <h2
               class="travel-section-title"
               data-en="Busiest year"
               data-ru="Самый активный год"
             >
               Busiest year
-            </h3>
+            </h2>
           </header>
           <div class="value">{facts.mostActiveYear.year}</div>
           <span
@@ -124,13 +124,13 @@ const busiestYear = facts.tripsByYear.reduce(
       facts.latestNewCountry && (
         <section>
           <header class="travel-section-head">
-            <h3
+            <h2
               class="travel-section-title"
               data-en="Latest new country"
               data-ru="Последняя новая страна"
             >
               Latest new country
-            </h3>
+            </h2>
           </header>
           <div class="value">
             <span
@@ -172,13 +172,13 @@ const busiestYear = facts.tripsByYear.reduce(
     facts.tripsByYear.length > 0 && (
       <section>
         <header class="travel-section-head">
-          <h3
+          <h2
             class="travel-section-title"
             data-en="Trips by year"
             data-ru="Поездки по годам"
           >
             Trips by year
-          </h3>
+          </h2>
         </header>
         <ol class="years" role="list">
           {facts.tripsByYear

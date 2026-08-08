@@ -25,9 +25,11 @@ export interface Trip {
   // moving to Almaty in Jan 2023 the places around it are reached from home, so
   // they have no trip to hang on — but they still happened on a date, and a
   // landmark has no date of its own (it inherits the entry's). Recording them
-  // as entries keeps that date truthful; this flag keeps them distinguishable
-  // from real travel if the timeline ever wants to render them differently.
-  // Country and city stats are Sets, so a repeat entry cannot inflate them.
+  // as entries keeps that date truthful; this flag keeps them out of anything
+  // that counts journeys. Where the stats are Sets — countries, cities,
+  // landmarks — an outing is welcome and cannot inflate anything; where they
+  // are counts, `getJourneys` drops them, or two afternoons at Shymbulak would
+  // report themselves as two visits to Almaty and two trips to Kazakhstan.
   kind?: "outing";
 }
 
@@ -138,6 +140,14 @@ export function getTbaTrips(data: Trip[]): Trip[] {
 // Get only dated trips (non-TBA)
 export function getDatedTrips(data: Trip[]): Trip[] {
   return data.filter((trip) => trip.year !== null);
+}
+
+// The journeys proper: dated trips that actually went somewhere. The timeline
+// still lists an outing — it happened, and its landmarks hang off its date —
+// but a counter that says "trips" is answering a question a day out is not an
+// answer to.
+export function getJourneys(data: Trip[]): Trip[] {
+  return getDatedTrips(data).filter((trip) => trip.kind !== "outing");
 }
 
 // Group trips by year (only dated trips)
@@ -421,7 +431,16 @@ export function getCountriesByContinent(data: Trip[]): ContinentGroup[] {
 
   for (const country of ranked) {
     const id = COUNTRY_CONTINENTS[country.code];
-    if (!id) continue;
+    // Skipping it quietly is the one failure this view cannot survive: the
+    // country would vanish from it while every fraction on the page still
+    // added up, so nothing would look wrong. The travel page is prerendered,
+    // so throwing here fails the build — the loudest of the places this could
+    // be found out, and the only one that cannot ship.
+    if (!id) {
+      throw new Error(
+        `No continent for ${country.code} — add it to COUNTRY_CONTINENTS in src/lib/travel/index.ts`,
+      );
+    }
     if (!byContinent.has(id)) byContinent.set(id, []);
     byContinent.get(id)!.push(country);
   }
@@ -448,11 +467,12 @@ export function getCountriesByContinent(data: Trip[]): ContinentGroup[] {
   );
 }
 
-// Visited countries that COUNTRY_CONTINENTS has no entry for. They would be
-// dropped from the continents view without a trace, and the per-continent
-// fractions would still add up, so nothing on the page would look wrong. The
-// test pins this to empty; adding a country to trips.json without adding it
-// here is what it is there to catch.
+// Visited countries that COUNTRY_CONTINENTS has no entry for. The build
+// already refuses to draw the view with one of these in it, but a stack trace
+// out of a map/filter names the country and nothing else; this answers the
+// question the person reading it actually has — which ones, all of them — and
+// is what the test asserts on so a failure reads as a list rather than a
+// crash.
 export function getUnmappedCountries(data: Trip[]): string[] {
   return getCountriesWithCities(data)
     .map((country) => country.code)
@@ -514,7 +534,6 @@ export function getTravelFacts(data: Trip[]): TravelFacts {
 
   for (const trip of chronological) {
     const year = trip.year!;
-    tripsPerYear.set(year, (tripsPerYear.get(year) ?? 0) + 1);
 
     // Counted once per trip, not once per destination: the Oct 2024 trip
     // reaches England and Scotland as two destinations under the same alpha-3,
@@ -533,14 +552,23 @@ export function getTravelFacts(data: Trip[]): TravelFacts {
       }
     }
 
+    // A country is first seen however it was reached — an afternoon across the
+    // border is still the day I first stood there — so this runs for outings
+    // too. Everything below it counts journeys, and an outing is not one.
+    for (const [code, a2] of countriesThisTrip) {
+      if (!firstVisits.has(code)) {
+        firstVisits.set(code, { a2, year, month: trip.month ?? 1 });
+      }
+    }
+
+    if (trip.kind === "outing") continue;
+
+    tripsPerYear.set(year, (tripsPerYear.get(year) ?? 0) + 1);
+
     for (const [code, a2] of countriesThisTrip) {
       const entry = countryVisits.get(code);
       if (entry) entry.trips++;
       else countryVisits.set(code, { a2, trips: 1 });
-
-      if (!firstVisits.has(code)) {
-        firstVisits.set(code, { a2, year, month: trip.month ?? 1 });
-      }
     }
 
     for (const [city, a2] of citiesThisTrip) {
@@ -646,7 +674,10 @@ export function formatMonthYear(
 
 export const trips = tripsData as Trip[];
 export const datedTrips = getDatedTrips(trips);
-export const tripsCount = datedTrips.length;
+// Journeys, not entries: the counter and the by-year bars in the stats view are
+// answering the same question, so they count the same thing.
+export const journeys = getJourneys(trips);
+export const tripsCount = journeys.length;
 export const countries = getCountries(datedTrips);
 export const cities = new Set([...getCities(datedTrips), ...homeCities]);
 export const visitedLandmarks = getLandmarks(datedTrips);

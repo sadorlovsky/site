@@ -11,13 +11,16 @@ import {
   formatTripCount,
   formatVisitCount,
   getCountriesByContinent,
+  getJourneys,
   getTravelFacts,
   getUnmappedCountries,
   continentsTotal,
   continentsVisited,
   countries,
   datedTrips,
+  journeys,
   trips,
+  tripsCount,
   type Trip,
 } from "./index";
 
@@ -209,10 +212,26 @@ test("continent totals cover the 195 countries the site counts", () => {
   expect(total).toBe(195);
 });
 
-// The continents view silently drops a country with no continent, and the
-// per-continent fractions still add up, so nothing on the page looks wrong.
+// A country with no continent would be dropped from the view while the
+// per-continent fractions still added up, so nothing on the page would look
+// wrong. Two guards, because the interesting failure is a data edit rather
+// than a code one: the build refuses to render the view at all, and this names
+// the countries that caused it.
 test("every visited country has a continent", () => {
   expect(getUnmappedCountries(trips)).toEqual([]);
+});
+
+test("refuses to draw the view with a country it cannot place", () => {
+  const unmapped: Trip[] = [
+    {
+      year: 2024,
+      month: 5,
+      endMonth: null,
+      destinations: [{ cities: ["Nowhere"], country: ["zz", "zzz"] }],
+    },
+  ];
+  expect(getUnmappedCountries(unmapped)).toEqual(["ZZZ"]);
+  expect(() => getCountriesByContinent(unmapped)).toThrow("ZZZ");
 });
 
 test("every visited country appears under exactly one continent", () => {
@@ -319,12 +338,64 @@ test("has no facts to report for an empty history", () => {
   });
 });
 
-test("counts every dated trip exactly once across the years", () => {
+// Two afternoons at Shymbulak, recorded so the landmarks have a date to hang
+// on. They are entries on the timeline, not journeys.
+const outingTripsData: Trip[] = [
+  {
+    year: 2024,
+    month: 8,
+    endMonth: null,
+    kind: "outing",
+    destinations: [
+      { cities: ["Almaty"], country: ["kz", "kaz"], landmarks: ["shymbulak"] },
+    ],
+  },
+  {
+    year: 2025,
+    month: 10,
+    endMonth: null,
+    kind: "outing",
+    destinations: [
+      { cities: ["Almaty"], country: ["kz", "kaz"], landmarks: ["shymbulak"] },
+    ],
+  },
+  {
+    year: 2026,
+    month: 3,
+    endMonth: null,
+    destinations: [{ cities: ["Almaty"], country: ["kz", "kaz"] }],
+  },
+];
+
+test("a day out from home is not a trip", () => {
+  expect(getJourneys(outingTripsData).map((trip) => trip.year)).toEqual([2026]);
+
+  const facts = getTravelFacts(outingTripsData);
+  expect(facts.tripsByYear).toEqual([{ year: 2026, trips: 1 }]);
+  expect(facts.mostVisitedCity!.visits).toBe(1);
+  expect(facts.mostVisitedCountry!.visits).toBe(1);
+});
+
+// An outing is still the day I first stood in the country, so it keeps its
+// place in the one fact that is about first sightings rather than counts.
+test("a country first seen on an outing keeps that date", () => {
+  expect(getTravelFacts(outingTripsData).latestNewCountry).toEqual({
+    name: { en: "Kazakhstan", ru: "Казахстан" },
+    a2: "kz",
+    year: 2024,
+    month: 8,
+  });
+});
+
+test("the trips counter and the by-year bars count the same thing", () => {
   const total = getTravelFacts(trips).tripsByYear.reduce(
     (sum, entry) => sum + entry.trips,
     0,
   );
-  expect(total).toBe(datedTrips.length);
+  expect(total).toBe(tripsCount);
+  expect(tripsCount).toBe(journeys.length);
+  expect(journeys.every((trip) => trip.kind !== "outing")).toBe(true);
+  expect(journeys.length).toBeLessThanOrEqual(datedTrips.length);
 });
 
 // -----------------------------------------------------------------------------

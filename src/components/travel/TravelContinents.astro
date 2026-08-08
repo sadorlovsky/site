@@ -36,15 +36,19 @@ const remaining = continents.filter(
             {continent.visited} / {continent.total}
           </span>
         </header>
-        <ProgressBar
-          value={continent.visited}
-          max={continent.total}
-          showPercent={false}
-          accent
-          label={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
-          data-aria-label-en={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
-          data-aria-label-ru={`${continent.name.ru}: посещено ${continent.visited} из ${continent.total} стран`}
-        />
+        {/* Same reason the fraction below is withheld for Antarctica: a
+            continent with no countries to count has no progress to draw. */}
+        {continent.total > 0 && (
+          <ProgressBar
+            value={continent.visited}
+            max={continent.total}
+            showPercent={false}
+            accent
+            label={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+            data-aria-label-en={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+            data-aria-label-ru={`${continent.name.ru}: посещено ${continent.visited} из ${continent.total} стран`}
+          />
+        )}
         <ul class="travel-grid countries" role="list">
           {continent.countries.map((country) => (
             <li class="travel-row">
@@ -103,6 +107,28 @@ const remaining = continents.filter(
       </section>
     )
   }
+
+  {/* The counters above this view read "32 / 250" and the fractions here add up
+      to "32 / 195" — the same numerator against two different ideas of how many
+      countries there are. Both are honest on their own: 250 is the site's own
+      list, which goes on past the UN membership, while a per-continent total
+      only exists for the 195 everyone splits the same way. Together on one page
+      they read as an arithmetic error unless the page says which is which. */}
+  <p class="note">
+    <span
+      data-en="Totals here count the 195 UN member and observer states. The counters above measure against a longer list."
+      data-ru="Итоги здесь считаются от 195 государств — членов и наблюдателей ООН. Счётчики выше — по более длинному списку."
+    >
+      Totals here count the 195 UN member and observer states. The counters
+      above measure against a longer list.
+    </span>
+    <a
+      href="/travel/countries"
+      target="_blank"
+      data-en="See the list"
+      data-ru="Посмотреть список">See the list</a
+    >
+  </p>
 </div>
 
 <style>
@@ -111,5 +137,26 @@ const remaining = continents.filter(
      summary. */
   .countries {
     margin-top: 0.85rem;
+  }
+
+  /* An aside about the arithmetic, not a section of its own — set below the
+     body size and in the muted colour the metrics use, so it settles under the
+     last section instead of competing with it. */
+  .note {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: light-dark(#666, #8a8a90);
+    text-wrap: pretty;
+  }
+
+  .note a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .note a:hover {
+    color: light-dark(#1a1a1a, #fff);
   }
 </style>
