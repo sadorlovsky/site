@@ -26,6 +26,11 @@ pnpm-debug.log*
 # Astro-specific files
 .astro/
 
+# Astro DB's local database, recreated and reseeded by `astro dev` and the test
+# run whenever it is missing. It is a build artifact wearing a data file's
+# clothes, and the seed that fills it is already in db/seed.ts.
+local.db
+
 # Wrangler's local state and caches
 .wrangler/
 
