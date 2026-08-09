@@ -32,15 +32,13 @@ const busiestYear = facts.tripsByYear.reduce(
     {
       facts.mostVisitedCity && (
         <section>
-          <header class="travel-section-head">
-            <h2
-              class="travel-section-title"
-              data-en="Most visited city"
-              data-ru="Самый посещаемый город"
-            >
-              Most visited city
-            </h2>
-          </header>
+          <h2
+            class="travel-caption"
+            data-en="Most visited city"
+            data-ru="Самый посещаемый город"
+          >
+            Most visited city
+          </h2>
           <div class="value">
             <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
             <span
@@ -64,15 +62,13 @@ const busiestYear = facts.tripsByYear.reduce(
     {
       facts.mostVisitedCountry && (
         <section>
-          <header class="travel-section-head">
-            <h2
-              class="travel-section-title"
-              data-en="Most visited country"
-              data-ru="Самая посещаемая страна"
-            >
-              Most visited country
-            </h2>
-          </header>
+          <h2
+            class="travel-caption"
+            data-en="Most visited country"
+            data-ru="Самая посещаемая страна"
+          >
+            Most visited country
+          </h2>
           <div class="value">
             <span
               class={`fi fi-${facts.mostVisitedCountry.a2}`}
@@ -99,15 +95,13 @@ const busiestYear = facts.tripsByYear.reduce(
     {
       facts.mostActiveYear && (
         <section>
-          <header class="travel-section-head">
-            <h2
-              class="travel-section-title"
-              data-en="Busiest year"
-              data-ru="Самый активный год"
-            >
-              Busiest year
-            </h2>
-          </header>
+          <h2
+            class="travel-caption"
+            data-en="Busiest year"
+            data-ru="Самый активный год"
+          >
+            Busiest year
+          </h2>
           <div class="value">{facts.mostActiveYear.year}</div>
           <span
             class="travel-metric"
@@ -123,15 +117,13 @@ const busiestYear = facts.tripsByYear.reduce(
     {
       facts.latestNewCountry && (
         <section>
-          <header class="travel-section-head">
-            <h2
-              class="travel-section-title"
-              data-en="Latest new country"
-              data-ru="Последняя новая страна"
-            >
-              Latest new country
-            </h2>
-          </header>
+          <h2
+            class="travel-caption"
+            data-en="Latest new country"
+            data-ru="Последняя новая страна"
+          >
+            Latest new country
+          </h2>
           <div class="value">
             <span
               class={`fi fi-${facts.latestNewCountry.a2}`}
@@ -185,7 +177,7 @@ const busiestYear = facts.tripsByYear.reduce(
             .slice()
             .reverse()
             .map((entry) => (
-              <li class="year">
+              <li class="travel-row year">
                 <span class="travel-metric">{entry.year}</span>
                 <ProgressBar
                   value={entry.trips}
@@ -214,8 +206,9 @@ const busiestYear = facts.tripsByYear.reduce(
     gap: 1.5rem;
   }
 
-  /* The one place a number is the answer rather than the annotation, so it is
-     the one place these views set type larger than the body. */
+  /* A fact's answer, at the size and weight of a group heading — the same
+     1.25rem/600 a year is set at, which is what the counters above the switcher
+     give their own numbers. */
   .value {
     display: flex;
     align-items: center;
@@ -223,16 +216,17 @@ const busiestYear = facts.tripsByYear.reduce(
     font-weight: 600;
     font-size: 1.25rem;
     font-variant-numeric: tabular-nums;
-    color: light-dark(#111, #fff);
+    color: light-dark(#111, #fafafa);
     /* A grid item without this widens its column past the page rather than
        letting a long country name ellipsize inside it. */
     min-width: 0;
-    margin-bottom: 0.2em;
+    margin-bottom: 0.1em;
   }
 
+  /* No size of its own, so a flag stands to its name here in the same
+     proportion it does in the timeline. */
   .value .fi {
     flex-shrink: 0;
-    font-size: 0.9rem;
     border-radius: 3px;
   }
 
@@ -245,19 +239,22 @@ const busiestYear = facts.tripsByYear.reduce(
   .years {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    margin: 0.85rem 0 0;
+    /* The rows bring their own 0.5rem of padding, so the list needs no gap of
+       its own and sits the same 0.5rem below its heading that a year's trips
+       sit below theirs. */
+    margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  /* Three fixed tracks rather than a flex row: the year and the count are
-     tabular numerals of known width, so pinning their columns keeps every
-     groove starting and ending on the same two lines down the whole list. */
+  /* Three fixed tracks rather than the shared row's flex: the year and the count
+     are tabular numerals of known width, so pinning their columns keeps every
+     groove starting and ending on the same two lines down the whole list. The
+     rest of the row — its padding, radius and hover — comes from .travel-row,
+     so pointing at a year here answers exactly as pointing at a trip does. */
   .year {
     display: grid;
     grid-template-columns: 2.5rem minmax(0, 1fr) 1.25rem;
-    align-items: center;
     gap: 0.6rem;
   }
 

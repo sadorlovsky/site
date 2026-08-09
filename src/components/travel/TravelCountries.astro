@@ -7,10 +7,13 @@ import "flag-icons/css/flag-icons.min.css";
 const countriesWithCities = getCountriesWithCities(datedTrips);
 ---
 
-<div class="countries-view">
+{/* One column, so the shared grid is here only for the row shell it brings —
+    a country's cities run to the end of the line and would be cut in half by a
+    second column. */}
+<ul class="travel-grid countries" role="list">
   {
     countriesWithCities.map((country) => (
-      <div class="country-row">
+      <li class="travel-row travel-row--flow">
         <span
           class={`travel-flag flag fi fi-${country.a2}`}
           aria-hidden="true"
@@ -30,55 +33,40 @@ const countriesWithCities = getCountriesWithCities(datedTrips);
             >{city}{i < country.cities.length - 1 ? "," : ""}</span>{" "}
           </>
         ))}
-      </div>
+      </li>
     ))
   }
-</div>
+</ul>
 
 <style>
-  .countries-view {
-    display: flex;
-    flex-direction: column;
+  .countries {
+    --travel-columns: 1;
   }
 
-  .country-row {
-    padding: 0.4rem 0.5rem;
-    border-radius: 6px;
-    line-height: 1.7;
-    color: light-dark(#666, #888);
-    font-size: 0.85rem;
-    transition: background-color 0.15s ease;
-  }
-
-  .country-row:hover {
-    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
-  }
-
-  /* The shared flag is written for a flex row, where the browser puts it on
-     the centre line for you. Here it sits in running text and has to be told. */
+  /* The shared flag is written for a flex row, where the browser puts it on the
+     centre line for you. Here it sits in running text and takes the timeline's
+     own offset and gap instead. */
   .flag {
-    margin-right: 0.4rem;
-    vertical-align: middle;
+    margin-right: 4px;
+    vertical-align: -0.12em;
   }
 
-  /* How many cities the row is about to list. Sits inline after the name
-     rather than at the end of the row, because the row keeps going. */
+  /* How many cities the row is about to list. Sits inline after the name rather
+     than at the end of the row, because the row keeps going. */
   .city-count {
     margin-left: 0.2rem;
   }
 
+  /* The same colour the timeline gives the arrows between its cities. */
   .separator {
-    color: light-dark(#ccc, #444);
+    color: light-dark(#999, #666);
     margin: 0 0.3rem;
   }
 
+  /* The cities are what the row goes on to say, so they stay readable rather
+     than dropping to the colour of a count. */
   .city {
+    color: var(--travel-quiet);
     white-space: nowrap;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .country-row {
-      transition: none;
-    }
   }
 </style>

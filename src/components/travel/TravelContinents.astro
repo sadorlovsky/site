@@ -134,19 +134,20 @@ const remaining = continents.filter(
 <style>
   /* Air under the progress bar. Without it the bar touches the first row of
      countries and reads as that row's underline rather than as the section's
-     summary. */
+     summary. 0.5rem is the gap the heading above it keeps, and the rows now
+     carry 0.5rem of padding of their own on top of it. */
   .countries {
-    margin-top: 0.85rem;
+    margin-top: 0.5rem;
   }
 
   /* An aside about the arithmetic, not a section of its own — set below the
-     body size and in the muted colour the metrics use, so it settles under the
-     last section instead of competing with it. */
+     body size and in the colour the views give secondary text, so it settles
+     under the last section instead of competing with it. */
   .note {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     line-height: 1.5;
-    color: light-dark(#666, #8a8a90);
+    color: var(--travel-quiet);
     text-wrap: pretty;
   }
 

@@ -65,21 +65,28 @@ const stats = getChecklistStats();
 </div>
 
 <style>
-  /* 193 countries, so three columns rather than the two a continent's dozen
-     needs. The count is the only thing this view changes about the shared
-     grid. */
+  /* Two columns, not the three this view used to take. Its rows are the
+     timeline's rows now, and at that size a third column left roughly 160px for
+     a name — enough to clip a dozen of them, "Saint Vincent and the
+     Grenadines" first. Two columns is the longest view on the page by some way,
+     which is what the sticky category heading is for. */
   .countries {
-    --travel-columns: 3;
+    --travel-columns: 2;
   }
 
   /* A country not yet visited is still worth reading — it is the list of what
      is left — so it fades rather than greys: the flag, the tick box and the
-     name recede together instead of the name alone changing colour. */
-  .travel-row {
+     name recede together instead of the name alone changing colour.
+
+     The fade is on the row's contents rather than the row, because an opacity
+     on the row takes its hover wash down with it — pointing at an unvisited
+     country would then answer at a third the strength of pointing at a visited
+     one, which is the row saying something about itself that isn't true. */
+  .travel-row > * {
     opacity: 0.35;
   }
 
-  .travel-row.visited {
+  .travel-row.visited > * {
     opacity: 1;
   }
 
@@ -90,6 +97,9 @@ const stats = getChecklistStats();
     width: 14px;
     height: 14px;
     min-width: 14px;
+    /* The row's gap is the 4px the timeline puts between a flag and a name;
+       between the box and the flag it wants a little more than that. */
+    margin-right: 0.25rem;
     border-radius: 3px;
     border: 1.5px solid light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.15));
     color: transparent;
@@ -103,11 +113,5 @@ const stats = getChecklistStats();
   .check svg {
     width: 12px;
     height: 12px;
-  }
-
-  @media (max-width: 768px) {
-    .countries {
-      --travel-columns: 2;
-    }
   }
 </style>
