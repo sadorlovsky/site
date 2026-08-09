@@ -1,18 +1,60 @@
 ---
+import ToggleGroup from "@components/kit/ToggleGroup.astro";
 import { getChecklist, getChecklistStats } from "@lib/travel/checklist";
+import "@styles/kit/checkbox.css";
 import "@styles/travel.css";
-import "flag-icons/css/flag-icons.min.css";
 
 const checklist = getChecklist();
 const stats = getChecklistStats();
+
+// Two hundred and fifty rows, of which thirty-two are ticked. Finding one
+// country among them is a job for the eyes and nothing else, so the view gets
+// the one control that turns it into a short list.
+//
+// It belongs to the whole view rather than to a category, which is why it can't
+// go where the sort went in the countries view: the right of a category heading
+// is taken by that category's score, and the filter is not about one category.
+// So the checklist gets a heading of its own above them — the first it has had
+// — and the category headings dock below it.
+const filters = [
+  { id: "all", label: "All", labelRu: "Все" },
+  { id: "visited", label: "Been", labelRu: "Был" },
+  { id: "remaining", label: "Not yet", labelRu: "Не был" },
+];
 ---
 
-<div class="travel-sections">
+<div class="checklist-view" data-filter="all">
+  {/* No title on this bar. It would be the third landmark in a row and the
+      second one saying the same word — the tab that opened this view is
+      labelled "Checklist" and is still on screen, pinned, forty pixels above.
+      What is left is the control, which is all the bar was for. */}
+  <header class="travel-section-head filter-bar">
+    <ToggleGroup
+      items={filters}
+      value="all"
+      variant="separated"
+      tone="quiet"
+      size="sm"
+      class="filter"
+      ariaLabelEn="Filter the checklist"
+      ariaLabelRu="Фильтр чеклиста"
+    />
+  </header>
+
+  <div class="travel-sections">
   {
     checklist.map((category) => {
       const categoryStats = stats.byCategory[category.id];
       return (
-        <section>
+        // A category with nothing ticked has nothing to show under "Been", and
+        // one where everything is ticked has nothing under "Not yet". Both
+        // counts are known here, so the whole filter is two attributes and a
+        // pair of CSS rules — no counting in the browser, and no heading left
+        // standing over an empty list.
+        <section
+          data-visited={categoryStats.visited}
+          data-remaining={categoryStats.total - categoryStats.visited}
+        >
           <header class="travel-section-head">
             <h2
               class="travel-section-title"
@@ -30,17 +72,27 @@ const stats = getChecklistStats();
               <li
                 class:list={["travel-row", { visited: country.visited }]}
                 data-country={country.a2}
+                data-name-en={country.nameShort}
+                data-name-ru={country.nameShortRu}
               >
-                <span class="check" aria-hidden="true">
+                {/* The kit's mark, not a copy of it — see the note on
+                    .kit-check in checkbox.css. This row used to draw its own:
+                    a 1.5px border that turned accent, with the tick in
+                    currentColor on a viewBox of a different size. */}
+                <span
+                  class:list={["kit-check", { "kit-check--on": country.visited }]}
+                  aria-hidden="true"
+                >
                   {country.visited && (
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M12 5.5L7 11L4 8"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
+                    <svg
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="2.5 6 5 8.5 9.5 3.5" />
                     </svg>
                   )}
                 </span>
@@ -62,9 +114,131 @@ const stats = getChecklistStats();
       );
     })
   }
+  </div>
 </div>
 
+<script>
+  // The filter is two attributes and a handful of CSS rules; this only flips
+  // the one on the view, and publishes the bar's height so the category
+  // headings know how far down to dock.
+  let listening = false;
+  let resort: (() => void) | null = null;
+
+  // The list arrives in the order countries.md is written in, which is English
+  // alphabetical — and on the Russian page that is no order at all: Afghanistan,
+  // Albania, Algeria, Andorra, Angola reads as Афганистан, Албания, Алжир,
+  // Андорра, Ангола, with А, Ал, Ан and Аф interleaved by a spelling nobody on
+  // that page can see. Two hundred and fifty rows sorted by an invisible key.
+  //
+  // The right order is only knowable in the browser, because the language is:
+  // the server sends one document for both. So the rows are sorted here, and
+  // sorted again whenever the language changes.
+  function sortByLanguage(view: HTMLElement) {
+    const locale = document.documentElement.lang === "ru" ? "ru" : "en";
+    const key = locale === "ru" ? "nameRu" : "nameEn";
+    // A collator rather than localeCompare per pair: it is built once instead
+    // of per comparison, and `sensitivity: base` puts Е and Ё together, which
+    // is what a reader looking for Ёмен expects and what the raw code points
+    // refuse to do — Ё sits after я in Unicode.
+    const collator = new Intl.Collator(locale, { sensitivity: "base" });
+
+    for (const list of view.querySelectorAll<HTMLElement>(".countries")) {
+      const rows = Array.from(list.querySelectorAll<HTMLElement>(".travel-row"));
+      rows
+        .sort((a, b) =>
+          collator.compare(a.dataset[key] ?? "", b.dataset[key] ?? ""),
+        )
+        .forEach((row) => list.appendChild(row));
+    }
+  }
+
+  function initChecklistFilter() {
+    const view = document.querySelector<HTMLElement>(".checklist-view");
+    const group = view?.querySelector<HTMLElement>(".filter");
+    if (!view || !group) return;
+
+    const bar = view.querySelector<HTMLElement>(".filter-bar");
+    if (bar) {
+      const publish = () =>
+        view.style.setProperty(
+          "--checklist-filter-offset",
+          `${Math.round(bar.offsetHeight)}px`,
+        );
+      publish();
+      new ResizeObserver(publish).observe(bar);
+    }
+
+    sortByLanguage(view);
+    resort = () => sortByLanguage(view);
+
+    if (listening) return;
+    listening = true;
+
+    window.addEventListener("lang-change", () => resort?.());
+
+    // Delegated on the document, so it survives a page swap without needing to
+    // be taken off and put back on the new bar.
+    document.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement | null)?.closest<HTMLElement>(
+        ".checklist-view .filter .kit-toggle-item",
+      );
+      const id = button?.dataset.id;
+      if (!button || !id) return;
+
+      const current = button.closest<HTMLElement>(".checklist-view");
+      if (!current) return;
+
+      for (const item of current.querySelectorAll<HTMLElement>(
+        ".filter .kit-toggle-item",
+      )) {
+        const isActive = item === button;
+        item.classList.toggle("is-active", isActive);
+        item.setAttribute("aria-pressed", String(isActive));
+      }
+
+      current.dataset.filter = id;
+    });
+  }
+
+  initChecklistFilter();
+  document.addEventListener("astro:page-load", initChecklistFilter);
+</script>
+
 <style>
+  /* A control strip rather than a heading: pushed to the right, thin, and with
+     no rule of its own — the category heading docking under it has one, and two
+     hairlines forty pixels apart is exactly what the rail gave up its surface
+     to stop. */
+  .filter-bar {
+    justify-content: flex-end;
+    border-bottom: none;
+    padding: 0.15rem 0 0.35rem;
+    margin-bottom: 0;
+  }
+
+  /* Which puts a third pinned thing above the rows — pills, rail, filter — so
+     the category headings clear all three. */
+  .checklist-view .travel-section-head:not(.filter-bar) {
+    top: calc(
+      var(--sticky-header-offset, 0px) + var(--sticky-rail-offset, 0px) +
+        var(--checklist-filter-offset, 0px)
+    );
+    z-index: 9;
+  }
+
+  /* The filter itself. Nothing is removed from the page, only stopped from
+     being drawn, so the counts in the headings still read against the whole
+     category and a screen reader is handed the same list it always was. */
+  .checklist-view[data-filter="visited"] .travel-row:not(.visited),
+  .checklist-view[data-filter="remaining"] .travel-row.visited {
+    display: none;
+  }
+
+  .checklist-view[data-filter="visited"] section[data-visited="0"],
+  .checklist-view[data-filter="remaining"] section[data-remaining="0"] {
+    display: none;
+  }
+
   /* Two columns, not the three this view used to take. Its rows are the
      timeline's rows now, and at that size a third column left roughly 160px for
      a name — enough to clip a dozen of them, "Saint Vincent and the
@@ -75,43 +249,46 @@ const stats = getChecklistStats();
   }
 
   /* A country not yet visited is still worth reading — it is the list of what
-     is left — so it fades rather than greys: the flag, the tick box and the
-     name recede together instead of the name alone changing colour.
+     is left — so the whole row used to fade to 0.35 together, marks and name
+     alike. That is 2.27:1 against this page in the light scheme and 3.16:1 in
+     the dark: not "receded", illegible, and for two hundred and eighteen of the
+     two hundred and fifty rows here. There is no opacity that fixes it either —
+     the name only clears 4.5:1 somewhere past 0.7, by which point it has
+     stopped fading at all.
 
-     The fade is on the row's contents rather than the row, because an opacity
-     on the row takes its hover wash down with it — pointing at an unvisited
-     country would then answer at a third the strength of pointing at a visited
-     one, which is the row saying something about itself that isn't true. */
-  .travel-row > * {
-    opacity: 0.35;
+     So the name takes a colour instead of a fraction of one, and only the two
+     marks beside it keep fading. Words are read and get a legible value; a flag
+     and an empty socket are glanced at, and can recede as far as they like.
+
+     Either way the fade is on the row's contents rather than the row, because
+     an opacity on the row takes its hover wash down with it — pointing at an
+     unvisited country would then answer at a third the strength of pointing at
+     a visited one, which is the row saying something about itself that isn't
+     true. */
+  .travel-row > .travel-name {
+    color: var(--travel-muted);
   }
 
-  .travel-row.visited > * {
+  .travel-row > .kit-check,
+  .travel-row > .travel-flag {
+    opacity: 0.45;
+  }
+
+  .travel-row.visited > .travel-name {
+    color: inherit;
+  }
+
+  .travel-row.visited > .kit-check,
+  .travel-row.visited > .travel-flag {
     opacity: 1;
   }
 
-  .check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 14px;
-    height: 14px;
-    min-width: 14px;
+  /* Only the size and the spacing are this view's business; the socket, the
+     fill and the tick all come from the kit. */
+  .kit-check {
+    --kit-check-size: 14px;
     /* The row's gap is the 4px the timeline puts between a flag and a name;
-       between the box and the flag it wants a little more than that. */
+       between the mark and the flag it wants a little more than that. */
     margin-right: 0.25rem;
-    border-radius: 3px;
-    border: 1.5px solid light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.15));
-    color: transparent;
-  }
-
-  .travel-row.visited .check {
-    border-color: light-dark(var(--accent-start), var(--accent-end));
-    color: light-dark(var(--accent-start), var(--accent-end));
-  }
-
-  .check svg {
-    width: 12px;
-    height: 12px;
   }
 </style>

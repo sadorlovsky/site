@@ -31,6 +31,17 @@
   --glass-shadow:
     0 10px 30px light-dark(rgba(20, 20, 40, 0.12), rgba(0, 0, 0, 0.38)),
     0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
+  /* The same lift, cut for something chip-sized. --glass-shadow is drawn for a
+     capsule floating over the page — a 2.7rem header pill with a whole document
+     behind it — and under a 32px lens lying in a rail it stops reading as lift
+     and starts reading as a halo. In the light scheme that is the entire
+     problem: the tint is nearly the page colour and the border is white on
+     white, so the halo becomes the only thing you can see and the capsule
+     turns into a soft white blob. */
+  --glass-shadow-sm:
+    0 3px 10px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.34)),
+    0 1px 2px light-dark(rgba(20, 20, 40, 0.07), rgba(0, 0, 0, 0.24));
+
   --glass-rim:
     inset 1.5px 1.5px 1px -1px
       light-dark(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.32)),
@@ -44,8 +55,29 @@
      headings on /travel. Not --glass-*: a capsule is a neutral tint you look
      through, while this is the page's own colour closing over what passes
      beneath. The two were separately hardcoded, a hex and a blur radius apart. */
-  --veil-bg: light-dark(rgba(248, 248, 255, 0.9), rgba(25, 25, 25, 0.9));
-  --veil-filter: blur(16px);
+  /* The blur went up and the saturation arrived — it was the one material on
+     the site without any, and at 16px a heading's worth of text underneath
+     smeared into word-shaped smudges instead of dissolving.
+
+     The tint went with it, from a tenth of light passed to a thirtieth. A tenth
+     of near-white text on a near-black page is twenty-five levels above the
+     ground, which is enough to read the rows going under a heading, and blur
+     alone will not fix that: it attacks high frequencies, so it turns text into
+     a smudge and leaves a large soft shape — a row's hover wash — plain to see.
+
+     Going opaque is only safe because of where a page's ambience sits. On
+     /travel it is two blurred blobs laid over everything, chrome included, so
+     they tint this strip and the page below it by the same amount and there is
+     no seam. Under the page instead, this tint would cover the glow in the
+     strip while the page kept it, and the veil would read as a flat rectangle
+     cut out of the page — which is exactly what it did when both were tried the
+     other way round.
+
+     What passes through regardless is the mask's own fade: the bottom 2.75rem
+     of this strip runs every alpha down to nothing by design, and a sticky
+     heading is meant to be sitting over that stretch, covering it. */
+  --veil-bg: light-dark(rgba(248, 248, 255, 0.97), rgba(25, 25, 25, 0.97));
+  --veil-filter: blur(24px) saturate(140%);
 
   /* A card's tint. Cards take their border, shadow and rim from the tokens
      above but keep a tint of their own, heavier than the chrome's 0.55: a card

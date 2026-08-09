@@ -236,46 +236,135 @@ export function getCountryName(a3: string, lang: "en" | "ru"): string {
   return entry ? entry[lang] : a3.toUpperCase();
 }
 
+/**
+ * The flag code for a country, as opposed to for a place inside it.
+ *
+ * A destination carries the alpha-2 of what was actually visited, and for the
+ * United Kingdom that is a nation of it: `gb-eng`, `gb-sct`. The timeline wants
+ * exactly that — it draws both flags for a trip through England — but anything
+ * listing the country itself does not, and every such view was showing the
+ * October 2024 journey's first destination and so flying the flag of England
+ * over the word "United Kingdom".
+ */
+function countryFlag(a2: string): string {
+  return a2.split("-")[0];
+}
+
+export interface CityVisits {
+  name: string;
+  /** How many trips touched this city. Counted once per trip and never for an
+      outing, so it is the same number the stats view calls a visit — the two
+      would be read side by side otherwise, and "Saint Petersburg (10)" has to
+      mean what "Most visited city: Saint Petersburg, 10 visits" means. */
+  visits: number;
+}
+
 export interface CountryWithCities {
   code: string;
   a2: string;
   name: { en: string; ru: string };
-  cities: string[];
-  tripCount: number;
+  cities: CityVisits[];
+  /** The year this country was first stood in — outings included, on the same
+      grounds getTravelFacts counts them for a first visit: an afternoon across
+      the border is still the day it happened. Null only for a country reached
+      solely by trips with no date. */
+  firstYear: number | null;
+  /** Where this country falls in the run of first sightings: 0 is the first
+      country of all, 1 the next, and so on.
+
+      A year on its own cannot order them. Four countries share 2019, and a
+      chronology that then fell back on how many cities each has would be
+      sorting by something that is not time. Two countries first reached on the
+      same journey can't even be told apart by a month — there the route's own
+      order is the order they were stood in, which is what walking the trips
+      captures and no pair of numbers can. Null alongside a null firstYear. */
+  firstSeen: number | null;
 }
 
 // Get visited countries with their cities
 export function getCountriesWithCities(data: Trip[]): CountryWithCities[] {
   const countryMap = new Map<
     string,
-    { a2: string; cities: Set<string>; tripCount: number }
+    {
+      a2: string;
+      cities: Map<string, number>;
+      firstYear: number | null;
+      firstSeen: number | null;
+    }
   >();
 
-  for (const trip of data) {
+  // Walked in the order the trips happened, which is what makes "first" mean
+  // first: trips.json is in no particular order, and taking the earliest year
+  // per country would still leave every country in a shared year unordered.
+  // Trips with no date have no place in a chronology and go last — they still
+  // bring their cities, they just can't be the first sighting of anything.
+  const dated = data.filter((trip) => trip.year !== null);
+  const undated = data.filter((trip) => trip.year === null);
+  const chronological = [
+    ...dated.sort(
+      (a, b) => a.year! - b.year! || (a.month ?? 0) - (b.month ?? 0),
+    ),
+    ...undated,
+  ];
+
+  let sightings = 0;
+
+  for (const trip of chronological) {
+    // Once per trip, not once per destination: the Oct 2024 journey reaches
+    // England and Scotland as two destinations under one alpha-3, and a route
+    // can pass back through a city it has already been to. Counting rows would
+    // report both twice.
+    const countedCities = new Set<string>();
+
     for (const dest of trip.destinations) {
       const [a2, a3] = dest.country;
       const code = a3.toUpperCase();
 
       if (!countryMap.has(code)) {
-        countryMap.set(code, { a2, cities: new Set(), tripCount: 0 });
+        countryMap.set(code, {
+          a2: countryFlag(a2),
+          cities: new Map(),
+          firstYear: null,
+          firstSeen: null,
+        });
       }
 
       const entry = countryMap.get(code)!;
-      entry.tripCount++;
+
+      // No Math.min needed, and no comparison of dates at all: the walk is in
+      // order, so the first trip to reach a country is the first visit, and the
+      // destinations within it are in the order the route took them.
+      if (entry.firstSeen === null && trip.year !== null) {
+        entry.firstSeen = sightings++;
+        entry.firstYear = trip.year;
+      }
+
       for (const city of dest.cities) {
-        entry.cities.add(city);
+        if (!entry.cities.has(city)) entry.cities.set(city, 0);
+        // An outing is not a visit, the same way it is not a journey. The city
+        // is still listed — I was there — it just doesn't score.
+        if (trip.kind !== "outing" && !countedCities.has(city)) {
+          countedCities.add(city);
+          entry.cities.set(city, entry.cities.get(city)! + 1);
+        }
       }
     }
   }
 
-  // Convert to array and sort by city count (descending)
+  // Convert to array and sort by city count (descending). The cities inside a
+  // country stay alphabetical by their English name: a country's line is read
+  // as a list, not as a ranking, and re-ordering it by visits would put the one
+  // city with a number beside it first and imply the rest were a tail.
   return Array.from(countryMap.entries())
     .map(([code, data]) => ({
       code,
       a2: data.a2,
       name: COUNTRY_NAMES[code] || { en: code, ru: code },
-      cities: Array.from(data.cities).sort(),
-      tripCount: data.tripCount,
+      cities: Array.from(data.cities)
+        .map(([name, visits]) => ({ name, visits }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+      firstYear: data.firstYear,
+      firstSeen: data.firstSeen,
     }))
     .sort((a, b) => b.cities.length - a.cities.length);
 }
@@ -546,7 +635,11 @@ export function getTravelFacts(data: Trip[]): TravelFacts {
     for (const dest of trip.destinations) {
       const [a2, a3] = dest.country;
       const code = a3.toUpperCase();
-      if (!countriesThisTrip.has(code)) countriesThisTrip.set(code, a2);
+      // The country's own flag for the country, the destination's for the city:
+      // a city inside England is still in England, and "Most visited country:
+      // United Kingdom" is not.
+      if (!countriesThisTrip.has(code))
+        countriesThisTrip.set(code, countryFlag(a2));
       for (const city of dest.cities) {
         if (!citiesThisTrip.has(city)) citiesThisTrip.set(city, a2);
       }
@@ -625,6 +718,32 @@ export function getTravelFacts(data: Trip[]): TravelFacts {
       .map(([year, trips]) => ({ year, trips }))
       .sort((a, b) => a.year - b.year),
   };
+}
+
+/**
+ * Every year from the first to the last, the empty ones included.
+ *
+ * `tripsByYear` only carries years that have trips in them, which is right for
+ * a list and wrong for an axis: 2014 and 2015 have no travel in them, so they
+ * were simply absent, and anything drawn from that series put 2013 next to 2016
+ * as though they were consecutive. A year with nothing in it is among the more
+ * interesting things a travel chart can say, and it can only say it if the year
+ * is there to be empty.
+ */
+export function fillYearGaps(
+  entries: { year: number; trips: number }[],
+): { year: number; trips: number }[] {
+  if (entries.length === 0) return [];
+
+  const counts = new Map(entries.map((entry) => [entry.year, entry.trips]));
+  const years = [...counts.keys()];
+  const filled: { year: number; trips: number }[] = [];
+
+  for (let year = Math.min(...years); year <= Math.max(...years); year++) {
+    filled.push({ year, trips: counts.get(year) ?? 0 });
+  }
+
+  return filled;
 }
 
 // -----------------------------------------------------------------------------

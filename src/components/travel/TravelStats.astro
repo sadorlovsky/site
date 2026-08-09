@@ -92,6 +92,12 @@ import {
     /* The page's own grid gap, so the stats sit on the same rhythm as the map
        and the trip list rather than a tighter one of their own. */
     gap: 1.25rem;
+    /* And out to the page's shared edge. A row's hover wash bleeds 0.75rem past
+       the content edge by design — the text stays put and the wash reaches into
+       the gutter — which used to leave these cards ending 12px short of it, so
+       the page had two different left edges and the wash looked like it was
+       escaping. Now everything that draws a surface ends on the same line. */
+    margin-inline: -0.75rem;
   }
 
   /* The same material as a wishlist card: tint, border, shadow and rim all from

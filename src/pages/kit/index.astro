@@ -214,7 +214,11 @@ import { Icon } from "astro-icon/components";
             Not glass at all: the page's own colour closing over what scrolls
             beneath it. Used by the pinned header strip and
             <code>/travel</code>'s sticky year. A capsule is a neutral tint you
-            look through; this one belongs to the page.
+            look through; this one belongs to the page. It stays translucent on
+            purpose: a page with an ambient background has that behind the veil
+            too, and an opaque strip cuts a flat rectangle out of it. The frost
+            is what keeps what passes underneath from being readable — which is
+            why the blur is heavier here than the number it started at.
           </dd>
         </dl>
 
@@ -447,6 +451,89 @@ import { Icon } from "astro-icon/components";
           />
         </div>
 
+        <h3>Quiet Tone</h3>
+        <p>
+          <code>tone="quiet"</code> on the separated variant marks the current
+          item with ink and the wash it already answers a cursor with, instead
+          of the accent capsule. For a row that shares its space with something
+          already louder — /travel's country sort sits in a heading forty pixels
+          under the pinned view rail, and at full accent it was the brightest
+          thing on the page. Ink rather than a second glass capsule on purpose:
+          glass there would read as a smaller copy of the rail and make the two
+          compete for the same job.
+        </p>
+        <div class="component-row" id="toggle-quiet-demo">
+          <ToggleGroup
+            variant="separated"
+            tone="quiet"
+            size="sm"
+            items={[
+              { id: "cities", label: "By cities" },
+              { id: "name", label: "A–Z" },
+              { id: "first", label: "By first visit" },
+            ]}
+            value="cities"
+          />
+        </div>
+
+        <h3>Tabs Variant</h3>
+        <p>
+          The only variant that is not a set of toggles. It renders a real
+          <code>role="tablist"</code> — <code>aria-selected</code> rather than
+          <code>aria-pressed</code>, <code>aria-controls</code> pointing at the
+          panel, and a roving <code>tabindex</code> so the rail is one stop in
+          the tab order with the arrow keys moving inside it. Pass
+          <code>controls</code> on each item with the id of its panel; the tab
+          takes the id <code>{`${"{controls}"}-tab`}</code>, which is what the
+          panel points back at with <code>aria-labelledby</code>.
+        </p>
+        <p>
+          The current tab is a lens — the chrome's glass capsule, sliding behind
+          the label on the dock's easing. Same idiom as the magnetic dock and
+          the language switcher, with one part swapped: their indicator is an
+          accent gradient, which suits a small nav floating in the chrome, while
+          a tab rail is pinned over content that is already spending the accent.
+          One lens for the whole rail, so it travels and the row reads as one
+          instrument.
+        </p>
+        <p>
+          Needs a driver:
+          <code>import {`{ initToggleTabs }`} from "@client/toggle-tabs"</code>,
+          called with the tablist element and a callback that shows the matching
+          panel. It handles the keyboard, the marker and the edge fades; nothing
+          happens without it beyond the tab the server rendered.
+        </p>
+        <div class="component-row component-row--stack" id="toggle-tabs-demo">
+          <ToggleGroup
+            variant="tabs"
+            size="sm"
+            scrollable
+            items={[
+              { id: "timeline", label: "Timeline", count: 47, controls: "kit-tab-timeline" },
+              { id: "countries", label: "Countries", count: 32, controls: "kit-tab-countries" },
+              { id: "continents", label: "Continents", count: "2/7", controls: "kit-tab-continents" },
+              { id: "stats", label: "Stats", controls: "kit-tab-stats" },
+            ]}
+            value="timeline"
+          />
+          <div class="kit-tab-panels">
+            <div id="kit-tab-timeline" role="tabpanel" aria-labelledby="kit-tab-timeline-tab" tabindex="0">47 trips, newest first.</div>
+            <div id="kit-tab-countries" role="tabpanel" aria-labelledby="kit-tab-countries-tab" tabindex="0" hidden>32 countries and the cities in them.</div>
+            <div id="kit-tab-continents" role="tabpanel" aria-labelledby="kit-tab-continents-tab" tabindex="0" hidden>2 of 7 continents.</div>
+            <div id="kit-tab-stats" role="tabpanel" aria-labelledby="kit-tab-stats-tab" tabindex="0" hidden>No count on this tab — it is not a list of anything.</div>
+          </div>
+        </div>
+
+        <h3>Counts</h3>
+        <p>
+          Pass <code>count</code> to an item — a number, or a fraction like
+          <code>"2/7"</code> where "of how many" is the point. It says what the
+          label cannot: how much is behind the tab, so the row answers whether
+          a view is worth opening before it is opened. Language-neutral by
+          design; a count that needed translating would be a second label. An
+          item may go without one, and the gap says something too.
+        </p>
+
         <h3>With Icons</h3>
         <p>Pass <code>icon</code> to items. Icon size adjusts to toggle size (14px for sm, 16px for md).</p>
         <div class="component-row" id="toggle-icons-demo">
@@ -579,6 +666,15 @@ import { Icon } from "astro-icon/components";
           The <strong>box</strong> variant is for a single standalone boolean,
           where an unchecked capsule and an absent one would look the same.
         </p>
+        <p>
+          The box is a socket, and the tick is the fill lying in it. ProgressBar
+          states the rule this follows: <code>--glass-rim</code> is a lens edge
+          lit from the top left, so a channel sunk into the same surface is its
+          inverse. A checkbox has two states and the chrome has exactly those
+          two opposite treatments — and both halves here are the progress bar's,
+          value for value, because at this size a checkbox is a meter with two
+          stops.
+        </p>
 
         <h3>Pill</h3>
         <div class="kit-checkbox-group">
@@ -603,6 +699,32 @@ import { Icon } from "astro-icon/components";
         <div class="kit-checkbox-group">
           <Checkbox variant="box" size="sm" checked>SM</Checkbox>
           <Checkbox variant="box" size="md" checked>MD</Checkbox>
+        </div>
+
+        <h3>The mark on its own</h3>
+        <p>
+          <code>.kit-check</code> is the box without an input around it, for a
+          ticked state that is not a control — /travel's checklist marks 250
+          countries as seen or not, and none of them is something to click. Add
+          <code>.kit-check--on</code> for the ticked state and set
+          <code>--kit-check-size</code> for anything other than the kit's own
+          two. It exists so that idea has one appearance on the site rather than
+          growing a second one in a page's own stylesheet, which is where it had
+          got to.
+        </p>
+        <div class="component-row kit-check-demo">
+          <span class="kit-check kit-check--on" aria-hidden="true">
+            <svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2.5 6 5 8.5 9.5 3.5" />
+            </svg>
+          </span>
+          <span class="kit-check" aria-hidden="true"></span>
+          <span class="kit-check kit-check--on" style="--kit-check-size: 22px" aria-hidden="true">
+            <svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2.5 6 5 8.5 9.5 3.5" />
+            </svg>
+          </span>
+          <span class="kit-check" style="--kit-check-size: 22px" aria-hidden="true"></span>
         </div>
       </section>
 
@@ -1193,6 +1315,18 @@ import { Icon } from "astro-icon/components";
     margin-bottom: 1.5rem;
   }
 
+  /* A tab rail is only half a control without the thing it swaps, so its demo
+     stacks the rail over its panels rather than laying them out side by side. */
+  .component-row--stack {
+    display: block;
+  }
+
+  .kit-tab-panels {
+    padding: 0.9rem 0.1rem;
+    font-size: 0.9rem;
+    color: light-dark(#555, #b4b4b8);
+  }
+
   /* Glass badges are meant to be read against a photo, so the demo gives them
      something to sit on — a flat swatch would flatter them unfairly. */
   .badge-on-photo {
@@ -1286,6 +1420,7 @@ import { Icon } from "astro-icon/components";
 <script>
   // Tooltips — the demo below is inert without this.
   import { initTooltips } from '@client/tooltip';
+  import { initToggleTabs } from '@client/toggle-tabs';
   initTooltips();
 
   // Modal demo
@@ -1331,7 +1466,20 @@ import { Icon } from "astro-icon/components";
 
   initToggleGroup('toggle-pill-demo');
   initToggleGroup('toggle-separated-demo');
+  initToggleGroup('toggle-quiet-demo');
   initToggleGroup('toggle-icons-demo');
+
+  // The tabs variant has a real driver rather than a demo one — it is the same
+  // module /travel calls, so what is on show here is what a caller gets.
+  const tabsDemo = document.querySelector<HTMLElement>('#toggle-tabs-demo [role="tablist"]');
+  if (tabsDemo) {
+    const panels = document.querySelectorAll<HTMLElement>('.kit-tab-panels > [role="tabpanel"]');
+    initToggleTabs(tabsDemo, (id) => {
+      panels.forEach((panel) => {
+        panel.toggleAttribute('hidden', panel.id !== `kit-tab-${id}`);
+      });
+    });
+  }
 
   // Toast demo
   const toastContainer = document.getElementById('toast-container');
