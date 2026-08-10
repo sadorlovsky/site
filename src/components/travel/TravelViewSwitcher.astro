@@ -162,8 +162,16 @@ const viewIds = items.map((item) => item.id).join(" ");
     // nothing to observe directly — the trick is to shrink the observation area
     // to start one pixel below the dock line, which the rail can only cross by
     // being stuck to it.
+    //
+    // An arrow rather than a declaration, and not as a matter of taste: a
+    // function declaration is hoisted, so TypeScript has to assume it could run
+    // before the guard above and reads `switcher` at its declared type — null
+    // included — however plainly the guard returns. An arrow is created here,
+    // after the narrowing, and keeps it. `publish` above is an arrow for the
+    // same reason; this one was the exception and it was the one that failed
+    // the typecheck.
     let dockWatcher: IntersectionObserver | null = null;
-    function watchDock() {
+    const watchDock = () => {
       dockWatcher?.disconnect();
       dockWatcher = new IntersectionObserver(
         ([entry]) =>
@@ -174,7 +182,7 @@ const viewIds = items.map((item) => item.id).join(" ");
         },
       );
       dockWatcher.observe(switcher);
-    }
+    };
     watchDock();
     window.addEventListener("resize", watchDock);
 
