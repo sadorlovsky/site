@@ -6,13 +6,45 @@ interface Props {
   showPercent?: boolean;
   accent?: boolean;
   class?: string;
+  /** Overrides the aria-label `label` would have produced. */
+  "aria-label"?: string;
+  /** Data attributes land on the bar itself — see the note below. A blanket
+      `[key: string]: unknown` would have done the same job, at the cost of
+      every caller's spelling: with it, `showPercet` is a valid prop that goes
+      out as an HTML attribute while the real one keeps its default. */
+  [key: `data-${string}`]: string | undefined;
 }
 
-const { value, max = 100, label, showPercent = true, accent = false, class: className } = Astro.props;
-const percent = Math.floor((value / max) * 100);
+const {
+  value,
+  max = 100,
+  label,
+  showPercent = true,
+  accent = false,
+  class: className,
+  ...rest
+} = Astro.props;
+
+// Astro hands a child the caller's style-scope marker as an ordinary prop, so
+// it arrives in `rest` and would be spread onto the bar — stamping the caller's
+// [data-astro-cid-…] onto an element they cannot see, which is exactly what
+// lets one of their rules restyle the insides of a kit component. Scoping the
+// wrapper is Astro's own job; what it adds is not ours to pass along.
+const passthrough = Object.fromEntries(
+  Object.entries(rest).filter(([key]) => !key.startsWith("data-astro-")),
+);
+
+// A max of zero has no fraction to read: (0 / 0) * 100 is NaN, and it would
+// reach the DOM as aria-valuenow="NaN" and width: NaN%.
+const percent = max > 0 ? Math.floor((value / max) * 100) : 0;
 ---
 
 <div class:list={["progress-row", className]}>
+  {/* Leftover props go on the bar, not the row, because the only thing worth
+      addressing from outside is the element carrying role="progressbar" — a
+      bilingual page hands it data-aria-label-en/ru so LangInit can translate
+      the label it would otherwise be stuck with in one language. Spread last
+      so a caller can override aria-label outright. */}
   <div
     class="progress-bar"
     role="progressbar"
@@ -20,6 +52,7 @@ const percent = Math.floor((value / max) * 100);
     aria-valuemin="0"
     aria-valuemax="100"
     aria-label={label}
+    {...passthrough}
   >
     <div class:list={["progress-fill", { accent }]} style={`width: ${percent}%`}></div>
   </div>

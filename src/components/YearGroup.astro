@@ -28,8 +28,10 @@ const { year, class: className } = Astro.props;
     /* On pages with a pinned condensing header (/travel), the header's script
        publishes its stuck height as --sticky-header-offset on <main>, so the
        year docks just below the floating pills instead of colliding with
-       them. Elsewhere the variable is unset and the year sticks to the top. */
-    top: var(--sticky-header-offset, 0px);
+       them. /travel pins a second thing under those pills — the view rail —
+       which publishes --sticky-rail-offset the same way, so the year clears
+       both. Elsewhere neither is set and the year sticks to the top. */
+    top: calc(var(--sticky-header-offset, 0px) + var(--sticky-rail-offset, 0px));
     /* The same veil as the pinned header's strip: both are the page closing
        over what scrolls beneath them, and they used to say so with two sets of
        hand-written values. */
@@ -40,7 +42,12 @@ const { year, class: className } = Astro.props;
     /* Years are numbers first: tabular figures keep them aligned down the page
        as the eye scans the column. */
     font-variant-numeric: tabular-nums;
-    padding: 0.5rem 0;
+    /* Out to the edge a ListItem's hover wash reaches (0.75rem) and back in by
+       the same amount, so the year stays on the content edge while its rule and
+       its veil end where the rows' wash does. Every list on the site pairs this
+       heading with those rows, so the two share one edge everywhere. */
+    padding: 0.5rem 0.75rem;
+    margin-inline: -0.75rem;
     border-bottom: var(--glass-border);
     margin-bottom: 0.5rem;
     z-index: 10;

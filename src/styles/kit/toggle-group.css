@@ -193,6 +193,29 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
 }
 
+/* A separated row with the volume down: the current item is ink and the wash it
+   already answers a cursor with, instead of the accent capsule and its glow.
+
+   The loud version is right when the row is the loudest thing in its area — the
+   wishlist's categories sit above the items they filter and have the page to
+   themselves. It is wrong for a control tucked into a heading beside something
+   else that is already pinned: /travel's sort sits forty pixels under the view
+   rail, and at full accent it was the brightest thing on the page, brighter
+   than the tab that says which view you are in.
+
+   Ink rather than a second glass capsule, deliberately. Glass here would read
+   as a smaller copy of the rail above it and make the two compete for the same
+   job; the wash says "this one" without claiming to be the same kind of
+   control. */
+.kit-toggle-group--separated.kit-toggle-group--quiet
+  .kit-toggle-item[aria-pressed="true"],
+.kit-toggle-group--separated.kit-toggle-group--quiet .kit-toggle-item.is-active {
+  background: light-dark(rgba(0, 0, 0, 0.075), rgba(255, 255, 255, 0.1));
+  box-shadow: none;
+  color: light-dark(#111, #fff);
+  font-weight: 600;
+}
+
 /* Separated sizes — capsules, like every other pill in the chrome. */
 .kit-toggle-group--separated.kit-toggle-group--sm .kit-toggle-item {
   height: 32px;
@@ -206,6 +229,194 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   padding: 0 1.1rem;
   font-size: 0.8rem;
   border-radius: 999px;
+}
+
+/* =============================================================================
+   Tabs — a rail of views, not a row of filters.
+
+   `separated` and this look alike at rest and are still two different controls.
+   A filter chip narrows what a list contains; a tab swaps the whole panel
+   underneath it, so it is marked up as role="tablist" and driven by the arrow
+   keys (see @client/toggle-tabs).
+
+   The current tab is a lens: the chrome's own glass capsule, sliding behind the
+   label on the dock's easing. That idiom is already on the site twice — the
+   magnetic dock and the language switcher both rest a sliding indicator under
+   the item that is on — and this is the same thing with one part swapped. Their
+   indicator is an accent gradient, which is right for a two- or four-item nav
+   floating in the chrome with nothing beneath it. A tab rail is pinned over
+   content that already spends the accent on three progress bars and two hundred
+   and fifty tick boxes, so this one is cut from the same glass as the header
+   pills and leaves the accent alone.
+
+   One lens for the whole rail rather than a surface per item: it travels, and
+   five buttons with one piece of glass between them read as an instrument
+   rather than as five things each making their own case.
+   ============================================================================= */
+.kit-toggle-group--tabs {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* Capsules, like every other pill in the chrome — and above the lens, which
+   slides behind them. */
+.kit-toggle-group--tabs .kit-toggle-item {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 999px;
+  color: light-dark(#666, #9a9aa0);
+  transition:
+    background-color 0.25s ease,
+    color 0.3s ease;
+}
+
+/* Hover answers with the wash, not with the lens. The dock moves its indicator
+   to whatever the pointer is over, because there "current" means the page you
+   are about to go to; here it means the panel you are reading, and a control
+   that slid off it while you browsed the row would stop saying where you are. */
+.kit-toggle-group--tabs
+  .kit-toggle-item:hover:not(:disabled):not([aria-selected="true"]),
+.kit-toggle-group--tabs
+  .kit-toggle-item:focus-visible:not([aria-selected="true"]) {
+  background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+  color: light-dark(#111, #fff);
+}
+
+/* The rail is a scroll container, and a scroll container clips an outline drawn
+   outside the border box — on a narrow screen the focus ring would be sheared
+   off on exactly the tabs nearest the edges. Drawn inside instead, it survives.
+   The base rule's colour and width are kept. */
+.kit-toggle-group--tabs .kit-toggle-item:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Ink, on glass. Also undoes the flat raised capsule the base active rule
+   paints, which is the pill variant's answer and not this one's. */
+.kit-toggle-group--tabs .kit-toggle-item[aria-selected="true"],
+.kit-toggle-group--tabs .kit-toggle-item.is-active {
+  background: transparent;
+  box-shadow: none;
+  color: light-dark(#111, #fafafa);
+}
+
+/* The lens itself. Geometry arrives in four custom properties from the script,
+   exactly as the dock sets --dock-*, and the easing, the 0.42s and the scale-in
+   are the dock's too — two sliding indicators on one page have no business
+   moving differently.
+
+   The material is .liquid-glass, on the element, rather than the same values
+   copied out of it. That utility is what the home pill, the compact title and
+   the language switcher are made of, and this had everything it has except the
+   frost: the comment here used to argue the blur was wasted because the rail
+   carried a blurred veil of its own. The rail does not carry one any more, so
+   the argument expired and what was left was the one capsule in the chrome you
+   could read straight through. Taking the class instead of the values means it
+   cannot drift again. */
+.kit-toggle-group__marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  box-sizing: border-box;
+  width: var(--marker-w, 0);
+  height: var(--marker-h, 0);
+  border-radius: 999px;
+  opacity: 0;
+  transform: translate(var(--marker-x, 0), var(--marker-y, 0)) scale(0.9);
+  transition:
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Everything about the material comes from .liquid-glass except the lift, which
+   is the one part of it drawn for a bigger surface. See --glass-shadow-sm. */
+.kit-toggle-group--tabs .kit-toggle-group__marker {
+  box-shadow: var(--glass-shadow-sm);
+}
+
+/* Both the reveal and the travel wait for `has-marker`, which the script adds a
+   frame after the first measurement — so the lens grows into place where it
+   belongs instead of sweeping in from the left edge of the rail on load. */
+.kit-toggle-group--tabs.has-marker .kit-toggle-group__marker {
+  opacity: 1;
+  transform: translate(var(--marker-x, 0), var(--marker-y, 0)) scale(1);
+}
+
+/* Until the lens has been measured — the first frame, and for good on a page
+   with no script — the selected tab wears the same glass itself. */
+.kit-toggle-group--tabs:not(.has-marker)
+  .kit-toggle-item[aria-selected="true"] {
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  box-shadow: var(--glass-shadow), var(--glass-rim);
+}
+
+/* A count beside the label: how much is behind this tab, so the row answers
+   "is it worth opening" before it is opened. Muted and tabular — it is a
+   figure attached to a word, not a second word. */
+.kit-toggle-item__count {
+  font-weight: 500;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+  color: light-dark(#888, #8a8a90);
+  transition: color 0.3s ease;
+}
+
+.kit-toggle-group--tabs
+  .kit-toggle-item[aria-selected="true"]
+  .kit-toggle-item__count {
+  color: light-dark(#666, #9a9aa0);
+}
+
+/* Tab sizes — the separated chip's capsule geometry, with a little more room
+   inside: the lens is a surface you aim at rather than a label you glance over,
+   and it needs the width to read as glass rather than as a highlight. */
+.kit-toggle-group--tabs.kit-toggle-group--sm .kit-toggle-item {
+  height: 32px;
+  padding: 0 0.9rem;
+  font-size: 0.75rem;
+  border-radius: 999px;
+}
+
+.kit-toggle-group--tabs.kit-toggle-group--md .kit-toggle-item {
+  height: 38px;
+  padding: 0 1.15rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+}
+
+/* Room for the lens's shadow to land in.
+
+   `scrollable` sets overflow-x, which makes this a scroll container, and a
+   scroll container clips. The lens's shadow reaches some thirteen pixels below
+   it and was being cut off flat at the group's edge — what survived was the
+   part beside the capsule and not the part beneath it, which left two dark
+   crescents at its bottom corners. They read as a rendering fault rather than
+   as lift, because a shadow that stops in a straight line is not the shadow of
+   anything.
+
+   The padding gives it somewhere to fall inside the clip box; the matching
+   negative margin puts the row back exactly where it was, so nothing moves and
+   the height the rail publishes is unchanged. */
+.kit-toggle-group--tabs.kit-toggle-group--scrollable {
+  padding: 14px;
+  margin: -14px;
+  /* And the edge fade has to start where the tabs do, not where the clip box
+     does. A mask is painted over the border box, so a sixteen-pixel gradient
+     against fourteen pixels of empty padding spends all but two of them on
+     nothing — the fade was there, measurable, and invisible: the rail read as
+     a hard cut. See --fade-inset below. */
+  --fade-inset: 14px;
 }
 
 /* =============================================================================
@@ -249,21 +460,29 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   display: none;
 }
 
-/* Edge fade masks */
+/* Edge fade masks.
+
+   Every stop is measured from --fade-inset rather than from zero, because a
+   mask is painted over the border box and a variant with padding would
+   otherwise spend its gradient on the padding instead of on the items. Zero
+   here, so a row with no padding fades exactly as before; the tabs variant
+   sets it to its own padding. */
 .kit-toggle-group--scrollable {
+  --fade-inset: 0px;
+
   mask-image: linear-gradient(
     to right,
-    transparent,
-    black 16px,
-    black calc(100% - 16px),
-    transparent
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
   -webkit-mask-image: linear-gradient(
     to right,
-    transparent,
-    black 16px,
-    black calc(100% - 16px),
-    transparent
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
 }
 
@@ -271,20 +490,30 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   mask-image: linear-gradient(
     to right,
     black,
-    black calc(100% - 16px),
-    transparent
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
   -webkit-mask-image: linear-gradient(
     to right,
     black,
-    black calc(100% - 16px),
-    transparent
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
 }
 
 .kit-toggle-group--scrollable.at-end {
-  mask-image: linear-gradient(to right, transparent, black 16px, black);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black);
+  mask-image: linear-gradient(
+    to right,
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black
+  );
 }
 
 .kit-toggle-group--scrollable.at-start.at-end {
@@ -300,6 +529,12 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   .kit-toggle-item {
     transition: none;
   }
+
+  /* The line still moves — it has to, it is the only thing marking the current
+     tab — it just arrives there rather than travelling. */
+  .kit-toggle-group--tabs.has-marker .kit-toggle-group__marker {
+    transition: none;
+  }
 }
 
 @media (prefers-contrast: more) {
@@ -313,6 +548,23 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
     .kit-toggle-item:not([aria-pressed="true"]):not(.is-active) {
     box-shadow: inset 0 0 0 2px light-dark(#999, #666);
   }
+
+  /* A tab rail is not a box: the border above would draw a frame around the
+     whole row, when the thing that needs an edge is the one capsule inside it.
+     The lens gets a real outline and the labels resolve fully. */
+  .kit-toggle-group--tabs {
+    border: none;
+  }
+
+  .kit-toggle-group--tabs .kit-toggle-item {
+    color: light-dark(#333, #ddd);
+  }
+
+  .kit-toggle-group__marker,
+  .kit-toggle-group--tabs:not(.has-marker)
+    .kit-toggle-item[aria-selected="true"] {
+    border: 2px solid light-dark(#333, #eee);
+  }
 }
 
 /* Nothing for prefers-reduced-transparency: the row is opaque by design now —
@@ -325,5 +577,22 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   .kit-toggle-item[aria-pressed="true"],
   .kit-toggle-item.is-active {
     background: light-dark(#fff, #444);
+  }
+
+  /* The rail never had a surface to lose — it is transparent by design, and a
+     slab behind it here would be the one thing on the page inventing one. Its
+     lens does have one, and --glass-bg stays translucent under this query by
+     design (see the note on the token), so the opaque tint is named here the
+     way every other re-declaration of the recipe names its own. */
+  .kit-toggle-group--tabs,
+  .kit-toggle-group--tabs .kit-toggle-item.is-active {
+    background: transparent;
+  }
+
+  .kit-toggle-group__marker,
+  .kit-toggle-group--tabs:not(.has-marker)
+    .kit-toggle-item[aria-selected="true"] {
+    background-color: light-dark(#fff, #35353a);
+    background-image: none;
   }
 }

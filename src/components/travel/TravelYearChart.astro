@@ -1,0 +1,366 @@
+---
+import {
+  datedTrips,
+  fillYearGaps,
+  formatTripCount,
+  getTravelFacts,
+} from "@lib/travel";
+import "@styles/travel.css";
+
+const series = fillYearGaps(getTravelFacts(datedTrips).tripsByYear);
+const peak = series.reduce((max, entry) => Math.max(max, entry.trips), 0);
+
+// Three intervals, so the grid reads 0 / n / 2n / 3n and the top of the plot is
+// a round number at or above the busiest year. The headroom the peak's own
+// label needs is a margin above the plot rather than a fourth interval of empty
+// grid: raising the ceiling to make room for one number would flatten every
+// column on the chart to pay for it.
+const step = Math.max(1, Math.ceil(peak / 3));
+const top = step * 3;
+const ticks = [0, step, step * 2, top];
+
+// The year still being lived in — the one label on the axis set in ink, so the
+// eye finds it. Its column is short because the year is not over yet, not
+// because the travelling stopped. Resolved at build time: this page is
+// prerendered, so a build left standing across New Year keeps calling the old
+// year the current one until the next deploy.
+const currentYear = new Date().getFullYear();
+
+// Fifteen four-digit labels don't fit a phone, so on a narrow screen only the
+// round years and the two ends stay. Marked here rather than by :nth-child, so
+// which ones survive doesn't depend on what year the series happens to start
+// on.
+//
+// A four-digit label is wider than a band is at that width, so two kept labels
+// in neighbouring bands would overlap — which is exactly what 2025 and 2026
+// would do. The ends win that argument: the axis is a range, and the years it
+// runs between are the two worth reading.
+const lastIndex = series.length - 1;
+const keepsLabelWhenNarrow = (index: number) => {
+  if (index === 0 || index === lastIndex) return true;
+  if (series[index].year % 5 !== 0) return false;
+  return index > 1 && index < lastIndex - 1;
+};
+---
+
+{/* A figure, because this is a picture with a caption rather than a section
+    with a heading — but the caption is dressed as the group heading every other
+    view on this page uses, since to a reader scrolling past it is the same kind
+    of landmark a year or a continent is. */}
+<figure class="chart">
+  <figcaption class="travel-section-head">
+    <h2
+      class="travel-section-title"
+      data-en="Trips by year"
+      data-ru="Поездки по годам"
+    >
+      Trips by year
+    </h2>
+    <span class="travel-metric">
+      {series[0]?.year}&ndash;{series[series.length - 1]?.year}
+    </span>
+  </figcaption>
+
+  {/* The caption stays outside this grid on purpose. It is one of the page's
+      sticky headings, and a sticky box travels only as far as its containing
+      block — as a grid item that would be a row holding nothing but itself, so
+      it would come unstuck the moment it was asked to move. As a block child of
+      the figure it has the whole chart to stay pinned over, exactly like the
+      section heads in every other view. */}
+  <div class="body" style={`--n: ${series.length}`}>
+  <div class="plot">
+    {/* Recessive by construction: solid hairlines one step off the page, with
+        the baseline a shade firmer because it is the axis the columns stand
+        on. */}
+    <div class="grid" aria-hidden="true">
+      {
+        ticks.map((tick) => (
+          <span
+            class:list={["gridline", { "gridline--base": tick === 0 }]}
+            style={`--at: ${tick / top}`}
+          >
+            <i class="tick">{tick}</i>
+          </span>
+        ))
+      }
+    </div>
+
+    <ol class="cols" role="list">
+      {
+        series.map((entry) => {
+          const label = {
+            en: `${entry.year}: ${formatTripCount(entry.trips, "en")}`,
+            ru: `${entry.year}: ${formatTripCount(entry.trips, "ru")}`,
+          };
+          return (
+            // The whole band answers the pointer, not the column: a year with
+            // no trips has no column to aim at, and the ones that do are twenty
+            // pixels wide.
+            <li
+              class="col"
+              style={`--v: ${entry.trips / top}`}
+              data-tooltip={label.en}
+              data-tooltip-en={label.en}
+              data-tooltip-ru={label.ru}
+            >
+              <span class="sr-only" data-en={label.en} data-ru={label.ru}>
+                {label.en}
+              </span>
+              {entry.trips > 0 && (
+                <span
+                  class:list={["bar", { "bar--peak": entry.trips === peak }]}
+                  aria-hidden="true"
+                />
+              )}
+              {/* One number on the chart, on the tallest column. A value over
+                  every one of fifteen columns is chaos that goes unread; the
+                  grid carries the rest and the pointer carries the exact
+                  figure. */}
+              {entry.trips === peak && (
+                <span class="cap" aria-hidden="true">
+                  {entry.trips}
+                </span>
+              )}
+            </li>
+          );
+        })
+      }
+    </ol>
+  </div>
+
+  {/* Hidden from the reading order because the list above already carries every
+      year and its count — this row is the same labels drawn where the eye needs
+      them. */}
+  <ol class="years" role="list" aria-hidden="true">
+    {
+      series.map((entry, index) => (
+        <li
+          class:list={[
+            "year",
+            {
+              "year--current": entry.year === currentYear,
+              "year--landmark": keepsLabelWhenNarrow(index),
+            },
+          ]}
+        >
+          {entry.year}
+        </li>
+      ))
+    }
+  </ol>
+  </div>
+</figure>
+
+<script>
+  // The columns explain themselves on hover with the site's own bead rather
+  // than the browser's title box.
+  import { initTooltips } from "@client/tooltip";
+  initTooltips();
+</script>
+
+<style>
+  .chart {
+    margin: 0;
+  }
+
+  /* Plot and axis share one grid, so a year label can never drift off the
+     column it belongs to: both rows run on the same `--n` tracks, and the tick
+     gutter is a column of that grid rather than a padding the two have to agree
+     on by hand. */
+  .body {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+  }
+
+  .plot {
+    position: relative;
+    grid-column: 2;
+    /* Tall enough that one trip is a visible difference in height at this
+       width, short enough that the whole decade is one glance. */
+    height: 148px;
+    /* Headroom for the label on the tallest column, which is drawn above the
+       cap it names and so reaches out of the plot box. Nothing clips it — the
+       margin is simply where it lands. */
+    margin-top: 1.3rem;
+  }
+
+  .grid {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Nudged down by half its own hairline so the line straddles the value it
+     names — without it the top rule sits a pixel above the tallest column's cap
+     and the baseline covers the bottom pixel of every bar. */
+  .gridline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--at) * 100%);
+    transform: translateY(50%);
+    border-top: 1px solid
+      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.08));
+  }
+
+  .gridline--base {
+    border-top-color: light-dark(rgba(0, 0, 0, 0.16), rgba(255, 255, 255, 0.16));
+  }
+
+  /* Hung off the gridline itself and pulled into the gutter, so the number and
+     the line it names line up by construction rather than by a matching pair of
+     offsets kept in step by hand. */
+  .tick {
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-right: 0.5rem;
+    font-style: normal;
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--travel-muted);
+  }
+
+  .cols,
+  .years {
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cols {
+    position: relative;
+    height: 100%;
+    align-items: end;
+  }
+
+  .col {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    /* No margin of its own: the document's list typography would otherwise put
+       8px under every column and lift the whole row off its baseline. */
+    margin: 0;
+  }
+
+  /* Capped rather than filling its band — the leftover is the air that keeps a
+     row of columns from reading as one solid block. */
+  .bar {
+    width: 100%;
+    max-width: 20px;
+    height: calc(var(--v) * 100%);
+    /* Rounded at the data end, square where it meets the axis. */
+    border-radius: 4px 4px 0 0;
+    background-color: light-dark(rgba(0, 0, 0, 0.38), rgba(255, 255, 255, 0.55));
+    /* The light the progress bar's fill catches along its leading edge, turned
+       to stand up. */
+    background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0) 55%
+    );
+    /* A single-trip year is 16px tall here and still has to read as a column. */
+    min-height: 3px;
+  }
+
+  /* One column is the story — the busiest year — and it wears the accent the
+     progress bars wear. The rest are the context it is read against. */
+  .bar--peak {
+    background-color: transparent;
+    background-image:
+      linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.3),
+        rgba(255, 255, 255, 0) 55%
+      ),
+      linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    box-shadow: 0 0 8px rgba(237, 87, 96, 0.45);
+  }
+
+  /* Sits on the cap it names, a hair clear of it. --v is the column's, so this
+     follows the bar's height without being told it twice. */
+  .cap {
+    position: absolute;
+    bottom: calc(var(--v) * 100%);
+    margin-bottom: 0.3rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: light-dark(#111, #fafafa);
+    pointer-events: none;
+  }
+
+  .years {
+    grid-column: 2;
+    padding-top: 0.45rem;
+  }
+
+  .year {
+    margin: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    font-variant-numeric: tabular-nums;
+    color: var(--travel-muted);
+  }
+
+  /* A year with no travel in it keeps its label at full strength. Fading it was
+     the obvious move and the wrong one twice over: the empty slot is the point,
+     and a label at the contrast that fade needs would have been the one thing
+     on the chart nobody could read. The missing column already says it.
+
+     The year in progress is the one worth finding on the axis, so it is the
+     only label that steps forward. */
+  .year--current {
+    color: light-dark(#111, #fafafa);
+    font-weight: 600;
+  }
+
+  /* Reachable by a screen reader, invisible to everything else: the columns are
+     aria-hidden decoration, and this is the data they draw. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 640px) {
+    .body {
+      grid-template-columns: 1.4rem minmax(0, 1fr);
+    }
+
+    /* The axis thins out, not the data — every column keeps its place. */
+    .year:not(.year--landmark) {
+      visibility: hidden;
+    }
+
+    .bar {
+      max-width: 14px;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .bar {
+      background-image: none;
+    }
+
+    .bar--peak {
+      background-image: linear-gradient(
+        135deg,
+        var(--accent-start),
+        var(--accent-end)
+      );
+    }
+  }
+</style>

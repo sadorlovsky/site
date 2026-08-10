@@ -1,84 +1,308 @@
 ---
-import { datedTrips, getCountriesWithCities } from "@lib/travel";
+import ToggleGroup from "@components/kit/ToggleGroup.astro";
+import {
+  datedTrips,
+  formatVisitCount,
+  getCountriesWithCities,
+} from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
-import "flag-icons/css/flag-icons.min.css";
+import "@styles/travel.css";
 
 const countriesWithCities = getCountriesWithCities(datedTrips);
+
+// Three ways through the same 32 rows. The lib hands them over in the first
+// order, which is why it is the default here — the other two are applied in the
+// browser, on the rows already on the page.
+const sorts = [
+  { id: "cities", label: "By cities", labelRu: "По городам" },
+  { id: "name", label: "A–Z", labelRu: "А–Я" },
+  { id: "first", label: "By first visit", labelRu: "По первому визиту" },
+];
 ---
 
 <div class="countries-view">
-  {
-    countriesWithCities.map((country) => (
-      <div class="country-row">
-        <span
-          class={`flag fi fi-${country.a2}`}
-          role="img"
-          aria-label={`${country.name.en} flag`}
-        /><span
-          class="country-name"
-          data-en={country.name.en}
-          data-ru={country.name.ru}
-        >{country.name.en}</span>
-        <span class="separator" aria-hidden="true">—</span>
-        {country.cities.map((city, i) => (
-          <>
-            <span
-              class="city"
-              data-en={`${city}${i < country.cities.length - 1 ? "," : ""}`}
-              data-ru={`${getCityName(city, "ru")}${i < country.cities.length - 1 ? "," : ""}`}
-            >{city}{i < country.cities.length - 1 ? "," : ""}</span>{" "}
-          </>
-        ))}
-      </div>
-    ))
-  }
+  <header class="travel-section-head">
+    <h2 class="travel-section-title" data-en="Countries" data-ru="Страны">
+      Countries
+    </h2>
+    <ToggleGroup
+      items={sorts}
+      value="cities"
+      variant="separated"
+      tone="quiet"
+      size="sm"
+      class="sort"
+      ariaLabelEn="Sort countries"
+      ariaLabelRu="Сортировка стран"
+    />
+  </header>
+
+  {/* One column, so the shared grid is here only for the row shell it brings —
+      a country's cities run to the end of the line and would be cut in half by
+      a second column. */}
+  <ul class="travel-grid countries" role="list">
+    {
+      countriesWithCities.map((country) => (
+        <li
+          class="travel-row travel-row--flow"
+          data-name-en={country.name.en}
+          data-name-ru={country.name.ru}
+          data-cities={country.cities.length}
+          data-first-seen={country.firstSeen ?? ""}
+        >
+          <span
+            class={`travel-flag flag fi fi-${country.a2}`}
+            aria-hidden="true"
+          /><span
+            class="travel-name country-name"
+            data-en={country.name.en}
+            data-ru={country.name.ru}
+          >{country.name.en}</span>
+          <span class="separator" aria-hidden="true">—</span>
+          {country.cities.map((city, i) => (
+            <>
+              <span class="city">
+                <span
+                  data-en={getCityName(city.name, "en")}
+                  data-ru={getCityName(city.name, "ru")}
+                >{city.name}</span>
+                {/* Only where it says something. Eight of eighty-six cities
+                    have been seen more than once, so a number here is rare
+                    enough to mean "I went back" — one beside every city would
+                    be seventy-eight ways of writing "once". */}
+                {city.visits > 1 && (
+                  <span
+                    class="travel-metric visits"
+                    data-tooltip={formatVisitCount(city.visits, "en")}
+                    data-tooltip-en={formatVisitCount(city.visits, "en")}
+                    data-tooltip-ru={formatVisitCount(city.visits, "ru")}
+                  >
+                    ({city.visits})
+                  </span>
+                )}
+                {i < country.cities.length - 1 && ","}
+              </span>{" "}
+            </>
+          ))}
+          {/* The year the country entered the list. It is the one thing this
+              view could not say before: four lists of the same 32 countries,
+              and not one of them had time in it. In its own column rather than
+              inline, because a column of years is read down the page and a year
+              buried in running text is not. */}
+          {country.firstYear !== null && (
+            <span class="travel-metric first">{country.firstYear}</span>
+          )}
+        </li>
+      ))
+    }
+  </ul>
 </div>
 
+<script>
+  import { initTooltips } from "@client/tooltip";
+
+  // The repeat counts explain themselves with the site's own bead.
+  initTooltips();
+
+  type SortId = "cities" | "name" | "first";
+
+  // Kept outside the function: with view transitions the module is evaluated
+  // once and the document is replaced under it, so the language listener at the
+  // bottom is attached once and always re-sorts whichever list is on the page
+  // now, rather than one stale handler per visit.
+  let resort: (() => void) | null = null;
+  let listening = false;
+
+  function initCountrySort() {
+    const view = document.querySelector<HTMLElement>(".countries-view");
+    if (!view) {
+      resort = null;
+      return;
+    }
+
+    const list = view.querySelector<HTMLElement>(".countries");
+    const group = view.querySelector<HTMLElement>(".sort");
+    if (!list || !group) {
+      resort = null;
+      return;
+    }
+    const rowList = list;
+
+    const rows = Array.from(list.querySelectorAll<HTMLElement>(".travel-row"));
+    // The order the server sent, which is the "by cities" order — kept so that
+    // sort can return to it exactly rather than re-deriving it from a count
+    // that ties for two thirds of the list.
+    const asRendered = rows.slice();
+
+    // From the document's own lang, which LangInit sets before anything paints
+    // — the same source the checklist sorts by, rather than a second reading of
+    // a class that happens to travel with it.
+    const lang = () => (document.documentElement.lang === "ru" ? "ru" : "en");
+
+    function order(sort: SortId): HTMLElement[] {
+      if (sort === "cities") return asRendered;
+
+      if (sort === "name") {
+        // Sorted in the language on screen: "Австрия" and "Austria" fall in
+        // different places, and a Russian page sorted by English names is a
+        // list in no order at all.
+        const locale = lang();
+        const key = locale === "ru" ? "nameRu" : "nameEn";
+        // `sensitivity: base` files Ё with Е, which is where a reader looks for
+        // it and where the raw code points refuse to put it — Ё sits after я.
+        const collator = new Intl.Collator(locale, { sensitivity: "base" });
+        return rows
+          .slice()
+          .sort((a, b) =>
+            collator.compare(a.dataset[key] ?? "", b.dataset[key] ?? ""),
+          );
+      }
+
+      // Earliest first — this one is a chronology, the order the world arrived
+      // in, so it reads forwards. It sorts on the rank the lib worked out by
+      // walking the trips in order, not on the year: four countries share 2019,
+      // and two of them were first stood in on the same journey, so nothing on
+      // the row could have separated them here. A country with no rank has no
+      // date to be placed by and goes last.
+      return rows.slice().sort((a, b) => {
+        const rank = (row: HTMLElement) =>
+          row.dataset.firstSeen === "" || row.dataset.firstSeen === undefined
+            ? Infinity
+            : Number(row.dataset.firstSeen);
+        return rank(a) - rank(b);
+      });
+    }
+
+    let current: SortId = "cities";
+
+    function apply(sort: SortId) {
+      current = sort;
+      // Moving the rows themselves rather than setting `order` on them: flex
+      // order changes what is drawn and not what is read, so a screen reader
+      // would be handed the same sequence whichever button was lit.
+      for (const row of order(sort)) rowList.appendChild(row);
+    }
+
+    group.addEventListener("click", (event) => {
+      const button = (event.target as HTMLElement | null)?.closest<HTMLElement>(
+        ".kit-toggle-item",
+      );
+      const id = button?.dataset.id as SortId | undefined;
+      if (!id) return;
+
+      for (const item of group.querySelectorAll<HTMLElement>(
+        ".kit-toggle-item",
+      )) {
+        const isActive = item === button;
+        item.classList.toggle("is-active", isActive);
+        item.setAttribute("aria-pressed", String(isActive));
+      }
+
+      apply(id);
+    });
+
+    // A–Z is a different order in each language, so switching language has to
+    // re-sort — the labels change under the rows otherwise and the list stops
+    // being alphabetical without anything having moved.
+    resort = () => {
+      if (current === "name") apply("name");
+    };
+
+    if (!listening) {
+      listening = true;
+      window.addEventListener("lang-change", () => resort?.());
+    }
+  }
+
+  // A module script runs with the document already parsed. The second line is
+  // for view transitions: they swap the body without a navigation, so
+  // DOMContentLoaded never fires again and a sort wired only on that event
+  // would be dead on every page reached from inside the site. astro:page-load
+  // covers both, and does not fire at all until a ClientRouter exists — so this
+  // changes nothing today.
+  initCountrySort();
+  document.addEventListener("astro:page-load", initCountrySort);
+</script>
+
 <style>
-  .countries-view {
-    display: flex;
-    flex-direction: column;
+  .countries {
+    --travel-columns: 1;
   }
 
-  .country-row {
-    padding: 0.4rem 0.5rem;
-    border-radius: 6px;
-    line-height: 1.7;
-    color: light-dark(#666, #888);
-    font-size: 0.85rem;
-    transition: background-color 0.15s ease;
+  .countries .travel-row {
+    /* The absolutely placed year needs a positioned host, and .travel-row--flow
+       is a plain block. */
+    position: relative;
+    /* Room at the end of every row for it, so a long line of cities wraps
+       before it reaches the years rather than running under them. The wash is
+       unaffected: padding moves the text, not the row's box, so a row still
+       bleeds the same 0.75rem into the gutter on both sides. */
+    padding-right: 3.4rem;
   }
 
-  .country-row:hover {
-    background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
+  /* The head is why this view has one at all: the sort belongs in a control
+     slot, and every other view already docks a heading here. It also means the
+     sort stays reachable from anywhere in the list, the way the view rail
+     above it does. */
+  .travel-section-head :global(.sort) {
+    flex-wrap: nowrap;
   }
 
+  /* The shared flag is written for a flex row, where the browser puts it on the
+     centre line for you. Here it sits in running text and takes the timeline's
+     own offset and gap instead. */
   .flag {
-    font-size: 0.9rem;
-    border-radius: 2px;
-    margin-right: 0.4rem;
-    vertical-align: middle;
+    margin-right: 4px;
+    vertical-align: -0.12em;
   }
 
-  .country-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: light-dark(#111, #fff);
-    white-space: nowrap;
-  }
-
+  /* The same colour the timeline gives the arrows between its cities. */
   .separator {
-    color: light-dark(#ccc, #444);
+    color: light-dark(#999, #666);
     margin: 0 0.3rem;
   }
 
+  /* The cities are what the row goes on to say, so they stay readable rather
+     than dropping to the colour of a count. Kept whole with their own count and
+     comma, so "(10)," never wraps away from the city it belongs to. */
   .city {
+    color: var(--travel-muted);
     white-space: nowrap;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .country-row {
-      transition: none;
+  /* A city seen more than once. Both this and the year below wear
+     .travel-metric, the page's one spec for a figure beside content, and add
+     only where they sit — a second set of sizes and colours here is exactly the
+     drift travel.css was written to end. */
+  .visits {
+    margin-left: 0.2rem;
+    cursor: help;
+  }
+
+  /* Pinned to the row's right edge and to its first line, so the years line up
+     down the page whether a country's cities take one line or four. The line
+     height is the row's own — set as a length, since the row's 1.9 is against a
+     1rem body and this is 0.9rem — so the year centres on the first line
+     instead of riding a few pixels above it. */
+  .first {
+    position: absolute;
+    top: 0.5rem;
+    right: var(--travel-row-inset);
+    line-height: 1.9rem;
+  }
+
+  @media (max-width: 560px) {
+    /* Three labels, the longest of which is "По первому визиту", do not share a
+       line with a heading on a phone. The head stacks and the sort keeps its
+       full words rather than being cut down to initials nobody can read. */
+    .travel-section-head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+
+    .travel-section-head :global(.sort) {
+      flex-wrap: wrap;
     }
   }
 </style>

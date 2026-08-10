@@ -1,5 +1,13 @@
 ---
 import ToggleGroup from "@components/kit/ToggleGroup.astro";
+import { Icon } from "astro-icon/components";
+import {
+  countries,
+  continentsVisited,
+  continentsTotal,
+  tripsCount,
+} from "@lib/travel";
+import { getChecklistStats } from "@lib/travel/checklist";
 
 interface Props {
   currentView: string;
@@ -7,105 +15,375 @@ interface Props {
 
 const { currentView } = Astro.props;
 
+const checklist = getChecklistStats();
+
+// No icons. ToggleGroup draws one before the label when an item asks for it,
+// and five of them across a row this wide were five more things to read than
+// the five words already there — a flag, a globe, a bar chart and a tick that
+// each restated their own label. The words are short and unambiguous in both
+// languages, so the icons were decoration on a control, not a way into it.
+//
+// The counts are the opposite case: they say something the label cannot, which
+// is how much is behind it. The five views run from 32 rows to 250, and the row
+// used to give no sign of that — you found out by opening one. The two written
+// as fractions are the two where "of how many" is the whole point of the view.
+// Stats has none because it is not a list of anything; the gap where its number
+// would be is the row saying so.
+//
+// The order is the scale each view reads at. Four lists, each a coarser grain
+// than the last — a trip, a country, a continent, and then the whole world with
+// what is still left on it — and the dashboard closing the row, because it is
+// not a list and has no place in that run. Stats used to sit fourth, between
+// two of the lists, which made the row read as five unrelated views side by
+// side rather than as one thing zooming out.
 const items = [
   {
     id: "timeline",
     label: "Timeline",
     labelRu: "Хронология",
-    icon: "timeline",
+    count: tripsCount,
+    controls: "view-timeline",
   },
   {
     id: "countries",
     label: "Countries",
     labelRu: "Страны",
-    icon: "flag",
+    count: countries.size,
+    controls: "view-countries",
+  },
+  {
+    id: "continents",
+    label: "Continents",
+    labelRu: "Континенты",
+    count: `${continentsVisited}/${continentsTotal}`,
+    controls: "view-continents",
   },
   {
     id: "checklist",
     label: "Checklist",
     labelRu: "Чеклист",
-    icon: "checklist",
+    count: `${checklist.visited}/${checklist.total}`,
+    controls: "view-checklist",
   },
+  { id: "stats", label: "Stats", labelRu: "Статистика", controls: "view-stats" },
 ];
+
+// The script below used to carry its own copy of this list to validate the
+// URL hash against. Adding a view meant editing both, and forgetting the copy
+// left the new view reachable by its button but not by its own link — the hash
+// fell through to the default and the page opened on the timeline instead.
+const viewIds = items.map((item) => item.id).join(" ");
 ---
 
-<nav class="view-switcher" data-current={currentView}>
+<nav class="view-switcher" data-current={currentView} data-views={viewIds}>
+  {/* The rail's own glyph, and the one place an icon earns its keep here. The
+      tabs dropped theirs because each one restated a word already under it;
+      this one states the thing none of them do — that the five words are five
+      ways of looking, not five links. It is pinned outside the scroller, so on
+      a phone the row scrolls under it and it stays where the row begins.
+
+      Decorative, and marked so: the tablist beside it already carries the
+      accessible name, and a second announcement of "view" would be noise. */}
+  <span class="view-eye" aria-hidden="true">
+    <Icon name="eye" width={18} height={18} />
+  </span>
   <ToggleGroup
     items={items}
     value={currentView}
-    variant="separated"
+    variant="tabs"
     size="sm"
-    ariaLabelEn="Travel view mode"
-    ariaLabelRu="Режим просмотра"
+    scrollable
+    ariaLabelEn="Travel view"
+    ariaLabelRu="Вид"
   />
 </nav>
 
 <script>
+  import { initToggleTabs, type ToggleTabsInstance } from "@client/toggle-tabs";
+  import { initMagnet } from "@client/magnet";
+
+  // Kept outside the function on purpose. With view transitions this module is
+  // evaluated once and the document is replaced underneath it, so the window
+  // listeners at the bottom are attached once and always address whichever rail
+  // is on the page now — re-attaching them per page would leave one handler per
+  // visit, each holding a rail that no longer exists.
+  let tabs: ToggleTabsInstance | null = null;
+  let validViews: string[] = [];
+  let defaultView = "";
+  let listening = false;
+
   function initViewSwitcher() {
-    const switcher = document.querySelector(".view-switcher");
-    if (!switcher) return;
-
-    const buttons = switcher.querySelectorAll(".kit-toggle-item");
-    const views = document.querySelectorAll(".travel-view");
-
-    // Get initial view from URL hash or default
-    const hash = window.location.hash.slice(1);
-    const validViews = ["timeline", "countries", "checklist"];
-    const initialView = validViews.includes(hash) ? hash : "timeline";
-
-    function setView(viewId: string) {
-      // Update buttons
-      buttons.forEach((btn) => {
-        const id = btn.getAttribute("data-id");
-        const isActive = id === viewId;
-        btn.classList.toggle("is-active", isActive);
-        btn.setAttribute("aria-pressed", String(isActive));
-      });
-
-      // Update views
-      views.forEach((view) => {
-        const id = view.getAttribute("data-view");
-        if (id === viewId) {
-          view.removeAttribute("hidden");
-        } else {
-          view.setAttribute("hidden", "");
-        }
-      });
-
-      // Update URL hash without scrolling
-      history.replaceState(null, "", viewId === "timeline" ? "/travel" : `/travel#${viewId}`);
+    const switcher = document.querySelector<HTMLElement>(".view-switcher");
+    const group = switcher?.querySelector<HTMLElement>('[role="tablist"]');
+    // A page without a rail leaves nothing for the window listeners to talk to.
+    if (!switcher || !group) {
+      tabs = null;
+      return;
     }
 
-    // Set initial view
-    setView(initialView);
+    // The glyph leans toward the cursor while it is anywhere on the strip.
+    // initMagnet is idempotent and sits out a reduced-motion preference, so
+    // this can be called on every page load without guarding either.
+    const eye = switcher.querySelector<HTMLElement>(".view-eye");
+    if (eye) initMagnet(eye, { scope: switcher });
 
-    // Handle clicks
-    buttons.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const viewId = btn.getAttribute("data-id");
-        if (viewId) setView(viewId);
+    const scope = switcher.closest<HTMLElement>("main");
+    const views = document.querySelectorAll<HTMLElement>(".travel-view");
+    validViews = (switcher.getAttribute("data-views") ?? "").split(" ");
+    defaultView = validViews[0];
+
+    // The rail pins under the page header, and the sticky section headings
+    // inside the views have to dock below *it* rather than under it. It
+    // publishes its own height the way the header publishes its own — see
+    // page-header-condense.ts, which is where --sticky-header-offset comes
+    // from, and travel.css / YearGroup.astro, which add the two together.
+    if (scope) {
+      const publish = () =>
+        scope.style.setProperty(
+          "--sticky-rail-offset",
+          `${Math.round(switcher.offsetHeight)}px`,
+        );
+      publish();
+      new ResizeObserver(publish).observe(switcher);
+    }
+
+    // The dock line, from the header's published height. Read fresh each time
+    // rather than captured: the pills wrap on a narrow viewport and the offset
+    // moves with them.
+    function dockLine() {
+      return scope
+        ? parseFloat(
+            getComputedStyle(scope).getPropertyValue("--sticky-header-offset"),
+          ) || 0
+        : 0;
+    }
+
+    // Docked or not. A sticky element never leaves the viewport, so there is
+    // nothing to observe directly — the trick is to shrink the observation area
+    // to start one pixel below the dock line, which the rail can only cross by
+    // being stuck to it.
+    //
+    // An arrow rather than a declaration, and not as a matter of taste: a
+    // function declaration is hoisted, so TypeScript has to assume it could run
+    // before the guard above and reads `switcher` at its declared type — null
+    // included — however plainly the guard returns. An arrow is created here,
+    // after the narrowing, and keeps it. `publish` above is an arrow for the
+    // same reason; this one was the exception and it was the one that failed
+    // the typecheck.
+    let dockWatcher: IntersectionObserver | null = null;
+    const watchDock = () => {
+      dockWatcher?.disconnect();
+      dockWatcher = new IntersectionObserver(
+        ([entry]) =>
+          switcher.classList.toggle("is-docked", entry.intersectionRatio < 1),
+        {
+          rootMargin: `-${Math.round(dockLine()) + 1}px 0px 0px 0px`,
+          threshold: [1],
+        },
+      );
+      dockWatcher.observe(switcher);
+    };
+    watchDock();
+    window.addEventListener("resize", watchDock);
+
+    // Where the rail sits in the document, which is not where it is drawn once
+    // it is stuck: a sticky element keeps its layout position in offsetTop and
+    // reports the shifted one in getBoundingClientRect.
+    function railTop() {
+      let top = 0;
+      let node: HTMLElement | null = switcher;
+      while (node) {
+        top += node.offsetTop;
+        node = node.offsetParent as HTMLElement | null;
+      }
+      return top;
+    }
+
+    // Switching views changes the page's height by thousands of pixels — the
+    // checklist is a hundred rows longer than the stats — so a reader deep in
+    // one view lands somewhere arbitrary in the next. Coming back to the rail
+    // puts them at the top of what they just asked for, with the control they
+    // used still under the cursor. Only when the rail has already gone past:
+    // switching from the top of the page shouldn't move the page at all.
+    function keepRailInView() {
+      const dock = railTop() - dockLine();
+      if (window.scrollY <= dock) return;
+      const reduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      window.scrollTo({ top: dock, behavior: reduced ? "auto" : "smooth" });
+    }
+
+    // Read before the rail is wired up. initToggleTabs selects the tab the
+    // server rendered on the way in, and the callback below rewrites the URL —
+    // so by the time it returns, the hash it was about to be asked for is gone.
+    const hash = window.location.hash.slice(1);
+    const initialView = validViews.includes(hash) ? hash : defaultView;
+
+    // What is on screen, which is not always what was just asked for: clicking
+    // the tab you are already on is a real thing to do — it is how you get back
+    // to the top of a long view — and it must not leave a history entry behind
+    // every time.
+    let shownView = "";
+
+    tabs = initToggleTabs(group, (viewId, cause) => {
+      const changed = viewId !== shownView;
+      shownView = viewId;
+
+      views.forEach((view) => {
+        view.toggleAttribute("hidden", view.dataset.view !== viewId);
       });
+
+      // A view is a place, so choosing one goes in the history and Back returns
+      // to the one before it. Everything else — the first paint, a deep link,
+      // the popstate that Back itself causes — only rewrites the address, since
+      // pushing there would either bury the page someone arrived from or fight
+      // the navigation that is already happening.
+      const url = viewId === defaultView ? "/travel" : `/travel#${viewId}`;
+      if (cause === "user" && changed) history.pushState(null, "", url);
+      else history.replaceState(null, "", url);
+
+      if (cause === "user") keepRailInView();
     });
 
-    // Handle hash changes
-    window.addEventListener("hashchange", () => {
-      const hash = window.location.hash.slice(1);
-      const viewId = validViews.includes(hash) ? hash : "timeline";
-      setView(viewId);
-    });
+    // A view asked for by its own link opens on it. Not a user action as far as
+    // the page is concerned — nothing should scroll out from under someone who
+    // has only just arrived.
+    if (initialView !== defaultView) tabs.select(initialView);
+
+    // Back and Forward land here: a push that only changed the fragment fires
+    // hashchange, so this one listener covers both the history buttons and any
+    // link into a view from elsewhere on the page. Attached once, for the life
+    // of the module — see the note at the top.
+    if (!listening) {
+      listening = true;
+      window.addEventListener("hashchange", () => {
+        const next = window.location.hash.slice(1);
+        tabs?.select(validViews.includes(next) ? next : defaultView);
+      });
+    }
   }
 
-  // Initialize on DOM ready
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initViewSwitcher);
-  } else {
-    initViewSwitcher();
-  }
+  // This script is a module, so it runs with the document already parsed. The
+  // second line is for view transitions: they swap the body without a
+  // navigation, so DOMContentLoaded never fires again and a rail wired only on
+  // that event would be dead on every page reached from inside the site.
+  // astro:page-load covers both, and never fires at all until a ClientRouter
+  // exists — so this changes nothing until one is added.
+  initViewSwitcher();
+  document.addEventListener("astro:page-load", initViewSwitcher);
 </script>
 
 <style>
+  /* The rail pins under the header pills, on the same veil the header and the
+     sticky year headings use — three things closing over the page as it
+     scrolls, saying so the same way. It earns the pin honestly: the checklist
+     is a hundred and twenty-five rows tall, and until now switching away from
+     the bottom of it meant scrolling all the way back up to reach the control.
+
+     z-index 11 rather than the headings' 10, and below the header row's 30: the
+     stack from the top of the page down is pills, rail, heading, content. */
+  /* A tint, but no blur and no rule. The rule is gone because the heading that
+     docks under it already draws one and two hairlines forty pixels apart was
+     the complaint. The blur is gone because the header's veil is directly
+     behind this and has already done it.
+
+     The tint had to come back. A sticky section heading sits above the veil by
+     design — it is chrome, not content — so when its own section scrolls out
+     and the heading is pushed up out of its dock, it travels straight through
+     the pinned strip. What used to hide it was this background; without it the
+     outgoing heading was drawn across the tabs and the pills. Two veils of the
+     same colour stacking here is what the seam used to be, and at a tint this
+     opaque 0.97 over 0.97 is indistinguishable from 0.97. */
   .view-switcher {
+    position: sticky;
+    top: var(--sticky-header-offset, 0px);
+    z-index: 11;
+    transition: background-color 0.2s ease;
+    /* Even, because the tabs are capsules floating on the strip rather than
+       something anchored to its bottom edge — and out to the page's shared
+       edge, so the strip ends where the counters above and the rows below do. */
+    padding: 0.4rem 0.75rem;
+    margin-inline: -0.75rem;
+
+    /* A row, so the glyph holds the first place and the rail takes what is
+       left. The gap is written as a sum because half of it is not a gap: the
+       rail bleeds fourteen pixels outward on every side — padding for the
+       lens's shadow with a matching negative margin, see kit/toggle-group.css
+       — so that much of whatever is set here is spent inside the rail's own
+       empty margin. The 0.75rem is the part you can actually see, and it is
+       that rather than the half of it the row would otherwise want because the
+       glyph drifts: six pixels of magnetic pull toward a cursor sitting on the
+       tabs, which out of a narrower gap would land it against the first tab's
+       glass. Twelve leaves it half a gap of clearance at full throw. */
     display: flex;
+    align-items: center;
+    gap: calc(0.75rem + 14px);
+  }
+
+  /* Without this the rail is as wide as its five tabs and pushes the row off
+     the screen instead of scrolling inside it. `min-width: 0` is the half that
+     matters: a flex item refuses to shrink below its content otherwise, and
+     overflow-x on a box that is never narrower than its contents scrolls
+     nothing. */
+  .view-switcher :global(.kit-toggle-group--tabs) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Not a control. No capsule, no glass, no press — the glyph sits on the strip
+     the way the label of a thing sits on it, and `pointer-events: none` settles
+     the question before a cursor can ask it: no pointer, no hover, nothing to
+     click at.
+
+     It does move, though, and that is the point. The same magnetic drift the
+     home glyph in the header directly above answers the cursor with — see
+     @client/magnet.ts — which is what keeps "not clickable" from reading as
+     "not alive". The pull is driven from the whole strip, so the eye leans
+     toward you while you are choosing along the row. */
+  .view-eye {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    /* The row's resting ink, the same value the unselected tab labels are set
+       in (see .kit-toggle-group--tabs .kit-toggle-item). The glyph belongs to
+       the row rather than sitting behind it, so it reads at the same weight as
+       the words it introduces. */
+    color: light-dark(#666, #9a9aa0);
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* And the tint only while it is actually docked.
+
+     Carried all the time, it cut the counters' shadow in half. Those cards drop
+     0 10px 30px and the rail sits twenty pixels under them, so an opaque strip
+     at z-index 11 sliced the soft part off in a dead straight line across the
+     page — a shadow that ends on a ruler, which reads as a rendering fault
+     rather than as depth.
+
+     In flow it does not need one: nothing is passing behind a row of tabs
+     sitting on the page. Docked it does, and for a reason easy to miss — a
+     sticky section heading is above the veil so it can cover the rows going
+     under it, which means when its own section pushes it out of its dock it
+     travels up through here with nothing to hide it. */
+  .view-switcher.is-docked {
+    background-color: var(--veil-bg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .view-switcher {
+      transition: none;
+    }
+  }
+
+  /* The tab labels resolve under this query (kit/toggle-group.css), and the
+     glyph is set to match them — so it has to move when they do, or it is left
+     as the one dim thing in a row asked to be legible. */
+  @media (prefers-contrast: more) {
+    .view-eye {
+      color: light-dark(#333, #ddd);
+    }
   }
 </style>
