@@ -6,6 +6,7 @@ import { Icon } from "astro-icon/components";
 import { AdminPanel } from "@components/wishlist/admin";
 import { verifySession } from "@lib/admin/auth";
 import { categories } from "@lib/wishlist";
+import { compareAdmin } from "@lib/wishlist-sort";
 import {
   db,
   WishlistItem,
@@ -72,18 +73,9 @@ for (const rate of exchangeRates) {
 // Create reservation map
 const reservationMap = new Map(reservations.map((r) => [r.itemId, r]));
 
-// Sort: reserved items first, then by createdAt (newest first)
-const sortedItems = [...items].sort((a, b) => {
-  const aReserved = reservationMap.has(a.id);
-  const bReserved = reservationMap.has(b.id);
-
-  // Reserved items first
-  if (aReserved && !bReserved) return -1;
-  if (!aReserved && bReserved) return 1;
-
-  // Then by createdAt (newest first)
-  return b.createdAt.getTime() - a.createdAt.getTime();
-});
+// The panel defaults to this same order, so sorting here is what keeps the
+// first paint from being rearranged by hydration a moment later.
+const sortedItems = [...items].sort(compareAdmin(reservationMap));
 
 // Convert Map to array for serialization
 const reservationsArray = Array.from(reservationMap.entries());

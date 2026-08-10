@@ -6,6 +6,7 @@ import {
   ExchangeRate,
 } from "@lib/db";
 import { priceInUsdCents, type Currency, type RubRates } from "@lib/price";
+import { comparePublic } from "@lib/wishlist-sort";
 import { CDN_DOMAIN, CDN_DEV_DOMAIN } from "astro:env/server";
 
 // CDN domain helper - uses production domain in prod, dev domain otherwise
@@ -125,13 +126,6 @@ export function isValidCategory(
 ): category is string {
   return typeof category === "string" && validCategoryIds.includes(category);
 }
-
-// Priority order for sorting
-const priorityOrder: Record<string, number> = {
-  high: 0,
-  medium: 1,
-  low: 2,
-};
 
 /** How a shop link reads on a card: bare host and path, no scheme, no trailing slash. */
 export function formatUrlLabel(url: string): string {
@@ -261,23 +255,7 @@ export async function getWishlistItems(
     });
   }
 
-  // Sort items: priority → weight (higher first) → createdAt (newest first) → received last
-  items.sort((a, b) => {
-    // Received items always go to the end
-    if (a.received && !b.received) return 1;
-    if (!a.received && b.received) return -1;
-
-    // Sort by priority (high first, no priority last)
-    const aPriority = a.priority ? (priorityOrder[a.priority] ?? 3) : 3;
-    const bPriority = b.priority ? (priorityOrder[b.priority] ?? 3) : 3;
-    if (aPriority !== bPriority) return aPriority - bPriority;
-
-    // Within same priority, sort by weight (higher weight first)
-    if (a.weight !== b.weight) return b.weight - a.weight;
-
-    // Within same weight, sort by createdAt (newest first)
-    return b.createdAt.getTime() - a.createdAt.getTime();
-  });
+  items.sort(comparePublic);
 
   return items;
 }

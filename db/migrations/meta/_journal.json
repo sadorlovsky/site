@@ -29,6 +29,13 @@
       "when": 1786122551977,
       "tag": "0003_kzt_exchange_rate",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1786366736313,
+      "tag": "0004_weight_alone_orders_the_wishlist",
+      "breakpoints": true
     }
   ]
 }

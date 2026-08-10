@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
+import { comparePublic, compareAdmin } from "@lib/wishlist-sort";
 import type { WishlistItem, Reservation, Category } from "./types";
 
 type StatusFilter = "all" | "reserved" | "received";
@@ -68,12 +69,6 @@ export function useFilters({
     [categories]
   );
 
-  // Priority order for public sorting
-  const priorityOrder: Record<string, number> = useMemo(
-    () => ({ high: 0, medium: 1, low: 2 }),
-    []
-  );
-
   // Filtered and sorted items
   const filteredItems = useMemo(() => {
     let result = items;
@@ -107,31 +102,12 @@ export function useFilters({
       );
     }
 
-    // Sort based on mode
-    result = [...result].sort((a, b) => {
-      if (sortMode === "public") {
-        // Public sorting: received last → priority → weight → createdAt
-        if (a.received && !b.received) return 1;
-        if (!a.received && b.received) return -1;
-
-        const aPriority = a.priority ? (priorityOrder[a.priority] ?? 3) : 3;
-        const bPriority = b.priority ? (priorityOrder[b.priority] ?? 3) : 3;
-        if (aPriority !== bPriority) return aPriority - bPriority;
-
-        if (a.weight !== b.weight) return b.weight - a.weight;
-
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      } else {
-        // Admin sorting: reserved first → createdAt (newest first)
-        const aReserved = reservations.has(a.id);
-        const bReserved = reservations.has(b.id);
-
-        if (aReserved && !bReserved) return -1;
-        if (!aReserved && bReserved) return 1;
-
-        return b.createdAt.getTime() - a.createdAt.getTime();
-      }
-    });
+    // "public" previews the visitor's order — the one dragging edits; "admin"
+    // is the owner's working order. Both comparators are shared with the pages
+    // that render them, so this preview cannot drift from the real thing.
+    result = [...result].sort(
+      sortMode === "public" ? comparePublic : compareAdmin(reservations)
+    );
 
     return result;
   }, [
@@ -141,7 +117,6 @@ export function useFilters({
     debouncedSearchQuery,
     reservations,
     sortMode,
-    priorityOrder,
   ]);
 
   // Check if any filters are active

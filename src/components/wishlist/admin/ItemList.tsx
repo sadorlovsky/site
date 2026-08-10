@@ -195,9 +195,10 @@ function ItemCard({
               {item.priority}
             </span>
           )}
-          {item.weight > 0 && (
-            <span className="tag tag-weight">w:{item.weight}</span>
-          )}
+          {/* No weight badge. It read as a setting worth knowing back when a
+              handful of items had one; now that every item carries a position
+              it would sit on every card and say only what the card's own place
+              in the list already says. */}
         </div>
 
         {/* Descriptions (secondary info) */}
