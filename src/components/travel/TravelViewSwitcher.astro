@@ -1,5 +1,6 @@
 ---
 import ToggleGroup from "@components/kit/ToggleGroup.astro";
+import { Icon } from "astro-icon/components";
 import {
   countries,
   continentsVisited,
@@ -75,6 +76,17 @@ const viewIds = items.map((item) => item.id).join(" ");
 ---
 
 <nav class="view-switcher" data-current={currentView} data-views={viewIds}>
+  {/* The rail's own glyph, and the one place an icon earns its keep here. The
+      tabs dropped theirs because each one restated a word already under it;
+      this one states the thing none of them do — that the five words are five
+      ways of looking, not five links. It is pinned outside the scroller, so on
+      a phone the row scrolls under it and it stays where the row begins.
+
+      Decorative, and marked so: the tablist beside it already carries the
+      accessible name, and a second announcement of "view" would be noise. */}
+  <span class="view-eye" aria-hidden="true">
+    <Icon name="eye" width={18} height={18} />
+  </span>
   <ToggleGroup
     items={items}
     value={currentView}
@@ -88,6 +100,7 @@ const viewIds = items.map((item) => item.id).join(" ");
 
 <script>
   import { initToggleTabs, type ToggleTabsInstance } from "@client/toggle-tabs";
+  import { initMagnet } from "@client/magnet";
 
   // Kept outside the function on purpose. With view transitions this module is
   // evaluated once and the document is replaced underneath it, so the window
@@ -107,6 +120,12 @@ const viewIds = items.map((item) => item.id).join(" ");
       tabs = null;
       return;
     }
+
+    // The glyph leans toward the cursor while it is anywhere on the strip.
+    // initMagnet is idempotent and sits out a reduced-motion preference, so
+    // this can be called on every page load without guarding either.
+    const eye = switcher.querySelector<HTMLElement>(".view-eye");
+    if (eye) initMagnet(eye, { scope: switcher });
 
     const scope = switcher.closest<HTMLElement>("main");
     const views = document.querySelectorAll<HTMLElement>(".travel-view");
@@ -278,6 +297,54 @@ const viewIds = items.map((item) => item.id).join(" ");
        edge, so the strip ends where the counters above and the rows below do. */
     padding: 0.4rem 0.75rem;
     margin-inline: -0.75rem;
+
+    /* A row, so the glyph holds the first place and the rail takes what is
+       left. The gap is written as a sum because half of it is not a gap: the
+       rail bleeds fourteen pixels outward on every side — padding for the
+       lens's shadow with a matching negative margin, see kit/toggle-group.css
+       — so that much of whatever is set here is spent inside the rail's own
+       empty margin. The 0.75rem is the part you can actually see, and it is
+       that rather than the half of it the row would otherwise want because the
+       glyph drifts: six pixels of magnetic pull toward a cursor sitting on the
+       tabs, which out of a narrower gap would land it against the first tab's
+       glass. Twelve leaves it half a gap of clearance at full throw. */
+    display: flex;
+    align-items: center;
+    gap: calc(0.75rem + 14px);
+  }
+
+  /* Without this the rail is as wide as its five tabs and pushes the row off
+     the screen instead of scrolling inside it. `min-width: 0` is the half that
+     matters: a flex item refuses to shrink below its content otherwise, and
+     overflow-x on a box that is never narrower than its contents scrolls
+     nothing. */
+  .view-switcher :global(.kit-toggle-group--tabs) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Not a control. No capsule, no glass, no press — the glyph sits on the strip
+     the way the label of a thing sits on it, and `pointer-events: none` settles
+     the question before a cursor can ask it: no pointer, no hover, nothing to
+     click at.
+
+     It does move, though, and that is the point. The same magnetic drift the
+     home glyph in the header directly above answers the cursor with — see
+     @client/magnet.ts — which is what keeps "not clickable" from reading as
+     "not alive". The pull is driven from the whole strip, so the eye leans
+     toward you while you are choosing along the row. */
+  .view-eye {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    /* The row's resting ink, the same value the unselected tab labels are set
+       in (see .kit-toggle-group--tabs .kit-toggle-item). The glyph belongs to
+       the row rather than sitting behind it, so it reads at the same weight as
+       the words it introduces. */
+    color: light-dark(#666, #9a9aa0);
+    pointer-events: none;
+    will-change: transform;
   }
 
   /* And the tint only while it is actually docked.
@@ -300,6 +367,15 @@ const viewIds = items.map((item) => item.id).join(" ");
   @media (prefers-reduced-motion: reduce) {
     .view-switcher {
       transition: none;
+    }
+  }
+
+  /* The tab labels resolve under this query (kit/toggle-group.css), and the
+     glyph is set to match them — so it has to move when they do, or it is left
+     as the one dim thing in a row asked to be legible. */
+  @media (prefers-contrast: more) {
+    .view-eye {
+      color: light-dark(#333, #ddd);
     }
   }
 </style>
