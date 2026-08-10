@@ -1,8 +1,8 @@
 {
+  "id": "2b57a3c2-21b9-4945-8987-9e541a269e0e",
+  "prevId": "5fae3f33-b0e8-49e5-8c01-446a95daab14",
   "version": "6",
   "dialect": "sqlite",
-  "id": "0593f7fc-c458-4cb7-a7cf-014d8e9d12e2",
-  "prevId": "5961b817-846f-4f0d-8a89-eb9281363ace",
   "tables": {
     "AdminCredential": {
       "name": "AdminCredential",
@@ -122,15 +122,15 @@
         "AdminSession_credentialId_AdminCredential_id_fk": {
           "name": "AdminSession_credentialId_AdminCredential_id_fk",
           "tableFrom": "AdminSession",
-          "tableTo": "AdminCredential",
           "columnsFrom": [
             "credentialId"
           ],
+          "tableTo": "AdminCredential",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -249,15 +249,15 @@
         "ItemOption_itemId_WishlistItem_id_fk": {
           "name": "ItemOption_itemId_WishlistItem_id_fk",
           "tableFrom": "ItemOption",
-          "tableTo": "WishlistItem",
           "columnsFrom": [
             "itemId"
           ],
+          "tableTo": "WishlistItem",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -316,15 +316,15 @@
         "Reservation_itemId_WishlistItem_id_fk": {
           "name": "Reservation_itemId_WishlistItem_id_fk",
           "tableFrom": "Reservation",
-          "tableTo": "WishlistItem",
           "columnsFrom": [
             "itemId"
           ],
+          "tableTo": "WishlistItem",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -446,9 +446,9 @@
   "views": {},
   "enums": {},
   "_meta": {
+    "columns": {},
     "schemas": {},
-    "tables": {},
-    "columns": {}
+    "tables": {}
   },
   "internal": {
     "indexes": {}

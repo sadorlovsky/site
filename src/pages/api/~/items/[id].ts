@@ -17,7 +17,9 @@ const updateItemSchema = z.object({
   url: z.string().url().optional().or(z.literal("")),
   category: z.string().min(1).optional(),
   priority: z.enum(["high", "medium", "low"]).optional().or(z.literal("")),
-  weight: z.number().optional(),
+  // No weight: it is a position, and /api/~/items/batch is the one endpoint
+  // that writes positions — for the whole list at once, which is the only way a
+  // reorder makes sense.
   received: z.boolean().optional(),
   // Absent leaves the item's options alone; present replaces them wholesale,
   // so an empty array is how the last one gets removed.
@@ -82,7 +84,6 @@ export const PUT: APIRoute = async ({ params, request, cookies }) => {
     if (data.category !== undefined) updateData.category = data.category;
     if (data.priority !== undefined)
       updateData.priority = data.priority || null;
-    if (data.weight !== undefined) updateData.weight = data.weight;
     if (data.received !== undefined) updateData.received = data.received;
 
     if (Object.keys(updateData).length > 0) {

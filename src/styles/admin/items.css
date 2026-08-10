@@ -469,12 +469,6 @@
   --tag-dot: light-dark(#bbb, #666);
 }
 
-.tag-weight {
-  color: light-dark(#888, #777);
-  font-family: ui-monospace, monospace;
-  font-size: 0.6rem;
-}
-
 /* Item Actions */
 .item-actions {
   display: flex;
