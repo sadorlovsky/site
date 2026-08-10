@@ -411,6 +411,12 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--tabs.kit-toggle-group--scrollable {
   padding: 14px;
   margin: -14px;
+  /* And the edge fade has to start where the tabs do, not where the clip box
+     does. A mask is painted over the border box, so a sixteen-pixel gradient
+     against fourteen pixels of empty padding spends all but two of them on
+     nothing — the fade was there, measurable, and invisible: the rail read as
+     a hard cut. See --fade-inset below. */
+  --fade-inset: 14px;
 }
 
 /* =============================================================================
@@ -454,21 +460,29 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   display: none;
 }
 
-/* Edge fade masks */
+/* Edge fade masks.
+
+   Every stop is measured from --fade-inset rather than from zero, because a
+   mask is painted over the border box and a variant with padding would
+   otherwise spend its gradient on the padding instead of on the items. Zero
+   here, so a row with no padding fades exactly as before; the tabs variant
+   sets it to its own padding. */
 .kit-toggle-group--scrollable {
+  --fade-inset: 0px;
+
   mask-image: linear-gradient(
     to right,
-    transparent,
-    black 16px,
-    black calc(100% - 16px),
-    transparent
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
   -webkit-mask-image: linear-gradient(
     to right,
-    transparent,
-    black 16px,
-    black calc(100% - 16px),
-    transparent
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
 }
 
@@ -476,20 +490,30 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   mask-image: linear-gradient(
     to right,
     black,
-    black calc(100% - 16px),
-    transparent
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
   -webkit-mask-image: linear-gradient(
     to right,
     black,
-    black calc(100% - 16px),
-    transparent
+    black calc(100% - var(--fade-inset) - 16px),
+    transparent calc(100% - var(--fade-inset))
   );
 }
 
 .kit-toggle-group--scrollable.at-end {
-  mask-image: linear-gradient(to right, transparent, black 16px, black);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 16px, black);
+  mask-image: linear-gradient(
+    to right,
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent var(--fade-inset),
+    black calc(var(--fade-inset) + 16px),
+    black
+  );
 }
 
 .kit-toggle-group--scrollable.at-start.at-end {
