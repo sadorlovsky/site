@@ -273,6 +273,36 @@
           "oklch(83.6% 0.108 161.4)",
           "oklch(95.0% 0.103 161.4)"
         ]
+      },
+      "danger-ring-hover-light": {
+        "role": "tertiary",
+        "displayName": "Alarm Red (ring hover)",
+        "canonical": "oklch(47.6% 0.195 28.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0.185 28.9)",
+          "oklch(26.4% 0.191 28.9)",
+          "oklch(37.9% 0.194 28.9)",
+          "oklch(49.3% 0.195 28.9)",
+          "oklch(60.7% 0.193 28.9)",
+          "oklch(72.1% 0.189 28.9)",
+          "oklch(83.6% 0.183 28.9)",
+          "oklch(95.0% 0.173 28.9)"
+        ]
+      },
+      "danger-ring-hover-dark": {
+        "role": "tertiary",
+        "displayName": "Alarm Red (ring hover, dark)",
+        "canonical": "oklch(80.8% 0.103 19.6)",
+        "tonalRamp": [
+          "oklch(15.0% 0.082 19.6)",
+          "oklch(26.4% 0.088 19.6)",
+          "oklch(37.9% 0.094 19.6)",
+          "oklch(49.3% 0.098 19.6)",
+          "oklch(60.7% 0.101 19.6)",
+          "oklch(72.1% 0.103 19.6)",
+          "oklch(83.6% 0.103 19.6)",
+          "oklch(95.0% 0.102 19.6)"
+        ]
       }
     },
     "typographyMeta": {

@@ -27,6 +27,8 @@ colors:
   danger-dark-scheme: "#f87171"
   danger-ground-start: "#ce2626"
   danger-ground-end: "#b00003"
+  danger-ring-hover-light: "#b00003"
+  danger-ring-hover-dark: "#fca5a5"
   warning: "#955d00"
   warning-dark-scheme: "#fcd34d"
   warning-ground-start: "#9c6410"
@@ -291,7 +293,11 @@ distinct value rather than an alias for it.
   ground green to 3.93:1.
 - **Alarm Red** (`#c2141a` / `#f87171` ink; `#ce2626` → `#b00003` ground):
   destructive actions and error fields. Ink on a tint by default; the ground
-  only where a badge, toast or filled toggle needs one.
+  only where a badge, toast or filled toggle needs one. A field already in
+  error deepens its ring on hover the way a link deepens — `#b00003` on paper,
+  `#fca5a5` on the dark page — both borrowed from the family rather than picked:
+  the ground's far end, and the pale red the dark scheme already used for error
+  text. 6.98:1 and 9.26:1 against the 3 a control edge owes.
 - **Caution Amber** (`#955d00` / `#fcd34d` ink; `#9c6410` → `#824c00` ground)
   and **Info Indigo** (`#4338ca` / `#a5b4fc` ink): badges and status. Amber
   moved furthest from its Tailwind-default origin — white on a bright amber
