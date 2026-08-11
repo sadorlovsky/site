@@ -2,11 +2,11 @@
 name: orlovsky.dev
 description: Liquid glass floating over drifting warm light — a personal site where chrome is a lens and content sits flat beneath it.
 colors:
-  accent-start: "rgb(228, 93, 168)"
-  accent-end: "rgb(236, 100, 70)"
+  accent-start: "rgb(234, 96, 144)"
+  accent-end: "rgb(237, 91, 42)"
   accent-ink: "rgb(64, 20, 42)"
-  accent-deep-start: "rgb(196, 62, 139)"
-  accent-deep-end: "rgb(207, 64, 32)"
+  accent-deep-start: "rgb(199, 62, 114)"
+  accent-deep-end: "rgb(207, 63, 0)"
   light-bg: "#f8f8ff"
   dark-bg: "#191919"
   ink-strong-light: "#111111"
@@ -175,7 +175,7 @@ portfolio template (stock hero, three feature columns, testimonial slider).
 
 - One glass material, tokenized once, worn by every floating element
 - Light and dark are equal citizens — `light-dark()` on effectively every colour
-- A warm 45° rose→coral gradient, used sparingly, always carrying dark ink
+- A warm rose→orange gradient, used sparingly, always carrying dark ink
 - Fully-round chrome, generously-round content, nothing square
 - Motion on a single overshoot curve, with real physical logic behind each move
 - Four control heights (28/32/38/44px) that every component honours
@@ -189,28 +189,40 @@ single warm two-stop accent and a conventional semantic set for state.
 
 ### Primary
 
-The accent is a sunset, and it is meant to be visibly a gradient. Its two stops
-sit **45° apart in hue** — the first toward magenta, the second toward orange —
-because at the 19° they used to span, a short word like "Zach" showed no
-transition at all and read as one flat pink declared twice.
+The accent is a sunset: rose into orange, its two stops **37° apart in hue** —
+and the spread is bought entirely from one end. The stops are not equals.
+`--accent-start` is used *flat* in forty places — focus rings, tag dots, toast
+dots, the wishlist blob, every link on the dark page — where it has nothing to
+blend with and simply *is* the brand's colour. `--accent-end` is used flat in
+five, nearly all of them a gradient's far edge. So the rose is pinned and the
+coral travels. Rotating both instead, 45° apart, does make the sweep resolve on
+a word as short as "Zach" and also turns the site pink everywhere the start stop
+stands alone; moving only the end separates the stops further than that did
+(ΔE 11.7 against 9.9) at no cost to anything seen outside a gradient.
 
-- **Sunset Rose** (`rgb(228, 93, 168)`) and **Sunset Coral** (`rgb(236, 100, 70)`)
-  — the accent itself, bright, unchanged in lightness from the palette this
-  system grew out of. It is a surface and a light: ambient blobs, glows,
-  coloured shadows, the morphing shape, the sliding lozenge, every button
-  ground, and large display type. Both stops measure ~3.08:1 on the light page,
-  which clears the 3:1 that 24px-and-up text and UI components need, and ~5.4:1
-  on the dark page.
+- **Sunset Rose** (`rgb(234, 96, 144)`) and **Sunset Coral** (`rgb(237, 91, 42)`)
+  — the accent itself, bright. It is a surface and a light: ambient blobs,
+  glows, coloured shadows, the morphing shape, the sliding lozenge, every button
+  ground, and large display type. They measure 3.02:1 and 3.24:1 on the light
+  page, which clears the 3:1 that 24px-and-up text and UI components need, and
+  5.50:1 and 5.13:1 on the dark page. The rose sits 0.7% lower in lightness than
+  the `rgb(237, 98, 146)` this system grew out of — same hue, same chroma, no
+  visible difference, and the only thing standing between a focus ring and
+  2.94:1. Rounding it back is a regression.
 - **Accent Ink** (`rgb(64, 20, 42)`) — what gets written *on* it. A colour this
   bright cannot carry white: white measures 3.07–3.09:1 where a 12.8px button
   label needs 4.5. The alternative was dimming the accent everywhere, which
   costs the brand its brightness on every primary action at once. This near-
   black is warm (hue 352) so it reads as the same light absorbed rather than a
-  borrowed grey — 4.76:1 on the magenta stop, 4.79:1 on the coral.
-- **Deep Rose** (`rgb(196, 62, 139)`) and **Deep Coral** (`rgb(207, 64, 32)`)
+  borrowed grey — 4.86:1 on the rose stop, 4.54:1 on the coral. The ink is the
+  entire fix: the accent itself never has to move to pass.
+- **Deep Rose** (`rgb(199, 62, 114)`) and **Deep Coral** (`rgb(207, 63, 0)`)
   — the same hues at reading strength, for the single job the bright pair
   genuinely cannot do: *being* small text on the light page, where the bar is
-  4.5:1 and bright gives 3.09.
+  4.5:1 and bright gives 3.09. Derived rather than picked — each keeps its
+  bright twin's hue and chroma and drops in lightness until it clears, at
+  4.56:1 — so the deep pair can never drift into a different colour than the
+  gradient it stands in for.
 
 Four gradient tokens make the choice once instead of at forty call sites:
 `--accent-gradient` (a surface — decoration, or a ground under `--accent-ink`),
@@ -480,7 +492,7 @@ parent's radius minus its border width, not the same value and not zero.
   44px — with padding and radius stepping alongside. Icon-only variants become
   exact squares via `aspect-ratio: 1` plus an explicit width.
 - **Primary:** `--accent-gradient` at 135° with `--accent-ink` as the label and
-  a matching glow (`0 2px 8px rgba(236,100,70,.3)`). The face is the brand at
+  a matching glow (`0 2px 8px rgba(237,87,96,.3)`). The face is the brand at
   full brightness; only the lettering is dark. Hover deepens the shadow and
   lifts 1px; active returns to 0.
 - **Secondary:** a 5%/8% neutral wash, no border, text at body ink.
@@ -643,8 +655,9 @@ indicator to the strip's left edge and left it highlighting the wrong item.
 - **Don't** put white text on the accent — it measures 3.07–3.09:1. Use
   `--accent-ink`. The same goes for `#10b981` (2.54:1) and any raw
   Tailwind-default semantic colour.
-- **Don't** narrow the gradient's hue spread back toward a single flat pink.
-  45° is what makes it read as a gradient on a word as short as "Zach".
+- **Don't** buy gradient separation by moving `--accent-start`. It stands flat in
+  forty places and is the brand's colour there; the spread comes from the end
+  stop, which is a gradient edge and almost nothing else.
 - **Don't** hand-pick a grey for muted text, and don't dim `--ink-muted`
   further with `opacity` — it is chosen to clear 4.5:1 with nothing to spare.
 

@@ -100,7 +100,7 @@
 .kit-checkbox--pill:has(.kit-checkbox__input:checked) {
   background: var(--accent-gradient);
   color: var(--accent-ink);
-  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
 }
 
 .kit-checkbox--pill.kit-checkbox--sm {
@@ -186,7 +186,7 @@
     var(--accent-gradient);
   box-shadow:
     inset 0 -1px 1px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.3)),
-    0 0 8px rgba(236, 100, 70, 0.45);
+    0 0 8px rgba(237, 91, 42, 0.45);
 }
 
 /* The checkmark grows into place rather than appearing, so the eye can follow

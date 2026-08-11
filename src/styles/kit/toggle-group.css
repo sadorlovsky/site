@@ -190,7 +190,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--separated .kit-toggle-item.is-active {
   background: var(--accent-gradient);
   color: var(--accent-ink);
-  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
 }
 
 /* A separated row with the volume down: the current item is ink and the wash it

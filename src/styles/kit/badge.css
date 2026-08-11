@@ -58,7 +58,7 @@
 
 /* Primary - accent */
 .kit-badge--primary {
-  background: light-dark(rgba(237, 98, 146, 0.15), rgba(237, 98, 146, 0.2));
+  background: light-dark(rgba(234, 96, 144, 0.15), rgba(234, 96, 144, 0.2));
   color: light-dark(#c2185b, #f48fb1);
 }
 
@@ -106,7 +106,7 @@
 .kit-badge--solid-primary {
   background: var(--accent-gradient);
   color: var(--accent-ink);
-  box-shadow: 0 2px 8px rgba(236, 100, 70, 0.4);
+  box-shadow: 0 2px 8px rgba(237, 91, 42, 0.4);
 }
 
 .kit-badge--solid-info {

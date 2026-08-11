@@ -135,12 +135,12 @@
 
 .image-upload:hover {
   border-color: var(--accent-start);
-  background: light-dark(rgba(237, 98, 146, 0.05), rgba(237, 98, 146, 0.1));
+  background: light-dark(rgba(234, 96, 144, 0.05), rgba(234, 96, 144, 0.1));
 }
 
 .image-upload.dragover {
   border-color: var(--accent-start);
-  background: light-dark(rgba(237, 98, 146, 0.1), rgba(237, 98, 146, 0.15));
+  background: light-dark(rgba(234, 96, 144, 0.1), rgba(234, 96, 144, 0.15));
   transform: scale(calc(1 + 0.02 * var(--lift)));
 }
 

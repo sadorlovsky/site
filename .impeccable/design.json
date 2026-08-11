@@ -7,31 +7,31 @@
       "accent-start": {
         "role": "primary",
         "displayName": "Sunset Rose",
-        "canonical": "oklch(67.2% 0.171 349)",
+        "canonical": "oklch(67.6% 0.176 1)",
         "tonalRamp": [
-          "oklch(15.0% 0.148 349)",
-          "oklch(26.4% 0.157 349)",
-          "oklch(37.9% 0.164 349)",
-          "oklch(49.3% 0.168 349)",
-          "oklch(60.7% 0.171 349)",
-          "oklch(72.1% 0.171 349)",
-          "oklch(83.6% 0.169 349)",
-          "oklch(95.0% 0.165 349)"
+          "oklch(15.0% 0.152 1)",
+          "oklch(26.4% 0.161 1)",
+          "oklch(37.9% 0.168 1)",
+          "oklch(49.3% 0.173 1)",
+          "oklch(60.7% 0.176 1)",
+          "oklch(72.1% 0.176 1)",
+          "oklch(83.6% 0.174 1)",
+          "oklch(95.0% 0.169 1)"
         ]
       },
       "accent-end": {
         "role": "primary",
         "displayName": "Sunset Coral",
-        "canonical": "oklch(66.8% 0.153 34)",
+        "canonical": "oklch(65.6% 0.190 38)",
         "tonalRamp": [
-          "oklch(15.0% 0.133 34)",
-          "oklch(26.4% 0.141 34)",
-          "oklch(37.9% 0.147 34)",
-          "oklch(49.3% 0.151 34)",
-          "oklch(60.7% 0.153 34)",
-          "oklch(72.1% 0.153 34)",
-          "oklch(83.6% 0.151 34)",
-          "oklch(95.0% 0.147 34)"
+          "oklch(15.0% 0.166 38)",
+          "oklch(26.4% 0.176 38)",
+          "oklch(37.9% 0.183 38)",
+          "oklch(49.3% 0.188 38)",
+          "oklch(60.7% 0.190 38)",
+          "oklch(72.1% 0.190 38)",
+          "oklch(83.6% 0.187 38)",
+          "oklch(95.0% 0.182 38)"
         ]
       },
       "light-bg": {
@@ -172,31 +172,31 @@
       "accent-deep-start": {
         "role": "primary",
         "displayName": "Deep Rose",
-        "canonical": "oklch(57.0% 0.171 349)",
+        "canonical": "oklch(57.5% 0.177 1)",
         "tonalRamp": [
-          "oklch(15.0% 0.156 349)",
-          "oklch(26.4% 0.163 349)",
-          "oklch(37.9% 0.168 349)",
-          "oklch(49.3% 0.171 349)",
-          "oklch(60.7% 0.171 349)",
-          "oklch(72.1% 0.169 349)",
-          "oklch(83.6% 0.165 349)",
-          "oklch(95.0% 0.159 349)"
+          "oklch(15.0% 0.161 1)",
+          "oklch(26.4% 0.169 1)",
+          "oklch(37.9% 0.174 1)",
+          "oklch(49.3% 0.176 1)",
+          "oklch(60.7% 0.177 1)",
+          "oklch(72.1% 0.175 1)",
+          "oklch(83.6% 0.171 1)",
+          "oklch(95.0% 0.165 1)"
         ]
       },
       "accent-deep-end": {
         "role": "primary",
         "displayName": "Deep Coral",
-        "canonical": "oklch(56.0% 0.153 34)",
+        "canonical": "oklch(57.3% 0.189 38)",
         "tonalRamp": [
-          "oklch(15.0% 0.141 34)",
-          "oklch(26.4% 0.147 34)",
-          "oklch(37.9% 0.151 34)",
-          "oklch(49.3% 0.153 34)",
-          "oklch(60.7% 0.153 34)",
-          "oklch(72.1% 0.151 34)",
-          "oklch(83.6% 0.147 34)",
-          "oklch(95.0% 0.142 34)"
+          "oklch(15.0% 0.173 38)",
+          "oklch(26.4% 0.180 38)",
+          "oklch(37.9% 0.186 38)",
+          "oklch(49.3% 0.189 38)",
+          "oklch(60.7% 0.189 38)",
+          "oklch(72.1% 0.187 38)",
+          "oklch(83.6% 0.183 38)",
+          "oklch(95.0% 0.176 38)"
         ]
       },
       "accent-ink": {
@@ -269,7 +269,7 @@
       },
       {
         "name": "accent-glow",
-        "value": "0 2px 8px rgba(237, 87, 96, 0.3)",
+        "value": "0 2px 8px rgba(237, 91, 42, 0.3)",
         "purpose": "The warm cast under a primary or active gradient element. Deepens to 0 4px 12px / .4 on hover."
       },
       {
@@ -364,7 +364,7 @@
       "refersTo": "button-primary",
       "description": "The main action. The accent gradient at 135°, lifting 1px on hover. One per view.",
       "html": "<button class=\"ds-btn ds-btn-primary\">Reserve</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary { background: linear-gradient(135deg, rgb(228, 93, 168), rgb(236, 100, 70)); color: rgb(64, 20, 42); box-shadow: 0 2px 8px rgba(236, 100, 70, 0.3); } .ds-btn-primary:hover { box-shadow: 0 4px 12px rgba(236, 100, 70, 0.4); transform: translateY(-1px); } .ds-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(236, 100, 70, 0.3); } .ds-btn-primary:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary { background: linear-gradient(135deg, rgb(234, 96, 144), rgb(237, 91, 42)); color: rgb(64, 20, 42); box-shadow: 0 2px 8px rgba(237, 91, 42, 0.3); } .ds-btn-primary:hover { box-shadow: 0 4px 12px rgba(237, 91, 42, 0.4); transform: translateY(-1px); } .ds-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(237, 91, 42, 0.3); } .ds-btn-primary:focus-visible { outline: 2px solid rgb(234, 96, 144); outline-offset: 2px; }"
     },
     {
       "name": "Ghost Button",
@@ -372,7 +372,7 @@
       "refersTo": "button-ghost",
       "description": "Tertiary action and the toggle-capable variant. A 2px inset ring; takes the accent gradient when pressed.",
       "html": "<button class=\"ds-btn ds-btn-ghost\">All</button>\n<button class=\"ds-btn ds-btn-ghost\" aria-pressed=\"true\">Vinyl</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost { background: transparent; color: #666; box-shadow: inset 0 0 0 2px #ddd; } .ds-btn-ghost:hover { color: #111; box-shadow: inset 0 0 0 2px #bbb; } .ds-btn-ghost[aria-pressed=\"true\"] { background: linear-gradient(135deg, rgb(228, 93, 168), rgb(236, 100, 70)); color: rgb(64, 20, 42); box-shadow: 0 2px 8px rgba(236, 100, 70, 0.35); } .ds-btn-ghost:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost { background: transparent; color: #666; box-shadow: inset 0 0 0 2px #ddd; } .ds-btn-ghost:hover { color: #111; box-shadow: inset 0 0 0 2px #bbb; } .ds-btn-ghost[aria-pressed=\"true\"] { background: linear-gradient(135deg, rgb(234, 96, 144), rgb(237, 91, 42)); color: rgb(64, 20, 42); box-shadow: 0 2px 8px rgba(237, 91, 42, 0.35); } .ds-btn-ghost:focus-visible { outline: 2px solid rgb(234, 96, 144); outline-offset: 2px; }"
     },
     {
       "name": "Text Input",
@@ -380,7 +380,7 @@
       "refersTo": "input-md",
       "description": "38px to match a default button. Its border is an inset shadow, so focus never reflows layout.",
       "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search items\" />",
-      "css": ".ds-input { appearance: none; display: block; box-sizing: border-box; width: 100%; height: 38px; padding: 0 0.85rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 400; line-height: 1.5; color: #111; background-color: rgba(255, 255, 255, 0.8); box-shadow: inset 0 0 0 2px #ddd; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-input::placeholder { color: #999; } .ds-input:hover:not(:focus) { box-shadow: inset 0 0 0 2px #bbb; } .ds-input:focus { outline: none; box-shadow: inset 0 0 0 2px rgb(237, 98, 146); }"
+      "css": ".ds-input { appearance: none; display: block; box-sizing: border-box; width: 100%; height: 38px; padding: 0 0.85rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 400; line-height: 1.5; color: #111; background-color: rgba(255, 255, 255, 0.8); box-shadow: inset 0 0 0 2px #ddd; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-input::placeholder { color: #999; } .ds-input:hover:not(:focus) { box-shadow: inset 0 0 0 2px #bbb; } .ds-input:focus { outline: none; box-shadow: inset 0 0 0 2px rgb(234, 96, 144); }"
     },
     {
       "name": "Toggle Group",
@@ -388,7 +388,7 @@
       "refersTo": "toggle-group",
       "description": "A recessed tray with one raised key. The language switcher, the wishlist filters, and the travel view rail are all this component.",
       "html": "<div class=\"ds-toggle-group\" role=\"group\">\n  <button class=\"ds-toggle-item\" aria-pressed=\"true\">Timeline</button>\n  <button class=\"ds-toggle-item\">Countries</button>\n  <button class=\"ds-toggle-item\">Stats</button>\n</div>",
-      "css": ".ds-toggle-group { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem; background: rgba(0, 0, 0, 0.04); border-radius: 10px; } .ds-toggle-item { appearance: none; border: none; background: transparent; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; line-height: 1; color: #555; cursor: pointer; transition: all 0.2s ease; } .ds-toggle-item:hover:not([aria-pressed=\"true\"]) { color: #111; } .ds-toggle-item[aria-pressed=\"true\"] { color: #111; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); } .ds-toggle-item:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+      "css": ".ds-toggle-group { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem; background: rgba(0, 0, 0, 0.04); border-radius: 10px; } .ds-toggle-item { appearance: none; border: none; background: transparent; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; line-height: 1; color: #555; cursor: pointer; transition: all 0.2s ease; } .ds-toggle-item:hover:not([aria-pressed=\"true\"]) { color: #111; } .ds-toggle-item[aria-pressed=\"true\"] { color: #111; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); } .ds-toggle-item:focus-visible { outline: 2px solid rgb(234, 96, 144); outline-offset: 2px; }"
     },
     {
       "name": "Badge",
@@ -396,7 +396,7 @@
       "refersTo": "badge-md",
       "description": "Uppercase micro-label for state. Six subtle variants plus three solid gradient ones.",
       "html": "<span class=\"ds-badge ds-badge-success\">Received</span>\n<span class=\"ds-badge ds-badge-primary\">Reserved</span>\n<span class=\"ds-badge ds-badge-default\">Other</span>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600; line-height: 1; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; } .ds-badge-default { background: rgba(0, 0, 0, 0.06); color: #666; } .ds-badge-primary { background: rgba(237, 98, 146, 0.15); color: #c2185b; } .ds-badge-success { background: rgba(16, 185, 129, 0.15); color: #047857; }"
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600; line-height: 1; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; } .ds-badge-default { background: rgba(0, 0, 0, 0.06); color: #666; } .ds-badge-primary { background: rgba(234, 96, 144, 0.15); color: #c2185b; } .ds-badge-success { background: rgba(16, 185, 129, 0.15); color: #047857; }"
     },
     {
       "name": "Liquid Glass Pill",
@@ -436,7 +436,7 @@
       "refersTo": null,
       "description": "First in every page's tab order and off-screen until focused. Uses :focus, not :focus-visible — nothing but a keyboard reaches it, and a wrong guess costs a focused element the reader cannot see.",
       "html": "<a class=\"ds-skip\" href=\"#main\">Skip to content</a>",
-      "css": ".ds-skip { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 1100; padding: 0.55rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: #111; background-color: rgba(255, 255, 255, 0.55); background-image: linear-gradient(115deg, rgba(255,255,255,0.5), transparent 38%, transparent 62%, rgba(255,255,255,0.28)); backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(20,20,40,0.12); transform: translateY(calc(-100% - 0.75rem)); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-skip:focus { transform: translateY(0); outline: 2px solid rgb(228, 93, 168); outline-offset: 2px; }"
+      "css": ".ds-skip { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 1100; padding: 0.55rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: #111; background-color: rgba(255, 255, 255, 0.55); background-image: linear-gradient(115deg, rgba(255,255,255,0.5), transparent 38%, transparent 62%, rgba(255,255,255,0.28)); backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(20,20,40,0.12); transform: translateY(calc(-100% - 0.75rem)); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-skip:focus { transform: translateY(0); outline: 2px solid rgb(234, 96, 144); outline-offset: 2px; }"
     }
   ],
   "narrative": {
@@ -445,7 +445,7 @@
     "keyCharacteristics": [
       "One glass material, tokenized once, worn by every floating element",
       "Light and dark are equal citizens — light-dark() on effectively every colour",
-      "A warm 45° rose→coral gradient, used sparingly, always carrying dark ink",
+      "A warm rose→orange gradient, used sparingly, always carrying dark ink",
       "Fully-round chrome, generously-round content, nothing square",
       "Motion on a single overshoot curve, with real physical logic behind each move",
       "Four control heights (28/32/38/44px) that every component honours",
@@ -560,7 +560,7 @@
       "Don't add a new focus treatment. It is 2px of Sunset Rose at 2px offset, everywhere.",
       "Don't hand-pick a grey for muted text, and don't dim --ink-muted further with opacity — it is chosen to clear 4.5:1 with nothing to spare.",
       "Don't put white text on the accent — it measures 3.07–3.09:1. Use --accent-ink.",
-      "Don't narrow the gradient's hue spread back toward a single flat pink. 45° is what makes it read as a gradient on a word as short as \"Zach\".",
+      "Don't buy gradient separation by moving --accent-start. It stands flat in forty places and is the brand's colour there; the spread comes from the end stop, which is a gradient edge and almost nothing else.",
       "Don't answer prefers-reduced-motion by switching animation, transition and transform off wholesale — that throws away the colour and shadow feedback that is all a still page has left, and a `*:hover *` transform reset will break anything positioned by transform."
     ]
   }

@@ -126,7 +126,7 @@
   inset: 0;
   border-radius: inherit;
   background: var(--accent-gradient);
-  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   opacity: 0;
   transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
@@ -211,7 +211,7 @@
 .kit-btn.mobile-filter-all-btn.is-active {
   background: var(--accent-gradient);
   color: var(--accent-ink);
-  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
 }
 
 /* Grid */
@@ -382,8 +382,8 @@
 @keyframes highlight-flare {
   0% {
     box-shadow:
-      0 0 0 0 rgba(237, 98, 146, 0),
-      0 0 0 0 rgba(237, 98, 146, 0),
+      0 0 0 0 rgba(234, 96, 144, 0),
+      0 0 0 0 rgba(234, 96, 144, 0),
       var(--glass-shadow);
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -391,13 +391,13 @@
   55% {
     box-shadow:
       0 0 0 3px var(--accent-start),
-      0 0 32px 6px rgba(237, 98, 146, 0.55),
+      0 0 32px 6px rgba(234, 96, 144, 0.55),
       var(--glass-shadow);
   }
   100% {
     box-shadow:
-      0 0 0 0 rgba(237, 98, 146, 0),
-      0 0 0 0 rgba(237, 98, 146, 0),
+      0 0 0 0 rgba(234, 96, 144, 0),
+      0 0 0 0 rgba(234, 96, 144, 0),
       var(--glass-shadow);
   }
 }
@@ -412,7 +412,7 @@
     box-shadow:
       inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 0.9),
       inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6),
-      inset 0 0 24px rgba(237, 98, 146, 0.5);
+      inset 0 0 24px rgba(234, 96, 144, 0.5);
   }
   100% {
     box-shadow: var(--glass-rim);
@@ -560,7 +560,7 @@
 
 .priority-high {
   background: var(--accent-gradient);
-  box-shadow: 0 2px 8px rgba(236, 100, 70, 0.4);
+  box-shadow: 0 2px 8px rgba(237, 91, 42, 0.4);
 }
 
 .priority-medium {
@@ -776,7 +776,7 @@
   inset: 0;
   border-radius: inherit;
   background: var(--accent-gradient);
-  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   opacity: 0;
   transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
@@ -956,7 +956,7 @@
   inset: 0;
   border-radius: inherit;
   background: var(--accent-gradient);
-  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   opacity: 0;
   transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
