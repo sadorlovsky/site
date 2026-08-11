@@ -109,13 +109,13 @@ const percent = max > 0 ? Math.floor((value / max) * 100) : 0;
         rgba(255, 255, 255, 0.3),
         rgba(255, 255, 255, 0) 55%
       ),
-      linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 0 8px rgba(237, 87, 96, 0.45);
+      var(--accent-gradient);
+    box-shadow: 0 0 8px rgba(236, 100, 70, 0.45);
   }
 
   .percent {
     font-size: 0.75rem;
-    color: #888;
+    color: var(--ink-muted);
     font-variant-numeric: tabular-nums;
     text-align: right;
   }

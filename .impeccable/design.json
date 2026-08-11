@@ -7,31 +7,31 @@
       "accent-start": {
         "role": "primary",
         "displayName": "Sunset Rose",
-        "canonical": "oklch(68.3% 0.177 1.4)",
+        "canonical": "oklch(67.2% 0.171 349)",
         "tonalRamp": [
-          "oklch(15.0% 0.152 1.4)",
-          "oklch(26.4% 0.162 1.4)",
-          "oklch(37.9% 0.169 1.4)",
-          "oklch(49.3% 0.174 1.4)",
-          "oklch(60.7% 0.176 1.4)",
-          "oklch(72.1% 0.177 1.4)",
-          "oklch(83.6% 0.175 1.4)",
-          "oklch(95.0% 0.171 1.4)"
+          "oklch(15.0% 0.148 349)",
+          "oklch(26.4% 0.157 349)",
+          "oklch(37.9% 0.164 349)",
+          "oklch(49.3% 0.168 349)",
+          "oklch(60.7% 0.171 349)",
+          "oklch(72.1% 0.171 349)",
+          "oklch(83.6% 0.169 349)",
+          "oklch(95.0% 0.165 349)"
         ]
       },
       "accent-end": {
         "role": "primary",
         "displayName": "Sunset Coral",
-        "canonical": "oklch(65.8% 0.185 20.3)",
+        "canonical": "oklch(66.8% 0.153 34)",
         "tonalRamp": [
-          "oklch(15.0% 0.162 20.3)",
-          "oklch(26.4% 0.171 20.3)",
-          "oklch(37.9% 0.178 20.3)",
-          "oklch(49.3% 0.182 20.3)",
-          "oklch(60.7% 0.185 20.3)",
-          "oklch(72.1% 0.184 20.3)",
-          "oklch(83.6% 0.182 20.3)",
-          "oklch(95.0% 0.177 20.3)"
+          "oklch(15.0% 0.133 34)",
+          "oklch(26.4% 0.141 34)",
+          "oklch(37.9% 0.147 34)",
+          "oklch(49.3% 0.151 34)",
+          "oklch(60.7% 0.153 34)",
+          "oklch(72.1% 0.153 34)",
+          "oklch(83.6% 0.151 34)",
+          "oklch(95.0% 0.147 34)"
         ]
       },
       "light-bg": {
@@ -96,7 +96,7 @@
       },
       "ink-muted-light": {
         "role": "neutral",
-        "displayName": "Muted Ink",
+        "displayName": "Muted Ink (--ink-muted)",
         "canonical": "oklch(52.4% 0 89.9)",
         "tonalRamp": [
           "oklch(15.0% 0 89.9)",
@@ -112,7 +112,7 @@
       "success": {
         "role": "tertiary",
         "displayName": "Confirm Green",
-        "canonical": "oklch(69.6% 0.149 162.5)",
+        "canonical": "oklch(55.2% 0.121 162.5)",
         "tonalRamp": [
           "oklch(15.0% 0.128 162.5)",
           "oklch(26.4% 0.136 162.5)",
@@ -127,7 +127,7 @@
       "danger": {
         "role": "tertiary",
         "displayName": "Alarm Red",
-        "canonical": "oklch(57.7% 0.215 27.3)",
+        "canonical": "oklch(46.5% 0.190 27.3)",
         "tonalRamp": [
           "oklch(15.0% 0.196 27.3)",
           "oklch(26.4% 0.205 27.3)",
@@ -142,7 +142,7 @@
       "warning": {
         "role": "tertiary",
         "displayName": "Caution Amber",
-        "canonical": "oklch(76.9% 0.165 70.1)",
+        "canonical": "oklch(50.0% 0.110 70.1)",
         "tonalRamp": [
           "oklch(15.0% 0.134 70.1)",
           "oklch(26.4% 0.144 70.1)",
@@ -157,7 +157,7 @@
       "info": {
         "role": "secondary",
         "displayName": "Cool Indigo",
-        "canonical": "oklch(58.5% 0.204 277.1)",
+        "canonical": "oklch(45.0% 0.190 277.1)",
         "tonalRamp": [
           "oklch(15.0% 0.185 277.1)",
           "oklch(26.4% 0.194 277.1)",
@@ -167,6 +167,51 @@
           "oklch(72.1% 0.202 277.1)",
           "oklch(83.6% 0.198 277.1)",
           "oklch(95.0% 0.191 277.1)"
+        ]
+      },
+      "accent-deep-start": {
+        "role": "primary",
+        "displayName": "Deep Rose",
+        "canonical": "oklch(57.0% 0.171 349)",
+        "tonalRamp": [
+          "oklch(15.0% 0.156 349)",
+          "oklch(26.4% 0.163 349)",
+          "oklch(37.9% 0.168 349)",
+          "oklch(49.3% 0.171 349)",
+          "oklch(60.7% 0.171 349)",
+          "oklch(72.1% 0.169 349)",
+          "oklch(83.6% 0.165 349)",
+          "oklch(95.0% 0.159 349)"
+        ]
+      },
+      "accent-deep-end": {
+        "role": "primary",
+        "displayName": "Deep Coral",
+        "canonical": "oklch(56.0% 0.153 34)",
+        "tonalRamp": [
+          "oklch(15.0% 0.141 34)",
+          "oklch(26.4% 0.147 34)",
+          "oklch(37.9% 0.151 34)",
+          "oklch(49.3% 0.153 34)",
+          "oklch(60.7% 0.153 34)",
+          "oklch(72.1% 0.151 34)",
+          "oklch(83.6% 0.147 34)",
+          "oklch(95.0% 0.142 34)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Accent Ink",
+        "canonical": "oklch(26.0% 0.075 352)",
+        "tonalRamp": [
+          "oklch(15.0% 0.075 352)",
+          "oklch(26.4% 0.075 352)",
+          "oklch(37.9% 0.074 352)",
+          "oklch(49.3% 0.073 352)",
+          "oklch(60.7% 0.071 352)",
+          "oklch(72.1% 0.067 352)",
+          "oklch(83.6% 0.063 352)",
+          "oklch(95.0% 0.058 352)"
         ]
       }
     },
@@ -276,12 +321,30 @@
       }
     ],
     "breakpoints": [
-      { "name": "phone", "value": "480px" },
-      { "name": "compact", "value": "600px" },
-      { "name": "tablet", "value": "640px" },
-      { "name": "prose", "value": "768px" },
-      { "name": "reading-column", "value": "800px" },
-      { "name": "grid-container", "value": "1200px" }
+      {
+        "name": "phone",
+        "value": "480px"
+      },
+      {
+        "name": "compact",
+        "value": "600px"
+      },
+      {
+        "name": "tablet",
+        "value": "640px"
+      },
+      {
+        "name": "prose",
+        "value": "768px"
+      },
+      {
+        "name": "reading-column",
+        "value": "800px"
+      },
+      {
+        "name": "grid-container",
+        "value": "1200px"
+      }
     ]
   },
   "components": [
@@ -291,7 +354,7 @@
       "refersTo": "button-primary",
       "description": "The main action. The accent gradient at 135°, lifting 1px on hover. One per view.",
       "html": "<button class=\"ds-btn ds-btn-primary\">Reserve</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary { background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96)); color: #fff; box-shadow: 0 2px 8px rgba(237, 87, 96, 0.3); } .ds-btn-primary:hover { box-shadow: 0 4px 12px rgba(237, 87, 96, 0.4); transform: translateY(-1px); } .ds-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(237, 87, 96, 0.3); } .ds-btn-primary:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary { background: linear-gradient(135deg, rgb(228, 93, 168), rgb(236, 100, 70)); color: rgb(64, 20, 42); box-shadow: 0 2px 8px rgba(236, 100, 70, 0.3); } .ds-btn-primary:hover { box-shadow: 0 4px 12px rgba(236, 100, 70, 0.4); transform: translateY(-1px); } .ds-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(236, 100, 70, 0.3); } .ds-btn-primary:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
     },
     {
       "name": "Ghost Button",
@@ -299,7 +362,7 @@
       "refersTo": "button-ghost",
       "description": "Tertiary action and the toggle-capable variant. A 2px inset ring; takes the accent gradient when pressed.",
       "html": "<button class=\"ds-btn ds-btn-ghost\">All</button>\n<button class=\"ds-btn ds-btn-ghost\" aria-pressed=\"true\">Vinyl</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost { background: transparent; color: #666; box-shadow: inset 0 0 0 2px #ddd; } .ds-btn-ghost:hover { color: #111; box-shadow: inset 0 0 0 2px #bbb; } .ds-btn-ghost[aria-pressed=\"true\"] { background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96)); color: #fff; box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35); } .ds-btn-ghost:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost { background: transparent; color: #666; box-shadow: inset 0 0 0 2px #ddd; } .ds-btn-ghost:hover { color: #111; box-shadow: inset 0 0 0 2px #bbb; } .ds-btn-ghost[aria-pressed=\"true\"] { background: linear-gradient(135deg, rgb(228, 93, 168), rgb(236, 100, 70)); color: rgb(64, 20, 42); box-shadow: 0 2px 8px rgba(236, 100, 70, 0.35); } .ds-btn-ghost:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
     },
     {
       "name": "Text Input",
@@ -364,7 +427,7 @@
     "keyCharacteristics": [
       "One glass material, tokenized once, worn by every floating element",
       "Light and dark are equal citizens — light-dark() on effectively every colour",
-      "A warm rose→coral gradient used sparingly as the only loud element",
+      "A warm 45° rose→coral gradient, used sparingly, always carrying dark ink",
       "Fully-round chrome, generously-round content, nothing square",
       "Motion on a single overshoot curve, with real physical logic behind each move",
       "Four control heights (28/32/38/44px) that every component honours",
@@ -415,6 +478,16 @@
         "name": "The Nested-Radius Rule",
         "body": "A child filling a rounded parent's edge takes the parent's radius minus its border width, not the same value and not zero.",
         "section": "shapes"
+      },
+      {
+        "name": "The Muted-Ink Rule",
+        "body": "Anything secondary — a count, a separator, a hint, a date — is --ink-muted (#6a6a6a / #9a9aa0), never a hand-picked #888 or #999. Those measure 3.35:1 and 2.85:1 on the light page, and this ink lands almost entirely on 10–14px text, where 4.5 is the floor. The token has no headroom, so nothing wearing it may also carry opacity below 1.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink Rule",
+        "body": "The accent never dims to make its label readable — the label darkens instead. Anything written on the accent is --accent-ink, in both schemes, and white on the accent is a bug. The single exception is being small text on the light page, where nothing can be darkened except the accent itself: that is what the deep pair exists for, and it has no other use.",
+        "section": "colors"
       }
     ],
     "dos": [
@@ -425,7 +498,9 @@
       "Do put the refractive rim on a pseudo-element with border-radius: inherit and pointer-events: none.",
       "Do provide a prefers-reduced-transparency answer for any new material — an opaque tint, not just backdrop-filter: none.",
       "Do let a row's hover wash bleed 0.75rem into the gutter while its text stays on the content edge.",
-      "Do keep the reading column at 800px and the grid at 1200px."
+      "Do keep the reading column at 800px and the grid at 1200px.",
+      "Do reach for --ink-muted for every secondary label, and measure any new text colour against its composited background rather than the page.",
+      "Do pick the accent by what the surface carries: --accent-gradient plus --accent-ink for anything with a label, --accent-gradient-display for large background-clip text, --accent-gradient-text for small."
     ],
     "donts": [
       "Don't use the accent gradient more than once per view, or on anything that isn't the primary action or the active state.",
@@ -435,7 +510,10 @@
       "Don't make a group heading a small uppercase eyebrow. It is a 1.25rem semibold landmark or it is not a heading.",
       "Don't use #fff as the light page or #000 as the dark one.",
       "Don't drift toward the generic SaaS dashboard (blue primaries, stat-tile grids, icon sidebars), brutalist raw HTML (hard borders, zero radius, deliberate ugliness), or the corporate portfolio template (stock hero, three feature columns, testimonial slider).",
-      "Don't add a new focus treatment. It is 2px of Sunset Rose at 2px offset, everywhere."
+      "Don't add a new focus treatment. It is 2px of Sunset Rose at 2px offset, everywhere.",
+      "Don't hand-pick a grey for muted text, and don't dim --ink-muted further with opacity — it is chosen to clear 4.5:1 with nothing to spare.",
+      "Don't put white text on the accent — it measures 3.07–3.09:1. Use --accent-ink.",
+      "Don't narrow the gradient's hue spread back toward a single flat pink. 45° is what makes it read as a gradient on a word as short as \"Zach\"."
     ]
   }
 }

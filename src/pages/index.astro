@@ -77,11 +77,6 @@ const personSchema = {
 </PageLayout>
 
 <style>
-  :root {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-  }
-
   main {
     display: flex;
     align-items: center;
@@ -103,7 +98,7 @@ const personSchema = {
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.2;
@@ -191,7 +186,7 @@ const personSchema = {
     font-weight: 700;
     letter-spacing: -0.03em;
     margin: 0;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-display);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -231,10 +226,10 @@ const personSchema = {
   }
 
   .social-links a:hover {
-    color: white;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    color: var(--accent-ink);
+    background: var(--accent-gradient);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(237, 87, 96, 0.4);
+    box-shadow: 0 4px 15px rgba(236, 100, 70, 0.4);
   }
 
   .social-links svg {

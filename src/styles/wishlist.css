@@ -25,7 +25,7 @@
   .wishlist-container::before {
     width: 780px;
     height: 780px;
-    background: radial-gradient(circle, rgb(237, 93, 121), transparent 70%);
+    background: radial-gradient(circle, var(--accent-start), transparent 70%);
     top: -290px;
     right: -290px;
     opacity: light-dark(0.15, 0.2);
@@ -125,8 +125,8 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
   opacity: 0;
   transform: scale(0.9);
   transition:
@@ -209,9 +209,9 @@
 /* Active "All" — the same accent capsule the current category chip wears. */
 .kit-btn.filter-all-btn.is-active,
 .kit-btn.mobile-filter-all-btn.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
 }
 
 /* Grid */
@@ -559,8 +559,8 @@
 }
 
 .priority-high {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.4);
+  background: var(--accent-gradient);
+  box-shadow: 0 2px 8px rgba(236, 100, 70, 0.4);
 }
 
 .priority-medium {
@@ -757,8 +757,8 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
   opacity: 0;
   transform: scale(0.9);
   transition:
@@ -825,7 +825,7 @@
 
 /* Received — a solid success-gradient pill, same finish as the accent states. */
 .reserve-btn.received {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   backdrop-filter: none;
   border-color: transparent;
   color: white;
@@ -915,8 +915,8 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
   opacity: 0;
   transform: scale(0.9);
   transition:

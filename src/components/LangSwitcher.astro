@@ -82,8 +82,8 @@ const { storageKey, size = "sm" } = Astro.props;
     width: var(--ind-w, 0);
     height: var(--ind-h, 0);
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
     opacity: 0;
     transform: translate(var(--ind-x, 0), var(--ind-y, 0)) scale(0.9);
     transition:
@@ -129,7 +129,7 @@ const { storageKey, size = "sm" } = Astro.props;
      one being hovered/focused. Set by the script; mirrors .dock-item.is-active.
      Declared after :hover so it wins on the hovered button (equal specificity). */
   .lang-switcher .lang-switcher__btn.is-active {
-    color: #fff;
+    color: var(--accent-ink);
   }
 
   .lang-switcher .lang-switcher__btn:focus-visible {

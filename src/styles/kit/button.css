@@ -51,10 +51,16 @@ a.kit-btn:active {
 }
 
 /* Explicit colors for link buttons (override global link styles) */
+/* Primary and success part ways here: the accent is bright enough that its
+   label has to be ink, while the confirmation green is deep enough to carry
+   white. Same rule, different grounds. */
 a.kit-btn--primary,
 a.kit-btn--primary:hover,
 a.kit-btn--primary:visited,
-a.kit-btn--primary:active,
+a.kit-btn--primary:active {
+  color: var(--accent-ink);
+}
+
 a.kit-btn--success,
 a.kit-btn--success:hover,
 a.kit-btn--success:visited,
@@ -83,14 +89,14 @@ a.kit-btn--ghost.is-active,
 a.kit-btn--ghost.is-active:visited,
 a.kit-btn--ghost[aria-pressed="true"],
 a.kit-btn--ghost[aria-pressed="true"]:visited {
-  color: white;
+  color: var(--accent-ink);
 }
 
 a.kit-btn--danger,
 a.kit-btn--danger:hover,
 a.kit-btn--danger:visited,
 a.kit-btn--danger:active {
-  color: light-dark(#dc2626, #f87171);
+  color: light-dark(#c2141a, #f87171);
 }
 
 .kit-btn:focus-visible {
@@ -143,19 +149,19 @@ a.kit-btn--danger:active {
 
 /* Primary - Gradient accent button */
 .kit-btn--primary {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.3);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(236, 100, 70, 0.3);
 }
 
 .kit-btn--primary:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(237, 87, 96, 0.4);
+  box-shadow: 0 4px 12px rgba(236, 100, 70, 0.4);
   transform: translateY(-1px);
 }
 
 .kit-btn--primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(237, 87, 96, 0.3);
+  box-shadow: 0 2px 6px rgba(236, 100, 70, 0.3);
 }
 
 /* Secondary - Subtle background */
@@ -191,15 +197,15 @@ a.kit-btn--danger:active {
 
 .kit-btn--ghost[aria-pressed="true"],
 .kit-btn--ghost.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(236, 100, 70, 0.35);
 }
 
 /* Danger - Destructive actions */
 .kit-btn--danger {
   background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.15));
-  color: light-dark(#dc2626, #f87171);
+  color: light-dark(#c2141a, #f87171);
   box-shadow: inset 0 0 0 1px
     light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.25));
 }
@@ -216,7 +222,7 @@ a.kit-btn--danger:active {
 
 /* Success - Confirmation actions */
 .kit-btn--success {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   color: white;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
@@ -284,7 +290,11 @@ a.kit-btn--danger:active {
 }
 
 /* Restore color for spinner visibility */
-.kit-btn--primary.kit-btn--loading::after,
+.kit-btn--primary.kit-btn--loading::after {
+  border-color: var(--accent-ink);
+  border-right-color: transparent;
+}
+
 .kit-btn--success.kit-btn--loading::after {
   border-color: white;
   border-right-color: transparent;
@@ -297,7 +307,7 @@ a.kit-btn--danger:active {
 }
 
 .kit-btn--danger.kit-btn--loading::after {
-  border-color: light-dark(#dc2626, #f87171);
+  border-color: light-dark(#c2141a, #f87171);
   border-right-color: transparent;
 }
 

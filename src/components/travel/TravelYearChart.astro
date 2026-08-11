@@ -278,8 +278,8 @@ const keepsLabelWhenNarrow = (index: number) => {
         rgba(255, 255, 255, 0.3),
         rgba(255, 255, 255, 0) 55%
       ),
-      linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 0 8px rgba(237, 87, 96, 0.45);
+      var(--accent-gradient);
+    box-shadow: 0 0 8px rgba(236, 100, 70, 0.45);
   }
 
   /* Sits on the cap it names, a hair clear of it. --v is the column's, so this
@@ -356,11 +356,7 @@ const keepsLabelWhenNarrow = (index: number) => {
     }
 
     .bar--peak {
-      background-image: linear-gradient(
-        135deg,
-        var(--accent-start),
-        var(--accent-end)
-      );
+      background-image: var(--accent-gradient);
     }
   }
 </style>

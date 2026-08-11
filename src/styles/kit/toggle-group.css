@@ -90,7 +90,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--separated a.kit-toggle-item.is-active:visited,
 .kit-toggle-group--separated a.kit-toggle-item[aria-pressed="true"],
 .kit-toggle-group--separated a.kit-toggle-item[aria-pressed="true"]:visited {
-  color: white;
+  color: var(--accent-ink);
 }
 
 .kit-toggle-item:hover:not(:disabled):not([aria-pressed="true"]):not(
@@ -166,7 +166,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   background: transparent;
   border: none;
   box-shadow: none;
-  color: light-dark(#666, #9a9aa0);
+  color: var(--ink-muted);
   transition:
     background-color 0.25s ease,
     color 0.25s ease;
@@ -188,9 +188,9 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
    thing in the row allowed to be loud. */
 .kit-toggle-group--separated .kit-toggle-item[aria-pressed="true"],
 .kit-toggle-group--separated .kit-toggle-item.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
 }
 
 /* A separated row with the volume down: the current item is ink and the wash it
@@ -272,7 +272,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   border: none;
   box-shadow: none;
   border-radius: 999px;
-  color: light-dark(#666, #9a9aa0);
+  color: var(--ink-muted);
   transition:
     background-color 0.25s ease,
     color 0.3s ease;
@@ -368,14 +368,14 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   font-weight: 500;
   font-size: 0.9em;
   font-variant-numeric: tabular-nums;
-  color: light-dark(#888, #8a8a90);
+  color: var(--ink-muted);
   transition: color 0.3s ease;
 }
 
 .kit-toggle-group--tabs
   .kit-toggle-item[aria-selected="true"]
   .kit-toggle-item__count {
-  color: light-dark(#666, #9a9aa0);
+  color: var(--ink-muted);
 }
 
 /* Tab sizes — the separated chip's capsule geometry, with a little more room

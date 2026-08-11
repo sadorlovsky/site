@@ -35,8 +35,12 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Placeholder text is text: 2.85:1 on the light ground and 2.89:1 on the dark
+   one is below the 4.5 any other sentence on this page has to clear, and a
+   placeholder is usually the only instruction a field carries. Still clearly
+   quieter than the value typed over it — muted ink, not disabled ink. */
 .kit-input::placeholder {
-  color: light-dark(#999, #666);
+  color: light-dark(#767676, #aeaeae);
 }
 
 .kit-input:hover:not(:disabled):not(:focus) {
@@ -135,12 +139,12 @@ textarea.kit-input.kit-input--lg {
 
 .kit-form-hint {
   font-size: 0.7rem;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
 }
 
 .kit-form-error {
   font-size: 0.7rem;
-  color: light-dark(#dc2626, #f87171);
+  color: light-dark(#c2141a, #f87171);
 }
 
 /* =============================================================================

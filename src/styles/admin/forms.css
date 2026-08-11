@@ -52,7 +52,7 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: light-dark(#999, #666);
+  color: light-dark(#767676, #aeaeae);
 }
 
 .form-group textarea {

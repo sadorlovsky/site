@@ -68,16 +68,18 @@
   color: light-dark(#047857, #6ee7b7);
 }
 
-/* Warning - yellow/orange */
+/* Warning - yellow/orange. The light-scheme ink went a step down: a badge is
+   0.65rem uppercase, which is as small as text gets here, and #b45309 on its
+   own tint measured 4.40:1. */
 .kit-badge--warning {
   background: light-dark(rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.2));
-  color: light-dark(#b45309, #fcd34d);
+  color: light-dark(#955d00, #fcd34d);
 }
 
-/* Danger - red */
+/* Danger - red. Same, from 4.03:1. */
 .kit-badge--danger {
   background: light-dark(rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.2));
-  color: light-dark(#dc2626, #fca5a5);
+  color: light-dark(#c2141a, #fca5a5);
 }
 
 /* Info - indigo/blue */
@@ -90,32 +92,37 @@
    Solid Variants (gradient background, white text)
    ============================================================================= */
 
+/* Every solid badge is white text at 0.6–0.65rem — the smallest type on the
+   site — so each gradient runs between two stops that clear 4.5:1 against
+   white on their own. The hue and chroma of each family are unchanged; only
+   the lamp is lower. Warning moved furthest, because white on a bright amber
+   was never going to be readable at any size. */
 .kit-badge--solid-success {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   color: white;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
 }
 
 .kit-badge--solid-primary {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.4);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(236, 100, 70, 0.4);
 }
 
 .kit-badge--solid-info {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #6264ef, #514fd9);
   color: white;
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
 }
 
 .kit-badge--solid-warning {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #a56800, #8c5700);
   color: white;
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
 .kit-badge--solid-danger {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, #e12d2b, #c90012);
   color: white;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }

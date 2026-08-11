@@ -2,8 +2,11 @@
 name: orlovsky.dev
 description: Liquid glass floating over drifting warm light — a personal site where chrome is a lens and content sits flat beneath it.
 colors:
-  accent-start: "rgb(237, 98, 146)"
-  accent-end: "rgb(237, 87, 96)"
+  accent-start: "rgb(228, 93, 168)"
+  accent-end: "rgb(236, 100, 70)"
+  accent-ink: "rgb(64, 20, 42)"
+  accent-deep-start: "rgb(196, 62, 139)"
+  accent-deep-end: "rgb(207, 64, 32)"
   light-bg: "#f8f8ff"
   dark-bg: "#191919"
   ink-strong-light: "#111111"
@@ -14,12 +17,12 @@ colors:
   ink-muted-dark: "#9a9aa0"
   hairline-light: "#dddddd"
   hairline-dark: "#444444"
-  success: "#10b981"
-  success-deep: "#059669"
-  danger: "#dc2626"
+  success-start: "#00875d"
+  success-end: "#046b4b"
+  danger: "#c2141a"
   danger-dark-scheme: "#f87171"
-  warning: "#f59e0b"
-  info: "#6366f1"
+  warning: "#955d00"
+  info: "#4338ca"
 typography:
   display:
     fontFamily: "InterVariable, system-ui, sans-serif"
@@ -76,14 +79,14 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.accent-start}"
-    textColor: "#ffffff"
+    textColor: "{colors.accent-ink}"
     typography: "{typography.label}"
     rounded: "{rounded.md}"
     padding: "0 1.1rem"
     height: "38px"
   button-primary-hover:
     backgroundColor: "{colors.accent-end}"
-    textColor: "#ffffff"
+    textColor: "{colors.accent-ink}"
   button-secondary:
     backgroundColor: "rgba(0, 0, 0, 0.05)"
     textColor: "{colors.ink-body-light}"
@@ -98,7 +101,7 @@ components:
     height: "38px"
   button-ghost-active:
     backgroundColor: "{colors.accent-start}"
-    textColor: "#ffffff"
+    textColor: "{colors.accent-ink}"
   button-danger:
     backgroundColor: "rgba(220, 38, 38, 0.1)"
     textColor: "{colors.danger}"
@@ -172,7 +175,7 @@ portfolio template (stock hero, three feature columns, testimonial slider).
 
 - One glass material, tokenized once, worn by every floating element
 - Light and dark are equal citizens — `light-dark()` on effectively every colour
-- A warm rose→coral gradient used sparingly as the only loud element
+- A warm 45° rose→coral gradient, used sparingly, always carrying dark ink
 - Fully-round chrome, generously-round content, nothing square
 - Motion on a single overshoot curve, with real physical logic behind each move
 - Four control heights (28/32/38/44px) that every component honours
@@ -186,20 +189,41 @@ single warm two-stop accent and a conventional semantic set for state.
 
 ### Primary
 
-- **Sunset Rose** (`rgb(237, 98, 146)`): the gradient's first stop and the
-  system's focus colour. Every focus ring on the site is 2px of this at 2px
-  offset. It is the lighter, pinker end — used alone when a single accent value
-  is needed against a dark ground.
-- **Sunset Coral** (`rgb(237, 87, 96)`): the gradient's second stop, and the
-  link colour in the light scheme. Warmer and redder; the point the eye lands
-  on when the gradient runs 135°.
+The accent is a sunset, and it is meant to be visibly a gradient. Its two stops
+sit **45° apart in hue** — the first toward magenta, the second toward orange —
+because at the 19° they used to span, a short word like "Zach" showed no
+transition at all and read as one flat pink declared twice.
 
-The two are almost always used together as
-`linear-gradient(135deg, var(--accent-start), var(--accent-end))` — on primary
-buttons, active toggles, the dock indicator, the home page's morphing blob, and
-the site title's text fill. Links invert across schemes: coral on light, rose on
-dark, each at 40% opacity on the underline until hover pulls it to
-`currentColor`.
+- **Sunset Rose** (`rgb(228, 93, 168)`) and **Sunset Coral** (`rgb(236, 100, 70)`)
+  — the accent itself, bright, unchanged in lightness from the palette this
+  system grew out of. It is a surface and a light: ambient blobs, glows,
+  coloured shadows, the morphing shape, the sliding lozenge, every button
+  ground, and large display type. Both stops measure ~3.08:1 on the light page,
+  which clears the 3:1 that 24px-and-up text and UI components need, and ~5.4:1
+  on the dark page.
+- **Accent Ink** (`rgb(64, 20, 42)`) — what gets written *on* it. A colour this
+  bright cannot carry white: white measures 3.07–3.09:1 where a 12.8px button
+  label needs 4.5. The alternative was dimming the accent everywhere, which
+  costs the brand its brightness on every primary action at once. This near-
+  black is warm (hue 352) so it reads as the same light absorbed rather than a
+  borrowed grey — 4.76:1 on the magenta stop, 4.79:1 on the coral.
+- **Deep Rose** (`rgb(196, 62, 139)`) and **Deep Coral** (`rgb(207, 64, 32)`)
+  — the same hues at reading strength, for the single job the bright pair
+  genuinely cannot do: *being* small text on the light page, where the bar is
+  4.5:1 and bright gives 3.09.
+
+Four gradient tokens make the choice once instead of at forty call sites:
+`--accent-gradient` (a surface — decoration, or a ground under `--accent-ink`),
+`--accent-gradient-display` (the gradient *is* text at 24px and up),
+`--accent-gradient-text` (the gradient *is* small text), and
+`--success-gradient`. Only `-text` changes with the scheme: deep on paper,
+bright on the dark page, where the bright pair already measures 5.4:1 and
+dimming it would be loss for nothing.
+
+Links follow the same logic — deep coral on light, bright rose on dark — with
+the underline at 40% opacity until hover pulls it to `currentColor`. Hover moves
+*away* from the page in both schemes: deeper on paper, brighter on the dark
+page.
 
 ### Neutral
 
@@ -218,18 +242,36 @@ dark, each at 40% opacity on the underline until hover pulls it to
 
 ### Semantic
 
-- **Success Green** (`#10b981` → `#059669`): confirmations, received items,
-  visited states. Solid variants use the same 135° gradient treatment.
-- **Danger Red** (`#dc2626` light / `#f87171` dark): destructive actions and
-  error field states. Always a tinted background plus coloured text, never a
-  solid red fill.
-- **Warning Amber** (`#f59e0b`) and **Info Indigo** (`#6366f1`): badges only.
+Each family is stated at reading strength, because every one of them ends up
+under white text at 10–13px somewhere in the kit.
+
+- **Confirm Green** (`#00875d` → `#046b4b`): confirmations, received items,
+  success toasts. `--success-gradient` is the one token for all of them.
+- **Alarm Red** (`#c2141a` light / `#f87171` dark for ink; `#e12d2b` → `#c90012`
+  for solid fills): destructive actions and error fields. Ink on a tint by
+  default; the solid pair only where a badge or toast icon needs a ground.
+- **Caution Amber** (`#955d00` ink, `#a56800` → `#8c5700` solid) and **Info
+  Indigo** (`#4338ca` ink, `#6264ef` → `#514fd9` solid): badges only. Amber
+  moved furthest from its Tailwind-default origin — white on a bright amber is
+  unreadable at any size.
 
 ### Named Rules
 
 **The One Gradient Rule.** The accent gradient marks exactly one thing per
 view: the primary action, or the active tab, not both competing. Everything
 else stays neutral until interacted with. Its rarity is what makes it read.
+
+**The Ink Rule.** The accent never dims to make its label readable — the label
+darkens instead. Anything written on the accent is `--accent-ink`, in both
+schemes, and white on the accent is a bug. The single exception is *being*
+small text on the light page, where nothing can be darkened except the accent
+itself: that is what the deep pair exists for, and it has no other use.
+
+**The Muted-Ink Rule.** Anything secondary — a count, a separator, a hint, a
+date — is `--ink-muted` (`#6a6a6a` / `#9a9aa0`), never a hand-picked `#888` or
+`#999`. Those measure 3.35:1 and 2.85:1 on the light page, and this ink lands
+almost entirely on 10–14px text, where 4.5 is the floor. The token has no
+headroom, so nothing wearing it may also carry `opacity` below 1.
 
 **The Both-Schemes Rule.** No colour ships as a bare value. Every colour is
 `light-dark(light, dark)` — the only exceptions are glass laid over
@@ -395,9 +437,10 @@ parent's radius minus its border width, not the same value and not zero.
 - **Sizes:** four heights — `xs` 28px, `sm` 32px, `md` 38px (default), `lg`
   44px — with padding and radius stepping alongside. Icon-only variants become
   exact squares via `aspect-ratio: 1` plus an explicit width.
-- **Primary:** the accent gradient at 135°, white text, `0 2px 8px
-  rgba(237,87,96,.3)`. Hover deepens the shadow and lifts 1px; active returns to
-  0.
+- **Primary:** `--accent-gradient` at 135° with `--accent-ink` as the label and
+  a matching glow (`0 2px 8px rgba(236,100,70,.3)`). The face is the brand at
+  full brightness; only the lettering is dark. Hover deepens the shadow and
+  lifts 1px; active returns to 0.
 - **Secondary:** a 5%/8% neutral wash, no border, text at body ink.
 - **Ghost:** transparent with a 2px inset ring. When active or
   `aria-pressed="true"` it takes the accent gradient and white text.
@@ -476,6 +519,12 @@ transition, and interactive transform site-wide.
   locally.
 - **Do** wrap every colour in `light-dark()`, and check both schemes before
   calling a surface done.
+- **Do** pick the accent by what the surface carries: `--accent-gradient` plus
+  `--accent-ink` for anything with a label, `--accent-gradient-display` for
+  large `background-clip` text, `--accent-gradient-text` for small.
+- **Do** reach for `--ink-muted` for every secondary label, and measure any new
+  text colour against its *composited* background rather than the page — a 6%
+  wash under inline code was the difference between 4.69:1 and 4.10:1.
 - **Do** pick a control height from 28 / 32 / 38 / 44px and let radius, padding,
   and font size follow from it.
 - **Do** give sticky elements a published offset custom property, and read the
@@ -507,12 +556,27 @@ transition, and interactive transform site-wide.
   feature columns, testimonial slider).
 - **Don't** add a new focus treatment. It is 2px of Sunset Rose at 2px offset,
   everywhere.
+- **Don't** put white text on the accent — it measures 3.07–3.09:1. Use
+  `--accent-ink`. The same goes for `#10b981` (2.54:1) and any raw
+  Tailwind-default semantic colour.
+- **Don't** narrow the gradient's hue spread back toward a single flat pink.
+  45° is what makes it read as a gradient on a word as short as "Zach".
+- **Don't** hand-pick a grey for muted text, and don't dim `--ink-muted`
+  further with `opacity` — it is chosen to clear 4.5:1 with nothing to spare.
 
 ### Known drift
 
-Two colours predate the accent system and do not belong to it: `::selection` is
-a blue (`rgba(0,102,204,.2)` / `rgba(102,179,255,.3)`) and `mark` is a
-yellow (`#ffeb3b` / `#ffd700`). Four surfaces carry no
-`prefers-reduced-transparency` fallback at all — the admin modal, admin toast,
-admin item card, and the blog's back-to-top button — a gap already recorded on
-`/kit`. Fix these when touching those surfaces; do not treat them as precedent.
+Four surfaces carry no `prefers-reduced-transparency` fallback at all — the
+admin modal, admin toast, admin item card, and the blog's back-to-top button —
+a gap already recorded on `/kit`. Fix these when touching those surfaces; do
+not treat them as precedent.
+
+`forced-colors` is unhandled everywhere, which matters most for the gradient
+text: `-webkit-text-fill-color: transparent` may render page titles invisible
+in Windows High Contrast. Unverified on Windows.
+
+The admin panel's own `variables.css` still holds the pre-contrast semantic
+values (`--color-success: #10b981`, `--color-error: #ef4444`). They tint dots,
+icons and single words rather than sitting under white text, so none of them
+measured as a failure — but they are a second dialect of the semantic palette
+and should fold into the tokens above when that panel is next touched.

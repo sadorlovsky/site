@@ -168,11 +168,6 @@ export const prerender = true;
 </script>
 
 <style>
-  :root {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-  }
-
   /* Ambient light, and over everything on purpose.
 
      These are siblings of <main>, so their z-index competes with main's own,
@@ -199,7 +194,7 @@ export const prerender = true;
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.15;

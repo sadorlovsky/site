@@ -239,13 +239,15 @@
    Type Variants
    ============================================================================= */
 
+/* The glyph inside a toast icon is white, so both grounds are the reading-
+   strength pair rather than the bright one — same rule as a solid badge. */
 .kit-toast--success .kit-toast-icon {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   color: white;
 }
 
 .kit-toast--error .kit-toast-icon {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, #e12d2b, #c90012);
   color: white;
 }
 

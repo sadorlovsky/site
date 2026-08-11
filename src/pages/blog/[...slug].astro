@@ -316,11 +316,6 @@ const breadcrumbSchema = {
 </PageLayout>
 
 <style>
-  :root {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-  }
-
   main {
     min-height: 100vh;
     position: relative;
@@ -339,7 +334,7 @@ const breadcrumbSchema = {
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.15;
@@ -423,7 +418,7 @@ const breadcrumbSchema = {
     letter-spacing: -0.02em;
     margin: 0.75rem 0 0 0;
     line-height: 1.2;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-display);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -726,9 +721,9 @@ const breadcrumbSchema = {
   }
 
   .back-to-top:hover {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     border-color: transparent;
-    color: white;
+    color: var(--accent-ink);
   }
 
   .back-to-top:focus-visible {
