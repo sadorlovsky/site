@@ -74,7 +74,7 @@
   border: none;
   box-shadow: none;
   border-radius: 999px;
-  color: light-dark(#666, #9a9aa0);
+  color: var(--ink-muted);
   transition:
     background-color 0.25s ease,
     color 0.25s ease;
@@ -89,7 +89,7 @@
   ) {
   background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
   box-shadow: none;
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 /* =============================================================================
@@ -115,7 +115,7 @@
   backdrop-filter: var(--glass-filter);
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
   transition: color 0.3s ease;
 }
 
@@ -172,7 +172,7 @@
 /* The chrome's focus ring — an accent outline would vanish into the lit fill. */
 .kit-btn.filter-random:focus-visible,
 .kit-btn.mobile-filter-random:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
@@ -435,12 +435,12 @@
 }
 
 .wishlist-item.item-received .item-title {
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
 }
 
 .wishlist-item.item-received .item-url,
 .wishlist-item.item-received .item-url:visited {
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
 }
 
 /* A received card is dimmer, not dead: its links still go somewhere, so they
@@ -448,15 +448,15 @@
    `.item-url:hover` on specificity and was quietly holding the resting colour
    through the hover — the underline appeared, the colour never moved. */
 .wishlist-item.item-received .item-url:hover {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .wishlist-item.item-received .item-description {
-  color: light-dark(#555, #bbb);
+  color: var(--ink-muted);
 }
 
 .wishlist-item.item-received .item-price {
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Item image */
@@ -564,7 +564,7 @@
 }
 
 .priority-medium {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: var(--warning-gradient);
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
 }
 
@@ -584,7 +584,7 @@
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   line-height: 1.4;
 }
 
@@ -614,7 +614,7 @@
   min-width: 0;
   padding-block: 0.3rem;
   font-size: 0.75rem;
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
   text-decoration: none;
 }
 
@@ -626,7 +626,7 @@
 }
 
 .item-url:hover {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 /* Underlining the label rather than the link keeps the rule off the arrow */
@@ -693,7 +693,7 @@
   position: relative;
   flex-shrink: 0;
   font-size: 0.75rem;
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: default;
@@ -701,7 +701,7 @@
 
 .item-description {
   font-size: 0.85rem;
-  color: light-dark(#444, #bbb);
+  color: var(--ink-body);
   margin: 0 0 1.25rem 0;
   line-height: 1.5;
 }
@@ -726,7 +726,7 @@
   position: relative;
   font-size: clamp(0.9rem, 3vw, 1.1rem);
   font-weight: 700;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   cursor: default;
@@ -755,7 +755,7 @@
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
   border: var(--glass-border);
   padding: 0.55rem 1.15rem;
   font-size: 0.8rem;
@@ -820,7 +820,7 @@
 .reserve-btn.own-reservation {
   background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
   background-image: none;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   transition:
     color 0.3s ease,
     background-color 0.3s ease;
@@ -833,7 +833,7 @@
 .reserve-btn.own-reservation:hover,
 .reserve-btn.own-reservation:focus-visible {
   background-color: light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
-  color: light-dark(#333, #fff);
+  color: var(--ink-body);
 }
 
 .reserve-btn.own-reservation:hover::after,
@@ -920,7 +920,7 @@
   line-height: 1.45;
   text-align: right;
   text-wrap: pretty;
-  color: light-dark(#c2141a, #f87171);
+  color: var(--danger);
 }
 
 .message-btn {
@@ -942,7 +942,7 @@
   backdrop-filter: var(--glass-filter);
   border: var(--glass-border);
   box-shadow: var(--glass-shadow);
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
   transition: color 0.3s ease;
 }
 
@@ -994,7 +994,7 @@
 }
 
 .message-btn:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
@@ -1004,9 +1004,13 @@
   color: light-dark(var(--accent-end), var(--accent-start));
 }
 
+/* The lit ground is the same one the base rule already darkened its ink for, so
+   this override only ever made the same icon change colour with its state. Not
+   a failure at the 3:1 a 16px glyph answers to — white measures 3.19 there —
+   but the accent carries --accent-ink, and a filled bead is not an exception. */
 .message-btn.has-message:is(:hover, :focus-visible),
 .message-btn.has-message[aria-expanded="true"] {
-  color: #fff;
+  color: var(--accent-ink);
 }
 
 /* -----------------------------------------------------------------------------
@@ -1063,14 +1067,14 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 .message-popover-hint {
   margin: 0.2rem 0 0.65rem;
   font-size: 0.75rem;
   line-height: 1.4;
-  color: light-dark(#555, #9a9aa0);
+  color: var(--ink-muted);
 }
 
 /* The field sits *inside* frosted glass, so it can't be the kit's opaque input:
@@ -1095,7 +1099,7 @@ textarea.message-popover-input:focus {
 .message-popover-error {
   margin: 0.5rem 0 0;
   font-size: 0.7rem;
-  color: light-dark(#dc2626, #f87171);
+  color: var(--danger);
 }
 
 .message-popover-error[hidden] {
@@ -1113,7 +1117,7 @@ textarea.message-popover-input:focus {
 .message-popover-count {
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
 }
 
 .message-popover-actions {
@@ -1127,13 +1131,13 @@ textarea.message-popover-input:focus {
 .message-popover .kit-btn--ghost {
   background: transparent;
   box-shadow: none;
-  color: light-dark(#666, #9a9aa0);
+  color: var(--ink-muted);
 }
 
 .message-popover .kit-btn--ghost:is(:hover, :focus-visible):not(:disabled) {
   background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
   box-shadow: none;
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .message-popover[aria-busy="true"] {
@@ -1152,7 +1156,7 @@ textarea.message-popover-input:focus {
    (same as .dock-item / .lang-switcher__btn) since its accent fill is now the
    hover/focus indicator. */
 .reserve-btn:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
@@ -1170,7 +1174,7 @@ textarea.message-popover-input:focus {
 @media (prefers-contrast: more) {
   /* Subtitle — darker */
   .subtitle {
-    color: light-dark(#444, #ccc);
+    color: var(--ink-body);
   }
 
   /* Card borders — visible */
@@ -1185,12 +1189,12 @@ textarea.message-popover-input:focus {
   /* Item URL — darker */
   .item-url,
   .item-url:visited {
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
   }
 
   /* Item description — darker */
   .item-description {
-    color: light-dark(#444, #bbb);
+    color: var(--ink-body);
   }
 
   /* Reserve button — border for visibility. It stays put on hover now: the

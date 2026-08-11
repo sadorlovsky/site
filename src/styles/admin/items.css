@@ -36,7 +36,7 @@
 
 .no-items {
   text-align: center;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   padding: 3rem;
   font-size: 1rem;
 }
@@ -440,7 +440,7 @@
 }
 
 .status-received {
-  --status-dot: #34d399;
+  --status-dot: var(--success);
 }
 
 .status-reserved {
@@ -479,7 +479,7 @@
 .item-id {
   font-size: 0.65rem;
   font-weight: 600;
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   font-family: ui-monospace, monospace;
   flex-shrink: 0;
   padding-top: 0.1rem;
@@ -488,7 +488,7 @@
 .item-header h3 {
   font-size: 0.85rem;
   font-weight: 600;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -501,7 +501,7 @@
 
 .item-title-ru {
   font-size: 0.75rem;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   line-height: 1.3;
   margin: 0;
   display: -webkit-box;
@@ -522,7 +522,7 @@
 .item-price {
   font-size: 0.8rem;
   font-weight: 700;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
   white-space: nowrap;
   padding: 0.2rem 0.55rem;
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
@@ -532,7 +532,7 @@
 .item-price-rub {
   font-size: 0.7rem;
   font-weight: 600;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   white-space: nowrap;
 }
 
@@ -541,7 +541,7 @@
   margin: 0.35rem 0 0 0;
   font-size: 0.7rem;
   font-weight: 600;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
 }
 
 /* Categories */
@@ -564,7 +564,7 @@
 
 .item-description {
   font-size: 0.7rem;
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
   line-height: 1.4;
   margin: 0;
   display: -webkit-box;
@@ -576,7 +576,7 @@
 
 .desc-label {
   font-weight: 600;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -589,7 +589,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.65rem;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
   padding-top: 0.35rem;
 }
 
@@ -598,11 +598,11 @@
 }
 
 .meta-separator {
-  color: light-dark(#ccc, #555);
+  color: var(--ink-muted);
 }
 
 .meta-reserved {
-  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
+  color: var(--warning);
 }
 
 .reserved-by {
@@ -632,7 +632,7 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   background: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
 }
 
 .tag-priority {
@@ -651,7 +651,7 @@
 
 .tag-priority-high {
   --tag-dot: var(--accent-start);
-  color: light-dark(#333, #fff);
+  color: var(--ink-body);
 }
 
 .tag-priority-medium {
@@ -697,7 +697,7 @@
   font-weight: 600;
   cursor: pointer;
   background-color: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.05));
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
   transition:
     color 0.25s ease,
     background-color 0.25s ease;
@@ -736,9 +736,14 @@
   transform: scale(1);
 }
 
+/* The label over the fill. White everywhere except the accent, which is the one
+   fill that stays bright — 3.19:1 under white — and so takes dark ink instead.
+   A shared `color: #fff` here was the sixth site of that bug, and the hardest
+   to see: the fill arrives through --action-fill, so nothing in this rule
+   mentions the accent at all. */
 .action-btn:hover,
 .action-btn:focus-visible {
-  color: #fff;
+  color: var(--action-ink, #fff);
 }
 
 .action-btn:hover::after,
@@ -747,43 +752,32 @@
 }
 
 .action-btn:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
 .action-edit {
   flex: 1;
   --action-fill: var(--accent-gradient);
+  --action-ink: var(--accent-ink);
 }
 
 .action-reserved {
   width: 34px;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--color-warning),
-    var(--color-warning-dark)
-  );
-  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
+  --action-fill: var(--warning-gradient);
+  color: var(--warning);
 }
 
 .action-received {
   width: 34px;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--color-success),
-    var(--color-success-dark)
-  );
-  color: light-dark(var(--color-success-dark), var(--color-success-light));
+  --action-fill: var(--success-gradient);
+  color: var(--success);
 }
 
 .action-delete {
   width: 34px;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--color-error),
-    var(--color-error-dark)
-  );
-  color: light-dark(var(--color-error-dark), var(--color-error-light));
+  --action-fill: var(--danger-gradient);
+  color: var(--danger);
 }
 
 /* Already reserved / already received. A toggle that is on has to look on, but
@@ -833,12 +827,12 @@
 .user-name {
   font-weight: 600;
   font-size: 0.95rem;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
 }
 
 .user-count {
   font-size: 0.8rem;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
@@ -879,7 +873,7 @@
 .reservation-item-title {
   font-size: 0.85rem;
   font-weight: 500;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -888,7 +882,7 @@
 .reservation-item-price {
   font-size: 0.75rem;
   font-weight: 600;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* What the reserver wrote. Quoted rather than styled as a field: it is someone
@@ -900,7 +894,7 @@
     light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.16));
   font-size: 0.8rem;
   line-height: 1.45;
-  color: light-dark(#333, #ccc);
+  color: var(--ink-body);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

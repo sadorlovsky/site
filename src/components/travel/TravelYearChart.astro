@@ -219,7 +219,7 @@ const keepsLabelWhenNarrow = (index: number) => {
     font-style: normal;
     font-size: 0.7rem;
     font-variant-numeric: tabular-nums;
-    color: var(--travel-muted);
+    color: var(--ink-muted);
   }
 
   .cols,
@@ -291,7 +291,7 @@ const keepsLabelWhenNarrow = (index: number) => {
     font-size: 0.7rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
     pointer-events: none;
   }
 
@@ -306,7 +306,7 @@ const keepsLabelWhenNarrow = (index: number) => {
     font-size: 0.7rem;
     line-height: 1.4;
     font-variant-numeric: tabular-nums;
-    color: var(--travel-muted);
+    color: var(--ink-muted);
   }
 
   /* A year with no travel in it keeps its label at full strength. Fading it was
@@ -317,7 +317,7 @@ const keepsLabelWhenNarrow = (index: number) => {
      The year in progress is the one worth finding on the axis, so it is the
      only label that steps forward. */
   .year--current {
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
     font-weight: 600;
   }
 

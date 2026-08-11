@@ -108,7 +108,7 @@ const { storageKey, size = "sm" } = Astro.props;
     padding: 0 0.8rem;
     border-radius: 999px;
     font-size: 0.72rem;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
     background: transparent;
     box-shadow: none;
     transition: color 0.3s ease;
@@ -122,7 +122,7 @@ const { storageKey, size = "sm" } = Astro.props;
   }
 
   .lang-switcher .lang-switcher__btn:hover {
-    color: light-dark(#1a1a1a, #fff);
+    color: var(--ink-strong);
   }
 
   /* Whichever button the indicator rests under — the active language, or the
@@ -133,7 +133,7 @@ const { storageKey, size = "sm" } = Astro.props;
   }
 
   .lang-switcher .lang-switcher__btn:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 
@@ -142,7 +142,7 @@ const { storageKey, size = "sm" } = Astro.props;
     position: relative;
     z-index: 1;
     margin-left: 0.15rem;
-    color: light-dark(#888, #8a8a90);
+    color: var(--ink-muted);
   }
 
   /* Hide globe icon on narrow screens */

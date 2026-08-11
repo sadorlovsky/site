@@ -82,7 +82,7 @@
   background: transparent;
   border: none;
   border-radius: 999px;
-  color: light-dark(#666, #9a9aa0);
+  color: var(--ink-muted);
 }
 
 /* The wash is the only thing marking the hit area in a row that has no borders,
@@ -94,7 +94,7 @@
     :has(.kit-checkbox__input:checked)
   ) {
   background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .kit-checkbox--pill:has(.kit-checkbox__input:checked) {
@@ -138,7 +138,7 @@
 
 .kit-checkbox--box {
   gap: 0.5rem;
-  color: light-dark(#333, #ccc);
+  color: var(--ink-body);
 }
 
 /* The socket, and the same socket standing on its own — see the note on

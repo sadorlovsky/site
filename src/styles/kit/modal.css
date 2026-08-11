@@ -72,7 +72,7 @@
 .kit-modal-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   margin: 0;
 }
 
@@ -84,7 +84,7 @@
   height: 32px;
   border: none;
   background: transparent;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -92,7 +92,7 @@
 
 .kit-modal-close:hover {
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .kit-modal-close:focus-visible {

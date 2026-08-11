@@ -17,12 +17,22 @@ colors:
   ink-muted-dark: "#9a9aa0"
   hairline-light: "#dddddd"
   hairline-dark: "#444444"
+  focus-ring-on-fill-light: "#333333"
+  focus-ring-on-fill-dark: "#ffffff"
   success-start: "#00875d"
   success-end: "#046b4b"
+  success: "#007b52"
+  success-dark-scheme: "#6ee7b7"
   danger: "#c2141a"
   danger-dark-scheme: "#f87171"
+  danger-ground-start: "#ce2626"
+  danger-ground-end: "#b00003"
   warning: "#955d00"
+  warning-dark-scheme: "#fcd34d"
+  warning-ground-start: "#9c6410"
+  warning-ground-end: "#824c00"
   info: "#4338ca"
+  info-dark-scheme: "#a5b4fc"
 typography:
   display:
     fontFamily: "InterVariable, system-ui, sans-serif"
@@ -242,30 +252,54 @@ page.
 - **Ghost White** (`#f8f8ff`): the light page. Not pure white — a barely-blue
   paper that lets white glass read as glass against it.
 - **Near Black** (`#191919`): the dark page. Warm-neutral, never pure black.
+All four are `--ink-strong`, `--ink-body`, `--ink-muted` and `--hairline`. They
+were named here long before any of them but the muted one could be read from a
+stylesheet, and in the gap the components picked their own: about twenty greys
+across the ladder from `#111` to `#eee`, plus `#b4b4b8`, `#9a9aa0`, `#8a8a90`,
+`#767676`, `#aeaeae` and `#6a6a6a` where somebody had already argued about it
+locally. 189 declarations now read a token.
+
 - **Strong Ink** (`#111` / `#fafafa`): headings, `<strong>`, table headers, the
   active item in any group.
 - **Body Ink** (`#333` / `#e0e0e0`): paragraphs, list items, definition bodies.
 - **Muted Ink** (`#6a6a6a` / `#9a9aa0`): counts, dates, keys, secondary labels.
   The light value is deliberately not `#888` — that measured 3.35:1 against the
   page and failed small-text contrast, and one legible token replaced the two
-  that used to work around it.
+  that used to work around it. It absorbed `#555` too, which was a fourth level
+  in practice: 30 declarations sat between body and muted, closer to muted.
 - **Hairline** (`#ddd` / `#444`): 2px control borders, rules, dividers. At
   `prefers-contrast: more` these tighten to `#999` / `#777`.
+- **Focus Ring on Fill** (`#333` / `#fff`): the focus ring for a control whose
+  focus arrives *on* a fill, where an accent outline would land on the accent
+  and vanish. Twelve places had reached this pair independently.
 
 ### Semantic
 
-Each family is stated at reading strength, because every one of them ends up
-under white text at 10–13px somewhere in the kit.
+Every family exists twice, and the two halves are not interchangeable. **Ink** is
+state as a word, a dot or an icon — `--danger`, `--warning`, `--info`,
+`--success` — and answers to 4.5:1 on whatever tint it sits on. A **ground** is
+state as a surface, under white — `--danger-gradient`, `--warning-gradient`,
+`--success-gradient` — and answers to 4.5:1 the other way round.
 
-- **Confirm Green** (`#00875d` → `#046b4b`): confirmations, received items,
-  success toasts. `--success-gradient` is the one token for all of them.
-- **Alarm Red** (`#c2141a` light / `#f87171` dark for ink; `#e12d2b` → `#c90012`
-  for solid fills): destructive actions and error fields. Ink on a tint by
-  default; the solid pair only where a badge or toast icon needs a ground.
-- **Caution Amber** (`#955d00` ink, `#a56800` → `#8c5700` solid) and **Info
-  Indigo** (`#4338ca` ink, `#6264ef` → `#514fd9` solid): badges only. Amber
-  moved furthest from its Tailwind-default origin — white on a bright amber is
-  unreadable at any size.
+Confusing the two is the mistake the palette kept making: `--success-start` is
+built to carry ink and reads 4.30:1 *as* ink, which is why `--success` is a
+distinct value rather than an alias for it.
+
+- **Confirm Green** (`#007b52` / `#6ee7b7` ink; `#00875d` → `#046b4b` ground):
+  confirmations, received items, success toasts. The ink sits a step below the
+  documented ground because the wash a success message puts under it takes the
+  ground green to 3.93:1.
+- **Alarm Red** (`#c2141a` / `#f87171` ink; `#ce2626` → `#b00003` ground):
+  destructive actions and error fields. Ink on a tint by default; the ground
+  only where a badge, toast or filled toggle needs one.
+- **Caution Amber** (`#955d00` / `#fcd34d` ink; `#9c6410` → `#824c00` ground)
+  and **Info Indigo** (`#4338ca` / `#a5b4fc` ink): badges and status. Amber
+  moved furthest from its Tailwind-default origin — white on a bright amber
+  measures 2.15:1 and is unreadable at any size.
+
+The three grounds are derived rather than picked: each is its own hue held at
+exactly the two lightnesses of `--success-start` and `--success-end`, which is
+what makes all six stops carry white between 4.95:1 and 7.53:1.
 
 ### Named Rules
 
@@ -650,8 +684,9 @@ indicator to the strip's left edge and left it highlighting the wrong item.
   grids, icon sidebars), brutalist raw HTML (hard borders, zero radius,
   deliberate ugliness), or the corporate portfolio template (stock hero, three
   feature columns, testimonial slider).
-- **Don't** add a new focus treatment. It is 2px of Sunset Rose at 2px offset,
-  everywhere.
+- **Don't** add a new focus treatment. It is 2px of Sunset Rose at 2px offset —
+  or `--focus-ring-on-fill` at the same offset where focus lands on a filled
+  control and the accent would disappear into it. There is no third.
 - **Don't** put white text on the accent — it measures 3.07–3.09:1. Use
   `--accent-ink`. The same goes for `#10b981` (2.54:1) and any raw
   Tailwind-default semantic colour.
@@ -668,8 +703,11 @@ admin modal, admin toast, admin item card, and the blog's back-to-top button —
 a gap already recorded on `/kit`. Fix these when touching those surfaces; do
 not treat them as precedent.
 
-The admin panel's own `variables.css` still holds the pre-contrast semantic
-values (`--color-success: #10b981`, `--color-error: #ef4444`). They tint dots,
-icons and single words rather than sitting under white text, so none of them
-measured as a failure — but they are a second dialect of the semantic palette
-and should fold into the tokens above when that panel is next touched.
+The admin panel's `variables.css` is empty of colour now. It used to hold the
+pre-contrast semantic values, recorded here as a second dialect that had "not
+measured as a failure" — which was wrong on two counts. `#d97706` measures
+3.01:1 as text on the light page, and `#059669` measured 3.26:1 on the wash the
+success message actually put under it; the four fills that ramp drove could not
+carry white either, at 2.15:1 on the amber and 2.54:1 on the green. The claim
+was made by looking at where the colours were *supposed* to be used rather than
+by measuring where they were.

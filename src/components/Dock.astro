@@ -100,7 +100,7 @@ function isActive(href: string): boolean {
     z-index: 1;
     padding: 0.5rem 1.1rem;
     border-radius: 999px;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
@@ -110,7 +110,7 @@ function isActive(href: string): boolean {
   }
 
   .dock-item:hover {
-    color: light-dark(#1a1a1a, #fff);
+    color: var(--ink-strong);
   }
 
   .dock-item.is-active {
@@ -118,7 +118,7 @@ function isActive(href: string): boolean {
   }
 
   .dock-item:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 

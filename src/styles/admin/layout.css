@@ -61,7 +61,7 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Responsive */

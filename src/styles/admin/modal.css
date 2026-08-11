@@ -108,7 +108,7 @@
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   transition: color 0.25s ease;
 }
 
@@ -140,7 +140,7 @@
 }
 
 .modal-close:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
@@ -165,7 +165,7 @@
 .confirm-message {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: light-dark(#444, #bbb);
+  color: var(--ink-body);
   margin: 0;
 }
 

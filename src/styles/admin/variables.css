@@ -20,21 +20,18 @@
    they tint a dot, an icon or a word, which is the whole difference between
    this panel and a dashboard template. */
 
-:root {
-  /* Text colors */
-  --color-text-primary: #111;
-  --color-text-primary-dark: #fafafa;
+/* And now they are gone too, for the same reason the glass was: this file was
+   declaring a third dialect on :root, on pages that load global.css beside it.
 
-  /* Status colors */
-  --color-success: #10b981;
-  --color-success-dark: #059669;
-  --color-success-light: #6ee7b7;
-  --color-success-lighter: #86efac;
-  --color-warning: #f59e0b;
-  --color-warning-dark: #d97706;
-  --color-warning-light: #fcd34d;
-  --color-error: #ef4444;
-  --color-error-dark: #dc2626;
-  --color-error-light: #f87171;
-  --color-error-lighter: #fca5a5;
-}
+   --color-text-primary was #111 and --color-text-primary-dark was #fafafa —
+   --ink-strong, split into two variables so that every consumer had to write
+   light-dark(var(--a), var(--b)) by hand. The status ramp was Tailwind's
+   defaults, and two of its text values did not pass: #d97706 measures 3.01:1
+   on the light page and #059669 measured 3.26:1 on the wash the success
+   message actually put under it. The four fills it drove could not carry white
+   either — 2.15:1 on the amber, 2.54:1 on the green.
+
+   Everything here now comes from global.css: --ink-strong for the text,
+   --danger/--warning/--success/--info for state as a word, and
+   --danger-gradient/--warning-gradient/--success-gradient for state as a
+   ground. Nothing in the panel needs a colour the site does not already have. */

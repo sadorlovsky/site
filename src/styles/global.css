@@ -21,6 +21,35 @@
      passes, and the next component to want muted ink has somewhere to get it. */
   --ink-muted: light-dark(#6a6a6a, #9a9aa0);
 
+  /* Its two neighbours, which DESIGN.md has named since the day it was written
+     and which nothing could read until now.
+
+     --ink-strong is the thing itself: a heading, a title, the answer to what a
+     row is about. --ink-body is a sentence — prose, a description, anything
+     read rather than glanced at. Between them and --ink-muted they cover every
+     job the greys were doing, and the greys were doing it in about twenty
+     values: #111 #222 #333 #444 #555 #666 #777 #888 #999 #aaa #bbb #ccc #ddd
+     #eee, plus #b4b4b8, #9a9aa0, #8a8a90, #767676, #aeaeae and #6a6a6a for the
+     ones that had already been argued about somewhere. A ladder that fine is
+     not a decision anybody made; it is what happens when each component picks
+     its own grey and none of them can see each other. */
+  --ink-strong: light-dark(#111, #fafafa);
+  --ink-body: light-dark(#333, #e0e0e0);
+
+  /* A line that separates without being seen — a rule under a heading, a field's
+     edge, the border of a resting control. Not ink: nothing is written in it,
+     so it answers to the 3:1 a component boundary needs and not to 4.5. */
+  --hairline: light-dark(#ddd, #444);
+
+  /* The focus ring for the one case the accent cannot serve: a control whose
+     focus arrives *on* a fill — the chrome buttons, the dock item, the admin's
+     actions — where an accent outline lands on the accent and disappears. It
+     sits at the usual 2px offset, so it is measured against the page rather
+     than the fill: 11.95:1 and 17.58:1.
+
+     Twelve places had worked this out separately and written the same pair. */
+  --focus-ring-on-fill: light-dark(#333, #fff);
+
   /* How far a thing is allowed to travel when it answers the pointer. 1 is the
      distance the designer drew; 0 is the same gesture with the journey removed
      and the destination kept, which is what `prefers-reduced-motion` asks for.
@@ -119,6 +148,43 @@
     var(--success-start),
     var(--success-end)
   );
+
+  /* State, as ink rather than as a surface — a word, a dot, an icon, a field's
+     message. The gradient above is a *ground*; these are what state looks like
+     when it is written, and the two are not interchangeable. --success-start is
+     built to carry ink at 4.5 and reads 4.30:1 as ink itself, which is why the
+     pair below is not just an alias for it.
+
+     These existed already, twice. DESIGN.md declared danger, warning and info
+     and no stylesheet could read them; the admin panel declared its own
+     --color-error/-warning/-success ramp in the global scope, at Tailwind's
+     defaults, on pages that load both files. Two of that ramp's text values do
+     not pass: #d97706 is 3.01:1 on the page and #059669 is 3.26:1 on the 10%
+     green wash the success message actually puts under it. The panel is not a
+     second product and does not need a second palette.
+
+     The green is the one value here that is new rather than promoted: the
+     documented #00875d still measures 3.93:1 on that same wash, so this sits a
+     step lower — 5.02:1 on paper, 4.60:1 on the wash, legible on both grounds
+     it is ever asked to sit on. */
+  --danger: light-dark(#c2141a, #f87171);
+  --warning: light-dark(#955d00, #fcd34d);
+  --info: light-dark(#4338ca, #a5b4fc);
+  --success: light-dark(#007b52, #6ee7b7);
+
+  /* State as a *ground* — a filled toggle, a solid pill, anything a word sits
+     on top of. Derived from --success-start/--success-end rather than invented:
+     each pair is its own hue held at exactly those two lightnesses, which is
+     what makes them carry white at 4.5 (4.95 to 7.53 across all six stops).
+
+     Note the convention runs opposite to the accent's, on purpose. The accent
+     stays bright and darkens its ink, because brightness is what the brand is.
+     A semantic ground owes nothing to the brand, so it darkens instead and
+     keeps white — which is also why the bright Tailwind fills these replace
+     could not work at all: white measured 2.15:1 on the amber and 2.54:1 on
+     the green. */
+  --danger-gradient: linear-gradient(135deg, #ce2626, #b00003);
+  --warning-gradient: linear-gradient(135deg, #9c6410, #824c00);
 
   /* Liquid glass — the single source of truth for every floating capsule
      (home pill, condensed title, language switcher, nav dock). Components
@@ -337,7 +403,7 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   text-decoration: none;
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
@@ -434,7 +500,7 @@ h6 {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 h1 {
@@ -542,7 +608,7 @@ p {
   line-height: 1.75;
   margin-top: 0;
   margin-bottom: 1.5rem;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--ink-body);
 }
 
 /* =============================================================================
@@ -605,21 +671,21 @@ article a:visited,
 
 /* Navigation links - no underline, subtle color */
 .link-nav {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   text-decoration: none;
 }
 
 .link-nav:hover {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .link-nav:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Muted/subtle links */
 .link-muted {
-  color: light-dark(#666, #888);
+  color: var(--ink-muted);
   text-decoration-color: light-dark(
     rgba(102, 102, 102, 0.3),
     rgba(136, 136, 136, 0.3)
@@ -627,12 +693,12 @@ article a:visited,
 }
 
 .link-muted:hover {
-  color: light-dark(#333, #ccc);
+  color: var(--ink-body);
   text-decoration-color: currentColor;
 }
 
 .link-muted:visited {
-  color: light-dark(#666, #888);
+  color: var(--ink-muted);
 }
 
 /* Lists */
@@ -653,7 +719,7 @@ ol ol {
 
 li {
   margin-bottom: 0.5rem;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--ink-body);
 }
 
 li:last-child {
@@ -662,11 +728,11 @@ li:last-child {
 
 /* List item markers */
 ul > li::marker {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 ol > li::marker {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   font-weight: 600;
 }
 
@@ -674,7 +740,7 @@ ol > li::marker {
 blockquote {
   margin: 2rem 0;
   padding: 1rem 1.5rem;
-  border-left: 4px solid light-dark(#ddd, #444);
+  border-left: 4px solid var(--hairline);
   background-color: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.02));
   font-style: italic;
 }
@@ -732,7 +798,7 @@ pre code {
 strong,
 b {
   font-weight: 600;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 em,
@@ -743,7 +809,7 @@ i {
 /* Small text */
 small {
   font-size: 0.875rem;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Horizontal rules */
@@ -762,13 +828,13 @@ dl {
 dt {
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 dd {
   margin-left: 1.5rem;
   margin-bottom: 1rem;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--ink-body);
 }
 
 /* Tables */
@@ -788,7 +854,7 @@ td {
 
 th {
   font-weight: 600;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   border-bottom: 2px solid light-dark(#333, #666);
 }
 
@@ -906,17 +972,17 @@ a.btn-secondary,
 a.btn-secondary:hover,
 a.btn-secondary:visited,
 a.btn-secondary:active {
-  color: light-dark(#333, #eee);
+  color: var(--ink-body);
 }
 
 a.btn-ghost,
 a.btn-ghost:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 a.btn-ghost:hover,
 a.btn-ghost:active {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 a.btn-ghost.active,
@@ -928,7 +994,7 @@ a.btn-danger,
 a.btn-danger:hover,
 a.btn-danger:visited,
 a.btn-danger:active {
-  color: light-dark(#c2141a, #f87171);
+  color: var(--danger);
 }
 
 .btn:disabled {
@@ -955,7 +1021,7 @@ a.btn-danger:active {
 /* Secondary - subtle background */
 .btn-secondary {
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  color: light-dark(#333, #eee);
+  color: var(--ink-body);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -965,12 +1031,12 @@ a.btn-danger:active {
 /* Ghost - transparent with border */
 .btn-ghost {
   background: transparent;
-  color: light-dark(#666, #aaa);
-  border: 2px solid light-dark(#ddd, #444);
+  color: var(--ink-muted);
+  border: 2px solid var(--hairline);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
   border-color: light-dark(#bbb, #666);
 }
 
@@ -996,7 +1062,7 @@ a.btn-danger:active {
 /* Danger - red tones */
 .btn-danger {
   background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.2));
-  color: light-dark(#c2141a, #f87171);
+  color: var(--danger);
   border: 2px solid light-dark(rgba(220, 38, 38, 0.3), rgba(239, 68, 68, 0.3));
 }
 
@@ -1035,20 +1101,20 @@ a.btn-danger:active {
   font-size: 0.85rem;
   font-weight: 500;
   line-height: 1.4;
-  color: light-dark(#111, #f9fafb);
+  color: var(--ink-strong);
   background-color: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 16px;
-  border: 2px solid light-dark(#ddd, #444);
+  border: 2px solid var(--hairline);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .select:hover {
-  border-color: light-dark(#bbb, #555);
+  border-color: var(--ink-muted);
 }
 
 .select:focus {
@@ -1123,7 +1189,7 @@ a.btn-danger:active {
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
-  color: light-dark(#1a1a1a, #fff);
+  color: var(--ink-strong);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);

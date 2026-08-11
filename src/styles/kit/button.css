@@ -72,17 +72,17 @@ a.kit-btn--secondary,
 a.kit-btn--secondary:hover,
 a.kit-btn--secondary:visited,
 a.kit-btn--secondary:active {
-  color: light-dark(#333, #ddd);
+  color: var(--ink-body);
 }
 
 a.kit-btn--ghost,
 a.kit-btn--ghost:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 a.kit-btn--ghost:hover,
 a.kit-btn--ghost:active {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 a.kit-btn--ghost.is-active,
@@ -96,7 +96,7 @@ a.kit-btn--danger,
 a.kit-btn--danger:hover,
 a.kit-btn--danger:visited,
 a.kit-btn--danger:active {
-  color: light-dark(#c2141a, #f87171);
+  color: var(--danger);
 }
 
 .kit-btn:focus-visible {
@@ -167,12 +167,12 @@ a.kit-btn--danger:active {
 /* Secondary - Subtle background */
 .kit-btn--secondary {
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
-  color: light-dark(#333, #ddd);
+  color: var(--ink-body);
 }
 
 .kit-btn--secondary:hover:not(:disabled) {
   background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .kit-btn--secondary:active:not(:disabled) {
@@ -182,12 +182,12 @@ a.kit-btn--danger:active {
 /* Ghost - Transparent with border */
 .kit-btn--ghost {
   background: transparent;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
 }
 
 .kit-btn--ghost:hover:not(:disabled) {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
   box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
 }
 
@@ -205,7 +205,7 @@ a.kit-btn--danger:active {
 /* Danger - Destructive actions */
 .kit-btn--danger {
   background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.15));
-  color: light-dark(#c2141a, #f87171);
+  color: var(--danger);
   box-shadow: inset 0 0 0 1px
     light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.25));
 }
@@ -302,12 +302,12 @@ a.kit-btn--danger:active {
 
 .kit-btn--secondary.kit-btn--loading::after,
 .kit-btn--ghost.kit-btn--loading::after {
-  border-color: light-dark(#333, #ddd);
+  border-color: var(--ink-body);
   border-right-color: transparent;
 }
 
 .kit-btn--danger.kit-btn--loading::after {
-  border-color: light-dark(#c2141a, #f87171);
+  border-color: var(--danger);
   border-right-color: transparent;
 }
 

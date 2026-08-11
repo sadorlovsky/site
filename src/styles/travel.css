@@ -43,18 +43,16 @@
   /* How far a row's wash reaches past its text. ListItem's 0.75rem. */
   --travel-row-inset: 0.75rem;
 
-  /* Everything on these views that is not the content itself: a key or a count
-     beside it, the cities trailing a country, the years under the chart.
+  /* Everything on these views that is not the content itself — a key or a count
+     beside it, the cities trailing a country, the years under the chart — now
+     reads --ink-muted directly.
 
-     This was two tokens, and the second one existed only to work around the
-     first. --travel-muted was #888 in the light scheme, which is 3.35:1 against
-     this page — under the 4.5 small text needs — so anything that had to be
-     read as a sentence rather than glanced at as a label took a --travel-quiet
-     of #666 instead, and its comment said as much. Fixing the first at the root
-     leaves nothing for the second to do: at a legible value the two are a
-     thirtieth of a step apart in the light scheme and were already the same
-     value in the dark one. One token, and it passes. */
-  --travel-muted: light-dark(#6a6a6a, #9a9aa0);
+     This was --travel-muted, and before that it was --travel-muted plus a
+     --travel-quiet that existed only to work around it being #888. Both of
+     those arguments were won here first and then copied out: global.css took
+     this exact light-dark() pair for --ink-muted and gave the rest of the site
+     what /travel had already worked out. A local token holding the same two
+     values is no longer a decision, only a second place to change. */
 }
 
 /* A panel is focusable so the keyboard can reach and scroll views that hold
@@ -66,7 +64,7 @@
 }
 
 .travel-view:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 6px;
   border-radius: 6px;
 }
@@ -125,7 +123,7 @@
   letter-spacing: normal;
   text-transform: none;
   font-variant-numeric: tabular-nums;
-  color: light-dark(#333, #fafafa);
+  color: var(--ink-body);
 }
 
 /* The quiet text bracketing a figure rather than heading a list — the four
@@ -143,7 +141,7 @@
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: normal;
-  color: var(--travel-muted);
+  color: var(--ink-muted);
 }
 
 /* Every number in these views: the count in a section head, the cities beside
@@ -152,7 +150,7 @@
    wandering with the digit widths. */
 .travel-metric {
   font-size: 0.9rem;
-  color: var(--travel-muted);
+  color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -191,7 +189,7 @@
   gap: 0.25rem;
   font-size: 1rem;
   line-height: 1.9;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   /* The wash reaches into the gutter while the text stays on the content edge
      — see the note at the top of this file. ListItem's padding exactly, which
      is what makes a row here the same height as a trip: 0.5rem against a 1.9
@@ -237,7 +235,7 @@
 
 /* A name that is a place still to go rather than one that has been. */
 .travel-name--muted {
-  color: var(--travel-muted);
+  color: var(--ink-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

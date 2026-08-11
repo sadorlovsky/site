@@ -1107,7 +1107,7 @@ import { Icon } from "astro-icon/components";
     display: block;
     padding: 0.35rem 0;
     font-size: 0.85rem;
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
     text-decoration: none;
     transition: color 0.15s;
   }
@@ -1128,7 +1128,7 @@ import { Icon } from "astro-icon/components";
   }
 
   .kit-intro {
-    color: light-dark(#666, #aaa);
+    color: var(--ink-muted);
     margin-bottom: 3rem;
   }
 
@@ -1211,7 +1211,7 @@ import { Icon } from "astro-icon/components";
   .color-label {
     font-size: 0.7rem;
     font-weight: 500;
-    color: light-dark(#333, #e0e0e0);
+    color: var(--ink-body);
   }
 
   .color-value {
@@ -1259,7 +1259,7 @@ import { Icon } from "astro-icon/components";
     border-radius: 999px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: light-dark(#333, #fafafa);
+    color: var(--ink-body);
   }
 
   /* Card: the chrome's edge and shadow, its own heavier tint, and no frost. */
@@ -1310,7 +1310,7 @@ import { Icon } from "astro-icon/components";
   .glass-demo__scroller p {
     margin: 0.4rem 0;
     font-size: 0.8rem;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
   }
 
   .glass-demo__veil {
@@ -1325,7 +1325,7 @@ import { Icon } from "astro-icon/components";
     border-bottom: var(--glass-border);
     font-size: 0.85rem;
     font-weight: 600;
-    color: light-dark(#333, #fafafa);
+    color: var(--ink-body);
   }
 
   .glass-tokens {
@@ -1335,12 +1335,12 @@ import { Icon } from "astro-icon/components";
   .glass-tokens dt {
     margin-top: 1rem;
     font-weight: 600;
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
   }
 
   .glass-tokens dd {
     margin: 0.35rem 0 0;
-    color: light-dark(#333, #e0e0e0);
+    color: var(--ink-body);
   }
 
   /* Typography demo */
@@ -1385,7 +1385,7 @@ import { Icon } from "astro-icon/components";
   .kit-tab-panels {
     padding: 0.9rem 0.1rem;
     font-size: 0.9rem;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
   }
 
   /* Glass badges are meant to be read against a photo, so the demo gives them
@@ -1423,7 +1423,7 @@ import { Icon } from "astro-icon/components";
     background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
     border-radius: 8px;
     font-size: 0.85rem;
-    color: light-dark(#333, #ccc);
+    color: var(--ink-body);
     cursor: default;
   }
 

@@ -139,7 +139,7 @@ import {
     margin: 0;
     font-size: 0.85rem;
     font-weight: 500;
-    color: light-dark(#666, #9a9aa0);
+    color: var(--ink-muted);
   }
 
   /* The indent a <dd> arrives with from the browser. */
@@ -185,18 +185,18 @@ import {
   }
 
   .info-link:hover .info-icon {
-    color: light-dark(#1a1a1a, #fff);
+    color: var(--ink-strong);
   }
 
   .info-link:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 
   /* Muted like the language switcher's globe — present, not competing with the
      number it belongs to. */
   .info-icon {
-    color: light-dark(#888, #8a8a90);
+    color: var(--ink-muted);
     width: 14px;
     height: 14px;
     transition: color 0.2s ease;

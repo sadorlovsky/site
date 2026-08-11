@@ -213,6 +213,66 @@
           "oklch(83.6% 0.063 352)",
           "oklch(95.0% 0.058 352)"
         ]
+      },
+      "hairline-light": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(89.8% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "hairline-dark": {
+        "role": "neutral",
+        "displayName": "Hairline (dark)",
+        "canonical": "oklch(38.7% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "focus-ring-on-fill": {
+        "role": "neutral",
+        "displayName": "Focus Ring on Fill",
+        "canonical": "oklch(32.1% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "success-ink": {
+        "role": "tertiary",
+        "displayName": "Confirm Green (ink)",
+        "canonical": "oklch(51.5% 0.114 161.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.107 161.4)",
+          "oklch(26.4% 0.110 161.4)",
+          "oklch(37.9% 0.113 161.4)",
+          "oklch(49.3% 0.114 161.4)",
+          "oklch(60.7% 0.114 161.4)",
+          "oklch(72.1% 0.112 161.4)",
+          "oklch(83.6% 0.108 161.4)",
+          "oklch(95.0% 0.103 161.4)"
+        ]
       }
     },
     "typographyMeta": {
@@ -380,7 +440,7 @@
       "refersTo": "input-md",
       "description": "38px to match a default button. Its border is an inset shadow, so focus never reflows layout.",
       "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search items\" />",
-      "css": ".ds-input { appearance: none; display: block; box-sizing: border-box; width: 100%; height: 38px; padding: 0 0.85rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 400; line-height: 1.5; color: #111; background-color: rgba(255, 255, 255, 0.8); box-shadow: inset 0 0 0 2px #ddd; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-input::placeholder { color: #999; } .ds-input:hover:not(:focus) { box-shadow: inset 0 0 0 2px #bbb; } .ds-input:focus { outline: none; box-shadow: inset 0 0 0 2px rgb(234, 96, 144); }"
+      "css": ".ds-input { appearance: none; display: block; box-sizing: border-box; width: 100%; height: 38px; padding: 0 0.85rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 400; line-height: 1.5; color: #111; background-color: rgba(255, 255, 255, 0.8); box-shadow: inset 0 0 0 2px #ddd; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-input::placeholder { color: #6a6a6a; } .ds-input:hover:not(:focus) { box-shadow: inset 0 0 0 2px #bbb; } .ds-input:focus { outline: none; box-shadow: inset 0 0 0 2px rgb(234, 96, 144); }"
     },
     {
       "name": "Toggle Group",
@@ -396,7 +456,7 @@
       "refersTo": "badge-md",
       "description": "Uppercase micro-label for state. Six subtle variants plus three solid gradient ones.",
       "html": "<span class=\"ds-badge ds-badge-success\">Received</span>\n<span class=\"ds-badge ds-badge-primary\">Reserved</span>\n<span class=\"ds-badge ds-badge-default\">Other</span>",
-      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600; line-height: 1; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; } .ds-badge-default { background: rgba(0, 0, 0, 0.06); color: #666; } .ds-badge-primary { background: rgba(234, 96, 144, 0.15); color: #c2185b; } .ds-badge-success { background: rgba(16, 185, 129, 0.15); color: #047857; }"
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600; line-height: 1; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; } .ds-badge-default { background: rgba(0, 0, 0, 0.06); color: #666; } .ds-badge-primary { background: rgba(234, 96, 144, 0.15); color: #c2185b; } .ds-badge-success { background: rgba(0, 135, 93, 0.06); color: #007b52; }"
     },
     {
       "name": "Liquid Glass Pill",

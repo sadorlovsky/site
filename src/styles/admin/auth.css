@@ -21,18 +21,15 @@
 }
 
 .auth-container p {
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   margin-bottom: 2rem;
   font-size: 1rem;
 }
 
 .auth-error h1 {
   background: none;
-  -webkit-text-fill-color: light-dark(
-    var(--color-error-dark),
-    var(--color-error-light)
-  );
-  color: light-dark(var(--color-error-dark), var(--color-error-light));
+  -webkit-text-fill-color: var(--danger);
+  color: var(--danger);
 }
 
 .setup-content {

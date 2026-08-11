@@ -53,7 +53,7 @@
 /* Default - subtle gray */
 .kit-badge--default {
   background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.1));
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Primary - accent */
@@ -65,7 +65,7 @@
 /* Success - green */
 .kit-badge--success {
   background: light-dark(rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.2));
-  color: light-dark(#047857, #6ee7b7);
+  color: var(--success);
 }
 
 /* Warning - yellow/orange. The light-scheme ink went a step down: a badge is
@@ -73,19 +73,19 @@
    own tint measured 4.40:1. */
 .kit-badge--warning {
   background: light-dark(rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.2));
-  color: light-dark(#955d00, #fcd34d);
+  color: var(--warning);
 }
 
 /* Danger - red. Same, from 4.03:1. */
 .kit-badge--danger {
   background: light-dark(rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.2));
-  color: light-dark(#c2141a, #fca5a5);
+  color: var(--danger);
 }
 
 /* Info - indigo/blue */
 .kit-badge--info {
   background: light-dark(rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.2));
-  color: light-dark(#4338ca, #a5b4fc);
+  color: var(--info);
 }
 
 /* =============================================================================
@@ -122,7 +122,7 @@
 }
 
 .kit-badge--solid-danger {
-  background: linear-gradient(135deg, #e12d2b, #c90012);
+  background: var(--danger-gradient);
   color: white;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
 }
@@ -170,7 +170,7 @@
 
 /* Dot tones — the badge's own colour stays neutral, so the state lives here. */
 .kit-badge--dot-success {
-  --badge-dot: #34d399;
+  --badge-dot: var(--success);
 }
 
 .kit-badge--dot-accent {

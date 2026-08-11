@@ -108,7 +108,7 @@ const { mode = "globe" } = Astro.props;
   }
 
   .map:has(canvas:focus-visible) {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 

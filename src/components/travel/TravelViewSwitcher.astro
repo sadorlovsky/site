@@ -350,7 +350,7 @@ const viewIds = items.map((item) => item.id).join(" ");
        in (see .kit-toggle-group--tabs .kit-toggle-item). The glyph belongs to
        the row rather than sitting behind it, so it reads at the same weight as
        the words it introduces. */
-    color: light-dark(#666, #9a9aa0);
+    color: var(--ink-muted);
     pointer-events: none;
     will-change: transform;
   }
@@ -383,7 +383,7 @@ const viewIds = items.map((item) => item.id).join(" ");
      as the one dim thing in a row asked to be legible. */
   @media (prefers-contrast: more) {
     .view-eye {
-      color: light-dark(#333, #ddd);
+      color: var(--ink-body);
     }
   }
 </style>

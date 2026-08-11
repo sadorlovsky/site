@@ -55,7 +55,7 @@
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
 
   /* Interaction */
   cursor: pointer;
@@ -69,20 +69,20 @@
 a.kit-toggle-item,
 a.kit-toggle-item:visited {
   text-decoration: none;
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
 }
 
 a.kit-toggle-item:hover,
 a.kit-toggle-item:active {
   text-decoration: none;
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 a.kit-toggle-item.is-active,
 a.kit-toggle-item.is-active:visited,
 a.kit-toggle-item[aria-pressed="true"],
 a.kit-toggle-item[aria-pressed="true"]:visited {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 /* Separated variant active state uses white text */
@@ -96,7 +96,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-item:hover:not(:disabled):not([aria-pressed="true"]):not(
     .is-active
   ) {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .kit-toggle-item:focus-visible {
@@ -112,7 +112,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 /* Active state */
 .kit-toggle-item[aria-pressed="true"],
 .kit-toggle-item.is-active {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
   background: light-dark(#fff, rgba(255, 255, 255, 0.15));
   box-shadow: 0 1px 3px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.25));
 }
@@ -181,7 +181,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--separated
   .kit-toggle-item:focus-visible:not([aria-pressed="true"]):not(.is-active) {
   background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 /* The current filter — the chrome's accent capsule, glow included. The one
@@ -212,7 +212,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--separated.kit-toggle-group--quiet .kit-toggle-item.is-active {
   background: light-dark(rgba(0, 0, 0, 0.075), rgba(255, 255, 255, 0.1));
   box-shadow: none;
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
   font-weight: 600;
 }
 
@@ -287,7 +287,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--tabs
   .kit-toggle-item:focus-visible:not([aria-selected="true"]) {
   background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 /* The rail is a scroll container, and a scroll container clips an outline drawn
@@ -304,7 +304,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 .kit-toggle-group--tabs .kit-toggle-item.is-active {
   background: transparent;
   box-shadow: none;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 /* The lens itself. Geometry arrives in four custom properties from the script,
@@ -425,7 +425,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
 
 .kit-toggle-group__icon {
   flex-shrink: 0;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
   transition: color 0.2s ease;
 }
 
@@ -557,7 +557,7 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   }
 
   .kit-toggle-group--tabs .kit-toggle-item {
-    color: light-dark(#333, #ddd);
+    color: var(--ink-body);
   }
 
   .kit-toggle-group__marker,
