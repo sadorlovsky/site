@@ -158,11 +158,30 @@ import {
   }
 
   .info-link {
+    position: relative;
     display: inline-flex;
     vertical-align: super;
     padding: 0.1rem;
     border-radius: 999px;
     transition: color 0.2s ease;
+  }
+
+  /* The glyph is 17×17 and should stay that way — it is a superscript beside a
+     number, and anything larger stops being a footnote and starts competing
+     with the figure it belongs to. But 17 is under the 24 a target needs, so
+     the target grows instead of the mark: an invisible 24×24 centred on the
+     icon, which a finger can hit and an eye never sees.
+
+     Centred by translate rather than by negative insets so it stays square
+     whatever the icon's own padding does. */
+  .info-link::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    transform: translate(-50%, -50%);
   }
 
   .info-link:hover .info-icon {

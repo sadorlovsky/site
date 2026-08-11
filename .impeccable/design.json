@@ -516,6 +516,21 @@
         "name": "The Reveal-Cost Rule",
         "body": "A view that is hidden costs nothing until it is shown, and then costs everything at once. The travel checklist is 250 rows; revealing it took 1982ms between click and paint on a 4x-throttled CPU, against a 200ms interaction budget. content-visibility: auto with contain-intrinsic-size: auto per section brought it to 418ms throttled, 156ms not. Any new view long enough to fill several screens gets the same, at section level rather than row level.",
         "section": "layout"
+      },
+      {
+        "name": "The Sixteen-Pixel Rule",
+        "body": "Anything typed into is at least 16px under @media (pointer: coarse). iOS Safari zooms the page when a smaller field takes focus and does not zoom back out. Gated on pointer rather than width, because the trigger is the input method.",
+        "section": "layout"
+      },
+      {
+        "name": "The Twenty-Four Rule",
+        "body": "A target is at least 24×24 (WCAG 2.2 AA 2.5.8). Where the mark must stay smaller, the target grows and the mark does not — an invisible centred ::after. Where targets stack, the space between them belongs to one of them: padding on the row, zero gap on the list.",
+        "section": "layout"
+      },
+      {
+        "name": "The Cover-Means-Cover Rule",
+        "body": "viewport-fit=cover is a promise to handle the cutout, not permission to ignore it. body carries padding-inline: env(safe-area-inset-left/right); landscape is where it is paid. Vertical insets belong to whatever sits at each end.",
+        "section": "layout"
       }
     ],
     "dos": [
@@ -531,7 +546,8 @@
       "Do pick the accent by what the surface carries: --accent-gradient plus --accent-ink for anything with a label, --accent-gradient-display for large background-clip text, --accent-gradient-text for small.",
       "Do write every decorative distance as calc(<distance> * var(--lift)) so reduced motion collapses it, and leave layout-carrying transforms alone.",
       "Do repaint any background-clip: text under @media (forced-colors: active): the mode forces color but not -webkit-text-fill-color, so a gradient heading loses its background, keeps its transparency, and disappears.",
-      "Do measure before trading away an effect for performance: backdrop-filter across the whole of /travel costs ~0.3ms per frame against a 16.7ms budget, and was never the bottleneck it looked like."
+      "Do measure before trading away an effect for performance: backdrop-filter across the whole of /travel costs ~0.3ms per frame against a 16.7ms budget, and was never the bottleneck it looked like.",
+      "Do size touch affordances from the input method with @media (pointer: coarse), not from viewport width — screen size does not tell you whether there is a finger on it."
     ],
     "donts": [
       "Don't use the accent gradient more than once per view, or on anything that isn't the primary action or the active state.",

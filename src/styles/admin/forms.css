@@ -35,6 +35,17 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Same sixteen-pixel floor as the kit's fields, for the same reason — see the
+   note in kit/input.css. The admin panel is used from a phone more often than
+   from a desk: it is where a photographed present gets added to the list. */
+@media (pointer: coarse) {
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 1rem;
+  }
+}
+
 .form-group .select {
   width: 100%;
 }

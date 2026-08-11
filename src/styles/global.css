@@ -306,8 +306,13 @@ body {
    all of its life out of frame. */
 .skip-link {
   position: fixed;
-  top: 0.75rem;
-  left: 0.75rem;
+  /* PageLayout declares viewport-fit=cover, which is a promise to deal with
+     the notch rather than a request to ignore it. In landscape on a notched
+     phone the left inset is around 47px, so a link pinned at 0.75rem sits
+     underneath the cutout — and this one is the first thing in the tab order,
+     which makes it the worst candidate on the page for being invisible. */
+  top: max(0.75rem, env(safe-area-inset-top, 0px));
+  left: max(0.75rem, env(safe-area-inset-left, 0px));
   z-index: 1100;
   padding: 0.55rem 1rem;
   border-radius: 999px;
@@ -358,6 +363,23 @@ body {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* The other half of viewport-fit=cover, which PageLayout has been asking for
+     without ever answering. Cover means the page owns the whole screen
+     including the cutout and the rounded corners, and it is landscape that
+     collects the bill: the inset on a notched phone is about 47px, and the
+     reading column is 800px inside an 844px viewport, so the first character
+     of every line was underneath the notch.
+
+     Inline only. The vertical insets are already handled by what sits at each
+     end — the header's veil runs to the top edge on purpose, and the wishlist's
+     mobile filter bar has carried env(safe-area-inset-bottom) all along — and
+     padding the body vertically would push the page down past both.
+
+     Nothing moves on a device without insets: env() resolves to the 0px
+     fallback, which is also what every desktop browser reports. And the
+     full-bleed layers are unaffected either way, since the blobs and the veil
+     are positioned against the viewport rather than flowed in the body. */
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 
 pre,

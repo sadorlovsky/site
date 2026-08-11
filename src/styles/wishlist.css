@@ -592,12 +592,27 @@
    are laid out as a row so the name can ellipsize on its own while the arrow
    keeps its place at the end — an arrow inside the truncated text would be the
    first thing to disappear. */
+/* The shop links under a title. Each is a real destination — a card can list
+   four places to buy the same present — so each is a target, and at 0.75rem
+   the text alone is 15px tall against the 24 a target needs.
+
+   The padding is what makes up the difference, not a bigger typeface: these
+   sit under the title as a quiet list of alternatives, and setting them at
+   reading size would turn the card into four headlines. The list's own gap
+   comes off in exchange, so the rows end up 24px apart instead of 19.8 rather
+   than 28.8 — the card grows by about four pixels a row, which is the whole
+   price of making them tappable.
+
+   Not solved by a negative margin, which was the tempting version: it would
+   have left the layout untouched and the hit areas overlapping, and a finger
+   landing between two shops would open the wrong one. */
 .item-url,
 .item-url:visited {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   min-width: 0;
+  padding-block: 0.3rem;
   font-size: 0.75rem;
   color: light-dark(#555, #aaa);
   text-decoration: none;
@@ -649,7 +664,10 @@
   line-height: normal;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  /* No gap: each row's own vertical padding is the separation now, and it has
+     to be inside the link rather than between the links so that the space
+     between two shops belongs to one of them. See .item-url above. */
+  gap: 0;
 }
 
 .item-option {

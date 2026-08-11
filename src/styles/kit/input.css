@@ -96,6 +96,32 @@
 }
 
 /* =============================================================================
+   Sixteen pixels, on anything you type into with a finger
+
+   Safari on iOS zooms the page when a field smaller than 16px takes focus, and
+   it does not zoom back out when the field is done with. The reader is left at
+   about 1.3x with the layout shifted sideways and no obvious way back — and the
+   field this happens to on the public site is the one where someone writes a
+   note to go with a present they have just reserved.
+
+   The three steps here are 12, 12.8 and 14.4px, so all of them trip it. They
+   keep their heights: only the type grows, which the fields have room for
+   because their padding is set in rem and their height in px.
+
+   Gated on the pointer rather than on width, because the trigger is the input
+   method and not the screen — a touchscreen laptop zooms too, and a phone
+   pretending to be a desktop does not stop being a phone. Every other size
+   here stays exactly as drawn, since a mouse never asked for any of this.
+   ============================================================================= */
+@media (pointer: coarse) {
+  .kit-input--sm,
+  .kit-input--md,
+  .kit-input--lg {
+    font-size: 1rem;
+  }
+}
+
+/* =============================================================================
    Textarea
    ============================================================================= */
 

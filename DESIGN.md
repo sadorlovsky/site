@@ -357,6 +357,30 @@ for the same reason. Any new view long enough to fill several screens gets it
 too, at the section level rather than the row: four containment contexts
 instead of two hundred and fifty.
 
+**The Sixteen-Pixel Rule.** Anything typed into is at least 16px under
+`@media (pointer: coarse)`. Safari on iOS zooms the page when a smaller field
+takes focus and does not zoom back out, leaving the reader at ~1.3x with the
+layout shifted and no way back. The kit's three input steps are 12, 12.8 and
+14.4px, so all three lift; heights are unchanged, since the padding is in rem
+and the height in px. Gated on pointer rather than width, because the trigger
+is the input method — a touchscreen laptop zooms too.
+
+**The Twenty-Four Rule.** A target is at least 24×24 (WCAG 2.2 AA, 2.5.8). When
+the mark should stay smaller than that, the *target* grows and the mark does
+not: the travel counters' info icon keeps its 17px glyph and carries an
+invisible 24×24 `::after` centred on it. Where targets stack in a list, the
+space between them belongs to one of them — the wishlist's shop links carry
+`padding-block` and the list's `gap` is zero, so a finger landing between two
+shops opens the nearer one instead of neither.
+
+**The Cover-Means-Cover Rule.** `viewport-fit=cover` is a promise to handle the
+cutout, not permission to ignore it. `body` carries
+`padding-inline: env(safe-area-inset-left/right)`; landscape is where this is
+paid, since a 800px reading column inside an 844px viewport put the first
+character of every line under the notch. Vertical insets belong to whatever
+sits at each end — the header veil runs to the top edge deliberately, and the
+mobile filter bar has always carried `env(safe-area-inset-bottom)`.
+
 **The Pointer-Gated Ambience Rule.** Background blobs render only inside
 `@media (hover: hover) and (pointer: fine)`, and where they do survive on
 touch, the blur is baked into a radial gradient rather than paid for with
