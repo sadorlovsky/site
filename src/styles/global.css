@@ -678,6 +678,16 @@ code {
   border-radius: 4px;
   font-size: 0.875em;
   color: light-dark(#c81f48, #ff6b6b);
+  /* Inline code is usually a word, and then one day it is a class attribute or
+     a URL with no spaces in it, and an unbreakable run pushes the whole page
+     sideways — which is what /kit was doing on a phone. `anywhere` rather than
+     `break-word` so the break can happen mid-token when there is no better
+     opportunity, which for a path or an attribute there never is.
+
+     Only inline. A code *block* keeps its lines intact and scrolls in its own
+     box (see the `pre` rule above); breaking those would reflow indentation
+     that is carrying meaning. */
+  overflow-wrap: anywhere;
 }
 
 /* Code blocks */

@@ -1055,9 +1055,14 @@ import { Icon } from "astro-icon/components";
 
 <style is:global>
   /* Layout */
+  /* Both of these carried !important, and neither had anything to beat —
+     nothing outside this file mentions .kit-layout. What they did beat was the
+     media query at the bottom of this stylesheet, which asks for a column
+     under 768px and was being ignored: the sidebar stayed alongside the
+     content and the page ran 511px past the right edge of a phone. */
   .kit-layout {
-    display: flex !important;
-    flex-direction: row !important;
+    display: flex;
+    flex-direction: row;
     max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
@@ -1450,6 +1455,11 @@ import { Icon } from "astro-icon/components";
       border-right: none;
       border-bottom: 1px solid light-dark(#eee, #333);
       padding: 1.5rem 1rem;
+      /* There is no global box-sizing reset on this site, so 100% plus 1rem of
+         padding on each side is 100% plus 32px — which is exactly how far the
+         page ran past the right edge of a phone once the sidebar was allowed
+         to stack. */
+      box-sizing: border-box;
     }
 
     .kit-nav {
