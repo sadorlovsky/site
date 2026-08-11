@@ -490,6 +490,15 @@ parent's radius minus its border width, not the same value and not zero.
 - Nav links are `.link-nav`: muted, no underline, going to strong ink on hover.
   No visited state — that belongs to prose links only.
 
+### Skip Link
+
+The first thing in every page's tab order, and off-screen until it takes focus:
+a glass pill that travels down from above the fold, which is also the direction
+it sends you. It uses `:focus`, not `:focus-visible` — nothing but a keyboard
+ever reaches it, and if the heuristic guesses wrong the cost is a focused
+element the reader cannot see, which is the failure the link exists to prevent.
+Its transform is not multiplied by `--lift`: being on screen is not decoration.
+
 ### Signature: The Cursor Bead
 
 A tooltip is not a box with an arrow; it is a small pill of the same liquid
@@ -563,6 +572,9 @@ indicator to the strip's left edge and left it highlighting the wrong item.
   inherit` and `pointer-events: none`.
 - **Do** provide a `prefers-reduced-transparency` answer for any new material —
   an opaque tint, not just `backdrop-filter: none`.
+- **Do** repaint any `background-clip: text` under `@media (forced-colors: active)`:
+  the mode forces `color` but not `-webkit-text-fill-color`, so a gradient
+  heading loses its background and keeps its transparency, and disappears.
 - **Do** let a row's hover wash bleed `0.75rem` into the gutter while its text
   stays on the content edge.
 - **Do** keep the reading column at 800px and the grid at 1200px.
@@ -600,10 +612,6 @@ Four surfaces carry no `prefers-reduced-transparency` fallback at all — the
 admin modal, admin toast, admin item card, and the blog's back-to-top button —
 a gap already recorded on `/kit`. Fix these when touching those surfaces; do
 not treat them as precedent.
-
-`forced-colors` is unhandled everywhere, which matters most for the gradient
-text: `-webkit-text-fill-color: transparent` may render page titles invisible
-in Windows High Contrast. Unverified on Windows.
 
 The admin panel's own `variables.css` still holds the pre-contrast semantic
 values (`--color-success: #10b981`, `--color-error: #ef4444`). They tint dots,

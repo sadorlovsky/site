@@ -429,6 +429,14 @@
       "description": "The signature component. A bead of the same glass that trails the pointer — no arrow, because the bead sits above the cursor and that is a better pointer than any triangle.",
       "html": "<span class=\"ds-bead\" data-visible>Copy link</span>",
       "css": ".ds-bead { position: relative; display: inline-block; padding: 0.4rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; color: #1a1a1a; background-color: rgba(255, 255, 255, 0.55); background-image: linear-gradient(115deg, rgba(255, 255, 255, 0.5), transparent 38%, transparent 62%, rgba(255, 255, 255, 0.28)); backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(20, 20, 40, 0.12), 0 2px 6px rgba(20, 20, 40, 0.06); opacity: 0; transform: scale(0.92); transition: opacity 0.18s ease, transform 0.42s cubic-bezier(0.16, 1, 0.3, 1); } .ds-bead[data-visible] { opacity: 1; transform: scale(1); } .ds-bead::after { content: \"\"; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.25); }"
+    },
+    {
+      "name": "Skip Link",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "First in every page's tab order and off-screen until focused. Uses :focus, not :focus-visible — nothing but a keyboard reaches it, and a wrong guess costs a focused element the reader cannot see.",
+      "html": "<a class=\"ds-skip\" href=\"#main\">Skip to content</a>",
+      "css": ".ds-skip { position: fixed; top: 0.75rem; left: 0.75rem; z-index: 1100; padding: 0.55rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; text-decoration: none; color: #111; background-color: rgba(255, 255, 255, 0.55); background-image: linear-gradient(115deg, rgba(255,255,255,0.5), transparent 38%, transparent 62%, rgba(255,255,255,0.28)); backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(20,20,40,0.12); transform: translateY(calc(-100% - 0.75rem)); transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-skip:focus { transform: translateY(0); outline: 2px solid rgb(228, 93, 168); outline-offset: 2px; }"
     }
   ],
   "narrative": {
@@ -516,7 +524,8 @@
       "Do keep the reading column at 800px and the grid at 1200px.",
       "Do reach for --ink-muted for every secondary label, and measure any new text colour against its composited background rather than the page.",
       "Do pick the accent by what the surface carries: --accent-gradient plus --accent-ink for anything with a label, --accent-gradient-display for large background-clip text, --accent-gradient-text for small.",
-      "Do write every decorative distance as calc(<distance> * var(--lift)) so reduced motion collapses it, and leave layout-carrying transforms alone."
+      "Do write every decorative distance as calc(<distance> * var(--lift)) so reduced motion collapses it, and leave layout-carrying transforms alone.",
+      "Do repaint any background-clip: text under @media (forced-colors: active): the mode forces color but not -webkit-text-fill-color, so a gradient heading loses its background, keeps its transparency, and disappears."
     ],
     "donts": [
       "Don't use the accent gradient more than once per view, or on anything that isn't the primary action or the active state.",

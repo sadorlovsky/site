@@ -11,14 +11,14 @@ import {
 } from "@lib/travel";
 ---
 
-<div class="stats">
+<dl class="stats">
   <div class="card">
-    <h3 data-en="Trips" data-ru="Поездки">Trips</h3>
-    <div class="value">{tripsCount}</div>
+    <dt data-en="Trips" data-ru="Поездки">Trips</dt>
+    <dd class="value">{tripsCount}</dd>
   </div>
   <div class="card">
-    <h3 data-en="Countries" data-ru="Страны">Countries</h3>
-    <div class="with-info">
+    <dt data-en="Countries" data-ru="Страны">Countries</dt>
+    <dd class="with-info">
       <span class="value">{countries.size} / {countryListSize}</span>
       <a
         href="/travel/countries"
@@ -33,7 +33,7 @@ import {
       >
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
-    </div>
+    </dd>
     <ProgressBar
       value={countries.size}
       max={countryListSize}
@@ -44,12 +44,12 @@ import {
     />
   </div>
   <div class="card">
-    <h3 data-en="Cities" data-ru="Города">Cities</h3>
-    <div class="value">{cities.size}</div>
+    <dt data-en="Cities" data-ru="Города">Cities</dt>
+    <dd class="value">{cities.size}</dd>
   </div>
   <div class="card">
-    <h3 data-en="Continents" data-ru="Континенты">Continents</h3>
-    <div class="with-info">
+    <dt data-en="Continents" data-ru="Континенты">Continents</dt>
+    <dd class="with-info">
       <span class="value">{continentsVisited} / {continentsTotal}</span>
       <a
         href="https://education.nationalgeographic.org/resource/Continent/"
@@ -65,7 +65,7 @@ import {
       >
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
-    </div>
+    </dd>
     <ProgressBar
       value={continentsVisited}
       max={continentsTotal}
@@ -75,7 +75,7 @@ import {
       accent
     />
   </div>
-</div>
+</dl>
 
 <script>
   // The "?" links explain the numbers, so they get the site's own tooltip
@@ -126,11 +126,25 @@ import {
     box-shadow: var(--glass-rim);
   }
 
-  .card > h3 {
+  /* These four were <h3>, which put three heading levels on /travel in the
+     order h1, h3, h2 — the counters came before the first view's heading and
+     announced themselves as sections above it. They are not sections: each is
+     a label attached to a number, which is exactly what a description list is
+     for, and pairing them properly also means a screen reader reads "Countries,
+     47 of 195" instead of two unrelated fragments in sequence.
+
+     The wrapper divs are legal here — a <dl> may group each term-and-value pair
+     in a <div> — so the card's material and layout are untouched. */
+  .card > dt {
     margin: 0;
     font-size: 0.85rem;
     font-weight: 500;
     color: light-dark(#666, #9a9aa0);
+  }
+
+  /* The indent a <dd> arrives with from the browser. */
+  .stats dd {
+    margin-inline-start: 0;
   }
 
   .value {

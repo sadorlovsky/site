@@ -7,8 +7,19 @@ interface Props {
 const { year, class: className } = Astro.props;
 ---
 
+{/* The year is a heading, and now says so. It always was one to the eye —
+    1.25rem, semibold, sticky, with a rule under it, sitting over rows that
+    pass beneath — and travel.css spells out at length that a group heading is
+    a landmark rather than a label. It was a <div>, so none of that reached
+    anything that navigates by headings, and /travel read as one h1 with a
+    hundred and twenty-five unlabelled rows under it.
+
+    h2 because the page title above is the h1, and a year sits directly under
+    it. Nothing here changes visually: .year-header carried every one of these
+    values already, and the reset below only takes back the margins and the
+    size a bare h2 would bring with it. */}
 <div class:list={["year-group", className]}>
-  <div class="year-header">{year}</div>
+  <h2 class="year-header">{year}</h2>
   <div class="year-items">
     <slot />
   </div>
@@ -24,6 +35,11 @@ const { year, class: className } = Astro.props;
   }
 
   .year-header {
+    /* Takes back what global.css gives every h2: the 3rem above, the 1.25rem
+       below, and the fluid clamp() that would have carried it up to 2.25rem.
+       This heading's size is a fixed 1.25rem for a reason — it is measured
+       against ListItem's rows, not against the page's headings. */
+    margin: 0 0 0.5rem;
     position: sticky;
     /* On pages with a pinned condensing header (/travel), the header's script
        publishes its stuck height as --sticky-header-offset on <main>, so the

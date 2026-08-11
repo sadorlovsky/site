@@ -327,6 +327,20 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
           </div>
         )
       }
+      {
+        /* Where a failed reservation says what happened. Empty and hidden until
+           there is something to say, on the card that failed rather than in a
+           corner of the window — the sentence is about this present, and the
+           button it belongs to has just changed back under the reader's cursor.
+
+           role="alert" because it always answers something the visitor did a
+           moment ago, and it arrives at the same time as a button silently
+           reverting; a polite region can wait until after the next thing they
+           read, by which point the revert has no explanation attached to it. */
+        !item.received && reservationsEnabled && (
+          <p class="reserve-error" role="alert" hidden />
+        )
+      }
     </div>
   </div>
 </article>

@@ -294,6 +294,66 @@ body {
   margin: 0;
 }
 
+/* The way past the chrome, for a keyboard.
+
+   Off-screen rather than `display: none` or zero-sized: a link that is not
+   rendered is not focusable either, and one clipped to nothing is announced
+   without ever appearing, so the first Tab does something invisible. This
+   travels in from above the fold instead, which is also the direction it sends
+   you.
+
+   It wears the chrome's glass, because it is chrome — it just spends almost
+   all of its life out of frame. */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1100;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: light-dark(#111, #fff);
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  /* Above the viewport by its own height plus the inset, so no part of it
+     peeks. */
+  transform: translateY(calc(-100% - 0.75rem));
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* :focus rather than :focus-visible, which is the one place on this site that
+   distinction should not be drawn. The heuristic behind focus-visible exists to
+   spare a mouse user a ring they did not ask for — but nothing reaches this
+   link except the keyboard, and if the heuristic guesses wrong the cost is a
+   focused element the reader cannot see, which is the exact failure the link
+   exists to prevent. */
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+/* No --lift here on purpose: this transform is not decoration, it is the
+   difference between a focused link being on screen and being off it. Under
+   reduced motion it should still arrive — instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .skip-link {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
+  }
+}
+
 body {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
   -webkit-font-smoothing: antialiased;
@@ -1053,6 +1113,55 @@ a.btn-danger:active {
   .floating-tooltip {
     background-color: light-dark(#f0f0f0, #2a2a2e);
     background-image: none;
+  }
+}
+
+/* =============================================================================
+   Forced colours
+
+   Windows High Contrast replaces the palette wholesale with the four or five
+   colours the reader chose, and it does that by forcing `color` and
+   `background-color`. It does not force `-webkit-text-fill-color`, and that is
+   the property every gradient heading on this site uses to make its own text
+   transparent so the gradient behind it shows through. Forced there, the
+   background goes but the transparency stays: the page title, the breadcrumb,
+   the condensed pill and the 404's digits all vanish.
+
+   So the gradient comes off and the text is painted again, in the colour the
+   reader picked rather than one of ours. The identity is the first thing to go
+   in this mode by design — the point of it is that the reader's contrast
+   choice outranks the designer's.
+
+   The glass goes with it for the same reason: a translucent tint over a forced
+   background is a smear, and the border it depends on to read as an edge has
+   already been replaced by a solid system colour. */
+@media (forced-colors: active) {
+  .page-title,
+  .crumb-current,
+  .condensed-title__text,
+  .post-header h1,
+  .digit,
+  .list-item-title,
+  h1 {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: LinkText;
+  }
+
+  .liquid-glass,
+  .floating-tooltip,
+  .skip-link {
+    background-image: none;
+    backdrop-filter: none;
+  }
+
+  /* Both of these carry meaning by colour alone here — a filled indicator and
+     a lit rim — and forced colours flattens exactly that. An outline is the one
+     thing the mode keeps. */
+  .kit-btn--primary,
+  .kit-btn--ghost[aria-pressed="true"],
+  .kit-btn--ghost.is-active {
+    outline: 2px solid ButtonText;
   }
 }
 

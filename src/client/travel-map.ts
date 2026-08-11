@@ -294,6 +294,20 @@ async function initMap(): Promise<void> {
     attributionControl: false,
   });
 
+  /* MapLibre gives its canvas `tabindex="0"` so it can take arrow keys. The
+     container is `aria-hidden` — every country, continent and city it draws is
+     on this page again as text below it — and a focusable element inside an
+     aria-hidden subtree is the one combination that is worse than either half:
+     a keyboard reaches a stop that a screen reader is not allowed to describe,
+     and the arrow keys that would have scrolled the page pan a map instead.
+
+     Written after construction rather than passed in, because the canvas does
+     not exist until MapLibre makes it, and its `keyboard` handler would put
+     the attribute back if it were only disabled at the option level. Mouse and
+     touch are untouched: this removes the canvas from the tab order, not from
+     the page. */
+  map.getCanvas().setAttribute("tabindex", "-1");
+
   // `load` does not fire until the first *visually complete* render, which in
   // turn waits on every tile in view — and the planet tiles run to megabytes
   // each at low zoom. Blocking setup on it means that on a slow link the layers

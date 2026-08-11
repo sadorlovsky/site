@@ -883,6 +883,28 @@
   margin-left: auto;
 }
 
+/* What a failed reservation says, on the card it failed on.
+
+   It takes the whole width under the row rather than sitting beside the button,
+   because "Someone else reserved this first" in Russian is half again as long
+   as the button it would have to share a line with, and a sentence that has to
+   be short enough to fit is a sentence that stops explaining.
+
+   The danger ink rather than the accent: this is the one place on a wishlist
+   card where something has gone wrong, and it should not read as another
+   flavour of the same pink that means "yours". */
+.reserve-error {
+  /* Its own line in the footer's wrap. The spacing above is the footer's own
+     1rem gap — a margin here would be added to it, not instead of it. */
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  text-align: right;
+  text-wrap: pretty;
+  color: light-dark(#c2141a, #f87171);
+}
+
 .message-btn {
   position: relative;
   /* Own stacking context, so the z-index:-1 indicator lands above the frost and

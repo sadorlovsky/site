@@ -77,6 +77,21 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
     <slot name="head" />
   </head>
   <body>
+    {/* Every page on this site puts its content in <main id="main">, which is
+        what makes one link here enough. It matters most on /travel, where the
+        repeated block a keyboard user would otherwise walk through is a map:
+        MapLibre gives its canvas a tabindex, so reaching the trip list below
+        means passing through a control that answers arrow keys by panning.
+
+        Visible only when focused, and it is the first thing in the tab order,
+        so the first Tab on any page offers the way past. It is deliberately
+        not translated at runtime like the rest of the chrome: the swap happens
+        in a script after paint, and this link has to be usable by someone who
+        pressed Tab before that ran. It carries the language the document was
+        served in, which is what <html lang> already claims. */}
+    <a class="skip-link" href="#main">
+      {lang === "ru" ? "Перейти к содержимому" : "Skip to content"}
+    </a>
     <slot />
     <script
       defer

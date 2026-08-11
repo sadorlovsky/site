@@ -54,7 +54,12 @@ const itemCategories = categories.filter((c) => c.id !== "all");
             </div>
             <input type="hidden" id="imageUrl" name="imageUrl" />
             <div id="image-preview" class="image-preview" hidden>
-              <img id="preview-img" src="" alt="Preview" />
+              {/* No `src=""`. An empty one is not "no image": several browsers
+                  resolve it against the document and fetch the page again, then
+                  draw a broken-image glyph over the panel. The element waits
+                  without a src attribute at all — the script that picks a file
+                  sets one — and the wrapper is hidden until then anyway. */}
+              <img id="preview-img" alt="Preview" />
               <span id="image-filename"></span>
               <button
                 type="button"
