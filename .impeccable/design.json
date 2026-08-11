@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-11T00:00:00.000Z",
+  "title": "Design System: orlovsky.dev",
+  "extensions": {
+    "colorMeta": {
+      "accent-start": {
+        "role": "primary",
+        "displayName": "Sunset Rose",
+        "canonical": "oklch(68.3% 0.177 1.4)",
+        "tonalRamp": [
+          "oklch(15.0% 0.152 1.4)",
+          "oklch(26.4% 0.162 1.4)",
+          "oklch(37.9% 0.169 1.4)",
+          "oklch(49.3% 0.174 1.4)",
+          "oklch(60.7% 0.176 1.4)",
+          "oklch(72.1% 0.177 1.4)",
+          "oklch(83.6% 0.175 1.4)",
+          "oklch(95.0% 0.171 1.4)"
+        ]
+      },
+      "accent-end": {
+        "role": "primary",
+        "displayName": "Sunset Coral",
+        "canonical": "oklch(65.8% 0.185 20.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.162 20.3)",
+          "oklch(26.4% 0.171 20.3)",
+          "oklch(37.9% 0.178 20.3)",
+          "oklch(49.3% 0.182 20.3)",
+          "oklch(60.7% 0.185 20.3)",
+          "oklch(72.1% 0.184 20.3)",
+          "oklch(83.6% 0.182 20.3)",
+          "oklch(95.0% 0.177 20.3)"
+        ]
+      },
+      "light-bg": {
+        "role": "neutral",
+        "displayName": "Ghost White",
+        "canonical": "oklch(98.1% 0.009 286.2)",
+        "tonalRamp": [
+          "oklch(15.0% 0.006 286.2)",
+          "oklch(26.4% 0.007 286.2)",
+          "oklch(37.9% 0.008 286.2)",
+          "oklch(49.3% 0.008 286.2)",
+          "oklch(60.7% 0.009 286.2)",
+          "oklch(72.1% 0.009 286.2)",
+          "oklch(83.6% 0.009 286.2)",
+          "oklch(95.0% 0.009 286.2)"
+        ]
+      },
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Near Black",
+        "canonical": "oklch(21.3% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "ink-strong-light": {
+        "role": "neutral",
+        "displayName": "Strong Ink",
+        "canonical": "oklch(17.8% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "ink-body-light": {
+        "role": "neutral",
+        "displayName": "Body Ink",
+        "canonical": "oklch(32.1% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "ink-muted-light": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(52.4% 0 89.9)",
+        "tonalRamp": [
+          "oklch(15.0% 0 89.9)",
+          "oklch(26.4% 0 89.9)",
+          "oklch(37.9% 0 89.9)",
+          "oklch(49.3% 0 89.9)",
+          "oklch(60.7% 0 89.9)",
+          "oklch(72.1% 0 89.9)",
+          "oklch(83.6% 0 89.9)",
+          "oklch(95.0% 0 89.9)"
+        ]
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Confirm Green",
+        "canonical": "oklch(69.6% 0.149 162.5)",
+        "tonalRamp": [
+          "oklch(15.0% 0.128 162.5)",
+          "oklch(26.4% 0.136 162.5)",
+          "oklch(37.9% 0.142 162.5)",
+          "oklch(49.3% 0.146 162.5)",
+          "oklch(60.7% 0.149 162.5)",
+          "oklch(72.1% 0.149 162.5)",
+          "oklch(83.6% 0.148 162.5)",
+          "oklch(95.0% 0.144 162.5)"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Alarm Red",
+        "canonical": "oklch(57.7% 0.215 27.3)",
+        "tonalRamp": [
+          "oklch(15.0% 0.196 27.3)",
+          "oklch(26.4% 0.205 27.3)",
+          "oklch(37.9% 0.211 27.3)",
+          "oklch(49.3% 0.214 27.3)",
+          "oklch(60.7% 0.215 27.3)",
+          "oklch(72.1% 0.213 27.3)",
+          "oklch(83.6% 0.208 27.3)",
+          "oklch(95.0% 0.201 27.3)"
+        ]
+      },
+      "warning": {
+        "role": "tertiary",
+        "displayName": "Caution Amber",
+        "canonical": "oklch(76.9% 0.165 70.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.134 70.1)",
+          "oklch(26.4% 0.144 70.1)",
+          "oklch(37.9% 0.153 70.1)",
+          "oklch(49.3% 0.159 70.1)",
+          "oklch(60.7% 0.163 70.1)",
+          "oklch(72.1% 0.164 70.1)",
+          "oklch(83.6% 0.164 70.1)",
+          "oklch(95.0% 0.162 70.1)"
+        ]
+      },
+      "info": {
+        "role": "secondary",
+        "displayName": "Cool Indigo",
+        "canonical": "oklch(58.5% 0.204 277.1)",
+        "tonalRamp": [
+          "oklch(15.0% 0.185 277.1)",
+          "oklch(26.4% 0.194 277.1)",
+          "oklch(37.9% 0.200 277.1)",
+          "oklch(49.3% 0.203 277.1)",
+          "oklch(60.7% 0.204 277.1)",
+          "oklch(72.1% 0.202 277.1)",
+          "oklch(83.6% 0.198 277.1)",
+          "oklch(95.0% 0.191 277.1)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles. Fluid via clamp() across the whole viewport range rather than stepping at breakpoints."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Major section headings inside prose. 3rem above, 1.25rem below."
+      },
+      "title": {
+        "displayName": "Landmark Title",
+        "purpose": "Group headings — a year, a continent, a checklist category. Sticky under the page chrome, sitting on the veil. Never a small uppercase eyebrow."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs and list items. 0.9375rem under 768px; reading column caps at 800px. Inter ss03 (single-storey g) is on site-wide."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Controls, badges, counts, chips. Size steps with control height: 0.7rem at 28px through 0.9rem at 44px. Uppercase with 0.03em tracking on badges."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Inline code and code blocks only. Inline code takes a tinted ground and a red-tone colour; blocks defer to Shiki's dual theme."
+      }
+    },
+    "shadows": [
+      {
+        "name": "glass-shadow",
+        "value": "0 10px 30px rgba(20, 20, 40, 0.12), 0 2px 6px rgba(20, 20, 40, 0.06)",
+        "purpose": "Capsule-scale lift for floating chrome and cards. Deepens to rgba(0,0,0,.38)/.28 in the dark scheme."
+      },
+      {
+        "name": "glass-shadow-sm",
+        "value": "0 3px 10px rgba(20, 20, 40, 0.1), 0 1px 2px rgba(20, 20, 40, 0.07)",
+        "purpose": "The same lift cut for chip-sized elements. Below ~32px the full shadow reads as a halo, not as lift."
+      },
+      {
+        "name": "glass-rim",
+        "value": "inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.25)",
+        "purpose": "The refractive lens edge, lit from the top-left. Always painted on a pseudo-element with border-radius: inherit."
+      },
+      {
+        "name": "glass-rim-lit",
+        "value": "inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.85), inset 0 0 18px rgba(255, 255, 255, 0.45)",
+        "purpose": "The same edge with the light source closer — glass tilting toward the viewer. Hover only."
+      },
+      {
+        "name": "card-hover",
+        "value": "0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(20, 20, 40, 0.06)",
+        "purpose": "A card lifted 8px off the page. Paired with glass-rim-lit on the same 0.4s clock."
+      },
+      {
+        "name": "accent-glow",
+        "value": "0 2px 8px rgba(237, 87, 96, 0.3)",
+        "purpose": "The warm cast under a primary or active gradient element. Deepens to 0 4px 12px / .4 on hover."
+      },
+      {
+        "name": "control-ring",
+        "value": "inset 0 0 0 2px #dddddd",
+        "purpose": "Inputs, selects, and ghost buttons draw their border as an inset shadow so focus changes never reflow layout."
+      },
+      {
+        "name": "toggle-key",
+        "value": "0 1px 3px rgba(0, 0, 0, 0.08)",
+        "purpose": "The active tile in a toggle group — a physical key raised out of its recessed tray."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The one curve for the whole system. Fast start, soft settle. Every transition and interactive animation uses it."
+      },
+      {
+        "name": "duration-link",
+        "value": "0.15s",
+        "purpose": "Link colour and underline."
+      },
+      {
+        "name": "duration-control",
+        "value": "0.2s",
+        "purpose": "Kit controls — buttons, inputs, selects, toggles."
+      },
+      {
+        "name": "duration-chrome",
+        "value": "0.3s",
+        "purpose": "Composite chrome: dock indicator, header condense, social links."
+      },
+      {
+        "name": "duration-lift",
+        "value": "0.4s",
+        "purpose": "Cards lifting and their rims brightening. Both on the same clock so the edge catches light as the card arrives."
+      },
+      {
+        "name": "duration-decay",
+        "value": "1.5s",
+        "purpose": "A flare settling — the random-pick halo on a wishlist card."
+      },
+      {
+        "name": "duration-ambient",
+        "value": "12s–15s",
+        "purpose": "Background blob drift. Killed entirely under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "480px" },
+      { "name": "compact", "value": "600px" },
+      { "name": "tablet", "value": "640px" },
+      { "name": "prose", "value": "768px" },
+      { "name": "reading-column", "value": "800px" },
+      { "name": "grid-container", "value": "1200px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action. The accent gradient at 135°, lifting 1px on hover. One per view.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Reserve</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary { background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96)); color: #fff; box-shadow: 0 2px 8px rgba(237, 87, 96, 0.3); } .ds-btn-primary:hover { box-shadow: 0 4px 12px rgba(237, 87, 96, 0.4); transform: translateY(-1px); } .ds-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(237, 87, 96, 0.3); } .ds-btn-primary:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Tertiary action and the toggle-capable variant. A 2px inset ring; takes the accent gradient when pressed.",
+      "html": "<button class=\"ds-btn ds-btn-ghost\">All</button>\n<button class=\"ds-btn ds-btn-ghost\" aria-pressed=\"true\">Vinyl</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 38px; padding: 0 1.1rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 600; line-height: 1; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost { background: transparent; color: #666; box-shadow: inset 0 0 0 2px #ddd; } .ds-btn-ghost:hover { color: #111; box-shadow: inset 0 0 0 2px #bbb; } .ds-btn-ghost[aria-pressed=\"true\"] { background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96)); color: #fff; box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35); } .ds-btn-ghost:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-md",
+      "description": "38px to match a default button. Its border is an inset shadow, so focus never reflows layout.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search items\" />",
+      "css": ".ds-input { appearance: none; display: block; box-sizing: border-box; width: 100%; height: 38px; padding: 0 0.85rem; border: none; border-radius: 10px; font-family: inherit; font-size: 0.8rem; font-weight: 400; line-height: 1.5; color: #111; background-color: rgba(255, 255, 255, 0.8); box-shadow: inset 0 0 0 2px #ddd; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); } .ds-input::placeholder { color: #999; } .ds-input:hover:not(:focus) { box-shadow: inset 0 0 0 2px #bbb; } .ds-input:focus { outline: none; box-shadow: inset 0 0 0 2px rgb(237, 98, 146); }"
+    },
+    {
+      "name": "Toggle Group",
+      "kind": "chip",
+      "refersTo": "toggle-group",
+      "description": "A recessed tray with one raised key. The language switcher, the wishlist filters, and the travel view rail are all this component.",
+      "html": "<div class=\"ds-toggle-group\" role=\"group\">\n  <button class=\"ds-toggle-item\" aria-pressed=\"true\">Timeline</button>\n  <button class=\"ds-toggle-item\">Countries</button>\n  <button class=\"ds-toggle-item\">Stats</button>\n</div>",
+      "css": ".ds-toggle-group { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem; background: rgba(0, 0, 0, 0.04); border-radius: 10px; } .ds-toggle-item { appearance: none; border: none; background: transparent; font-family: inherit; display: inline-flex; align-items: center; justify-content: center; height: 32px; padding: 0 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; line-height: 1; color: #555; cursor: pointer; transition: all 0.2s ease; } .ds-toggle-item:hover:not([aria-pressed=\"true\"]) { color: #111; } .ds-toggle-item[aria-pressed=\"true\"] { color: #111; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); } .ds-toggle-item:focus-visible { outline: 2px solid rgb(237, 98, 146); outline-offset: 2px; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-md",
+      "description": "Uppercase micro-label for state. Six subtle variants plus three solid gradient ones.",
+      "html": "<span class=\"ds-badge ds-badge-success\">Received</span>\n<span class=\"ds-badge ds-badge-primary\">Reserved</span>\n<span class=\"ds-badge ds-badge-default\">Other</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600; line-height: 1; letter-spacing: 0.03em; text-transform: uppercase; white-space: nowrap; } .ds-badge-default { background: rgba(0, 0, 0, 0.06); color: #666; } .ds-badge-primary { background: rgba(237, 98, 146, 0.15); color: #c2185b; } .ds-badge-success { background: rgba(16, 185, 129, 0.15); color: #047857; }"
+    },
+    {
+      "name": "Liquid Glass Pill",
+      "kind": "nav",
+      "refersTo": "glass-pill",
+      "description": "The site's signature material: tint, diagonal sheen, 20px frost, hairline border, lifted shadow, and a refractive rim on ::after. Every floating chrome element wears it.",
+      "html": "<div class=\"ds-glass-pill\"><span>Travel</span></div>",
+      "css": ".ds-glass-pill { position: relative; display: inline-flex; align-items: center; min-height: 2.7rem; padding: 0.35rem 1.05rem; border-radius: 999px; font-size: 0.9rem; font-weight: 600; color: #1a1a1a; background-color: rgba(255, 255, 255, 0.55); background-image: linear-gradient(115deg, rgba(255, 255, 255, 0.5), transparent 38%, transparent 62%, rgba(255, 255, 255, 0.28)); backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(20, 20, 40, 0.12), 0 2px 6px rgba(20, 20, 40, 0.06); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); } .ds-glass-pill::after { content: \"\"; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.25); } .ds-glass-pill:hover { transform: translateY(-1px); }"
+    },
+    {
+      "name": "Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "A 20px pane that sits rather than floats: glass border, shadow, and rim, but a heavier tint and no frost. Lifts 8px on hover while its rim brightens.",
+      "html": "<article class=\"ds-card\">\n  <h3 class=\"ds-card-title\">Cities</h3>\n  <p class=\"ds-card-value\">136</p>\n</article>",
+      "css": ".ds-card { position: relative; display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; padding: 1rem 1.1rem; background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 20px; box-shadow: 0 10px 30px rgba(20, 20, 40, 0.12), 0 2px 6px rgba(20, 20, 40, 0.06); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1); } .ds-card::before { content: \"\"; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; box-shadow: inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.25); transition: box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1); } .ds-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(20, 20, 40, 0.06); } .ds-card:hover::before { box-shadow: inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.85), inset 0 0 18px rgba(255, 255, 255, 0.45); } .ds-card-title { margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; color: #6a6a6a; } .ds-card-value { margin: 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; color: #111; }"
+    },
+    {
+      "name": "List Row",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The timeline row every list on the site is measured against. Its hover wash bleeds 0.75rem into the gutter while the text stays on the content edge.",
+      "html": "<ul class=\"ds-rows\">\n  <li class=\"ds-row\"><span class=\"ds-row-label\">Japan</span><span class=\"ds-row-meta\">6 cities</span></li>\n  <li class=\"ds-row\"><span class=\"ds-row-label\">United Arab Emirates</span><span class=\"ds-row-meta\">1 city</span></li>\n</ul>",
+      "css": ".ds-rows { list-style: none; margin: 0; padding: 0; } .ds-row { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin: 0; padding: 0.5rem 0.75rem; margin-inline: -0.75rem; border-radius: 14px; transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1); } .ds-row:hover { background-color: rgba(0, 0, 0, 0.055); } .ds-row-label { font-size: 1rem; color: #333; } .ds-row-meta { font-size: 0.9rem; color: #6a6a6a; }"
+    },
+    {
+      "name": "Cursor Bead Tooltip",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "The signature component. A bead of the same glass that trails the pointer — no arrow, because the bead sits above the cursor and that is a better pointer than any triangle.",
+      "html": "<span class=\"ds-bead\" data-visible>Copy link</span>",
+      "css": ".ds-bead { position: relative; display: inline-block; padding: 0.4rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; color: #1a1a1a; background-color: rgba(255, 255, 255, 0.55); background-image: linear-gradient(115deg, rgba(255, 255, 255, 0.5), transparent 38%, transparent 62%, rgba(255, 255, 255, 0.28)); backdrop-filter: blur(20px) saturate(150%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(20, 20, 40, 0.12), 0 2px 6px rgba(20, 20, 40, 0.06); opacity: 0; transform: scale(0.92); transition: opacity 0.18s ease, transform 0.42s cubic-bezier(0.16, 1, 0.3, 1); } .ds-bead[data-visible] { opacity: 1; transform: scale(1); } .ds-bead::after { content: \"\"; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; box-shadow: inset 1.5px 1.5px 1px -1px rgba(255, 255, 255, 1), inset -1.5px -1.5px 1px -1px rgba(255, 255, 255, 0.6), inset 0 0 12px rgba(255, 255, 255, 0.25); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lit Pane",
+    "overview": "Every floating thing on this site is a real pane of glass with thickness, suspended over the page and lit from the top-left. It has a tint you look through, a diagonal sheen across its face, a refractive rim where the light catches its edge, and a shadow underneath proving it is not touching the page. Behind all of it, two enormous blurred blobs of rose and indigo drift slowly, so the light the glass is catching has a warm source and a cool one.\n\nThe feeling is playful, tactile, alive. Chrome condenses into pills as you scroll and dissolves when you scroll back; a dock's indicator slides between items and squashes on the way; cards lift eight pixels and their rims brighten as if tilting toward a lamp; a tooltip is a bead of the same glass trailing the cursor; a randomly picked card flares and settles over a second and a half. None of this is decoration bolted on — every effect is one material behaving consistently. The site earns its personality by being physically coherent, not by being loud.\n\nUnderneath the glass, the content is flat and quiet. Type is Inter Variable with its alternate-g stylistic set on; the reading column is 800px, the grid column 1200px; the accent gradient appears once or twice per view and nowhere else. The system rejects three neighbouring worlds by name: the generic SaaS dashboard (blue-500 primaries, stat-tile grids, sidebar of icons), brutalist raw-HTML (hard borders, zero radius, deliberate ugliness), and the corporate portfolio template (stock hero, three feature columns, testimonial slider).",
+    "keyCharacteristics": [
+      "One glass material, tokenized once, worn by every floating element",
+      "Light and dark are equal citizens — light-dark() on effectively every colour",
+      "A warm rose→coral gradient used sparingly as the only loud element",
+      "Fully-round chrome, generously-round content, nothing square",
+      "Motion on a single overshoot curve, with real physical logic behind each move",
+      "Four control heights (28/32/38/44px) that every component honours",
+      "Every material degrades deliberately under prefers-reduced-transparency, prefers-reduced-motion, and prefers-contrast: more"
+    ],
+    "rules": [
+      {
+        "name": "The One Gradient Rule",
+        "body": "The accent gradient marks exactly one thing per view: the primary action, or the active tab, not both competing. Everything else stays neutral until interacted with. Its rarity is what makes it read.",
+        "section": "colors"
+      },
+      {
+        "name": "The Both-Schemes Rule",
+        "body": "No colour ships as a bare value. Every colour is light-dark(light, dark) — the only exceptions are glass laid over photography, where a light tint would drop dark text onto a dark image, and white text on the accent gradient.",
+        "section": "colors"
+      },
+      {
+        "name": "The Not-Quite-White Rule",
+        "body": "The page is #f8f8ff and never #fff; the dark page is #191919 and never #000. Translucent white chrome needs a ground that is not already the chrome's own colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Landmark Rule",
+        "body": "A group heading is a landmark, not an eyebrow — 1.25rem and semibold, sticky under the page chrome, with the page's veil behind it so rows dissolve as they pass beneath. Never a 12px uppercase label. Switching between views must never change what a heading is.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fluid Heading Rule",
+        "body": "Headings use clamp(), not breakpoint steps. Only their margins change at 768px.",
+        "section": "typography"
+      },
+      {
+        "name": "The Pointer-Gated Ambience Rule",
+        "body": "Background blobs render only inside @media (hover: hover) and (pointer: fine), and where they do survive on touch, the blur is baked into a radial gradient rather than paid for with filter: blur() on every scroll frame.",
+        "section": "layout"
+      },
+      {
+        "name": "The Rim-Rides-a-Pseudo-Element Rule",
+        "body": "The refractive edge always lives on ::before or ::after with inset: 0, border-radius: inherit, and pointer-events: none. Never a direct box-shadow on the host.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Backdrop-Root Rule",
+        "body": "An ancestor's transform silently kills a descendant's backdrop-filter. Position and animate the glass element itself; never wrap glass in a moving parent. Glass over photography carries a tint heavy enough to survive the frost dropping out.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Nested-Radius Rule",
+        "body": "A child filling a rounded parent's edge takes the parent's radius minus its border width, not the same value and not zero.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do apply glass through the .liquid-glass utility and the --glass-* tokens. If a surface needs a variant, add a token — don't redeclare the recipe locally.",
+      "Do wrap every colour in light-dark(), and check both schemes before calling a surface done.",
+      "Do pick a control height from 28 / 32 / 38 / 44px and let radius, padding, and font size follow from it.",
+      "Do give sticky elements a published offset custom property, and read the ones already pinned above you.",
+      "Do put the refractive rim on a pseudo-element with border-radius: inherit and pointer-events: none.",
+      "Do provide a prefers-reduced-transparency answer for any new material — an opaque tint, not just backdrop-filter: none.",
+      "Do let a row's hover wash bleed 0.75rem into the gutter while its text stays on the content edge.",
+      "Do keep the reading column at 800px and the grid at 1200px."
+    ],
+    "donts": [
+      "Don't use the accent gradient more than once per view, or on anything that isn't the primary action or the active state.",
+      "Don't wrap a glass element in a transformed or animated parent — it silently destroys the frost.",
+      "Don't scale a card, an image, or a text block on hover. Translate and shadow instead.",
+      "Don't introduce a fourth ink value, a fifth breakpoint, or a second easing curve without removing one first.",
+      "Don't make a group heading a small uppercase eyebrow. It is a 1.25rem semibold landmark or it is not a heading.",
+      "Don't use #fff as the light page or #000 as the dark one.",
+      "Don't drift toward the generic SaaS dashboard (blue primaries, stat-tile grids, icon sidebars), brutalist raw HTML (hard borders, zero radius, deliberate ugliness), or the corporate portfolio template (stock hero, three feature columns, testimonial slider).",
+      "Don't add a new focus treatment. It is 2px of Sunset Rose at 2px offset, everywhere."
+    ]
+  }
+}

@@ -42,3 +42,10 @@ scripts/wishlist-images/out/
 # Local SQLite database (built by bun db:reset)
 local.db
 local.db-journal
+
+# Impeccable's live-mode session state — absolute paths, ports, and in-flight
+# session journals, all local to one machine. The design system itself stays
+# in the repo: .impeccable/design.json is the half of DESIGN.md its frontmatter
+# schema cannot hold (shadows, motion, tonal ramps, component snippets), and
+# splitting the two is how they drift apart without anyone noticing.
+.impeccable/live/
