@@ -226,6 +226,29 @@ const filters = [
     z-index: 9;
   }
 
+  /* Two hundred and fifty rows arrive in one frame, because this view is
+     hidden until the tab is pressed and then is not.
+
+     Measured on a four-times-throttled CPU, that cost 1982ms between the click
+     and the paint — against a 200ms budget for an interaction, and six times
+     what any other view on this rail costs. The rows are cheap individually;
+     there are simply more of them than a frame has room for, and all of them
+     become relevant at the same instant.
+
+     So the browser is told it may skip the ones nobody is looking at. Each
+     category is one skip unit rather than each row: four containment contexts
+     instead of two hundred and fifty, and a category is roughly a screenful,
+     which is the size this works best at. The intrinsic size is the `auto`
+     form, so a section that has been on screen once remembers how tall it
+     really was and the scrollbar stops guessing.
+
+     The wishlist card has carried the same pair for the same reason — a long
+     grid where most of it is below the fold. */
+  .checklist-view .travel-sections > section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1200px;
+  }
+
   /* The filter itself. Nothing is removed from the page, only stopped from
      being drawn, so the counts in the headings still read against the whole
      category and a screen reader is handed the same list it always was. */

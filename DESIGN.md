@@ -346,6 +346,17 @@ property on the page: `--sticky-header-offset` from the condensing header and
 adds both, so a heading docks under whatever is already pinned rather than
 sliding beneath it.
 
+**The Reveal-Cost Rule.** A view that is hidden costs nothing until it is
+shown, and then costs everything at once. The travel checklist is 250 rows in
+four categories; revealing it took 1982ms between click and paint on a
+four-times-throttled CPU, against a 200ms budget for an interaction and six
+times what any other view on that rail costs. Each category carries
+`content-visibility: auto` with `contain-intrinsic-size: auto`, which brought
+it to 418ms throttled and 156ms not — the same pair the wishlist card has worn
+for the same reason. Any new view long enough to fill several screens gets it
+too, at the section level rather than the row: four containment contexts
+instead of two hundred and fifty.
+
 **The Pointer-Gated Ambience Rule.** Background blobs render only inside
 `@media (hover: hover) and (pointer: fine)`, and where they do survive on
 touch, the blur is baked into a radial gradient rather than paid for with
@@ -398,6 +409,13 @@ fades every alpha to nothing so there is no hard edge where it ends.
 **The Rim-Rides-a-Pseudo-Element Rule.** The refractive edge always lives on
 `::before` or `::after` with `inset: 0`, `border-radius: inherit`, and
 `pointer-events: none`. Never a direct `box-shadow` on the host.
+
+**Measured, so it stays.** Over a 5000px scroll on `/travel` — the page with
+the most stacked glass — `backdrop-filter` costs about 25ms of rendering in
+total, roughly 0.3ms per frame, and the whole rendering budget for that scroll
+is ~2.2ms per frame against 16.7 available. The frost is not a bottleneck and
+should not be traded away for a performance that was never lost. The real cost
+on that page was an interaction, not a scroll: see Layout.
 
 **The Backdrop-Root Rule.** An ancestor's `transform` silently kills a
 descendant's `backdrop-filter`. Position and animate the glass element itself;
