@@ -130,7 +130,7 @@
 
 .modal-close:hover,
 .modal-close:focus-visible {
-  color: #fff;
+  color: var(--accent-ink);
 }
 
 .modal-close:hover::before,
