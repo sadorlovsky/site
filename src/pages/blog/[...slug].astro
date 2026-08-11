@@ -676,11 +676,11 @@ const breadcrumbSchema = {
   }
 
   .post-nav-link.prev:hover svg {
-    transform: translateX(-3px);
+    transform: translateX(calc(-3px * var(--lift)));
   }
 
   .post-nav-link.next:hover svg {
-    transform: translateX(3px);
+    transform: translateX(calc(3px * var(--lift)));
   }
 
   /* Back to top button */

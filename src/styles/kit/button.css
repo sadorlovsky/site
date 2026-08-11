@@ -156,7 +156,7 @@ a.kit-btn--danger:active {
 
 .kit-btn--primary:hover:not(:disabled) {
   box-shadow: 0 4px 12px rgba(236, 100, 70, 0.4);
-  transform: translateY(-1px);
+  transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--primary:active:not(:disabled) {
@@ -229,7 +229,7 @@ a.kit-btn--danger:active {
 
 .kit-btn--success:hover:not(:disabled) {
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-  transform: translateY(-1px);
+  transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--success:active:not(:disabled) {
@@ -322,16 +322,32 @@ a.kit-btn--danger:active {
    ============================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+  /* The rise is already gone — --lift is 0, so the translate below resolves to
+     nothing and the button arrives without travelling. What is left is the
+     ground and the shadow, and with the movement removed that is the whole of
+     the feedback, so it keeps its transition rather than snapping.
+
+     This block used to be `transition: none` plus `transform: none` on hover,
+     which took the colour with the movement and left a control that changed
+     between two states with nothing in between to say it had. */
   .kit-btn {
-    transition: none;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
-  .kit-btn:hover:not(:disabled) {
-    transform: none;
-  }
+  /* The spinner keeps turning, at half speed. It was switched off here, which
+     left a submitting button showing a static arc and no way to tell a slow
+     save from a stuck one — the loading state deliberately hides its own label,
+     so the ring is the only thing left saying anything at all.
 
+     A steady linear sweep is also not what the setting is about: what provokes
+     symptoms is large or unpredictable movement across the field of view, not a
+     16px ring turning at a constant rate in the middle of a button you are
+     waiting on. Slower rather than faster for the same reason. */
   .kit-btn--loading::after {
-    animation: none;
+    animation: kit-btn-spin 1.2s linear infinite;
   }
 }
 

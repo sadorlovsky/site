@@ -227,16 +227,16 @@ export const prerender = true;
   }
 
   .home-btn:hover {
-    transform: translateY(-3px) scale(1.03);
+    transform: translateY(calc(-3px * var(--lift))) scale(calc(1 + 0.03 * var(--lift)));
     box-shadow: 0 8px 30px rgba(236, 100, 70, 0.45);
   }
 
   .home-btn:hover :global(svg) {
-    transform: translateX(4px);
+    transform: translateX(calc(4px * var(--lift)));
   }
 
   .home-btn:active {
-    transform: translateY(-1px) scale(1.01);
+    transform: translateY(calc(-1px * var(--lift))) scale(calc(1 + 0.01 * var(--lift)));
   }
 
   /* Reduced motion */

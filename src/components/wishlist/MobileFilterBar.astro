@@ -208,7 +208,7 @@ const hasEndSlot = Astro.slots.has("end");
   }
 
   .mobile-filter-categories .kit-toggle-item:active {
-    transform: scale(0.95);
+    transform: scale(calc(1 - 0.05 * var(--lift)));
   }
 
 

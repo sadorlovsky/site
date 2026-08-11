@@ -507,8 +507,38 @@ One easing curve carries the whole system:
 `cubic-bezier(0.16, 1, 0.3, 1)` — a fast start with a soft overshoot-free
 settle. Durations by weight: `0.15s` links, `0.2s` kit controls, `0.25–0.3s`
 composite chrome, `0.4s` cards and lifts, `1.5s` decays. Ambient blob drifts run
-12–15s. Under `prefers-reduced-motion` a global rule kills every animation,
-transition, and interactive transform site-wide.
+12–15s.
+
+**Reduced motion is three answers, not one switch.** The setting is about
+movement through space, so the system sorts its motion by what each piece is
+doing and treats the three kinds differently:
+
+1. **Decorative loops** — drifting blobs, the morphing shape, spinning
+   gradients. Nothing starts them and nothing ends them, so there is no state
+   for them to explain. They stop.
+2. **Movement that is feedback** — a card lifting, a button rising, an
+   indicator growing into place, an arrow nudging. The journey goes and the
+   destination stays: `--lift` drops from `1` to `0`, and every decorative
+   distance is written as `calc(<distance> * var(--lift))`, so one declaration
+   collapses all of them at once.
+3. **Feedback that never moved** — the hover wash, the deepening shadow, the
+   rim catching more light, opacity. It is **kept**, transition and all. With
+   movement gone this is the entire remaining vocabulary for "this one".
+
+A loop that is genuinely feedback overrides the stop explicitly: the button
+spinner keeps turning at half speed (`1.2s`, linear), because a loading button
+hides its own label and the ring is the only thing left saying the work is
+still happening.
+
+### Named Rules
+
+**The Lift-Opt-In Rule.** A transform that carries *layout* — the dock's
+sliding indicator, the cursor tooltip, a tick centred on its line — never
+multiplies by `--lift` and so can never be collapsed by it. Only distances that
+exist to be pretty opt in. The previous global rule set `transform: none` on
+`*:hover *`, which matches every descendant of any hovered element — and `html`
+is hovered whenever the pointer is in the window — so it reset the dock's
+indicator to the strip's left edge and left it highlighting the wrong item.
 
 ## Do's and Don'ts
 

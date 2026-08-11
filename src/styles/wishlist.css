@@ -128,7 +128,7 @@
   background: var(--accent-gradient);
   box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
     transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease;
@@ -280,7 +280,7 @@
    and the text under it for the length of the transition. */
 @media (hover: hover) and (pointer: fine) {
   .wishlist-item:hover {
-    transform: translateY(-8px);
+    transform: translateY(calc(-8px * var(--lift)));
     box-shadow:
       0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
       0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
@@ -631,7 +631,7 @@
 
 .item-url:hover .item-url__icon {
   opacity: 1;
-  transform: translate(1px, -1px);
+  transform: translate(calc(1px * var(--lift)), calc(-1px * var(--lift)));
 }
 
 /* Where to buy — one shop or five, always this list. A card with a single shop
@@ -760,7 +760,7 @@
   background: var(--accent-gradient);
   box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
     transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease;
@@ -847,7 +847,7 @@
 
 .reserve-btn:disabled::before {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
 }
 
 .reserve-btn--loading {
@@ -918,7 +918,7 @@
   background: var(--accent-gradient);
   box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
     transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease;

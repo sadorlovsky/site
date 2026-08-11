@@ -21,6 +21,16 @@
      passes, and the next component to want muted ink has somewhere to get it. */
   --ink-muted: light-dark(#6a6a6a, #9a9aa0);
 
+  /* How far a thing is allowed to travel when it answers the pointer. 1 is the
+     distance the designer drew; 0 is the same gesture with the journey removed
+     and the destination kept, which is what `prefers-reduced-motion` asks for.
+
+     Written into the distance rather than applied to the element, so a
+     transform that carries *layout* — the dock's indicator, a tick centred on
+     its line, the cursor tooltip — simply never opts in and cannot be caught
+     by it. That was the whole bug in the block at the end of this file. */
+  --lift: 1;
+
   /* The accent: a sunset, and now actually a gradient.
 
      The two stops used to sit 19° apart in hue and at the same lightness,
@@ -828,7 +838,7 @@ a.btn-danger:active {
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: scale(1.05);
+  transform: scale(calc(1 + 0.05 * var(--lift)));
   box-shadow: 0 6px 20px rgba(236, 100, 70, 0.4);
 }
 
@@ -869,7 +879,7 @@ a.btn-danger:active {
 }
 
 .btn-success:hover:not(:disabled) {
-  transform: scale(1.05);
+  transform: scale(calc(1 + 0.05 * var(--lift)));
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
@@ -1046,23 +1056,65 @@ a.btn-danger:active {
   }
 }
 
-/* Accessibility - Reduced motion */
+/* =============================================================================
+   Reduced motion
+
+   Asking for less motion is not asking for none. What the setting is actually
+   about is movement through space — the thing that provokes the symptom — and a
+   page that answers it by switching every animation off also throws away the
+   colour, the shadow and the lift that were telling you which control you are
+   pointing at. So the three kinds of motion here are treated as three
+   different questions.
+
+   1. Loops that only decorate — the drifting blobs, the morphing shape, the
+      spinning gradient. Nothing starts them and nothing ends them, so there is
+      no state for them to be explaining. They stop.
+
+   2. Movement that IS feedback — a card lifting, a button rising, an indicator
+      travelling to the item you just pointed at. The journey goes, the
+      destination stays: --lift collapses to 0 below, so anything that opted in
+      arrives without travelling. Each of those transforms is still written as
+      a distance times --lift, which is what makes this one declaration enough.
+
+   3. Everything that answers the pointer without moving — the hover wash, the
+      deepening shadow, the rim catching more light, opacity. It STAYS. Once
+      the movement is gone this is the entire remaining vocabulary for "this
+      one", and muting it is how a page ends up feeling broken rather than
+      calm.
+
+   What was here before was `animation`, `transition` and `transform` all set
+   to none with !important, the last of them on `*:hover *`. That selector
+   matches every descendant of any hovered element — and html and body are
+   hovered whenever the pointer is anywhere in the window, so it matched
+   essentially the whole document. It took the nav dock's indicator with it:
+   the pill is positioned by a transform, so with the mouse anywhere on the
+   page it snapped back to the dock's left edge and sat there highlighting the
+   wrong item. The tooltip, positioned the same way, went to the corner of the
+   viewport.
+
+   None of that blanket was protecting anything, either. Every script that
+   moves something — magnet.ts, nav-dock.ts, tooltip.ts, eye-moving.ts,
+   lang-switcher-indicator.ts, travel-map.ts — reads the media query itself and
+   bows out on its own.
+   ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  :root {
+    --lift: 0;
+  }
+
+  /* No !important, deliberately: a component with a loop that is genuinely
+     feedback rather than decoration has to be able to say so. The button's
+     spinner is the one that does, and it says it in kit/button.css next to the
+     rule it is overriding — the kit's stylesheets are imported per component,
+     so their position relative to this file is not fixed, and an exception
+     written here would win or lose depending on which page you were on. */
   *,
   *::before,
   *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-
-  /* Disable transforms on interactive states and their descendants */
-  *:hover,
-  *:focus,
-  *:active,
-  *:hover *,
-  *:focus *,
-  *:active * {
-    transform: none !important;
+    animation: none;
   }
 }

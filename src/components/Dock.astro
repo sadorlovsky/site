@@ -81,7 +81,7 @@ function isActive(href: string): boolean {
     background: var(--accent-gradient);
     box-shadow: 0 4px 16px rgba(236, 100, 70, 0.45);
     opacity: 0;
-    transform: translate(var(--dock-x, 0), var(--dock-y, 0)) scale(0.9);
+    transform: translate(var(--dock-x, 0), var(--dock-y, 0)) scale(calc(1 - 0.1 * var(--lift)));
     transition:
       transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
       width 0.42s cubic-bezier(0.16, 1, 0.3, 1),

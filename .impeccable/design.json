@@ -318,6 +318,16 @@
         "name": "duration-ambient",
         "value": "12s–15s",
         "purpose": "Background blob drift. Killed entirely under prefers-reduced-motion."
+      },
+      {
+        "name": "lift",
+        "value": "1 (0 under prefers-reduced-motion)",
+        "purpose": "Multiplier every decorative distance is written against — calc(-8px * var(--lift)). Collapses the journey while keeping the destination. Layout-carrying transforms never opt in, so they cannot be collapsed by it."
+      },
+      {
+        "name": "spinner-reduced",
+        "value": "kit-btn-spin 1.2s linear infinite",
+        "purpose": "The one loop that survives reduced motion: a loading button hides its label, so the ring is the only remaining signal. Half speed, linear, no pulse."
       }
     ],
     "breakpoints": [
@@ -488,6 +498,11 @@
         "name": "The Ink Rule",
         "body": "The accent never dims to make its label readable — the label darkens instead. Anything written on the accent is --accent-ink, in both schemes, and white on the accent is a bug. The single exception is being small text on the light page, where nothing can be darkened except the accent itself: that is what the deep pair exists for, and it has no other use.",
         "section": "colors"
+      },
+      {
+        "name": "The Lift-Opt-In Rule",
+        "body": "A transform that carries layout — the dock's sliding indicator, the cursor tooltip, a tick centred on its line — never multiplies by --lift and so can never be collapsed by it. Only distances that exist to be pretty opt in.",
+        "section": "motion"
       }
     ],
     "dos": [
@@ -500,7 +515,8 @@
       "Do let a row's hover wash bleed 0.75rem into the gutter while its text stays on the content edge.",
       "Do keep the reading column at 800px and the grid at 1200px.",
       "Do reach for --ink-muted for every secondary label, and measure any new text colour against its composited background rather than the page.",
-      "Do pick the accent by what the surface carries: --accent-gradient plus --accent-ink for anything with a label, --accent-gradient-display for large background-clip text, --accent-gradient-text for small."
+      "Do pick the accent by what the surface carries: --accent-gradient plus --accent-ink for anything with a label, --accent-gradient-display for large background-clip text, --accent-gradient-text for small.",
+      "Do write every decorative distance as calc(<distance> * var(--lift)) so reduced motion collapses it, and leave layout-carrying transforms alone."
     ],
     "donts": [
       "Don't use the accent gradient more than once per view, or on anything that isn't the primary action or the active state.",
@@ -513,7 +529,8 @@
       "Don't add a new focus treatment. It is 2px of Sunset Rose at 2px offset, everywhere.",
       "Don't hand-pick a grey for muted text, and don't dim --ink-muted further with opacity — it is chosen to clear 4.5:1 with nothing to spare.",
       "Don't put white text on the accent — it measures 3.07–3.09:1. Use --accent-ink.",
-      "Don't narrow the gradient's hue spread back toward a single flat pink. 45° is what makes it read as a gradient on a word as short as \"Zach\"."
+      "Don't narrow the gradient's hue spread back toward a single flat pink. 45° is what makes it read as a gradient on a word as short as \"Zach\".",
+      "Don't answer prefers-reduced-motion by switching animation, transition and transform off wholesale — that throws away the colour and shadow feedback that is all a still page has left, and a `*:hover *` transform reset will break anything positioned by transform."
     ]
   }
 }
