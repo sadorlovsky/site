@@ -111,7 +111,12 @@
   padding: 0.5rem var(--travel-row-inset);
   margin-inline: calc(-1 * var(--travel-row-inset));
   margin-bottom: 0.5rem;
-  border-bottom: var(--glass-border);
+  /* The same drawn rule the year heading wears — see --rule-lit. These two are
+     the same landmark in two views and have to end the same way. */
+  background-image: var(--rule-lit);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 1px;
 }
 
 .travel-section-title {

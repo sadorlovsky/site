@@ -255,6 +255,19 @@ import { Icon } from "astro-icon/components";
             is what keeps what passes underneath from being readable — which is
             why the blur is heavier here than the number it started at.
           </dd>
+
+          <dt><code>--rule-lit</code> — the veil's edge</dt>
+          <dd>
+            The line a veiled heading ends with, and the one rule on the site
+            that is drawn rather than declared — three stacked gradients laid on
+            as a <code>background-image</code>, sized <code>100% 1px</code> at
+            the bottom. It arrives out of nothing at the left, dissolves again
+            before the right edge, and catches the light twice on the way: a
+            bloom a quarter along and a dimmer one past the middle, because one
+            highlight reads as a lamp and two read as metal. A border could do
+            none of that, and <code>--glass-border</code>, which used to be here,
+            is a capsule's white edge — invisible on the light page.
+          </dd>
         </dl>
 
         <h3>The utility</h3>
@@ -1322,7 +1335,12 @@ import { Icon } from "astro-icon/components";
     padding: 0.5rem 0.9rem;
     background-color: var(--veil-bg);
     backdrop-filter: var(--veil-filter);
-    border-bottom: var(--glass-border);
+    /* What a veiled heading ends with everywhere else on the site — the drawn
+       rule, not a capsule's border. See --rule-lit. */
+    background-image: var(--rule-lit);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: 100% 1px;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--ink-body);

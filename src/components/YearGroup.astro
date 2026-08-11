@@ -64,7 +64,14 @@ const { year, class: className } = Astro.props;
        heading with those rows, so the two share one edge everywhere. */
     padding: 0.5rem 0.75rem;
     margin-inline: -0.75rem;
-    border-bottom: var(--glass-border);
+    /* The rule, drawn rather than declared — see --rule-lit. It rides the
+       veil's own background-color as a second layer instead of a border, which
+       is what lets it fade at both ends; the size and position lists cycle over
+       the token's three gradients. */
+    background-image: var(--rule-lit);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: 100% 1px;
     margin-bottom: 0.5rem;
     z-index: 10;
     color: var(--ink-body);

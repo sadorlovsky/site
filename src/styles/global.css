@@ -41,6 +41,64 @@
      so it answers to the 3:1 a component boundary needs and not to 4.5. */
   --hairline: light-dark(#ddd, #444);
 
+  /* The same job for the one rule that is looked at: the line under a sticky
+     heading — the year on /travel, a section head, the veil in /kit. It is the
+     only edge on the site that sits still on screen while a page slides under
+     it, so it is the only one worth drawing rather than declaring.
+
+     It is a background, not a border, because a border is one colour end to
+     end and this one has a shape. Three layers, painted bottom-up:
+
+       the line     out of nothing at the left, held at full strength under the
+                    heading, then thinning and dissolving before the right edge
+                    — so it ends where the content does and not at a hard stop
+                    against the page
+       the glint    a soft bloom a quarter of the way along, where the light in
+                    the room lands on the edge. Faintly rose in the dark scheme,
+                    because the light in that room is the ambient blobs
+       the catch    a second, dimmer one past the middle: one highlight reads as
+                    a lamp pointed at the line, two read as metal
+
+     Consumers apply it as `background-image` over their own background-color,
+     with `background: bottom / 100% 1px no-repeat` — the size and position
+     lists cycle, so one pair covers all three layers.
+
+     The old rule here was --glass-border, which is a capsule's edge: white at
+     0.7 alpha, which is right on a tinted lens and invisible on the light page,
+     where it was white-on-#f8f8ff. Light-scheme separators are made of ink, not
+     of highlight — hence the near-black core below, with white only in the
+     glints, where it lifts the line instead of being it.
+
+     No contrast bar applies: nothing is written in a rule and no control is
+     bounded by one, so this answers to neither 4.5 nor the 3:1 of SC 1.4.11 —
+     what separates a year from the rows under it is the space and the weight of
+     the heading, and the line only has to be seen. It is: the core reads 1.44:1
+     on the light page against the 1.28:1 --hairline manages there, and 1.48:1
+     on the dark one against the 1.29:1 the old white border managed. The dark
+     glint peaks at 4.16:1, which is what makes it read as a catch of light
+     rather than as a thicker stretch of line. */
+  --rule-lit:
+    linear-gradient(
+      90deg,
+      transparent 50%,
+      light-dark(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.14)) 64%,
+      transparent 78%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 12%,
+      light-dark(rgba(255, 255, 255, 0.55), rgba(255, 240, 245, 0.36)) 27%,
+      transparent 42%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      light-dark(rgba(17, 17, 17, 0.17), rgba(255, 255, 255, 0.13)) 5%,
+      light-dark(rgba(17, 17, 17, 0.17), rgba(255, 255, 255, 0.13)) 60%,
+      light-dark(rgba(17, 17, 17, 0.07), rgba(255, 255, 255, 0.05)) 85%,
+      transparent 100%
+    );
+
   /* The focus ring for the one case the accent cannot serve: a control whose
      focus arrives *on* a fill — the chrome buttons, the dock item, the admin's
      actions — where an accent outline lands on the accent and disappears. It
@@ -1269,6 +1327,17 @@ a.btn-danger:active {
   .skip-link {
     background-image: none;
     backdrop-filter: none;
+  }
+
+  /* --rule-lit is a background, and backgrounds are not painted in this mode —
+     which is the one place the drawn rule is worse than the border it replaced,
+     because a border survives here as a system colour. So the heading gets a
+     real one back. The fades and the glints are exactly what this reader has
+     asked not to be given: a rule at their own contrast, or nothing. */
+  .year-header,
+  .travel-section-head,
+  .glass-demo__veil {
+    border-bottom: 1px solid CanvasText;
   }
 
   /* Both of these carry meaning by colour alone here — a filled indicator and

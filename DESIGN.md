@@ -464,6 +464,18 @@ underneath. It is not glass — a capsule is a neutral tint you look *through*,
 the veil is the page closing over what passes beneath. Its bottom `2.75rem`
 fades every alpha to nothing so there is no hard edge where it ends.
 
+The veil ends in the one rule on the site that is drawn rather than declared
+(`--rule-lit`): three gradients laid on as a `background-image` at `100% 1px`,
+bottom. It comes out of nothing at the left, holds under the heading, and
+dissolves before the right edge, catching the light twice on the way — a bloom a
+quarter along, faintly rose in the dark scheme where the light in the room is
+the ambient blobs, and a dimmer one past the middle, because one highlight reads
+as a lamp pointed at a line and two read as metal. It replaced `--glass-border`
+under every sticky heading, which is a capsule's white edge and was invisible on
+the light page. A rule is not text and bounds no control, so it answers to no
+contrast bar; it merely has to be seen, and the core reads 1.44:1 on the light
+page and 1.48:1 on the dark, against the 1.29:1 the white border managed.
+
 ### Shadow Vocabulary
 
 - **`--glass-shadow`** (`0 10px 30px rgba(20,20,40,.12), 0 2px 6px
@@ -519,7 +531,9 @@ Chrome is fully round; content is generously round; nothing is square.
 Borders are hairline and mostly *inset shadows* rather than real borders:
 `box-shadow: inset 0 0 0 2px …` on inputs, selects, and ghost buttons, so a
 focus change never reflows layout. Real 1px borders belong to glass
-(`--glass-border`) and to rules between rows.
+(`--glass-border`) and to rules between rows; the rule under a sticky heading is
+a background, not a border, so that it can fade at both ends — see `--rule-lit`
+under Materials.
 
 **The Nested-Radius Rule.** A child filling a rounded parent's edge takes the
 parent's radius minus its border width, not the same value and not zero.
