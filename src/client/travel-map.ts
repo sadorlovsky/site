@@ -24,18 +24,38 @@ const VIEWPORT_EDGE_GAP = 8;
 const HOVER_RADIUS = 14;
 /** Latitude the globe opens on — also what its zoom floor is measured from. */
 const GLOBE_LATITUDE = 50;
-const VISITED_COLOR = "#ed6292";
+/** A colour token, read from the page rather than copied into this file.
+ *
+ * MapLibre paint properties take literal colour strings, so the map cannot
+ * write `var(--accent-start)` and be done. Copying the hex instead is what
+ * happened before, and it went stale exactly as you would expect: the site
+ * moved its accent and the map kept painting the old one, because nothing
+ * connects a string in a `.ts` file to a token in a stylesheet. This does
+ * connect them. The fallback is only for a container styled outside the site's
+ * CSS — same shape as getGlobeSize below. */
+function accentToken(name: string, fallback: string): string {
+  const declared = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return declared || fallback;
+}
+
+const visitedColor = () => accentToken("--accent-start", "rgb(234, 96, 144)");
 // City markers adapt to the colour scheme: the bead's body is white on the dark
 // map and a deep accent on the light one, where white would have almost no
 // contrast over the pink countries. The halo underneath uses the site accent in
 // both. The rim and the highlight don't change — light striking a piece of
 // glass doesn't take the colour of the page it's on.
 const CITY_BODY_DARK = "#ffffff";
-const CITY_BODY_LIGHT = "#b81f54";
-const CITY_GLOW_DARK = "#ed6292";
-const CITY_GLOW_LIGHT = "#a01848";
+const cityBodyLight = () =>
+  accentToken("--accent-deep-start", "rgb(199, 62, 114)");
+const cityGlowDark = () => accentToken("--accent-start", "rgb(234, 96, 144)");
+// The two below sit deeper and paler than any token the site declares — a halo
+// under a bead on a pink continent, and a national border. They are still the
+// accent's hue, held at the hue the tokens use so the map reads as one family.
+const CITY_GLOW_LIGHT = "#9e1953";
 const CITY_RIM = "#ffffff";
-const BORDER_COLOR = "#c74b7a";
+const BORDER_COLOR = "#c84b78";
 const LIGHT_BG = "#f8f8ff";
 const DARK_BG = "#191919";
 const LIGHT_WATER = "#cad8e6";
@@ -768,7 +788,7 @@ async function initMap(): Promise<void> {
       source: "countries",
       "source-layer": "countries",
       paint: {
-        "fill-color": VISITED_COLOR,
+        "fill-color": visitedColor(),
         "fill-opacity": 0.6,
       },
       filter: ["in", ["get", "ADM0_A3"], ["literal", Array.from(countries)]],
@@ -903,7 +923,7 @@ async function initMap(): Promise<void> {
       source: "visited-cities",
       filter: SINGLES,
       paint: {
-        "circle-color": CITY_GLOW_DARK,
+        "circle-color": cityGlowDark(),
         "circle-blur": 1,
         "circle-radius": markerScale(GLOW_RADIUS, GLOW_RADIUS_HOVER),
         "circle-opacity": [
@@ -1013,7 +1033,7 @@ async function initMap(): Promise<void> {
       source: "visited-cities",
       filter: CLUSTERS,
       paint: {
-        "circle-color": CITY_GLOW_DARK,
+        "circle-color": cityGlowDark(),
         "circle-blur": 1,
         "circle-radius": clusterScale(GLOW_RADIUS),
         "circle-opacity": 0.32,
@@ -1085,7 +1105,7 @@ async function initMap(): Promise<void> {
     setMarkerPaint(
       "visited-cities",
       "circle-color",
-      isDark ? CITY_BODY_DARK : CITY_BODY_LIGHT,
+      isDark ? CITY_BODY_DARK : cityBodyLight(),
     );
     // On the light map a same-hue glow washes out over the pink countries, so
     // the glow goes deeper and a touch stronger; the dark map keeps the airy
@@ -1093,7 +1113,7 @@ async function initMap(): Promise<void> {
     setMarkerPaint(
       "visited-cities-glow",
       "circle-color",
-      isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT,
+      isDark ? cityGlowDark() : CITY_GLOW_LIGHT,
     );
     setMarkerPaint("visited-cities-glow", "circle-opacity", [
       "case",
@@ -1109,12 +1129,12 @@ async function initMap(): Promise<void> {
     setMarkerPaint(
       "visited-cities-cluster",
       "circle-color",
-      isDark ? CITY_BODY_DARK : CITY_BODY_LIGHT,
+      isDark ? CITY_BODY_DARK : cityBodyLight(),
     );
     setMarkerPaint(
       "visited-cities-cluster-glow",
       "circle-color",
-      isDark ? CITY_GLOW_DARK : CITY_GLOW_LIGHT,
+      isDark ? cityGlowDark() : CITY_GLOW_LIGHT,
     );
     setMarkerPaint(
       "visited-cities-cluster-glow",
