@@ -1,0 +1,103 @@
+---
+/**
+ * A post in the recent band — the other material on the blog index.
+ *
+ * The ledger below answers "where is the one I remember"; these three answer
+ * "what has he written lately", which needs a sentence and room to read it.
+ *
+ * The newest is marked by air and weight, not by size. It was set two steps
+ * larger than its neighbours, which made the band read as one big thing with
+ * two footnotes rather than as three recent posts, one of them newest. Same
+ * type size for all three now: the lead is bolder and stands in more space,
+ * which says "this one first" without saying "the others barely count".
+ */
+interface Props {
+  href: string;
+  title: string;
+  description?: string;
+  isoDate: string;
+  dateLabel: string;
+  /** The newest post. Bolder, with more room around it. */
+  lead?: boolean;
+}
+
+const { href, title, description, isoDate, dateLabel, lead = false } = Astro.props;
+---
+
+<a class:list={["post-lead", { "post-lead--first": lead }]} href={href}>
+  <span class="post-lead__title">{title}</span>
+  {description && <span class="post-lead__desc">{description}</span>}
+  <time class="post-lead__date" datetime={isoDate}>{dateLabel}</time>
+</a>
+
+<style>
+  /* No rule between entries and no surface under them: what separates them is
+     the space, and what answers the pointer is the title. */
+  .post-lead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.9rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  /* The air half of "air and weight". The gap under the newest post is roughly
+     twice the gap between the two behind it — enough that the eye reads a
+     break there, which is what the extra type size used to buy at the cost of
+     making its neighbours look like footnotes. */
+  .post-lead--first {
+    padding: 0.6rem 0 2.75rem;
+  }
+
+  .post-lead:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+    border-radius: 14px;
+  }
+
+  .post-lead__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--ink-strong);
+    text-wrap: balance;
+    transition: background-color 0.2s ease;
+  }
+
+  .post-lead--first .post-lead__title {
+    font-weight: 700;
+  }
+
+  /* The same move every other list on this site makes — see ListItem — and the
+     only one that scales to a block this tall without drawing a container. */
+  .post-lead:hover .post-lead__title {
+    background: var(--accent-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .post-lead__desc {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--ink-body);
+    /* A measure, not a margin: 68 characters sits inside the 65–75 a line of
+       text is read at. */
+    max-width: 68ch;
+  }
+
+  .post-lead__date {
+    margin-top: 0.15rem;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-lead__title {
+      transition: none;
+    }
+  }
+</style>
