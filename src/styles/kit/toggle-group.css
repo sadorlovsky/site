@@ -378,6 +378,20 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   color: var(--ink-muted);
 }
 
+/* On the accent capsule the count is written *on* the brand, and the Ink Rule
+   applies to it like anything else: muted grey measures 1.15:1 on that ground
+   in the dark scheme and 1.62:1 in the light one — the figure was there and
+   could not be read. It inherits the capsule's own ink instead, and keeps the
+   lighter weight so it still reads as a figure attached to a word. */
+.kit-toggle-group--separated
+  .kit-toggle-item[aria-pressed="true"]
+  .kit-toggle-item__count,
+.kit-toggle-group--separated
+  .kit-toggle-item.is-active
+  .kit-toggle-item__count {
+  color: inherit;
+}
+
 /* Tab sizes — the separated chip's capsule geometry, with a little more room
    inside: the lens is a surface you aim at rather than a label you glance over,
    and it needs the width to read as glass rather than as a highlight. */

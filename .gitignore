@@ -49,3 +49,8 @@ local.db-journal
 # schema cannot hold (shadows, motion, tonal ramps, component snippets), and
 # splitting the two is how they drift apart without anyone noticing.
 .impeccable/live/
+
+# Impeccable review captures — screenshots taken for one finish review and
+# stale the moment the surface changes again. The durable half of a review is
+# the surface brief beside them, which is tracked.
+.impeccable/review/

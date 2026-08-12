@@ -370,6 +370,28 @@ and semibold, sticky under the page chrome, with the page's veil behind it so
 rows dissolve as they pass beneath. Never a 12px uppercase label. Switching
 between views must never change what a heading *is*.
 
+The one exception, named so it stays one: a post's contents drops to 0.9rem in
+muted ink once it leaves the flow for the margin at 1200px. In the flow it is a
+group heading and takes the landmark; in the margin it labels an instrument
+standing beside the document rather than heading a section of it, and a 1.25rem
+semibold word over a 152px rail would be the loudest thing on a reading page.
+It is still an `h2` and still in the outline.
+
+**The Reading Measure.** A post's prose is 1.1rem on a 1.8 line, larger than
+the 1rem body this system sets everywhere else, because it is read for twenty
+minutes rather than glanced at. The size is the exception; the measure is not
+negotiable with it. At 1.1rem the 800px column takes 97 characters to the line,
+so running text caps at **36rem** — 74 characters, inside the 65–75 band —
+while listings, tables and images keep the full column.
+
+Two units will lie to you about this. `ch` is the width of a zero and overstates
+Inter's prose by about a quarter, so count characters instead. And `em` resolves
+against each element's own size: the same declaration written in `em` came out
+792px on a heading, 528px on the colophon and 581px on a paragraph — three right
+edges from one rule. The cap is `rem`, resolved once against the root, with
+`box-sizing: border-box` so a quote's padding and a list's marker indent fall
+inside it rather than hanging off the end.
+
 **The Fluid Heading Rule.** Headings use `clamp()`, not breakpoint steps. Only
 their margins change at 768px.
 
@@ -389,8 +411,18 @@ line.
 
 Breakpoints, in order of how often they are used: **480px** (phone layout
 changes), **640px** and **600px** (component reflow), **768px** (typography and
-heading margins). There is no formal breakpoint scale; these are the four the
-site actually reaches for.
+heading margins), and **1200px** — the one wide one, where a blog post's
+contents leaves the flow and stands in the left margin. There is no formal
+breakpoint scale; these are the five the site actually reaches for.
+
+The wide one was bought rather than taken. Every other breakpoint here answers
+the question "has this run out of room"; 1200px answers "is there room to
+spare", which is a different question and the reason a fifth was needed at all.
+The number is arithmetic, not taste: the reading column is 800px, so each
+margin is `(100vw - 800px) / 2` — 200px at the breakpoint itself. The apparatus
+takes `min(230px, that margin - 3rem)`, so it opens at **152px** and grows to
+230px by about 1560px, where it stops. Below 1200px the contents is an ordinary
+landmark and a list.
 
 Sticky elements compose by publishing their own stuck height as a custom
 property on the page: `--sticky-header-offset` from the condensing header and
@@ -695,8 +727,9 @@ indicator to the strip's left edge and left it highlighting the wrong item.
   silently destroys the frost.
 - **Don't** scale a card, an image, or a text block on hover. Translate and
   shadow instead.
-- **Don't** introduce a fourth ink value, a fifth breakpoint, or a second
-  easing curve without removing one first.
+- **Don't** introduce a fourth ink value, a sixth breakpoint, or a second
+  easing curve without removing one first. The fifth was added deliberately and
+  argued for in Layout; that it took an argument is the point of the rule.
 - **Don't** make a group heading a small uppercase eyebrow. It is a 1.25rem
   semibold landmark or it is not a heading.
 - **Don't** use `#fff` as the light page or `#000` as the dark one.
@@ -718,10 +751,11 @@ indicator to the strip's left edge and left it highlighting the wrong item.
 
 ### Known drift
 
-Four surfaces carry no `prefers-reduced-transparency` fallback at all — the
-admin modal, admin toast, admin item card, and the blog's back-to-top button —
-a gap already recorded on `/kit`. Fix these when touching those surfaces; do
-not treat them as precedent.
+Three surfaces carry no `prefers-reduced-transparency` fallback at all — the
+admin modal, admin toast, and admin item card — a gap already recorded on
+`/kit`. Fix these when touching those surfaces; do not treat them as precedent.
+The blog's back-to-top button was the fourth and answers the query now, which
+is what "fix these when touching those surfaces" is for.
 
 The admin panel's `variables.css` is empty of colour now. It used to hold the
 pre-contrast semantic values, recorded here as a second dialect that had "not

@@ -3,12 +3,35 @@ import "@styles/kit/toggle-group.css";
 import { Icon } from "astro-icon/components";
 
 interface Props {
-  storageKey: string;
+  /** Runtime mode: the key the chosen language is remembered under. */
+  storageKey?: string;
+  /**
+   * Link mode, for a page that exists once per language rather than swapping
+   * its own text — a blog post. Each language is a URL or null when this post
+   * has no version in it, and `current` is the one being read.
+   *
+   * The same capsule either way, deliberately: a reader should not have to
+   * learn that the control in the corner means one thing on the archive and
+   * another inside a post. What changes is what it is made of — buttons that
+   * set a preference, or links that go somewhere.
+   */
+  links?: { en: string | null; ru: string | null };
+  current?: "en" | "ru";
   /** Size variant - sm (32px) or md (38px) */
   size?: "sm" | "md";
 }
 
-const { storageKey, size = "sm" } = Astro.props;
+const { storageKey, links, current = "en", size = "sm" } = Astro.props;
+
+const LANGS = [
+  { code: "en" as const, label: "ENG" },
+  { code: "ru" as const, label: "РУС" },
+];
+
+const missingLabel = {
+  en: "This post has no English version",
+  ru: "У этого поста нет русской версии",
+};
 ---
 
 <div
@@ -30,22 +53,45 @@ const { storageKey, size = "sm" } = Astro.props;
     class="kit-toggle-group__icon lang-switcher__icon"
     aria-hidden="true"
   />
-  <button
-    type="button"
-    class="kit-toggle-item lang-switcher__btn"
-    data-lang="en"
-    aria-pressed="true"
-  >
-    ENG
-  </button>
-  <button
-    type="button"
-    class="kit-toggle-item lang-switcher__btn"
-    data-lang="ru"
-    aria-pressed="false"
-  >
-    РУС
-  </button>
+  {
+    links
+      ? LANGS.map(({ code, label }) =>
+          links[code] ? (
+            <a
+              class="kit-toggle-item lang-switcher__btn"
+              href={links[code]}
+              data-lang={code}
+              hreflang={code}
+              aria-current={code === current ? "page" : undefined}
+            >
+              {label}
+            </a>
+          ) : (
+            /* The language this post was never written in. Shown rather than
+               hidden — a switcher that silently loses half of itself on some
+               posts is harder to read than one that says there is nothing on
+               the other side. */
+            <span
+              class="kit-toggle-item lang-switcher__btn is-unavailable"
+              data-lang={code}
+              aria-disabled="true"
+              title={missingLabel[code]}
+            >
+              {label}
+            </span>
+          ),
+        )
+      : LANGS.map(({ code, label }) => (
+          <button
+            type="button"
+            class="kit-toggle-item lang-switcher__btn"
+            data-lang={code}
+            aria-pressed={code === "en" ? "true" : "false"}
+          >
+            {label}
+          </button>
+        ))
+  }
 </div>
 
 <style>
@@ -135,6 +181,29 @@ const { storageKey, size = "sm" } = Astro.props;
   .lang-switcher .lang-switcher__btn:focus-visible {
     outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
+  }
+
+  /* Link mode: the anchors carry no underline of their own, and the language
+     this post was never written in is present but inert. */
+  .lang-switcher a.lang-switcher__btn,
+  .lang-switcher a.lang-switcher__btn:visited {
+    text-decoration: none;
+    color: var(--ink-muted);
+  }
+
+  .lang-switcher a.lang-switcher__btn:hover {
+    color: var(--ink-strong);
+  }
+
+  .lang-switcher a.lang-switcher__btn.is-active,
+  .lang-switcher a.lang-switcher__btn[aria-current="page"].is-active {
+    color: var(--accent-ink);
+  }
+
+  .lang-switcher .lang-switcher__btn.is-unavailable {
+    color: var(--ink-muted);
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 
   /* Globe icon — muted, above the indicator. */

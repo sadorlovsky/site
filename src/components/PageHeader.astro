@@ -14,6 +14,10 @@ interface Props {
     ru: string;
   };
   langSwitcher?: string;
+  /** A post exists once per language, so its switcher navigates rather than
+      remembers. Pass the two URLs and which one is being read. */
+  langLinks?: { en: string | null; ru: string | null };
+  langCurrent?: "en" | "ru";
   parentLink?: {
     href: string;
     label: { en: string; ru: string };
@@ -27,6 +31,8 @@ const {
   pageTitle,
   subtitle,
   langSwitcher,
+  langLinks,
+  langCurrent,
   parentLink,
   forceLang,
   condenseOnScroll,
@@ -136,11 +142,15 @@ const hasActions = Astro.slots.has("actions");
     }
 
     {
-      (langSwitcher || hasActions) && (
+      (langSwitcher || langLinks || hasActions) && (
         <div class="header-end">
-          {langSwitcher && (
+          {(langSwitcher || langLinks) && (
             <div class="lang-shell">
-              <LangSwitcher storageKey={langSwitcher} />
+              <LangSwitcher
+                storageKey={langSwitcher}
+                links={langLinks}
+                current={langCurrent}
+              />
             </div>
           )}
           <slot name="actions" />
@@ -260,6 +270,15 @@ const hasActions = Astro.slots.has("actions");
     }
 
     .crumb-home__label {
+      display: none;
+    }
+
+    /* Once the title pill is out, the crumb's middle link is the one thing in
+       the row that can go: the pill says where you are more precisely than
+       "Blog" does, and the house still says how to leave. Both pills keep
+       their full accessible names. */
+    .page-header--condense.is-condensed .crumb-sep,
+    .page-header--condense.is-condensed .crumb-link {
       display: none;
     }
   }
@@ -527,12 +546,24 @@ const hasActions = Astro.slots.has("actions");
     will-change: transform, opacity;
   }
 
+  /* A page title was always a word or two — "Blog", "Travel" — and this pill
+     was built for that. A post's title is a sentence, and on a phone it ran
+     off the right edge and straight through the breadcrumb on its way. The
+     pill is bounded by the row it floats in and the title ellipsizes; the
+     wording an assistive reader gets is the whole title either way, because
+     that lives in aria-label rather than in the visible text. */
+  .condensed-title {
+    max-width: calc(100% - 6.5rem);
+  }
+
   .condensed-title__text {
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     background: var(--accent-gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;

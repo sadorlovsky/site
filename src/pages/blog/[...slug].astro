@@ -3,6 +3,7 @@ import { getCollection, render } from "astro:content";
 import { Icon } from "astro-icon/components";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
+import PostContents from "@components/blog/PostContents.astro";
 import { getEffectivePubDate } from "@lib/blog";
 
 export const prerender = true;
@@ -79,6 +80,15 @@ export async function getStaticPaths() {
         pubDate,
         prevPost: relevantPosts[index + 1] || null,
         nextPost: relevantPosts[index - 1] || null,
+        // A neighbour's date has to be resolved here, where the whole
+        // collection is in scope: a translation carries no pubDate of its own
+        // and borrows the original's.
+        prevDate: relevantPosts[index + 1]
+          ? getEffectivePubDate(relevantPosts[index + 1], posts)
+          : null,
+        nextDate: relevantPosts[index - 1]
+          ? getEffectivePubDate(relevantPosts[index - 1], posts)
+          : null,
         translationUrl: translationPost
           ? getPostUrl(translationPost.id, translationPost.data.lang)
           : null,
@@ -89,16 +99,60 @@ export async function getStaticPaths() {
   });
 }
 
-const { post, pubDate, prevPost, nextPost, translationUrl, isTranslation, alternates } = Astro.props;
+const {
+  post,
+  pubDate,
+  prevPost,
+  nextPost,
+  prevDate,
+  nextDate,
+  translationUrl,
+  isTranslation,
+  alternates,
+} = Astro.props;
 const { Content, headings } = await render(post);
 
 // Format date based on post language
 const dateLocale = post.data.lang === "ru" ? "ru-RU" : "en-US";
 
+const isRu = post.data.lang === "ru";
+
+// The colophon says when, and nothing else. It used to carry the reading time
+// and the tags as well, on the theory that a post's facts belong together —
+// but a date is the one that places the post, and the rest was small grey type
+// around the thing being read.
+const copy = isRu
+  ? {
+      contents: "Содержание",
+      updated: "Обновлено",
+      older: "Раньше",
+      newer: "Позже",
+    }
+  : {
+      contents: "Contents",
+      updated: "Updated",
+      older: "Older",
+      newer: "Newer",
+    };
+
+
+const fullDate = (date: Date) =>
+  date.toLocaleDateString(dateLocale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+const shortDate = (date: Date) =>
+  date.toLocaleDateString(dateLocale, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
 // Filter headings for TOC (h2 and h3 only)
 const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 const showToc = tocHeadings.length >= 2;
-const collapseToc = tocHeadings.filter((h) => h.depth === 2).length > 8;
 
 // Helper to get post URL for prev/next navigation
 function getNavUrl(p: typeof post): string {
@@ -108,6 +162,15 @@ function getNavUrl(p: typeof post): string {
 
 // Get current post URL
 const postName = post.id.replace(/^(en|ru)\//, "");
+const postPath = post.data.lang === "ru" ? `/blog/ru/${postName}` : `/blog/${postName}`;
+
+// The switcher in the header navigates between the two versions of this post.
+// A language with no version renders present but inert, which is truer than
+// hiding it: eight posts have a Russian twin and one does not.
+const langLinks = {
+  en: isRu ? translationUrl : postPath,
+  ru: isRu ? postPath : translationUrl,
+};
 const postUrl = post.data.lang === "ru"
   ? `https://orlovsky.dev/blog/ru/${postName}`
   : `https://orlovsky.dev/blog/${postName}`;
@@ -174,63 +237,82 @@ const breadcrumbSchema = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  {/* Outside <main>, so nothing has to clip it — see the note on the index.
+      The `overflow: hidden` these forced made every ancestor a scroll
+      container, which is the trap that kept this room's sticky headings from
+      ever sticking. */}
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
   <main id="main">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-
+    <!--
+      THESIS: A long post is a document, not a feed. The reading column holds
+      at 800px and the left margin stops being empty: the contents stands there
+      and marks the section being read. It refuses the boxed contents dropped
+      between the title and the first paragraph, which is where a contents goes
+      when nobody has decided where it belongs.
+      OWN-WORLD: The site's own, finally — the condensing pill row, the veil,
+      the 0.75rem row inset, one accent on the title. Code is a recess in the
+      page rather than a card from the syntax theme's own world.
+      STORY: The reader knows where they are in a five-thousand-word post,
+      where they came from, and how to get back, without leaving the column.
+      FIRST VIEWPORT: Crumb pills, the gradient title, its one line, the
+      colophon in the ledger's lane; the contents already standing in the left
+      margin beside the first paragraph.
+      FORM: The apparatus in the margin — candidate 3 of the ordered structural
+      list; surface seed 81a724d1.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+    -->
     <div class="container">
+      {/* The post's own title is the page's hero now, which is what lets this
+          room join the rest of the site: PageHeader's condense mode pins the
+          pill row and hands the title to a floating capsule on the way down,
+          exactly as it does on /travel and the blog index. Until now this was
+          the one page whose chrome scrolled away and never came back, and that
+          absence — not the type or the colour — was what made it read as a
+          different site. The crumb keeps its own job through parentLink. */}
       <PageHeader
-        pageTitle={{ en: "Blog", ru: "Блог", href: "/blog" }}
+        pageTitle={{ en: post.data.title, ru: post.data.title }}
+        parentLink={{ href: "/blog", label: { en: "Blog", ru: "Блог" } }}
         forceLang={post.data.lang}
-      />
+        langLinks={langLinks}
+        langCurrent={post.data.lang}
+        condenseOnScroll
+      >
+        {
+          post.data.description && (
+            <p class="description">{post.data.description}</p>
+          )
+        }
 
-      <article data-lang={post.data.lang}>
-        <header class="post-header">
-          <div class="post-meta">
-            <time datetime={pubDate.toISOString()}>
-              {
-                pubDate.toLocaleDateString(dateLocale, {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })
-              }
+        {/* The colophon: what the post is, then what you can do with it.
+            Facts first and in the ledger's own lane — tabular date, reading
+            time, tags — because they are the same four facts the index row
+            carried, and a reader who followed that row should recognise
+            them. */}
+        <div class="colophon">
+          <div class="colophon__facts">
+            <time class="colophon__date" datetime={pubDate.toISOString()}>
+              {fullDate(pubDate)}
             </time>
             {
               post.data.updatedDate && (
-                <span class="updated-date">
-                  <span data-en="Updated" data-ru="Обновлено">
-                    {post.data.lang === "ru" ? "Обновлено" : "Updated"}
-                  </span>
-                  {" "}
+                <span class="colophon__updated">
+                  {copy.updated}{" "}
                   <time datetime={post.data.updatedDate.toISOString()}>
-                    {
-                      new Date(post.data.updatedDate).toLocaleDateString(dateLocale, {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    }
+                    {fullDate(new Date(post.data.updatedDate))}
                   </time>
                 </span>
               )
             }
-            {
-              translationUrl && (
-                <a
-                  href={translationUrl}
-                  class="translation-link"
-                >
-                  <Icon name="globe" width={14} height={14} />
-                  {isTranslation ? "Read in English" : "Читать на русском"}
-                </a>
-              )
-            }
+          </div>
+
+          <div class="colophon__actions">
             <button
               id="copy-link"
               class="copy-link"
-              aria-label="Copy link to post"
-              title="Copy link"
+              aria-label={isRu ? "Скопировать ссылку на пост" : "Copy link to post"}
+              title={isRu ? "Скопировать ссылку" : "Copy link"}
             >
               <span class="copy-link-icons">
                 <Icon name="link" width={16} height={16} class="icon-link" />
@@ -238,45 +320,17 @@ const breadcrumbSchema = {
               </span>
             </button>
           </div>
-          <h1>{post.data.title}</h1>
-          {
-            post.data.description && (
-              <p class="description">{post.data.description}</p>
-            )
-          }
-        </header>
+        </div>
+      </PageHeader>
 
+      <article data-lang={post.data.lang}>
         {
           showToc && (
-            <nav class="toc" aria-label="Table of contents">
-              {collapseToc ? (
-                <details>
-                  <summary class="toc-title">
-                    {post.data.lang === "ru" ? "Содержание" : "Contents"}
-                  </summary>
-                  <ol>
-                    {tocHeadings.map((heading) => (
-                      <li class={heading.depth === 3 ? "toc-item toc-h3" : "toc-item"}>
-                        <a href={`#${heading.slug}`}>{heading.text}</a>
-                      </li>
-                    ))}
-                  </ol>
-                </details>
-              ) : (
-                <>
-                  <h2 class="toc-title">
-                    {post.data.lang === "ru" ? "Содержание" : "Contents"}
-                  </h2>
-                  <ol>
-                    {tocHeadings.map((heading) => (
-                      <li class={heading.depth === 3 ? "toc-item toc-h3" : "toc-item"}>
-                        <a href={`#${heading.slug}`}>{heading.text}</a>
-                      </li>
-                    ))}
-                  </ol>
-                </>
-              )}
-            </nav>
+            <PostContents
+              headings={tocHeadings}
+              label={copy.contents}
+              lang={post.data.lang}
+            />
           )
         }
 
@@ -284,21 +338,40 @@ const breadcrumbSchema = {
           <Content />
         </div>
 
+        {/* Two more ledger rows. The direction is a word in the markup rather
+            than a CSS `content` string that only existed on a phone, and each
+            neighbour carries its date, because "older" and "newer" are claims
+            about time and the reader is entitled to see how far. */}
         {
           (prevPost || nextPost) && (
-            <nav class="post-nav" aria-label="Post navigation">
-              {prevPost ? (
-                <a href={getNavUrl(prevPost)} class="post-nav-link prev">
-                  <Icon name="arrow-left" width={16} height={16} />
-                  <span class="post-nav-title">{prevPost.data.title}</span>
+            <nav
+              class="post-nav"
+              aria-label={isRu ? "Другие посты" : "Post navigation"}
+            >
+              {prevPost && prevDate ? (
+                <a href={getNavUrl(prevPost)} class="post-nav__link post-nav__link--older">
+                  <span class="post-nav__dir">
+                    <Icon name="arrow-left" width={14} height={14} aria-hidden="true" />
+                    {copy.older}
+                  </span>
+                  <span class="post-nav__title">{prevPost.data.title}</span>
+                  <time class="post-nav__date" datetime={prevDate.toISOString()}>
+                    {shortDate(prevDate)}
+                  </time>
                 </a>
               ) : (
                 <div />
               )}
-              {nextPost ? (
-                <a href={getNavUrl(nextPost)} class="post-nav-link next">
-                  <span class="post-nav-title">{nextPost.data.title}</span>
-                  <Icon name="arrow-right" width={16} height={16} />
+              {nextPost && nextDate ? (
+                <a href={getNavUrl(nextPost)} class="post-nav__link post-nav__link--newer">
+                  <span class="post-nav__dir">
+                    {copy.newer}
+                    <Icon name="arrow-right" width={14} height={14} aria-hidden="true" />
+                  </span>
+                  <span class="post-nav__title">{nextPost.data.title}</span>
+                  <time class="post-nav__date" datetime={nextDate.toISOString()}>
+                    {shortDate(nextDate)}
+                  </time>
                 </a>
               ) : (
                 <div />
@@ -309,9 +382,11 @@ const breadcrumbSchema = {
       </article>
     </div>
 
-    <button id="back-to-top" class="back-to-top" aria-label="Back to top" hidden>
-      <Icon name="chevron-up" width={20} height={20} />
-    </button>
+    {/* No floating back-to-top disc. It was a circle in the corner belonging
+        to no other part of this site's vocabulary, and the thing it did is
+        already done better by the condensed title pill, which carries the
+        post's name and sits where the cursor is by the time you want it. Every
+        other page here has worked that way for a while. */}
   </main>
 </PageLayout>
 
@@ -319,7 +394,6 @@ const breadcrumbSchema = {
   main {
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
   }
 
   /* Ambient background blobs */
@@ -374,96 +448,90 @@ const breadcrumbSchema = {
   .container {
     position: relative;
     z-index: 1;
-    max-width: 720px;
+    /* The 800px DESIGN.md documents for every reading surface. This page was
+       the one that had drifted to 720, and the redesign made the difference
+       visible: the index moved to the documented column, so navigating from
+       the archive into a post shifted the page 80px sideways. At 1.1rem the
+       prose still measures inside the 65–75 characters a line is read at. */
+    max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
+    /* Without this the 800px is the content box and the column comes out 848px
+       wide — the same number as the index meaning two different widths, which
+       is the whole thing the number was moved to fix. */
+    box-sizing: border-box;
 
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
 
-  .post-header {
-    margin-bottom: 2.5rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid
-      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+  /* The colophon.
+
+     Nothing here is set in tracked uppercase any more. That treatment turned a
+     date into a label about a date, and it was the page's only remaining
+     eyebrow; the index states the same facts in the same lane at plain case
+     with tabular figures, and two surfaces disagreeing about what a date looks
+     like is one surface too many. */
+  .colophon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    margin-top: 1.5rem;
+    /* Ends where the prose ends. The facts and the two controls used to reach
+       the full column while everything under them stopped short, which put the
+       header block and the document it introduces on two different right
+       edges — an accident rather than a decision. */
+    max-width: 36rem;
   }
 
-  .post-header time {
+  .colophon__facts {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 0.5rem;
+    min-width: 0;
     font-size: 0.85rem;
-    font-weight: 500;
     color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
   }
 
-  .updated-date {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding-left: 0.75rem;
-    border-left: 1px solid light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.15));
+  .colophon__date,
+  .colophon__updated time {
+    font-variant-numeric: tabular-nums;
   }
 
-  .updated-date time {
-    color: var(--accent-start);
+  .colophon__date::after,
+  .colophon__updated::after {
+    content: "·";
+    margin-left: 0.5rem;
+    color: var(--hairline);
   }
 
-  .post-header h1 {
-    font-size: clamp(1.75rem, 5vw, 2.5rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0.75rem 0 0 0;
-    line-height: 1.2;
-    background: var(--accent-gradient-display);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+  /* Last in the row whether or not the optional pieces are there. */
+  .colophon__facts > :last-child::after {
+    content: none;
   }
 
-  .post-header .description {
-    font-size: 1.1rem;
-    color: var(--ink-muted);
-    margin: 1rem 0 0 0;
-    line-height: 1.6;
-  }
-
-  /* Post meta (date + copy link) */
-  .post-meta {
+  .colophon__actions {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    flex-wrap: wrap;
+    flex: none;
   }
 
-  .post-meta time {
-    line-height: 1;
-  }
-
-  .translation-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--accent-start);
-    text-decoration: none;
-    height: 32px;
-    padding: 0 0.75rem;
-    border-radius: 8px;
-    background: light-dark(rgba(234, 96, 144, 0.1), rgba(234, 96, 144, 0.15));
-    transition: all 0.2s;
-  }
-
-  .translation-link:hover {
-    background: light-dark(rgba(234, 96, 144, 0.18), rgba(234, 96, 144, 0.25));
-  }
-
-  .translation-link:visited {
-    color: var(--accent-start);
+  /* The same sentence the index shows for this post, in the same ink. It is
+     read rather than glanced at, which is what --ink-body is for. */
+  /* The same measure the article below it keeps, so the document has one right
+     edge rather than three. It was 60ch — a different unit answering a
+     different question, from before the measure was worked out. */
+  .description {
+    font-size: 1.1rem;
+    color: var(--ink-body);
+    margin: 1rem 0 0 0;
+    line-height: 1.6;
+    max-width: 36rem;
   }
 
   .copy-link {
@@ -508,7 +576,10 @@ const breadcrumbSchema = {
     position: absolute;
     top: 0;
     left: 0;
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+    /* The site's one easing curve. This was the only place on the page that
+       had reached for a second — an overshoot spring — and DESIGN.md's rule is
+       that a new curve arrives only by replacing the old one. */
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
   }
 
   .copy-link .icon-check {
@@ -527,208 +598,134 @@ const breadcrumbSchema = {
     transform: scale(1);
   }
 
-  /* Table of Contents */
-  .toc {
-    margin-bottom: 2.5rem;
-    padding: 1.25rem 1.5rem;
-    border-radius: 12px;
-    background: light-dark(rgba(0, 0, 0, 0.025), rgba(255, 255, 255, 0.03));
-    border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
-    position: relative;
-  }
 
-  .toc::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 1.25rem;
-    bottom: 1.25rem;
-    width: 3px;
-    border-radius: 0 2px 2px 0;
-    background: linear-gradient(180deg, var(--accent-start), var(--accent-end));
-    opacity: 0.6;
-  }
+  /* Where to go next — two rows from the index's ledger, not two cards.
 
-  .toc-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin: 0 0 1rem 0;
-    color: var(--ink-muted);
-  }
-
-  .toc ol {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .toc-item {
-    margin: 0;
-    position: relative;
-  }
-
-  .toc-h3 {
-    padding-left: 1rem;
-  }
-
-  .toc a {
-    color: var(--ink-muted);
-    text-decoration: none;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    transition: color 0.15s;
-  }
-
-  .toc a:visited {
-    color: var(--ink-muted);
-  }
-
-  .toc a:hover {
-    color: var(--accent-start);
-  }
-
-  .toc a:active {
-    color: var(--accent-end);
-  }
-
-  .toc a:focus-visible {
-    outline: 2px solid var(--accent-start);
-    outline-offset: 2px;
-  }
-
-  .toc details summary.toc-title {
-    cursor: pointer;
-    list-style: none;
-  }
-
-  .toc details summary.toc-title::marker,
-  .toc details summary.toc-title::-webkit-details-marker {
-    display: none;
-  }
-
-  .toc details summary.toc-title::after {
-    content: "▸";
-    margin-left: 0.4em;
-    display: inline-block;
-    transition: transform 0.15s;
-    font-size: 1.5em;
-  }
-
-  .toc details[open] summary.toc-title::after {
-    transform: rotate(90deg);
-  }
-
-  .toc details[open] ol {
-    margin-top: 1rem;
-  }
-
-  /* Post navigation (prev/next) */
+     The old version was a truncated title beside an arrow, and grew a tinted,
+     bordered box around each one on phones. A reader who arrived here from the
+     archive already knows what a post looks like in a list: a direction, a
+     title, and the date it was written. */
   .post-nav {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-top: 2.5rem;
-    padding-top: 2rem;
-    border-top: 1px solid
-      light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+    gap: 0.5rem 1.5rem;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
   }
 
-  .post-nav-link {
+  .post-nav__link {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 0;
-    color: var(--ink-muted);
+    flex-direction: column;
+    gap: 0.2rem;
+    /* The row inset: text on the content edge, wash 0.75rem past it. */
+    padding: 0.65rem 0.75rem;
+    margin-inline: -0.75rem;
+    border-radius: 14px;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: color 0.2s;
+    color: inherit;
     min-width: 0;
+    transition: background-color 0.25s ease;
   }
 
-  .post-nav-link:hover {
-    color: var(--accent-start);
+  .post-nav__link:hover {
+    background-color: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
   }
 
-  .post-nav-link:focus-visible {
+  .post-nav__link:focus-visible {
     outline: 2px solid var(--accent-start);
     outline-offset: 2px;
   }
 
-  .post-nav-link.next {
-    justify-content: flex-end;
+  .post-nav__link--newer {
+    align-items: flex-end;
     text-align: right;
   }
 
-  .post-nav-title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .post-nav__dir {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
   }
 
-  .post-nav-link svg {
-    flex-shrink: 0;
-    transition: transform 0.2s;
+  .post-nav__dir :global(svg) {
+    flex: none;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .post-nav-link.prev:hover svg {
+  .post-nav__link--older:hover .post-nav__dir :global(svg) {
     transform: translateX(calc(-3px * var(--lift)));
   }
 
-  .post-nav-link.next:hover svg {
+  .post-nav__link--newer:hover .post-nav__dir :global(svg) {
     transform: translateX(calc(3px * var(--lift)));
   }
 
-  /* Back to top button */
-  .back-to-top {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 1px solid
-      light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
-    background: light-dark(rgba(255, 255, 255, 0.9), rgba(40, 40, 45, 0.9));
+  .post-nav__title {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--ink-body);
+    transition: color 0.2s ease;
+  }
+
+  .post-nav__link:hover .post-nav__title {
+    color: var(--ink-strong);
+  }
+
+  .post-nav__date {
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
     color: var(--ink-muted);
-    cursor: pointer;
-    opacity: 0;
-    transform: translateY(20px);
-    transition:
-      opacity 0.3s,
-      transform 0.3s,
-      background 0.2s,
-      color 0.2s;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    .back-to-top {
-      backdrop-filter: blur(10px);
-    }
-  }
 
-  .back-to-top.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  /* The measure.
 
-  .back-to-top:hover {
-    background: var(--accent-gradient);
-    border-color: transparent;
-    color: var(--accent-ink);
-  }
+     The column is 800px because both blog surfaces share it and a reader
+     moving between them should not watch the page slide sideways. Running text
+     does not want all of it: at 1.1rem this column takes 97 characters to the
+     line, against the 65–75 a paragraph is read at — measured, not estimated,
+     because the `ch` unit is the width of a zero and flatters Inter's prose by
+     about a quarter.
 
-  .back-to-top:focus-visible {
-    outline: 2px solid var(--accent-start);
-    outline-offset: 2px;
+     So the column stays and the sentences stop early. Anything that is read
+     word by word caps at 33em, about 75 characters; anything that is looked at
+     rather than read — a listing, a comparison table, an image — keeps the
+     full width, which is the room those actually need. Everything still starts
+     on the same left edge, so the ragged right reads as a measure rather than
+     as a layout that failed. */
+  .content :global(p),
+  .content :global(ul),
+  .content :global(ol),
+  .content :global(dl),
+  .content :global(blockquote),
+  .content :global(h2),
+  .content :global(h3),
+  .content :global(h4),
+  .content :global(figcaption),
+  /* The section rule is part of the reading flow, not something looked at:
+     left out of this set it ran a hundred pixels past the paragraphs it
+     separates, which is the one place a ragged right reads as a mistake. */
+  .content :global(hr) {
+    max-width: 36rem;
+    /* One number, resolved once. The cap has to mean the same thing for every
+       element wearing it, and two things were stopping it:
+
+       `em` resolves against each element's own font-size, so the same
+       declaration came out 792px on an h2, 528px on the colophon and 581px on
+       a paragraph — three right edges from one rule. `rem` resolves against
+       the root and lands on all of them.
+
+       `content-box` then left a blockquote's padding and 4px bar, and a
+       list's marker indent, hanging off the end — the quote overshot the
+       paragraphs by 44px, directly above the rule. Both are the same family of
+       trap as measuring prose in `ch`: a unit answering against something
+       other than what you were looking at. */
+    box-sizing: border-box;
   }
 
   /* Content typography */
@@ -758,12 +755,20 @@ const breadcrumbSchema = {
     line-height: 1.8;
   }
 
+  /* The most repeated accent text on the site, and it shipped as one bare
+     value for both schemes: bright rose measures 3.09:1 as 1.1rem body text on
+     the light page, and every link in every post is inside a sentence. This is
+     the rule global.css already states for `a` — deep coral on paper, bright
+     rose on the dark page — which this block had quietly overridden. */
   .content :global(a) {
-    color: var(--accent-start);
+    color: light-dark(var(--accent-deep-end), var(--accent-start));
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
-    text-decoration-color: rgba(234, 96, 144, 0.4);
+    text-decoration-color: light-dark(
+      rgba(207, 63, 0, 0.4),
+      rgba(234, 96, 144, 0.4)
+    );
     transition: color 0.15s ease, text-decoration-color 0.15s ease;
   }
 
@@ -775,8 +780,11 @@ const breadcrumbSchema = {
     );
   }
 
+  /* Hover moves away from the page in both schemes — deeper on paper, brighter
+     on the dark one. The bright coral it reached for measured 3.24:1 on the
+     light page, so hovering a link made it harder to read. */
   .content :global(a:hover) {
-    color: var(--accent-end);
+    color: light-dark(var(--accent-deep-start), #ff9eae);
     text-decoration-color: currentColor;
   }
 
@@ -788,12 +796,103 @@ const breadcrumbSchema = {
     border-radius: 4px;
   }
 
+  /* A code block is a recess in the page, not a card from another site.
+
+     Its ground is named once in global.css beside the Shiki token rules, so
+     the colour cannot drift page by page; what lives here is the shape. The
+     hairline is the site's own edge, the radius is the documented 12px, and
+     the block bleeds 0.75rem into the gutter on both sides — the same inset
+     every row, rule and sticky heading on this site ends on, so a listing sits
+     a little proud of the prose instead of being indented from it.
+
+     The language rides in the top-right corner as generated content: `pre`
+     already carries `data-language` from Shiki, and a label nobody has to
+     select is exactly what generated content is for. */
   .content :global(pre) {
-    background: light-dark(#1e1e1e, #0d0d0d);
+    position: relative;
     border-radius: 12px;
-    padding: 1.25rem;
-    overflow-x: auto;
+    border: 1px solid var(--hairline);
+    padding: 1.35rem 1.25rem;
     margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+
+  /* "plaintext" is what Shiki calls a fence with no language on it, which is
+     the author saying there is nothing to name. Naming it anyway puts a label
+     on every shell transcript and every wall of output. */
+  .content :global(pre[data-language]:not([data-language="plaintext"]):not([data-language="text"]))::before {
+    content: attr(data-language);
+    position: absolute;
+    top: 0.55rem;
+    right: 0.85rem;
+    font-family: var(--font-fira-code);
+    font-size: 0.7rem;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    color: var(--ink-muted);
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+
+  /* The label and the button share one corner and take turns: what language
+     this is matters while you are reading it, and stops mattering the moment
+     you reach for the copy. Neither has to guess the other's width. */
+  .content :global(pre:hover)::before,
+  .content :global(pre:focus-within)::before {
+    opacity: 0;
+  }
+
+  /* The copy button the script hangs on each block. Ghost until the pointer
+     arrives, because a listing is read far more often than it is copied. */
+  .content :global(.code-copy) {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.5rem;
+    height: 28px;
+    padding: 0 0.6rem;
+    border: none;
+    border-radius: 6px;
+    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.08));
+    color: var(--ink-muted);
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .content :global(pre:hover .code-copy),
+  .content :global(.code-copy:focus-visible) {
+    opacity: 1;
+  }
+
+  .content :global(.code-copy:hover) {
+    color: var(--ink-strong);
+    background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
+  }
+
+  .content :global(.code-copy:focus-visible) {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .content :global(.code-copy),
+    .content :global(pre)::before {
+      transition: none;
+    }
+  }
+
+  /* Touch has no hover to reveal it with. */
+  @media (pointer: coarse) {
+    .content :global(.code-copy) {
+      opacity: 1;
+    }
   }
 
   .content :global(pre code) {
@@ -803,7 +902,79 @@ const breadcrumbSchema = {
     line-height: 1.6;
   }
 
-  /* Remove italic from syntax highlighting (catppuccin theme uses italic for some tokens) */
+  /* Tables get the ledger's material: hairline rules from the token rather
+     than two hand-picked greys, a header in strong ink, and the row wash the
+     rest of the site answers a pointer with. They also stop pushing the page
+     sideways — `display: block` makes the table its own scroll box, which is
+     the only way a five-column comparison fits a phone without the article
+     going with it. */
+  /* The table keeps `display: table`, so it keeps the role and the row and
+     cell relationships an assistive reader navigates by. The scrolling belongs
+     to the box around it, which the client script adds — and that box is
+     focusable and named, because a region that scrolls and no key can reach is
+     a wall for anyone not holding a mouse. */
+  .content :global(.table-scroll) {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    border-radius: 8px;
+  }
+
+  .content :global(.table-scroll:focus-visible) {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  .content :global(table) {
+    width: 100%;
+    min-width: max-content;
+    margin: 0;
+    border-collapse: collapse;
+  }
+
+  .content :global(th) {
+    padding: 0.6rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink-strong);
+    border-bottom: 1px solid var(--hairline);
+    white-space: nowrap;
+  }
+
+  .content :global(td) {
+    padding: 0.7rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .content :global(tbody tr:last-child td) {
+    border-bottom: none;
+  }
+
+  .content :global(tbody tr) {
+    transition: background-color 0.25s ease;
+  }
+
+  .content :global(tbody tr:hover) {
+    background-color: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
+  }
+
+  /* Inline code inside a cell was being clipped: the cell is narrow, the token
+     is one unbreakable run, and `anywhere` is what global.css already gives
+     inline code everywhere else. */
+  .content :global(td code) {
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .content :global(tbody tr) {
+      transition: none;
+    }
+  }
+
+  /* No italic in code. Vitesse italicises comments and keywords; a variable-
+     width italic inside a monospace listing breaks the column the indentation
+     is carrying. */
   .content :global(pre code .line span) {
     font-style: normal !important;
   }
@@ -818,14 +989,18 @@ const breadcrumbSchema = {
     margin-bottom: 0.5rem;
   }
 
+  /* The site's own blockquote, which global.css states once: a neutral rule
+     and a 2% wash. This overrode it with a rose bar and a rose tint, which put
+     a second accent on a page whose title already spends the one — and made a
+     quote look like a callout. The rule stays the ink weight it is everywhere
+     else; only the quote's tighter rhythm inside a post is kept. */
   .content :global(blockquote) {
-    border-left: 3px solid var(--accent-start);
+    border-left: 4px solid var(--hairline);
     margin: 1.5rem 0;
-    padding: 0.75rem 0 0.75rem 1.25rem;
+    padding: 0.75rem 1.25rem;
     color: var(--ink-muted);
     font-style: normal;
-    background: light-dark(rgba(234, 96, 144, 0.05), rgba(234, 96, 144, 0.08));
-    border-radius: 0 8px 8px 0;
+    background: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.02));
   }
 
   .content :global(blockquote h3) {
@@ -890,11 +1065,11 @@ const breadcrumbSchema = {
       animation: none;
     }
 
-    .post-nav-link,
-    .post-nav-link svg,
-    .back-to-top,
-    .copy-link,
-    .toc a {
+    /* The wash and the colour shift stay — with the travel gone, that is the
+       whole remaining vocabulary for "this one". Only the distances go, and
+       they go through --lift, which is already 0 here. */
+    .post-nav__dir :global(svg),
+    .copy-link {
       transition: none;
     }
   }
@@ -947,103 +1122,24 @@ const breadcrumbSchema = {
       margin-right: -0.5rem;
     }
 
-    .toc {
-      padding: 1rem 1.25rem;
-    }
-
-    .toc::before {
-      top: 1rem;
-      bottom: 1rem;
-    }
-
+    /* Stacked, and separated by space rather than by a rule — the same call
+       the recent band makes. Two blocks with a hairline between them is the
+       older idiom, and it reads worse the moment either one is pointed at. */
     .post-nav {
       grid-template-columns: 1fr;
       gap: 0.75rem;
     }
 
-    .post-nav-link {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-      padding: 1rem;
-      border-radius: 12px;
-      background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.04));
-      border: 1px solid light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
-    }
-
-    .post-nav-link::before {
-      content: attr(data-label);
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--ink-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .post-nav-link.prev::before {
-      content: "← Older";
-    }
-
-    .post-nav-link.next::before {
-      content: "Newer →";
-    }
-
-    article[data-lang="ru"] .post-nav-link.prev::before {
-      content: "← Раньше";
-    }
-
-    article[data-lang="ru"] .post-nav-link.next::before {
-      content: "Позже →";
-    }
-
-    .post-nav-link svg {
-      display: none;
-    }
-
-    .post-nav-link.next {
+    .post-nav__link--newer {
       align-items: flex-start;
       text-align: left;
-    }
-
-    .post-nav-title {
-      white-space: normal;
-      line-height: 1.4;
-    }
-
-    .back-to-top {
-      bottom: 1.5rem;
-      right: 1.5rem;
     }
   }
 </style>
 
+<script src="@client/post-prose.ts"></script>
+
 <script>
-  // Back to top button
-  const backToTopBtn = document.getElementById("back-to-top");
-  const threshold = 300;
-
-  if (backToTopBtn) {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    window.addEventListener("scroll", () => {
-      const shouldShow = window.scrollY > threshold;
-      backToTopBtn.classList.toggle("visible", shouldShow);
-      backToTopBtn.hidden = !shouldShow;
-    });
-
-    backToTopBtn.addEventListener("click", () => {
-      window.scrollTo({
-        top: 0,
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
-    });
-  }
-
   // Copy link button
   const copyLinkBtn = document.getElementById("copy-link");
 
