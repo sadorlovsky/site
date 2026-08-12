@@ -1,5 +1,4 @@
 ---
-import "flag-icons/css/flag-icons.min.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 interface Props {
@@ -9,7 +8,26 @@ interface Props {
 const { mode = "globe" } = Astro.props;
 ---
 
-<div id="map" class="map" data-testid="map" data-mode={mode}>
+{/* aria-hidden, and that is the accessible answer here rather than a shortcut
+    past one. Everything the map draws is on this page again as text a few
+    hundred pixels below it: the countries view lists every country, the
+    continents view groups them, the timeline names the cities of every trip.
+    A label like "map of visited countries" would promise a screen reader
+    something it then cannot read, and the alternative — narrating 136 city
+    beads into the accessibility tree — is worse than the list that already
+    exists and is already ordered.
+
+    Taking it out of the tab order goes with that. MapLibre gives its canvas a
+    tabindex and answers arrow keys by panning, so left in, it is a stop on the
+    way to the views that a keyboard user cannot do anything useful with and
+    which swallows the keys they would use to scroll. */}
+<div
+  id="map"
+  class="map"
+  data-testid="map"
+  data-mode={mode}
+  aria-hidden="true"
+>
   <div id="placeholder" class="placeholder"></div>
 </div>
 
@@ -90,7 +108,7 @@ const { mode = "globe" } = Astro.props;
   }
 
   .map:has(canvas:focus-visible) {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 

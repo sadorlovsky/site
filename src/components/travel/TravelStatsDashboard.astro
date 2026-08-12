@@ -1,5 +1,5 @@
 ---
-import ProgressBar from "@components/kit/ProgressBar.astro";
+import TravelYearChart from "./TravelYearChart.astro";
 import {
   datedTrips,
   formatMonthYear,
@@ -8,7 +8,6 @@ import {
   getTravelFacts,
 } from "@lib/travel";
 import "@styles/travel.css";
-import "flag-icons/css/flag-icons.min.css";
 
 const facts = getTravelFacts(datedTrips);
 
@@ -17,14 +16,14 @@ const facts = getTravelFacts(datedTrips);
 // many stops it makes there — but a card headed "Most visited country" that
 // answers "17 trips" reads as if it were answering some other question. The
 // busiest-year card below really is about trips and keeps the word.
-
-// The bars are read against the busiest year rather than against a round
-// number, so the tallest one always reaches the end of its groove and the
-// shape of the decade is legible instead of a row of stubs.
-const busiestYear = facts.tripsByYear.reduce(
-  (max, entry) => Math.max(max, entry.trips),
-  0,
-);
+//
+// The line above the answer and the line below it are the same spec, and both
+// are .travel-caption. They used to be a caption over the answer and a metric
+// under it — 0.85rem at 500 against 0.9rem at 400, in colours that are the same
+// value in the dark scheme. Nobody can read a twentieth of a rem and a hundred
+// units of weight as a decision; it reads as a wobble. Three type sizes per
+// fact, four facts, twelve typographic events in a block where only the middle
+// line is the point. Two now: quiet, loud, quiet.
 ---
 
 <div class="travel-sections">
@@ -39,22 +38,24 @@ const busiestYear = facts.tripsByYear.reduce(
           >
             Most visited city
           </h2>
-          <div class="value">
-            <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
+          <div class="answer">
+            <div class="value">
+              <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
+              <span
+                data-en={facts.mostVisitedCity.name.en}
+                data-ru={facts.mostVisitedCity.name.ru}
+              >
+                {facts.mostVisitedCity.name.en}
+              </span>
+            </div>
             <span
-              data-en={facts.mostVisitedCity.name.en}
-              data-ru={facts.mostVisitedCity.name.ru}
+              class="travel-caption amount"
+              data-en={formatVisitCount(facts.mostVisitedCity.visits, "en")}
+              data-ru={formatVisitCount(facts.mostVisitedCity.visits, "ru")}
             >
-              {facts.mostVisitedCity.name.en}
+              {formatVisitCount(facts.mostVisitedCity.visits, "en")}
             </span>
           </div>
-          <span
-            class="travel-metric"
-            data-en={formatVisitCount(facts.mostVisitedCity.visits, "en")}
-            data-ru={formatVisitCount(facts.mostVisitedCity.visits, "ru")}
-          >
-            {formatVisitCount(facts.mostVisitedCity.visits, "en")}
-          </span>
         </section>
       )
     }
@@ -69,25 +70,27 @@ const busiestYear = facts.tripsByYear.reduce(
           >
             Most visited country
           </h2>
-          <div class="value">
+          <div class="answer">
+            <div class="value">
+              <span
+                class={`fi fi-${facts.mostVisitedCountry.a2}`}
+                aria-hidden="true"
+              />
+              <span
+                data-en={facts.mostVisitedCountry.name.en}
+                data-ru={facts.mostVisitedCountry.name.ru}
+              >
+                {facts.mostVisitedCountry.name.en}
+              </span>
+            </div>
             <span
-              class={`fi fi-${facts.mostVisitedCountry.a2}`}
-              aria-hidden="true"
-            />
-            <span
-              data-en={facts.mostVisitedCountry.name.en}
-              data-ru={facts.mostVisitedCountry.name.ru}
+              class="travel-caption amount"
+              data-en={formatVisitCount(facts.mostVisitedCountry.visits, "en")}
+              data-ru={formatVisitCount(facts.mostVisitedCountry.visits, "ru")}
             >
-              {facts.mostVisitedCountry.name.en}
+              {formatVisitCount(facts.mostVisitedCountry.visits, "en")}
             </span>
           </div>
-          <span
-            class="travel-metric"
-            data-en={formatVisitCount(facts.mostVisitedCountry.visits, "en")}
-            data-ru={formatVisitCount(facts.mostVisitedCountry.visits, "ru")}
-          >
-            {formatVisitCount(facts.mostVisitedCountry.visits, "en")}
-          </span>
         </section>
       )
     }
@@ -102,14 +105,16 @@ const busiestYear = facts.tripsByYear.reduce(
           >
             Busiest year
           </h2>
-          <div class="value">{facts.mostActiveYear.year}</div>
-          <span
-            class="travel-metric"
-            data-en={formatTripCount(facts.mostActiveYear.trips, "en")}
-            data-ru={formatTripCount(facts.mostActiveYear.trips, "ru")}
-          >
-            {formatTripCount(facts.mostActiveYear.trips, "en")}
-          </span>
+          <div class="answer">
+            <div class="value">{facts.mostActiveYear.year}</div>
+            <span
+              class="travel-caption amount"
+              data-en={formatTripCount(facts.mostActiveYear.trips, "en")}
+              data-ru={formatTripCount(facts.mostActiveYear.trips, "ru")}
+            >
+              {formatTripCount(facts.mostActiveYear.trips, "en")}
+            </span>
+          </div>
         </section>
       )
     }
@@ -124,86 +129,90 @@ const busiestYear = facts.tripsByYear.reduce(
           >
             Latest new country
           </h2>
-          <div class="value">
+          <div class="answer">
+            <div class="value">
+              <span
+                class={`fi fi-${facts.latestNewCountry.a2}`}
+                aria-hidden="true"
+              />
+              <span
+                data-en={facts.latestNewCountry.name.en}
+                data-ru={facts.latestNewCountry.name.ru}
+              >
+                {facts.latestNewCountry.name.en}
+              </span>
+            </div>
             <span
-              class={`fi fi-${facts.latestNewCountry.a2}`}
-              aria-hidden="true"
-            />
-            <span
-              data-en={facts.latestNewCountry.name.en}
-              data-ru={facts.latestNewCountry.name.ru}
+              class="travel-caption amount"
+              data-en={formatMonthYear(
+                facts.latestNewCountry.year,
+                facts.latestNewCountry.month,
+                "en",
+              )}
+              data-ru={formatMonthYear(
+                facts.latestNewCountry.year,
+                facts.latestNewCountry.month,
+                "ru",
+              )}
             >
-              {facts.latestNewCountry.name.en}
+              {formatMonthYear(
+                facts.latestNewCountry.year,
+                facts.latestNewCountry.month,
+                "en",
+              )}
             </span>
           </div>
-          <span
-            class="travel-metric"
-            data-en={formatMonthYear(
-              facts.latestNewCountry.year,
-              facts.latestNewCountry.month,
-              "en",
-            )}
-            data-ru={formatMonthYear(
-              facts.latestNewCountry.year,
-              facts.latestNewCountry.month,
-              "ru",
-            )}
-          >
-            {formatMonthYear(
-              facts.latestNewCountry.year,
-              facts.latestNewCountry.month,
-              "en",
-            )}
-          </span>
         </section>
       )
     }
   </div>
 
-  {
-    facts.tripsByYear.length > 0 && (
-      <section>
-        <header class="travel-section-head">
-          <h2
-            class="travel-section-title"
-            data-en="Trips by year"
-            data-ru="Поездки по годам"
-          >
-            Trips by year
-          </h2>
-        </header>
-        <ol class="years" role="list">
-          {facts.tripsByYear
-            .slice()
-            .reverse()
-            .map((entry) => (
-              <li class="travel-row year">
-                <span class="travel-metric">{entry.year}</span>
-                <ProgressBar
-                  value={entry.trips}
-                  max={busiestYear}
-                  showPercent={false}
-                  accent={entry.trips === busiestYear}
-                  label={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
-                  data-aria-label-en={`${entry.year}: ${formatTripCount(entry.trips, "en")}`}
-                  data-aria-label-ru={`${entry.year}: ${formatTripCount(entry.trips, "ru")}`}
-                />
-                <span class="travel-metric year-count">{entry.trips}</span>
-              </li>
-            ))}
-        </ol>
-      </section>
-    )
-  }
+  {facts.tripsByYear.length > 0 && <TravelYearChart />}
 </div>
 
 <style>
-  /* Two facts across, on the same rhythm the sections stack at, so the gap
-     between the columns matches the gap above and below them. */
+  /* Two facts across. The rows sit further apart than the columns, which breaks
+     the page's even 1.5rem on purpose: the two lines of a fact are a few pixels
+     apart, so the space that groups them has to be unmistakably larger than the
+     space inside them. At an even gap the facts read as one slab of lines,
+     which is what they looked like. */
   .facts {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 2.25rem 1.5rem;
+  }
+
+  /* And inside a fact, the opposite: the two lines are pulled in tight and
+     given their own leading, so the grouping is done by space rather than by
+     the reader working out which caption belongs to which number. */
+  .facts section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* The answer and its amount on one line, built the way a section head builds
+     its title and its count: baseline, pushed to opposite ends. A fact is two
+     lines now rather than three, and the four amounts fall into a column down
+     the right of each grid cell instead of hanging under four names of four
+     different lengths. */
+  .answer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  /* The name is what gives way when the pair will not fit; the amount is four
+     characters and would be nonsense clipped. */
+  .amount {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .facts .travel-caption {
+    line-height: 1.35;
   }
 
   /* A fact's answer, at the size and weight of a group heading — the same
@@ -215,12 +224,14 @@ const busiestYear = facts.tripsByYear.reduce(
     gap: 0.45rem;
     font-weight: 600;
     font-size: 1.25rem;
+    /* Tighter than the document's, because the caption above it sits close now
+       and a loose line box would leave the answer floating off its label. */
+    line-height: 1.3;
     font-variant-numeric: tabular-nums;
-    color: light-dark(#111, #fafafa);
-    /* A grid item without this widens its column past the page rather than
-       letting a long country name ellipsize inside it. */
+    color: var(--ink-strong);
+    /* Without this a flex item refuses to go below its content's width, so a
+       long country name widens the cell instead of ellipsizing inside it. */
     min-width: 0;
-    margin-bottom: 0.1em;
   }
 
   /* No size of its own, so a flag stands to its name here in the same
@@ -236,33 +247,12 @@ const busiestYear = facts.tripsByYear.reduce(
     white-space: nowrap;
   }
 
-  .years {
-    display: flex;
-    flex-direction: column;
-    /* The rows bring their own 0.5rem of padding, so the list needs no gap of
-       its own and sits the same 0.5rem below its heading that a year's trips
-       sit below theirs. */
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  /* Three fixed tracks rather than the shared row's flex: the year and the count
-     are tabular numerals of known width, so pinning their columns keeps every
-     groove starting and ending on the same two lines down the whole list. The
-     rest of the row — its padding, radius and hover — comes from .travel-row,
-     so pointing at a year here answers exactly as pointing at a trip does. */
-  .year {
-    display: grid;
-    grid-template-columns: 2.5rem minmax(0, 1fr) 1.25rem;
-    gap: 0.6rem;
-  }
-
-  .year-count {
-    text-align: right;
-  }
-
-  @media (max-width: 520px) {
+  /* One column earlier than before. A name and its amount now share a line, so
+     "Saint Petersburg" and "10 visits" want about 280px between them; two
+     columns below this and the cell is narrower than that, and the name starts
+     ellipsizing to make room for four characters. Given the whole width it
+     never has to. */
+  @media (max-width: 640px) {
     .facts {
       grid-template-columns: 1fr;
     }

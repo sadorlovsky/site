@@ -82,10 +82,10 @@ const { storageKey, size = "sm" } = Astro.props;
     width: var(--ind-w, 0);
     height: var(--ind-h, 0);
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
     opacity: 0;
-    transform: translate(var(--ind-x, 0), var(--ind-y, 0)) scale(0.9);
+    transform: translate(var(--ind-x, 0), var(--ind-y, 0)) scale(calc(1 - 0.1 * var(--lift)));
     transition:
       transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
       width 0.42s cubic-bezier(0.16, 1, 0.3, 1),
@@ -108,7 +108,7 @@ const { storageKey, size = "sm" } = Astro.props;
     padding: 0 0.8rem;
     border-radius: 999px;
     font-size: 0.72rem;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
     background: transparent;
     box-shadow: none;
     transition: color 0.3s ease;
@@ -122,18 +122,18 @@ const { storageKey, size = "sm" } = Astro.props;
   }
 
   .lang-switcher .lang-switcher__btn:hover {
-    color: light-dark(#1a1a1a, #fff);
+    color: var(--ink-strong);
   }
 
   /* Whichever button the indicator rests under — the active language, or the
      one being hovered/focused. Set by the script; mirrors .dock-item.is-active.
      Declared after :hover so it wins on the hovered button (equal specificity). */
   .lang-switcher .lang-switcher__btn.is-active {
-    color: #fff;
+    color: var(--accent-ink);
   }
 
   .lang-switcher .lang-switcher__btn:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 
@@ -142,7 +142,7 @@ const { storageKey, size = "sm" } = Astro.props;
     position: relative;
     z-index: 1;
     margin-left: 0.15rem;
-    color: light-dark(#888, #8a8a90);
+    color: var(--ink-muted);
   }
 
   /* Hide globe icon on narrow screens */

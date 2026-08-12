@@ -77,12 +77,42 @@ import { Icon } from "astro-icon/components";
         </div>
 
         <h3>Accent</h3>
+        <p class="section-note">
+          The accent stays bright and its label goes dark — never the other way
+          round. White on this gradient is 3.07:1 against the 4.5 a button
+          label needs, and dimming the accent to fix that would cost the brand
+          its brightness on every primary action at once. The stops sit 45°
+          apart in hue so the sweep reads as a gradient even on a word as short
+          as <em>Zach</em>. The deep pair exists for one job only: being small
+          text on the light page, where nothing but the accent can darken.
+        </p>
         <div class="color-grid">
           <div class="color-swatch">
-            <div class="swatch" style="background: linear-gradient(135deg, rgb(237, 98, 146), rgb(237, 87, 96));"></div>
+            <div class="swatch swatch--ink" style="background: var(--accent-gradient);">Aa</div>
             <div class="color-info">
-              <code>--accent-start / end</code>
-              <span class="color-value">Gradient</span>
+              <code>--accent-gradient</code>
+              <span class="color-value">Surface + --accent-ink</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: var(--accent-gradient-display);"></div>
+            <div class="color-info">
+              <code>--accent-gradient-display</code>
+              <span class="color-value">Large text, 24px+</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: var(--accent-gradient-text);"></div>
+            <div class="color-info">
+              <code>--accent-gradient-text</code>
+              <span class="color-value">Small text</span>
+            </div>
+          </div>
+          <div class="color-swatch">
+            <div class="swatch" style="background: var(--success-gradient);"></div>
+            <div class="color-info">
+              <code>--success-gradient</code>
+              <span class="color-value">Confirmations</span>
             </div>
           </div>
         </div>
@@ -120,33 +150,38 @@ import { Icon } from "astro-icon/components";
         </div>
 
         <h3>Semantic</h3>
+        <p class="section-note">
+          Each family is stated at reading strength, because every one of them
+          ends up under white text at 10–13px somewhere in the kit. These are
+          the inks; the solid badge and toast grounds are a shade deeper again.
+        </p>
         <div class="color-grid">
           <div class="color-swatch">
-            <div class="swatch" style="background: #10b981;"></div>
+            <div class="swatch" style="background: #00875d;"></div>
             <div class="color-info">
               <span class="color-label">Success</span>
-              <span class="color-value">#10b981</span>
+              <span class="color-value">#00875d</span>
             </div>
           </div>
           <div class="color-swatch">
-            <div class="swatch" style="background: #f59e0b;"></div>
+            <div class="swatch" style="background: #955d00;"></div>
             <div class="color-info">
               <span class="color-label">Warning</span>
-              <span class="color-value">#f59e0b</span>
+              <span class="color-value">#955d00</span>
             </div>
           </div>
           <div class="color-swatch">
-            <div class="swatch" style="background: #ef4444;"></div>
+            <div class="swatch" style="background: #c2141a;"></div>
             <div class="color-info">
               <span class="color-label">Danger</span>
-              <span class="color-value">#ef4444</span>
+              <span class="color-value">#c2141a</span>
             </div>
           </div>
           <div class="color-swatch">
-            <div class="swatch" style="background: #6366f1;"></div>
+            <div class="swatch" style="background: #4338ca;"></div>
             <div class="color-info">
               <span class="color-label">Info</span>
-              <span class="color-value">#6366f1</span>
+              <span class="color-value">#4338ca</span>
             </div>
           </div>
         </div>
@@ -214,7 +249,24 @@ import { Icon } from "astro-icon/components";
             Not glass at all: the page's own colour closing over what scrolls
             beneath it. Used by the pinned header strip and
             <code>/travel</code>'s sticky year. A capsule is a neutral tint you
-            look through; this one belongs to the page.
+            look through; this one belongs to the page. It stays translucent on
+            purpose: a page with an ambient background has that behind the veil
+            too, and an opaque strip cuts a flat rectangle out of it. The frost
+            is what keeps what passes underneath from being readable — which is
+            why the blur is heavier here than the number it started at.
+          </dd>
+
+          <dt><code>--rule-lit</code> — the veil's edge</dt>
+          <dd>
+            The line a veiled heading ends with, and the one rule on the site
+            that is drawn rather than declared — three stacked gradients laid on
+            as a <code>background-image</code>, sized <code>100% 1px</code> at
+            the bottom. It arrives out of nothing at the left, dissolves again
+            before the right edge, and catches the light twice on the way: a
+            bloom a quarter along and a dimmer one past the middle, because one
+            highlight reads as a lamp and two read as metal. A border could do
+            none of that, and <code>--glass-border</code>, which used to be here,
+            is a capsule's white edge — invisible on the light page.
           </dd>
         </dl>
 
@@ -447,6 +499,89 @@ import { Icon } from "astro-icon/components";
           />
         </div>
 
+        <h3>Quiet Tone</h3>
+        <p>
+          <code>tone="quiet"</code> on the separated variant marks the current
+          item with ink and the wash it already answers a cursor with, instead
+          of the accent capsule. For a row that shares its space with something
+          already louder — /travel's country sort sits in a heading forty pixels
+          under the pinned view rail, and at full accent it was the brightest
+          thing on the page. Ink rather than a second glass capsule on purpose:
+          glass there would read as a smaller copy of the rail and make the two
+          compete for the same job.
+        </p>
+        <div class="component-row" id="toggle-quiet-demo">
+          <ToggleGroup
+            variant="separated"
+            tone="quiet"
+            size="sm"
+            items={[
+              { id: "cities", label: "By cities" },
+              { id: "name", label: "A–Z" },
+              { id: "first", label: "By first visit" },
+            ]}
+            value="cities"
+          />
+        </div>
+
+        <h3>Tabs Variant</h3>
+        <p>
+          The only variant that is not a set of toggles. It renders a real
+          <code>role="tablist"</code> — <code>aria-selected</code> rather than
+          <code>aria-pressed</code>, <code>aria-controls</code> pointing at the
+          panel, and a roving <code>tabindex</code> so the rail is one stop in
+          the tab order with the arrow keys moving inside it. Pass
+          <code>controls</code> on each item with the id of its panel; the tab
+          takes the id <code>{`${"{controls}"}-tab`}</code>, which is what the
+          panel points back at with <code>aria-labelledby</code>.
+        </p>
+        <p>
+          The current tab is a lens — the chrome's glass capsule, sliding behind
+          the label on the dock's easing. Same idiom as the magnetic dock and
+          the language switcher, with one part swapped: their indicator is an
+          accent gradient, which suits a small nav floating in the chrome, while
+          a tab rail is pinned over content that is already spending the accent.
+          One lens for the whole rail, so it travels and the row reads as one
+          instrument.
+        </p>
+        <p>
+          Needs a driver:
+          <code>import {`{ initToggleTabs }`} from "@client/toggle-tabs"</code>,
+          called with the tablist element and a callback that shows the matching
+          panel. It handles the keyboard, the marker and the edge fades; nothing
+          happens without it beyond the tab the server rendered.
+        </p>
+        <div class="component-row component-row--stack" id="toggle-tabs-demo">
+          <ToggleGroup
+            variant="tabs"
+            size="sm"
+            scrollable
+            items={[
+              { id: "timeline", label: "Timeline", count: 47, controls: "kit-tab-timeline" },
+              { id: "countries", label: "Countries", count: 32, controls: "kit-tab-countries" },
+              { id: "continents", label: "Continents", count: "2/7", controls: "kit-tab-continents" },
+              { id: "stats", label: "Stats", controls: "kit-tab-stats" },
+            ]}
+            value="timeline"
+          />
+          <div class="kit-tab-panels">
+            <div id="kit-tab-timeline" role="tabpanel" aria-labelledby="kit-tab-timeline-tab" tabindex="0">47 trips, newest first.</div>
+            <div id="kit-tab-countries" role="tabpanel" aria-labelledby="kit-tab-countries-tab" tabindex="0" hidden>32 countries and the cities in them.</div>
+            <div id="kit-tab-continents" role="tabpanel" aria-labelledby="kit-tab-continents-tab" tabindex="0" hidden>2 of 7 continents.</div>
+            <div id="kit-tab-stats" role="tabpanel" aria-labelledby="kit-tab-stats-tab" tabindex="0" hidden>No count on this tab — it is not a list of anything.</div>
+          </div>
+        </div>
+
+        <h3>Counts</h3>
+        <p>
+          Pass <code>count</code> to an item — a number, or a fraction like
+          <code>"2/7"</code> where "of how many" is the point. It says what the
+          label cannot: how much is behind the tab, so the row answers whether
+          a view is worth opening before it is opened. Language-neutral by
+          design; a count that needed translating would be a second label. An
+          item may go without one, and the gap says something too.
+        </p>
+
         <h3>With Icons</h3>
         <p>Pass <code>icon</code> to items. Icon size adjusts to toggle size (14px for sm, 16px for md).</p>
         <div class="component-row" id="toggle-icons-demo">
@@ -579,6 +714,15 @@ import { Icon } from "astro-icon/components";
           The <strong>box</strong> variant is for a single standalone boolean,
           where an unchecked capsule and an absent one would look the same.
         </p>
+        <p>
+          The box is a socket, and the tick is the fill lying in it. ProgressBar
+          states the rule this follows: <code>--glass-rim</code> is a lens edge
+          lit from the top left, so a channel sunk into the same surface is its
+          inverse. A checkbox has two states and the chrome has exactly those
+          two opposite treatments — and both halves here are the progress bar's,
+          value for value, because at this size a checkbox is a meter with two
+          stops.
+        </p>
 
         <h3>Pill</h3>
         <div class="kit-checkbox-group">
@@ -603,6 +747,32 @@ import { Icon } from "astro-icon/components";
         <div class="kit-checkbox-group">
           <Checkbox variant="box" size="sm" checked>SM</Checkbox>
           <Checkbox variant="box" size="md" checked>MD</Checkbox>
+        </div>
+
+        <h3>The mark on its own</h3>
+        <p>
+          <code>.kit-check</code> is the box without an input around it, for a
+          ticked state that is not a control — /travel's checklist marks 250
+          countries as seen or not, and none of them is something to click. Add
+          <code>.kit-check--on</code> for the ticked state and set
+          <code>--kit-check-size</code> for anything other than the kit's own
+          two. It exists so that idea has one appearance on the site rather than
+          growing a second one in a page's own stylesheet, which is where it had
+          got to.
+        </p>
+        <div class="component-row kit-check-demo">
+          <span class="kit-check kit-check--on" aria-hidden="true">
+            <svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2.5 6 5 8.5 9.5 3.5" />
+            </svg>
+          </span>
+          <span class="kit-check" aria-hidden="true"></span>
+          <span class="kit-check kit-check--on" style="--kit-check-size: 22px" aria-hidden="true">
+            <svg viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2.5 6 5 8.5 9.5 3.5" />
+            </svg>
+          </span>
+          <span class="kit-check" style="--kit-check-size: 22px" aria-hidden="true"></span>
         </div>
       </section>
 
@@ -898,9 +1068,14 @@ import { Icon } from "astro-icon/components";
 
 <style is:global>
   /* Layout */
+  /* Both of these carried !important, and neither had anything to beat —
+     nothing outside this file mentions .kit-layout. What they did beat was the
+     media query at the bottom of this stylesheet, which asks for a column
+     under 768px and was being ignored: the sidebar stayed alongside the
+     content and the page ran 511px past the right edge of a phone. */
   .kit-layout {
-    display: flex !important;
-    flex-direction: row !important;
+    display: flex;
+    flex-direction: row;
     max-width: 1200px;
     margin: 0 auto;
     min-height: 100vh;
@@ -927,7 +1102,7 @@ import { Icon } from "astro-icon/components";
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: light-dark(#888, #666);
+    color: var(--ink-muted);
     margin: 0 0 0.5rem 0;
   }
 
@@ -945,7 +1120,7 @@ import { Icon } from "astro-icon/components";
     display: block;
     padding: 0.35rem 0;
     font-size: 0.85rem;
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
     text-decoration: none;
     transition: color 0.15s;
   }
@@ -966,7 +1141,7 @@ import { Icon } from "astro-icon/components";
   }
 
   .kit-intro {
-    color: light-dark(#666, #aaa);
+    color: var(--ink-muted);
     margin-bottom: 3rem;
   }
 
@@ -993,6 +1168,27 @@ import { Icon } from "astro-icon/components";
 
   .component-import code {
     font-size: 0.8rem;
+  }
+
+  /* The one swatch that has to prove something rather than just show a colour:
+     the accent carries a label, so it shows the label. */
+  .swatch--ink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent-ink);
+  }
+
+  /* A line of prose under a heading, before its grid — for the places where
+     which token to reach for is the thing worth documenting. */
+  .section-note {
+    max-width: 62ch;
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--ink-muted);
   }
 
   /* Color swatches */
@@ -1028,13 +1224,13 @@ import { Icon } from "astro-icon/components";
   .color-label {
     font-size: 0.7rem;
     font-weight: 500;
-    color: light-dark(#333, #e0e0e0);
+    color: var(--ink-body);
   }
 
   .color-value {
     font-size: 0.65rem;
     font-family: var(--font-fira-code);
-    color: light-dark(#888, #666);
+    color: var(--ink-muted);
   }
 
   /* Liquid glass demo — the four materials over one busy backdrop, because
@@ -1076,7 +1272,7 @@ import { Icon } from "astro-icon/components";
     border-radius: 999px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: light-dark(#333, #fafafa);
+    color: var(--ink-body);
   }
 
   /* Card: the chrome's edge and shadow, its own heavier tint, and no frost. */
@@ -1127,7 +1323,7 @@ import { Icon } from "astro-icon/components";
   .glass-demo__scroller p {
     margin: 0.4rem 0;
     font-size: 0.8rem;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
   }
 
   .glass-demo__veil {
@@ -1139,10 +1335,15 @@ import { Icon } from "astro-icon/components";
     padding: 0.5rem 0.9rem;
     background-color: var(--veil-bg);
     backdrop-filter: var(--veil-filter);
-    border-bottom: var(--glass-border);
+    /* What a veiled heading ends with everywhere else on the site — the drawn
+       rule, not a capsule's border. See --rule-lit. */
+    background-image: var(--rule-lit);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: 100% 1px;
     font-size: 0.85rem;
     font-weight: 600;
-    color: light-dark(#333, #fafafa);
+    color: var(--ink-body);
   }
 
   .glass-tokens {
@@ -1152,12 +1353,12 @@ import { Icon } from "astro-icon/components";
   .glass-tokens dt {
     margin-top: 1rem;
     font-weight: 600;
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
   }
 
   .glass-tokens dd {
     margin: 0.35rem 0 0;
-    color: light-dark(#333, #e0e0e0);
+    color: var(--ink-body);
   }
 
   /* Typography demo */
@@ -1191,6 +1392,18 @@ import { Icon } from "astro-icon/components";
     gap: 0.75rem;
     align-items: center;
     margin-bottom: 1.5rem;
+  }
+
+  /* A tab rail is only half a control without the thing it swaps, so its demo
+     stacks the rail over its panels rather than laying them out side by side. */
+  .component-row--stack {
+    display: block;
+  }
+
+  .kit-tab-panels {
+    padding: 0.9rem 0.1rem;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
   }
 
   /* Glass badges are meant to be read against a photo, so the demo gives them
@@ -1228,7 +1441,7 @@ import { Icon } from "astro-icon/components";
     background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
     border-radius: 8px;
     font-size: 0.85rem;
-    color: light-dark(#333, #ccc);
+    color: var(--ink-body);
     cursor: default;
   }
 
@@ -1260,6 +1473,11 @@ import { Icon } from "astro-icon/components";
       border-right: none;
       border-bottom: 1px solid light-dark(#eee, #333);
       padding: 1.5rem 1rem;
+      /* There is no global box-sizing reset on this site, so 100% plus 1rem of
+         padding on each side is 100% plus 32px — which is exactly how far the
+         page ran past the right edge of a phone once the sidebar was allowed
+         to stack. */
+      box-sizing: border-box;
     }
 
     .kit-nav {
@@ -1286,6 +1504,7 @@ import { Icon } from "astro-icon/components";
 <script>
   // Tooltips — the demo below is inert without this.
   import { initTooltips } from '@client/tooltip';
+  import { initToggleTabs } from '@client/toggle-tabs';
   initTooltips();
 
   // Modal demo
@@ -1331,7 +1550,20 @@ import { Icon } from "astro-icon/components";
 
   initToggleGroup('toggle-pill-demo');
   initToggleGroup('toggle-separated-demo');
+  initToggleGroup('toggle-quiet-demo');
   initToggleGroup('toggle-icons-demo');
+
+  // The tabs variant has a real driver rather than a demo one — it is the same
+  // module /travel calls, so what is on show here is what a caller gets.
+  const tabsDemo = document.querySelector<HTMLElement>('#toggle-tabs-demo [role="tablist"]');
+  if (tabsDemo) {
+    const panels = document.querySelectorAll<HTMLElement>('.kit-tab-panels > [role="tabpanel"]');
+    initToggleTabs(tabsDemo, (id) => {
+      panels.forEach((panel) => {
+        panel.toggleAttribute('hidden', panel.id !== `kit-tab-${id}`);
+      });
+    });
+  }
 
   // Toast demo
   const toastContainer = document.getElementById('toast-container');

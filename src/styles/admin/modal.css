@@ -84,7 +84,7 @@
 .modal-header h2 {
   font-size: 1.1rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  background: var(--accent-gradient-text);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -108,7 +108,7 @@
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   transition: color 0.25s ease;
 }
 
@@ -117,10 +117,10 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+  background: var(--accent-gradient);
+  box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
     transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease;
@@ -130,7 +130,7 @@
 
 .modal-close:hover,
 .modal-close:focus-visible {
-  color: #fff;
+  color: var(--accent-ink);
 }
 
 .modal-close:hover::before,
@@ -140,7 +140,7 @@
 }
 
 .modal-close:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
@@ -165,7 +165,7 @@
 .confirm-message {
   font-size: 0.95rem;
   line-height: 1.6;
-  color: light-dark(#444, #bbb);
+  color: var(--ink-body);
   margin: 0;
 }
 

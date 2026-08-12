@@ -51,10 +51,16 @@ a.kit-btn:active {
 }
 
 /* Explicit colors for link buttons (override global link styles) */
+/* Primary and success part ways here: the accent is bright enough that its
+   label has to be ink, while the confirmation green is deep enough to carry
+   white. Same rule, different grounds. */
 a.kit-btn--primary,
 a.kit-btn--primary:hover,
 a.kit-btn--primary:visited,
-a.kit-btn--primary:active,
+a.kit-btn--primary:active {
+  color: var(--accent-ink);
+}
+
 a.kit-btn--success,
 a.kit-btn--success:hover,
 a.kit-btn--success:visited,
@@ -66,31 +72,31 @@ a.kit-btn--secondary,
 a.kit-btn--secondary:hover,
 a.kit-btn--secondary:visited,
 a.kit-btn--secondary:active {
-  color: light-dark(#333, #ddd);
+  color: var(--ink-body);
 }
 
 a.kit-btn--ghost,
 a.kit-btn--ghost:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 a.kit-btn--ghost:hover,
 a.kit-btn--ghost:active {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 a.kit-btn--ghost.is-active,
 a.kit-btn--ghost.is-active:visited,
 a.kit-btn--ghost[aria-pressed="true"],
 a.kit-btn--ghost[aria-pressed="true"]:visited {
-  color: white;
+  color: var(--accent-ink);
 }
 
 a.kit-btn--danger,
 a.kit-btn--danger:hover,
 a.kit-btn--danger:visited,
 a.kit-btn--danger:active {
-  color: light-dark(#dc2626, #f87171);
+  color: var(--danger);
 }
 
 .kit-btn:focus-visible {
@@ -143,30 +149,30 @@ a.kit-btn--danger:active {
 
 /* Primary - Gradient accent button */
 .kit-btn--primary {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.3);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(237, 91, 42, 0.3);
 }
 
 .kit-btn--primary:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(237, 87, 96, 0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 91, 42, 0.4);
+  transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(237, 87, 96, 0.3);
+  box-shadow: 0 2px 6px rgba(237, 91, 42, 0.3);
 }
 
 /* Secondary - Subtle background */
 .kit-btn--secondary {
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
-  color: light-dark(#333, #ddd);
+  color: var(--ink-body);
 }
 
 .kit-btn--secondary:hover:not(:disabled) {
   background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .kit-btn--secondary:active:not(:disabled) {
@@ -176,12 +182,12 @@ a.kit-btn--danger:active {
 /* Ghost - Transparent with border */
 .kit-btn--ghost {
   background: transparent;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
 }
 
 .kit-btn--ghost:hover:not(:disabled) {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
   box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
 }
 
@@ -191,15 +197,15 @@ a.kit-btn--danger:active {
 
 .kit-btn--ghost[aria-pressed="true"],
 .kit-btn--ghost.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(237, 91, 42, 0.35);
 }
 
 /* Danger - Destructive actions */
 .kit-btn--danger {
   background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.15));
-  color: light-dark(#dc2626, #f87171);
+  color: var(--danger);
   box-shadow: inset 0 0 0 1px
     light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.25));
 }
@@ -216,14 +222,14 @@ a.kit-btn--danger:active {
 
 /* Success - Confirmation actions */
 .kit-btn--success {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   color: white;
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 .kit-btn--success:hover:not(:disabled) {
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-  transform: translateY(-1px);
+  transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--success:active:not(:disabled) {
@@ -284,7 +290,11 @@ a.kit-btn--danger:active {
 }
 
 /* Restore color for spinner visibility */
-.kit-btn--primary.kit-btn--loading::after,
+.kit-btn--primary.kit-btn--loading::after {
+  border-color: var(--accent-ink);
+  border-right-color: transparent;
+}
+
 .kit-btn--success.kit-btn--loading::after {
   border-color: white;
   border-right-color: transparent;
@@ -292,12 +302,12 @@ a.kit-btn--danger:active {
 
 .kit-btn--secondary.kit-btn--loading::after,
 .kit-btn--ghost.kit-btn--loading::after {
-  border-color: light-dark(#333, #ddd);
+  border-color: var(--ink-body);
   border-right-color: transparent;
 }
 
 .kit-btn--danger.kit-btn--loading::after {
-  border-color: light-dark(#dc2626, #f87171);
+  border-color: var(--danger);
   border-right-color: transparent;
 }
 
@@ -312,16 +322,32 @@ a.kit-btn--danger:active {
    ============================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+  /* The rise is already gone — --lift is 0, so the translate below resolves to
+     nothing and the button arrives without travelling. What is left is the
+     ground and the shadow, and with the movement removed that is the whole of
+     the feedback, so it keeps its transition rather than snapping.
+
+     This block used to be `transition: none` plus `transform: none` on hover,
+     which took the colour with the movement and left a control that changed
+     between two states with nothing in between to say it had. */
   .kit-btn {
-    transition: none;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
-  .kit-btn:hover:not(:disabled) {
-    transform: none;
-  }
+  /* The spinner keeps turning, at half speed. It was switched off here, which
+     left a submitting button showing a static arc and no way to tell a slow
+     save from a stuck one — the loading state deliberately hides its own label,
+     so the ring is the only thing left saying anything at all.
 
+     A steady linear sweep is also not what the setting is about: what provokes
+     symptoms is large or unpredictable movement across the field of view, not a
+     16px ring turning at a constant rate in the middle of a button you are
+     waiting on. Slower rather than faster for the same reason. */
   .kit-btn--loading::after {
-    animation: none;
+    animation: kit-btn-spin 1.2s linear infinite;
   }
 }
 

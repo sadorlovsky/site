@@ -157,7 +157,7 @@ if (!isDevMode) {
   .lock-icon {
     width: 48px;
     height: 48px;
-    color: light-dark(#999, #555);
+    color: var(--ink-muted);
     opacity: 0.6;
   }
 
@@ -170,7 +170,7 @@ if (!isDevMode) {
     font-size: 1.5rem;
     font-weight: 300;
     letter-spacing: 0.5em;
-    color: light-dark(#bbb, #444);
+    color: var(--ink-muted);
     margin: 0;
     user-select: none;
   }
@@ -193,7 +193,7 @@ if (!isDevMode) {
     background-image: var(--glass-sheen);
     backdrop-filter: var(--glass-filter);
     box-shadow: var(--glass-shadow);
-    color: light-dark(#666, #888);
+    color: var(--ink-muted);
     cursor: pointer;
     transition: color 0.3s ease;
   }
@@ -203,10 +203,10 @@ if (!isDevMode) {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 8px 32px rgba(237, 87, 96, 0.35);
+    background: var(--accent-gradient);
+    box-shadow: 0 8px 32px rgba(236, 100, 70, 0.35);
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(calc(1 - 0.1 * var(--lift)));
     transition:
       transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
       opacity 0.3s ease;
@@ -228,7 +228,7 @@ if (!isDevMode) {
 
   .enter-btn:hover:not(:disabled),
   .enter-btn:focus-visible:not(:disabled) {
-    color: #fff;
+    color: var(--accent-ink);
   }
 
   .enter-btn:hover:not(:disabled)::before,
@@ -266,7 +266,7 @@ if (!isDevMode) {
     }
     50% {
       opacity: 0.8;
-      transform: scale(1.02);
+      transform: scale(calc(1 + 0.02 * var(--lift)));
     }
   }
 
@@ -277,7 +277,7 @@ if (!isDevMode) {
 
   .error-message {
     font-size: 0.85rem;
-    color: light-dark(#dc2626, #f87171);
+    color: var(--danger);
     letter-spacing: 0.3em;
   }
 

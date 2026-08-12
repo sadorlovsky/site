@@ -6,15 +6,30 @@ import {
   getCountriesByContinent,
 } from "@lib/travel";
 import "@styles/travel.css";
-import "flag-icons/css/flag-icons.min.css";
 
 const continents = getCountriesByContinent(datedTrips);
 
-// Five sections that say nothing would drown the two that do, so the untouched
-// continents collapse into one closing section. They are still named — half
-// the point of a continents view is what is left to go, and a missing Africa
-// would read as a rendering bug rather than as zero.
+// The untouched continents close the view in a single line, and that line is
+// names only. They used to be five rows of the same shape the countries above
+// them use — and a row here means "a place I have been, and how much of it"
+// thirty-two times before you reach them. Five more meaning the opposite, each
+// with a nought over a total, read as data that had failed to load rather than
+// as a nought; there was nothing to compare down that column, and Antarctica
+// fell out of it anyway with a dash, because 0 / 0 is not a target.
+//
+// No sizes either, and no total. Every figure this line could carry is a figure
+// about places nobody has been, and the page already has four counters saying
+// how much there is and how much of it is done. What is left for this line to
+// say is which parts of the world they are, and that is a list of names.
+//
+// Named, though, and all of them: half the point of a continents view is what
+// is still to go, and a missing Africa would read as a rendering bug rather
+// than as zero.
 const visited = continents.filter((continent) => continent.countries.length > 0);
+
+// In the order the continents come in, which is the order they are in
+// everywhere else on the site. With no numbers on the line there is nothing for
+// a sort by size to express, and Antarctica lands at the end here anyway.
 const remaining = continents.filter(
   (continent) => continent.countries.length === 0,
 );
@@ -76,59 +91,21 @@ const remaining = continents.filter(
 
   {
     remaining.length > 0 && (
-      <section>
-        <header class="travel-section-head">
-          <h2
-            class="travel-section-title"
-            data-en="Still to go"
-            data-ru="Ещё предстоит"
-          >
-            Still to go
-          </h2>
-        </header>
-        <ul class="travel-grid" role="list">
-          {remaining.map((continent) => (
-            <li class="travel-row">
-              <span
-                class="travel-name travel-name--muted"
-                data-en={continent.name.en}
-                data-ru={continent.name.ru}
-              >
-                {continent.name.en}
-              </span>
-              {/* Antarctica has no countries to count, so a fraction there
-                  would be a hollow "0 / 0" rather than a target. */}
-              <span class="travel-metric travel-metric--trailing">
-                {continent.total > 0 ? `0 / ${continent.total}` : "—"}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <p class="remaining">
+        <span class="lead" data-en="Still to go:" data-ru="Ещё предстоит:">
+          Still to go:
+        </span>{" "}
+        {remaining.map((continent, i) => (
+          <>
+            <span data-en={continent.name.en} data-ru={continent.name.ru}>
+              {continent.name.en}
+            </span>
+            {i < remaining.length - 1 && ", "}
+          </>
+        ))}
+      </p>
     )
   }
-
-  {/* The counters above this view read "32 / 250" and the fractions here add up
-      to "32 / 195" — the same numerator against two different ideas of how many
-      countries there are. Both are honest on their own: 250 is the site's own
-      list, which goes on past the UN membership, while a per-continent total
-      only exists for the 195 everyone splits the same way. Together on one page
-      they read as an arithmetic error unless the page says which is which. */}
-  <p class="note">
-    <span
-      data-en="Totals here count the 195 UN member and observer states. The counters above measure against a longer list."
-      data-ru="Итоги здесь считаются от 195 государств — членов и наблюдателей ООН. Счётчики выше — по более длинному списку."
-    >
-      Totals here count the 195 UN member and observer states. The counters
-      above measure against a longer list.
-    </span>
-    <a
-      href="/travel/countries"
-      target="_blank"
-      data-en="See the list"
-      data-ru="Посмотреть список">See the list</a
-    >
-  </p>
 </div>
 
 <style>
@@ -140,24 +117,22 @@ const remaining = continents.filter(
     margin-top: 0.5rem;
   }
 
-  /* An aside about the arithmetic, not a section of its own — set below the
-     body size and in the colour the views give secondary text, so it settles
-     under the last section instead of competing with it. */
-  .note {
+  /* A closing line, not a footnote: it is the last thing the view has to say
+     rather than an aside about it, so it stays at the body size the rows above
+     it are set in. Only its colour steps back. */
+  .remaining {
     margin: 0;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color: var(--travel-quiet);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--ink-muted);
     text-wrap: pretty;
   }
 
-  .note a {
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-
-  .note a:hover {
-    color: light-dark(#1a1a1a, #fff);
+  /* The words that were a section heading, now opening a sentence — in the
+     colour of a heading and nothing else, since a 1.25rem landmark over a
+     single line was the weight this change was written to shed. */
+  .lead {
+    color: var(--ink-body);
+    font-weight: 600;
   }
 </style>

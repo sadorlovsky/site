@@ -43,15 +43,30 @@
   /* How far a row's wash reaches past its text. ListItem's 0.75rem. */
   --travel-row-inset: 0.75rem;
 
-  /* A key or a count beside content — the colour and size of the timeline's
-     date column. */
-  --travel-muted: light-dark(#888, #9a9aa0);
+  /* Everything on these views that is not the content itself — a key or a count
+     beside it, the cities trailing a country, the years under the chart — now
+     reads --ink-muted directly.
 
-  /* Secondary text that is still read as text rather than glanced at as a
-     label: the cities trailing a country, the note under the continents. Kept
-     darker than --travel-muted because a sentence at #888 on this page is
-     under 3.5:1. */
-  --travel-quiet: light-dark(#666, #9a9aa0);
+     This was --travel-muted, and before that it was --travel-muted plus a
+     --travel-quiet that existed only to work around it being #888. Both of
+     those arguments were won here first and then copied out: global.css took
+     this exact light-dark() pair for --ink-muted and gave the rest of the site
+     what /travel had already worked out. A local token holding the same two
+     values is no longer a decision, only a second place to change. */
+}
+
+/* A panel is focusable so the keyboard can reach and scroll views that hold
+   nothing focusable of their own (see the note in pages/travel/index.astro).
+   Only the keyboard gets the ring: a click inside a three-thousand-pixel block
+   would otherwise draw an outline around the entire page. */
+.travel-view:focus {
+  outline: none;
+}
+
+.travel-view:focus-visible {
+  outline: 2px solid var(--focus-ring-on-fill);
+  outline-offset: 6px;
+  border-radius: 6px;
 }
 
 /* The stack of sections a view is made of. 1.5rem is YearGroup's gap between
@@ -77,15 +92,31 @@
   justify-content: space-between;
   gap: 1rem;
   position: sticky;
-  /* PageHeader publishes its stuck height on <main>, so the heading docks
-     below the floating pills instead of colliding with them. */
-  top: var(--sticky-header-offset, 0px);
+  /* Two things are already pinned above this one, and each publishes its own
+     stuck height on <main>: PageHeader's floating pills
+     (--sticky-header-offset, from page-header-condense.ts) and the view rail
+     under them (--sticky-rail-offset, from TravelViewSwitcher). Adding both is
+     what makes a heading dock below the rail rather than slide under it.
+     YearGroup — the timeline's year, the heading this one is a restatement of
+     — reads the same pair. */
+  top: calc(var(--sticky-header-offset, 0px) + var(--sticky-rail-offset, 0px));
   z-index: 10;
   background-color: var(--veil-bg);
   backdrop-filter: var(--veil-filter);
-  padding: 0.5rem 0;
+  /* Out to the same edge a row's hover wash reaches, and back in by the same
+     amount so the title still starts on the content edge. Everything on this
+     page that draws a surface or a rule now ends on one line — the counters,
+     the rail, this, and the wash — instead of the wash alone hanging 12px
+     past the rest. */
+  padding: 0.5rem var(--travel-row-inset);
+  margin-inline: calc(-1 * var(--travel-row-inset));
   margin-bottom: 0.5rem;
-  border-bottom: var(--glass-border);
+  /* The same drawn rule the year heading wears — see --rule-lit. These two are
+     the same landmark in two views and have to end the same way. */
+  background-image: var(--rule-lit);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 1px;
 }
 
 .travel-section-title {
@@ -97,20 +128,25 @@
   letter-spacing: normal;
   text-transform: none;
   font-variant-numeric: tabular-nums;
-  color: light-dark(#333, #fafafa);
+  color: var(--ink-body);
 }
 
-/* A label sitting over a number rather than heading a list — the four facts in
-   the stats view. This is the spec the counters above the switcher use for
-   their own labels, because it is the same thing: a caption for the figure
-   below it. It deliberately has no rule under it; a hairline is what made
-   those four read as sections. */
+/* The quiet text bracketing a figure rather than heading a list — the four
+   facts in the stats view, where it is both the question above the answer and
+   the amount below it. One spec for the pair on purpose: they are the two soft
+   lines around the one loud one, and when they differed by a twentieth of a rem
+   and a hundred units of weight, the difference read as a wobble rather than as
+   a decision. It is also what the counters above the switcher label themselves
+   with, because that is the same job again.
+
+   It deliberately has no rule under it; a hairline is what made those four read
+   as sections. */
 .travel-caption {
   margin: 0;
   font-size: 0.85rem;
   font-weight: 500;
   letter-spacing: normal;
-  color: var(--travel-quiet);
+  color: var(--ink-muted);
 }
 
 /* Every number in these views: the count in a section head, the cities beside
@@ -119,7 +155,7 @@
    wandering with the digit widths. */
 .travel-metric {
   font-size: 0.9rem;
-  color: var(--travel-muted);
+  color: var(--ink-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -158,7 +194,7 @@
   gap: 0.25rem;
   font-size: 1rem;
   line-height: 1.9;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   /* The wash reaches into the gutter while the text stays on the content edge
      — see the note at the top of this file. ListItem's padding exactly, which
      is what makes a row here the same height as a trip: 0.5rem against a 1.9
@@ -204,7 +240,7 @@
 
 /* A name that is a place still to go rather than one that has been. */
 .travel-name--muted {
-  color: var(--travel-quiet);
+  color: var(--ink-muted);
 }
 
 @media (prefers-reduced-motion: reduce) {

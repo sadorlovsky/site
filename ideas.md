@@ -23,7 +23,8 @@ undated trips: 12 (Dubai, Japan, Uzbekistan…) — their cities are drawn nowhe
   and the TBA group in the list is commented out (TravelTripList.astro:14)
 ```
 
-There is also no `click` handler on the map at all.
+There is also no `click` handler on the map at all. (There is now — clusters
+open on click. C still has nothing.)
 
 ### A. Weight by visit count
 
@@ -37,11 +38,18 @@ log) and a ceiling, or the one city at 10 becomes a blob while the 121 cities at
 
 ### B. Cluster at low zoom
 
+**Done** — built in `src/client/travel-map.ts`.
+
 MapLibre's built-in clustering on the GeoJSON source. Europe is a smear of
 overlapping dots on the globe; a count is more honest than a blur.
 
 Risk: a numbered cluster bubble reads as data-viz and fights the beacon
 aesthetic. Hover and the label overlay would both need a cluster branch.
+
+The risk was real and the way out was to drop the numeral: a cluster is the
+bead scaled by the square root of its count, and the count itself is said in
+the tooltip, where it was already going to have to be said. Clicking eases to
+the zoom that breaks the group apart — the map's first click handler.
 
 ### C. Click a city → scroll the trip list to it
 
@@ -67,6 +75,13 @@ that rewards zooming in instead of dumping everything at once.
 
 Cheap: the same zoom interpolation the city layers already use.
 
+Built once and taken back out: a ring with a small core, drawn beneath the
+beads. It worked as a mark and still made the map worse — thirteen contours
+scattered among 88 beacons read as a second map laid over the first, and the
+question the page answers is where the trips went. The mark is in the history
+if it is ever wanted back; what it needs first is a reason for a reader to care
+which lake is which.
+
 ### F. Recency as brightness, or a pulse
 
 Drive brightness from the most recent year per city, so "where I've been lately"
@@ -89,6 +104,11 @@ in the code.
 E + A are the cheap pair that give the map depth and weight. C is the only one
 that changes what the map is for. B if the density in Europe actually bothers
 the owner. D is the prettiest and the most expensive — its own pass.
+
+B is built; E was built and then dropped. A is the obvious next one and now
+nearly free: clusters already scale off a count, so weighting a lone city by
+its visits is the same curve pointed at a different property. C and D are still
+open.
 
 ## Marker visuals: bringing the dots into liquid glass
 
@@ -196,3 +216,73 @@ where growth is what makes neighbours collide.
 Markers need a `prefers-reduced-transparency` answer too — flat, opaque dots.
 The map already listens for colour-scheme changes, so listening for one more
 media query is symmetrical, not new machinery.
+
+## Flags without the stylesheet
+
+### Where they stand
+
+`/travel` asks for `flag-icons/css/flag-icons.min.css`: **501 KB** of CSS, two
+hundred and seventy-one `.fi-xx` rules, each with a whole country outline
+inlined as a `data:image/svg+xml` background. Gzipped it is 82 KB — five times
+the entire HTML document of the page it decorates, and until recently it sat in
+front of the first paint.
+
+It is now preloaded and promoted by a script once the document is parsed
+(`src/pages/travel/index.astro`), so it no longer blocks. Render-blocking CSS on
+that page went from ~102 KB gzipped to ~20 KB. What is left of it is the trade
+that buys: the flags land a frame or two after the text they sit in.
+
+The obvious next move — ship only the flags the site uses — does not work here,
+and the reason is worth writing down so nobody tries it twice:
+
+```
+distinct flag codes referenced on /travel: 245 of 271
+because the checklist lists 250 countries, each with its flag
+without the checklist, the page needs about 35
+```
+
+Trimming the library saves nothing while the checklist draws flags. The
+checklist is also the one view nobody opens by default.
+
+### Load them as images instead
+
+Replace `<span class="fi fi-ru">` with an `<img>` pointing at a single flag,
+served from `public/` (the SVGs are in `node_modules/flag-icons/flags/4x3/`, one
+file each, 1–3 KB), with `loading="lazy"`.
+
+What it buys, and why it is the real fix rather than a smaller version of the
+current one:
+
+- The 82 KB goes away entirely; nothing replaces it up front.
+- A hidden panel fetches **nothing**. The checklist's 245 flags cost zero until
+  someone opens it, which is what a `display: none` subtree should have cost all
+  along.
+- The timeline, which is what a visitor actually lands on, needs about twenty
+  files. Over HTTP/2 that is one round trip's worth of parallel requests, each
+  smaller than a favicon.
+- Flags become cacheable per country rather than as one monolith, so adding a
+  trip stops invalidating every flag on the site.
+
+### What it costs
+
+- Six call sites: `TravelTrip`, `TravelCountries`, `TravelContinents`,
+  `TravelChecklist`, `TravelStatsDashboard`, and the map's city labels in
+  `TravelMap`. The map one is the awkward one — its labels are built in an HTML
+  overlay from a script, not from an Astro template.
+- A build step to copy the SVGs into `public/flags/`, or an integration that
+  emits only the codes in `countries.ts`. Copying all 271 is 400 KB on disk and
+  nothing on the wire, which is probably the right trade for the simplicity.
+- Sizing has to be restated. `.fi` sizes itself from the font (`width:
+  1.33333em`), which is exactly why a flag stands correctly beside a city name
+  in the timeline and beside a 1.25rem answer in the stats; an `<img>` needs
+  `width`/`height` attributes for aspect-ratio and an em-based CSS width to keep
+  that behaviour.
+- Regional flags (`gb-eng`, `gb-sct`) and the five `xx` placeholders in the
+  checklist need the same treatment, not a special case.
+
+### The other half of that page
+
+While in there: `maplibre-gl`'s stylesheet is the remaining 91 KB / 14 KB
+gzipped of render-blocking CSS on `/travel`, and the map is the first thing on
+the page, so it has a better claim to blocking than the flags did. Worth
+measuring before assuming it needs the same treatment.

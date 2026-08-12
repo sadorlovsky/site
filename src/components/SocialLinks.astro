@@ -49,16 +49,16 @@ const { class: className } = Astro.props;
     justify-content: center;
     width: 2.5rem;
     height: 2.5rem;
-    color: light-dark(#666, #888);
+    color: var(--ink-muted);
     border-radius: 50%;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .social-links a:hover {
-    color: white;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(237, 87, 96, 0.4);
+    color: var(--accent-ink);
+    background: var(--accent-gradient);
+    transform: translateY(calc(-2px * var(--lift)));
+    box-shadow: 0 4px 15px rgba(237, 91, 42, 0.4);
   }
 
   .social-links :global(svg) {

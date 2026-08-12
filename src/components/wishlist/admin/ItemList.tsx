@@ -1,4 +1,12 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { parsePrice } from "@lib/price";
+import {
+  insertionAt,
+  isNoOpInsertion,
+  applyMove,
+  type CardBox,
+  type Insertion,
+} from "@lib/grid-reorder";
 import type {
   WishlistItem,
   Reservation,
@@ -6,38 +14,21 @@ import type {
   ExchangeRates,
 } from "./types";
 
-// Currency prefixes for parsing prices
-const currencyPrefixes = [
-  { prefix: "AU$", currency: "AUD" },
-  { prefix: "$", currency: "USD" },
-  { prefix: "£", currency: "GBP" },
-  { prefix: "€", currency: "EUR" },
-  { prefix: "₹", currency: "INR" },
-] as const;
-
-// Parse price string and convert to RUB
+// Parse price string and convert to RUB. The parser is the one the public cards
+// use — the dashboard had its own until it drifted (parseInt there, parseFloat
+// here) and every price with cents in it came out short.
 function convertToRub(
   price: string,
   exchangeRates: ExchangeRates,
 ): number | null {
-  const trimmed = price.trim();
+  const parsed = parsePrice(price);
+  if (!parsed) return null;
 
-  for (const { prefix, currency } of currencyPrefixes) {
-    if (trimmed.startsWith(prefix)) {
-      const amount = parseInt(
-        trimmed.slice(prefix.length).replace(/,/g, ""),
-        10,
-      );
-      if (isNaN(amount)) return null;
+  const rate = exchangeRates[parsed.currency];
+  if (!rate) return null;
 
-      const rate = exchangeRates[currency];
-      if (!rate) return null;
-
-      return Math.round(amount * rate);
-    }
-  }
-
-  return null;
+  // parsePrice counts in cents; this row of the dashboard shows whole roubles.
+  return Math.round((parsed.amount * rate) / 100);
 }
 
 // Format number as RUB price
@@ -83,17 +74,15 @@ interface ItemCardProps {
   isDraggable: boolean;
   isDragging: boolean;
   isKeyboardMoving: boolean;
-  dragOverPosition: "before" | "after" | null;
+  /** Which side of this card the insertion beam belongs on, if it is here. */
+  dropEdge: "before" | "after" | null;
   onEdit: () => void;
   onDelete: () => void;
   onToggleReceived: () => Promise<void>;
   onToggleReserved: () => Promise<void>;
   onDragStart: (e: React.DragEvent) => void;
-  onDragEnd: (e: React.DragEvent) => void;
-  onDragEnter: (e: React.DragEvent) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragLeave: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent) => void;
+  onDragEnd: () => void;
+  onGripPointerDown: () => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
 }
 
@@ -106,17 +95,14 @@ function ItemCard({
   isDraggable,
   isDragging,
   isKeyboardMoving,
-  dragOverPosition,
+  dropEdge,
   onEdit,
   onDelete,
   onToggleReceived,
   onToggleReserved,
   onDragStart,
   onDragEnd,
-  onDragEnter,
-  onDragOver,
-  onDragLeave,
-  onDrop,
+  onGripPointerDown,
   onKeyDown,
 }: ItemCardProps) {
   const isReserved = !!reservation;
@@ -128,8 +114,8 @@ function ItemCard({
     isDraggable ? "draggable" : "",
     isDragging ? "dragging" : "",
     isKeyboardMoving ? "keyboard-moving" : "",
-    dragOverPosition === "before" ? "drag-over-before" : "",
-    dragOverPosition === "after" ? "drag-over-after" : "",
+    dropEdge === "before" ? "drop-before" : "",
+    dropEdge === "after" ? "drop-after" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -141,25 +127,50 @@ function ItemCard({
       draggable={isDraggable}
       tabIndex={isDraggable ? 0 : undefined}
       role={isDraggable ? "listitem" : undefined}
-      aria-grabbed={isDraggable ? isKeyboardMoving : undefined}
+      /* No aria-grabbed: it was dropped from ARIA years ago and screen readers
+         no longer act on it. What it was reaching for — telling the owner where
+         the card went — is the list's live region instead. */
+      aria-roledescription={isDraggable ? "Sortable item" : undefined}
       aria-label={
         isDraggable
-          ? `${item.title}. ${isKeyboardMoving ? "Moving. Use arrow keys to reorder, Enter to confirm, Escape to cancel." : "Press Space to start moving."}`
+          ? `${item.title}. ${isKeyboardMoving ? "Moving. Arrow keys to move, Enter to drop, Escape to cancel." : "Press Space to start moving."}`
           : item.title
       }
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      onDragEnter={onDragEnter}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
       onKeyDown={onKeyDown}
     >
+      {/* The grip, and the only thing that starts a drag. The card is
+          `draggable` because HTML5 asks the drag source to be, but a press that
+          began on Edit, on the photo, or on a title being selected is turned
+          away in onDragStart — which is what used to fling a card across the
+          grid on a twitchy click. */}
+      {isDraggable && (
+        <div
+          className="item-grip"
+          aria-hidden="true"
+          title="Drag to reorder"
+          onPointerDown={onGripPointerDown}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="6" r="1.6" />
+            <circle cx="15" cy="6" r="1.6" />
+            <circle cx="9" cy="12" r="1.6" />
+            <circle cx="15" cy="12" r="1.6" />
+            <circle cx="9" cy="18" r="1.6" />
+            <circle cx="15" cy="18" r="1.6" />
+          </svg>
+        </div>
+      )}
+
       <div className="item-image">
         <img
           src={`https://${cdnDomain}/${item.imageUrl}`}
           alt={item.title}
           loading="lazy"
+          /* An <img> is draggable in its own right, so without this the photo
+             starts an image drag of its own and the card never moves. */
+          draggable={false}
         />
         {/* Status badge overlay */}
         {(isReserved || item.received) && (
@@ -211,9 +222,10 @@ function ItemCard({
               {item.priority}
             </span>
           )}
-          {item.weight > 0 && (
-            <span className="tag tag-weight">w:{item.weight}</span>
-          )}
+          {/* No weight badge. It read as a setting worth knowing back when a
+              handful of items had one; now that every item carries a position
+              it would sit on every card and say only what the card's own place
+              in the list already says. */}
         </div>
 
         {/* Descriptions (secondary info) */}
@@ -352,16 +364,25 @@ export function ItemList({
   onToggleReserved,
   onReorder,
 }: ItemListProps) {
-  // Drag state
-  const [draggedItemId, setDraggedItemId] = useState<number | null>(null);
-  const [dragOverItemId, setDragOverItemId] = useState<number | null>(null);
-  const [dragOverPosition, setDragOverPosition] = useState<
-    "before" | "after" | null
-  >(null);
-  const dragCounter = useRef<Map<number, number>>(new Map());
+  const listRef = useRef<HTMLDivElement>(null);
 
-  // Keyboard reorder state
+  /* The grid, measured once when a drag begins. Nothing reflows during a native
+     drag, and asking sixty cards for their rect on every dragover forced a
+     layout per frame. Page coordinates rather than viewport ones, so the
+     numbers survive the page scrolling under the cursor. */
+  const boxesRef = useRef<CardBox[]>([]);
+
+  /* Set while a press that started on a grip is still live. onDragStart reads
+     it to decide whether this drag is one the panel asked for. */
+  const fromGripRef = useRef(false);
+
+  /* The order a keyboard move started from, so Escape can actually undo it. */
+  const keyboardOriginRef = useRef<WishlistItem[] | null>(null);
+
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [insertion, setInsertion] = useState<Insertion | null>(null);
   const [keyboardMovingId, setKeyboardMovingId] = useState<number | null>(null);
+  const [announcement, setAnnouncement] = useState("");
 
   const getCategoryLabels = useCallback(
     (categoryString: string): { id: string; label: string }[] => {
@@ -374,196 +395,284 @@ export function ItemList({
     [categories],
   );
 
-  // Drag handlers
-  const handleDragStart = useCallback((e: React.DragEvent, itemId: number) => {
-    setDraggedItemId(itemId);
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", String(itemId));
-    requestAnimationFrame(() => {
-      const element = e.target as HTMLElement;
-      element.classList.add("dragging");
+  const draggedIndex =
+    draggedId === null ? -1 : items.findIndex((item) => item.id === draggedId);
+
+  /* One beam, in one gutter — the end of the gap the cursor is at, so it never
+     leaps across the screen at a row boundary. And none at all when the drop
+     would change nothing, so the feedback never promises a move it is going to
+     throw away. */
+  const beam = useMemo(() => {
+    if (insertion === null || draggedIndex === -1) return null;
+    if (isNoOpInsertion(draggedIndex, insertion.index)) return null;
+
+    const card = items[insertion.card];
+    return card ? { id: card.id, edge: insertion.edge } : null;
+  }, [insertion, draggedIndex, items]);
+
+  const measureCards = useCallback((): CardBox[] => {
+    const list = listRef.current;
+    if (!list) return [];
+
+    const { scrollX, scrollY } = window;
+    return Array.from(
+      list.querySelectorAll<HTMLElement>("[data-item-id]"),
+    ).map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left + scrollX,
+        right: rect.right + scrollX,
+        top: rect.top + scrollY,
+        bottom: rect.bottom + scrollY,
+      };
     });
   }, []);
 
-  const handleDragEnd = useCallback(() => {
-    setDraggedItemId(null);
-    setDragOverItemId(null);
-    setDragOverPosition(null);
-    dragCounter.current.clear();
+  const endDrag = useCallback(() => {
+    fromGripRef.current = false;
+    boxesRef.current = [];
+    setDraggedId(null);
+    setInsertion(null);
   }, []);
 
-  const handleDragOver = useCallback((e: React.DragEvent, itemId: number) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const midpoint = rect.left + rect.width / 2;
-    const position = e.clientX < midpoint ? "before" : "after";
-
-    setDragOverItemId(itemId);
-    setDragOverPosition(position);
+  /* A press on a grip that never became a drag still has to let go. dragend
+     covers the drags; this covers everything else. */
+  useEffect(() => {
+    const release = () => {
+      fromGripRef.current = false;
+    };
+    document.addEventListener("pointerup", release);
+    return () => document.removeEventListener("pointerup", release);
   }, []);
 
-  const handleDragEnter = useCallback((e: React.DragEvent, itemId: number) => {
-    e.preventDefault();
-    const count = (dragCounter.current.get(itemId) || 0) + 1;
-    dragCounter.current.set(itemId, count);
-  }, []);
-
-  const handleDragLeave = useCallback(
-    (itemId: number) => {
-      const count = (dragCounter.current.get(itemId) || 0) - 1;
-      dragCounter.current.set(itemId, count);
-
-      if (count <= 0) {
-        dragCounter.current.delete(itemId);
-        if (dragOverItemId === itemId) {
-          setDragOverItemId(null);
-          setDragOverPosition(null);
-        }
+  const handleDragStart = useCallback(
+    (e: React.DragEvent, itemId: number) => {
+      if (!fromGripRef.current) {
+        e.preventDefault();
+        return;
       }
+
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(itemId));
+
+      boxesRef.current = measureCards();
+
+      /* Held back a frame on purpose. The browser snapshots the card for the
+         drag image at the end of this event, so marking it as lifted now hands
+         the cursor a picture of the hole the card leaves behind. */
+      requestAnimationFrame(() => setDraggedId(itemId));
     },
-    [dragOverItemId],
+    [measureCards],
   );
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent, targetItemId: number) => {
+  /* One dragover for the whole grid rather than one per card. The gutters
+     between cards belong to no card, so the old per-card handler lost the
+     cursor every time it crossed one and the marker strobed on the way past. */
+  const handleListDragOver = useCallback(
+    (e: React.DragEvent) => {
+      if (draggedId === null) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      setInsertion(insertionAt(boxesRef.current, e.pageX, e.pageY));
+    },
+    [draggedId],
+  );
+
+  const handleListDragLeave = useCallback((e: React.DragEvent) => {
+    // dragleave bubbles up from every child; only the cursor leaving the grid
+    // itself should put the beam out.
+    const next = e.relatedTarget as Node | null;
+    if (next && e.currentTarget.contains(next)) return;
+    setInsertion(null);
+  }, []);
+
+  const handleListDrop = useCallback(
+    (e: React.DragEvent) => {
       e.preventDefault();
 
-      const draggedId = parseInt(e.dataTransfer.getData("text/plain"), 10);
-      if (isNaN(draggedId) || draggedId === targetItemId) {
-        handleDragEnd();
-        return;
+      if (draggedIndex !== -1 && insertion !== null) {
+        const next = applyMove(items, draggedIndex, insertion.index);
+        if (next) onReorder?.(next);
       }
 
-      const draggedIndex = items.findIndex((item) => item.id === draggedId);
-      const targetIndex = items.findIndex((item) => item.id === targetItemId);
-
-      if (draggedIndex === -1 || targetIndex === -1) {
-        handleDragEnd();
-        return;
-      }
-
-      const newItems = [...items];
-      const [draggedItem] = newItems.splice(draggedIndex, 1);
-
-      let newTargetIndex = targetIndex;
-      if (draggedIndex < targetIndex) {
-        newTargetIndex = targetIndex - 1;
-      }
-
-      if (dragOverPosition === "after") {
-        newItems.splice(newTargetIndex + 1, 0, draggedItem);
-      } else {
-        newItems.splice(newTargetIndex, 0, draggedItem);
-      }
-
-      onReorder?.(newItems);
-      handleDragEnd();
+      endDrag();
     },
-    [items, dragOverPosition, onReorder, handleDragEnd],
+    [draggedIndex, insertion, items, onReorder, endDrag],
   );
 
-  // Keyboard reorder: move item by delta positions
-  const moveItemByKeyboard = useCallback(
-    (itemId: number, delta: number) => {
-      const currentIndex = items.findIndex((item) => item.id === itemId);
-      if (currentIndex === -1) return;
+  /* How wide a row is, asked of the layout rather than of the media queries
+     that decide it — the grid is six columns wide, or four, or three, or two,
+     or one, and ArrowDown means "a row down" in every one of them. */
+  const columnCount = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return 1;
 
-      const newIndex = currentIndex + delta;
-      if (newIndex < 0 || newIndex >= items.length) return;
+    const cards = Array.from(
+      list.querySelectorAll<HTMLElement>("[data-item-id]"),
+    );
+    if (cards.length === 0) return 1;
 
-      const newItems = [...items];
-      const [movedItem] = newItems.splice(currentIndex, 1);
-      newItems.splice(newIndex, 0, movedItem);
+    const top = cards[0].offsetTop;
+    let columns = 0;
+    while (columns < cards.length && cards[columns].offsetTop === top) {
+      columns++;
+    }
+    return Math.max(1, columns);
+  }, []);
 
-      onReorder?.(newItems);
+  const moveByKeyboard = useCallback(
+    (item: WishlistItem, delta: number) => {
+      const from = items.findIndex((candidate) => candidate.id === item.id);
+      if (from === -1) return;
+
+      // Clamped rather than refused: ArrowDown on the last row should land the
+      // card at the end, not do nothing because a whole row won't fit.
+      const to = Math.min(items.length - 1, Math.max(0, from + delta));
+
+      // applyMove counts gaps, not slots — landing *on* index `to` is the gap
+      // before it going up, and the gap after it going down.
+      const next = applyMove(items, from, to > from ? to + 1 : to);
+      if (!next) {
+        setAnnouncement(
+          `${item.title} is already at position ${from + 1} of ${items.length}.`,
+        );
+        return;
+      }
+
+      onReorder?.(next);
+      setAnnouncement(
+        `${item.title}, position ${to + 1} of ${items.length}.`,
+      );
     },
     [items, onReorder],
   );
 
-  // Keyboard handler for reordering
   const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent, itemId: number) => {
+    (e: React.KeyboardEvent, item: WishlistItem) => {
       if (!isDraggable) return;
 
-      // Space or Enter: toggle moving mode
+      const position = () =>
+        items.findIndex((candidate) => candidate.id === item.id) + 1;
+
       if (e.key === " " || e.key === "Enter") {
-        // Don't trigger if focus is on a button inside the card
-        if ((e.target as HTMLElement).tagName === "BUTTON") return;
-
+        // Not when the focus is on one of the card's own buttons.
+        if ((e.target as HTMLElement).closest("button")) return;
         e.preventDefault();
 
-        if (keyboardMovingId === itemId) {
-          // Confirm move
+        if (keyboardMovingId === item.id) {
+          keyboardOriginRef.current = null;
           setKeyboardMovingId(null);
+          setAnnouncement(
+            `${item.title} dropped at position ${position()} of ${items.length}.`,
+          );
         } else {
-          // Start moving
-          setKeyboardMovingId(itemId);
+          keyboardOriginRef.current = items;
+          setKeyboardMovingId(item.id);
+          setAnnouncement(
+            `${item.title} picked up, position ${position()} of ${items.length}. Arrow keys to move, Enter to drop, Escape to cancel.`,
+          );
         }
         return;
       }
 
-      // Escape: cancel moving
-      if (e.key === "Escape" && keyboardMovingId === itemId) {
+      if (keyboardMovingId !== item.id) return;
+
+      if (e.key === "Escape") {
         e.preventDefault();
+
+        /* A cancel that cancels. The card's own label has always offered this,
+           and the handler behind it only stopped moving — every step taken on
+           the way stayed exactly where the arrow keys had put it. */
+        const origin = keyboardOriginRef.current;
+        if (
+          origin &&
+          origin.some((candidate, i) => candidate.id !== items[i]?.id)
+        ) {
+          onReorder?.(origin);
+        }
+
+        keyboardOriginRef.current = null;
         setKeyboardMovingId(null);
+        setAnnouncement(`Move cancelled. ${item.title} is back where it was.`);
         return;
       }
 
-      // Arrow keys: move item when in moving mode
-      if (keyboardMovingId === itemId) {
-        if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
-          e.preventDefault();
-          moveItemByKeyboard(itemId, -1);
-        } else if (e.key === "ArrowDown" || e.key === "ArrowRight") {
-          e.preventDefault();
-          moveItemByKeyboard(itemId, 1);
-        }
-      }
+      const columns = columnCount();
+      const delta =
+        e.key === "ArrowLeft"
+          ? -1
+          : e.key === "ArrowRight"
+            ? 1
+            : e.key === "ArrowUp"
+              ? -columns
+              : e.key === "ArrowDown"
+                ? columns
+                : 0;
+
+      if (delta === 0) return;
+      e.preventDefault();
+      moveByKeyboard(item, delta);
     },
-    [isDraggable, keyboardMovingId, moveItemByKeyboard],
+    [isDraggable, keyboardMovingId, items, onReorder, columnCount, moveByKeyboard],
   );
 
   if (items.length === 0) {
     return <p className="no-items">No items yet. Add your first item!</p>;
   }
 
+  const listClasses = [
+    "items-list",
+    draggedId !== null ? "is-sorting" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div
-      className={`items-list${isDraggable ? " drag-enabled" : ""}`}
-      role={isDraggable ? "list" : undefined}
-      aria-label={isDraggable ? "Reorderable items list" : undefined}
-    >
-      {items.map((item) => (
-        <ItemCard
-          key={item.id}
-          item={item}
-          reservation={reservations.get(item.id)}
-          categoryLabels={getCategoryLabels(item.category)}
-          cdnDomain={cdnDomain}
-          priceRub={convertToRub(item.price, exchangeRates)}
-          isDraggable={isDraggable}
-          isDragging={draggedItemId === item.id}
-          isKeyboardMoving={keyboardMovingId === item.id}
-          dragOverPosition={
-            dragOverItemId === item.id ? dragOverPosition : null
-          }
-          onEdit={() => onEdit(item)}
-          onDelete={() => onDelete(item.id, item.title)}
-          onToggleReceived={() => onToggleReceived(item.id, item.received)}
-          onToggleReserved={() =>
-            onToggleReserved(item.id, reservations.has(item.id))
-          }
-          onDragStart={(e) => handleDragStart(e, item.id)}
-          onDragEnd={handleDragEnd}
-          onDragEnter={(e) => handleDragEnter(e, item.id)}
-          onDragOver={(e) => handleDragOver(e, item.id)}
-          onDragLeave={() => handleDragLeave(item.id)}
-          onDrop={(e) => handleDrop(e, item.id)}
-          onKeyDown={(e) => handleKeyDown(e, item.id)}
-        />
-      ))}
-    </div>
+    <>
+      {/* Where a keyboard move says what it did. A drag has the beam to look
+          at; the arrow keys had nothing at all. */}
+      {isDraggable && (
+        <div className="drag-live-region" role="status" aria-live="polite">
+          {announcement}
+        </div>
+      )}
+
+      <div
+        ref={listRef}
+        className={listClasses}
+        role={isDraggable ? "list" : undefined}
+        aria-label={isDraggable ? "Reorderable items list" : undefined}
+        onDragOver={isDraggable ? handleListDragOver : undefined}
+        onDragLeave={isDraggable ? handleListDragLeave : undefined}
+        onDrop={isDraggable ? handleListDrop : undefined}
+      >
+        {items.map((item) => (
+          <ItemCard
+            key={item.id}
+            item={item}
+            reservation={reservations.get(item.id)}
+            categoryLabels={getCategoryLabels(item.category)}
+            cdnDomain={cdnDomain}
+            priceRub={convertToRub(item.price, exchangeRates)}
+            isDraggable={isDraggable}
+            isDragging={draggedId === item.id}
+            isKeyboardMoving={keyboardMovingId === item.id}
+            dropEdge={beam?.id === item.id ? beam.edge : null}
+            onEdit={() => onEdit(item)}
+            onDelete={() => onDelete(item.id, item.title)}
+            onToggleReceived={() => onToggleReceived(item.id, item.received)}
+            onToggleReserved={() =>
+              onToggleReserved(item.id, reservations.has(item.id))
+            }
+            onDragStart={(e) => handleDragStart(e, item.id)}
+            onDragEnd={endDrag}
+            onGripPointerDown={() => {
+              fromGripRef.current = true;
+            }}
+            onKeyDown={(e) => handleKeyDown(e, item)}
+          />
+        ))}
+      </div>
+    </>
   );
 }

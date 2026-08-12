@@ -26,6 +26,11 @@ pnpm-debug.log*
 # Astro-specific files
 .astro/
 
+# Astro DB's local database, recreated and reseeded by `astro dev` and the test
+# run whenever it is missing. It is a build artifact wearing a data file's
+# clothes, and the seed that fills it is already in db/seed.ts.
+local.db
+
 # Wrangler's local state and caches
 .wrangler/
 
@@ -37,3 +42,10 @@ scripts/wishlist-images/out/
 # Local SQLite database (built by bun db:reset)
 local.db
 local.db-journal
+
+# Impeccable's live-mode session state — absolute paths, ports, and in-flight
+# session journals, all local to one machine. The design system itself stays
+# in the repo: .impeccable/design.json is the half of DESIGN.md its frontmatter
+# schema cannot hold (shadows, motion, tonal ramps, component snippets), and
+# splitting the two is how they drift apart without anyone noticing.
+.impeccable/live/

@@ -316,11 +316,6 @@ const breadcrumbSchema = {
 </PageLayout>
 
 <style>
-  :root {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-  }
-
   main {
     min-height: 100vh;
     position: relative;
@@ -339,7 +334,7 @@ const breadcrumbSchema = {
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.15;
@@ -398,7 +393,7 @@ const breadcrumbSchema = {
   .post-header time {
     font-size: 0.85rem;
     font-weight: 500;
-    color: light-dark(#888, #777);
+    color: var(--ink-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -406,7 +401,7 @@ const breadcrumbSchema = {
   .updated-date {
     font-size: 0.85rem;
     font-weight: 500;
-    color: light-dark(#888, #777);
+    color: var(--ink-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding-left: 0.75rem;
@@ -423,7 +418,7 @@ const breadcrumbSchema = {
     letter-spacing: -0.02em;
     margin: 0.75rem 0 0 0;
     line-height: 1.2;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-display);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -431,7 +426,7 @@ const breadcrumbSchema = {
 
   .post-header .description {
     font-size: 1.1rem;
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
     margin: 1rem 0 0 0;
     line-height: 1.6;
   }
@@ -459,12 +454,12 @@ const breadcrumbSchema = {
     height: 32px;
     padding: 0 0.75rem;
     border-radius: 8px;
-    background: light-dark(rgba(237, 98, 146, 0.1), rgba(237, 98, 146, 0.15));
+    background: light-dark(rgba(234, 96, 144, 0.1), rgba(234, 96, 144, 0.15));
     transition: all 0.2s;
   }
 
   .translation-link:hover {
-    background: light-dark(rgba(237, 98, 146, 0.18), rgba(237, 98, 146, 0.25));
+    background: light-dark(rgba(234, 96, 144, 0.18), rgba(234, 96, 144, 0.25));
   }
 
   .translation-link:visited {
@@ -480,7 +475,7 @@ const breadcrumbSchema = {
     border: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
     border-radius: 8px;
     background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
-    color: light-dark(#888, #777);
+    color: var(--ink-muted);
     cursor: pointer;
     transition: all 0.2s;
   }
@@ -492,7 +487,7 @@ const breadcrumbSchema = {
   }
 
   .copy-link:hover {
-    color: light-dark(#333, #fff);
+    color: var(--ink-body);
     background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
     border-color: light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.18));
   }
@@ -560,7 +555,7 @@ const breadcrumbSchema = {
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin: 0 0 1rem 0;
-    color: light-dark(#666, #888);
+    color: var(--ink-muted);
   }
 
   .toc ol {
@@ -582,7 +577,7 @@ const breadcrumbSchema = {
   }
 
   .toc a {
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
     text-decoration: none;
     font-size: 0.9rem;
     line-height: 1.5;
@@ -590,7 +585,7 @@ const breadcrumbSchema = {
   }
 
   .toc a:visited {
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
   }
 
   .toc a:hover {
@@ -648,7 +643,7 @@ const breadcrumbSchema = {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 0;
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
     text-decoration: none;
     font-size: 0.9rem;
     transition: color 0.2s;
@@ -681,11 +676,11 @@ const breadcrumbSchema = {
   }
 
   .post-nav-link.prev:hover svg {
-    transform: translateX(-3px);
+    transform: translateX(calc(-3px * var(--lift)));
   }
 
   .post-nav-link.next:hover svg {
-    transform: translateX(3px);
+    transform: translateX(calc(3px * var(--lift)));
   }
 
   /* Back to top button */
@@ -699,7 +694,7 @@ const breadcrumbSchema = {
     border: 1px solid
       light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
     background: light-dark(rgba(255, 255, 255, 0.9), rgba(40, 40, 45, 0.9));
-    color: light-dark(#666, #aaa);
+    color: var(--ink-muted);
     cursor: pointer;
     opacity: 0;
     transform: translateY(20px);
@@ -726,9 +721,9 @@ const breadcrumbSchema = {
   }
 
   .back-to-top:hover {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     border-color: transparent;
-    color: white;
+    color: var(--accent-ink);
   }
 
   .back-to-top:focus-visible {
@@ -740,21 +735,21 @@ const breadcrumbSchema = {
   .content {
     font-size: 1.1rem;
     line-height: 1.8;
-    color: light-dark(#333, #ddd);
+    color: var(--ink-body);
   }
 
   .content :global(h2) {
     font-size: 1.5rem;
     font-weight: 600;
     margin: 2.5rem 0 1rem 0;
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
   }
 
   .content :global(h3) {
     font-size: 1.25rem;
     font-weight: 600;
     margin: 2rem 0 0.75rem 0;
-    color: light-dark(#222, #eee);
+    color: var(--ink-strong);
   }
 
   .content :global(p) {
@@ -768,7 +763,7 @@ const breadcrumbSchema = {
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
-    text-decoration-color: rgba(237, 98, 146, 0.4);
+    text-decoration-color: rgba(234, 96, 144, 0.4);
     transition: color 0.15s ease, text-decoration-color 0.15s ease;
   }
 
@@ -827,9 +822,9 @@ const breadcrumbSchema = {
     border-left: 3px solid var(--accent-start);
     margin: 1.5rem 0;
     padding: 0.75rem 0 0.75rem 1.25rem;
-    color: light-dark(#555, #aaa);
+    color: var(--ink-muted);
     font-style: normal;
-    background: light-dark(rgba(237, 98, 146, 0.05), rgba(237, 98, 146, 0.08));
+    background: light-dark(rgba(234, 96, 144, 0.05), rgba(234, 96, 144, 0.08));
     border-radius: 0 8px 8px 0;
   }
 
@@ -869,7 +864,7 @@ const breadcrumbSchema = {
 
   .content :global(figcaption) {
     font-size: 0.9rem;
-    color: light-dark(#666, #aaa);
+    color: var(--ink-muted);
     text-align: center;
     margin-top: 0.75rem;
     font-style: italic;
@@ -982,7 +977,7 @@ const breadcrumbSchema = {
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: light-dark(#888, #666);
+      color: var(--ink-muted);
       display: flex;
       align-items: center;
       gap: 0.35rem;

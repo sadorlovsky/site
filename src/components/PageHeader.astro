@@ -50,6 +50,7 @@ const hasActions = Astro.slots.has("actions");
   class:list={["page-header", { "page-header--condense": condenseOnScroll }]}
 >
   {condenseOnScroll && <div class="page-header__veil" aria-hidden="true" />}
+  {condenseOnScroll && <div class="page-header__cap" aria-hidden="true" />}
   <div class="header-row">
     <nav
       class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
@@ -231,7 +232,7 @@ const hasActions = Astro.slots.has("actions");
     height: 2rem;
     padding: 0 0.7rem 0 0.55rem;
     border-radius: 999px;
-    color: light-dark(#555, #b4b4b8);
+    color: var(--ink-muted);
     text-decoration: none;
     white-space: nowrap;
     transition:
@@ -266,9 +267,9 @@ const hasActions = Astro.slots.has("actions");
   /* Same recipe as the language switcher's gradient indicator: accent fill,
      white glyph, and the identical accent glow. */
   .crumb-home:hover {
-    color: #fff;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-    box-shadow: 0 4px 16px rgba(237, 87, 96, 0.45);
+    color: var(--accent-ink);
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   }
 
   .crumb-home :global(svg) {
@@ -277,22 +278,22 @@ const hasActions = Astro.slots.has("actions");
   }
 
   .crumb-sep {
-    color: light-dark(#bbb, #555);
+    color: var(--ink-muted);
     user-select: none;
   }
 
   .crumb-link {
-    color: light-dark(#666, #999);
+    color: var(--ink-muted);
     text-decoration: none;
     transition: color 0.2s ease;
   }
 
   .crumb-link:hover {
-    color: light-dark(#333, #ddd);
+    color: var(--ink-body);
   }
 
   .crumb-current {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -310,7 +311,7 @@ const hasActions = Astro.slots.has("actions");
   .crumb-home:focus-visible,
   .crumb-link:focus-visible,
   .crumb-current--link:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
     border-radius: 4px;
   }
@@ -349,14 +350,14 @@ const hasActions = Astro.slots.has("actions");
     line-height: 1.05;
     width: fit-content;
     max-width: 100%;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-display);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .subtitle {
-    color: light-dark(#666, #999);
+    color: var(--ink-muted);
     margin: 0.45rem 0 0 0;
     font-weight: 400;
     font-size: 1rem;
@@ -422,9 +423,20 @@ const hasActions = Astro.slots.has("actions");
        the blur runs unbroken from the top edge to the end of the year's bar;
        with no year docked the same fade is simply a soft bottom. One shape does
        both the tint and the blur — they used to fade on two different curves,
-       25% for the colour against 45%-96% for the mask. */
+       25% for the colour against 45%-96% for the mask.
+
+       A page that pins something else under the pills publishes its height as
+       --sticky-rail-offset (/travel's view rail does), and the strip grows to
+       carry it. That is the whole point of the variable here: the rail used to
+       bring a veil and a blur of its own, docking exactly where this one starts
+       to fade, so the two tints stacked in that band and the seam between them
+       was visible. One surface holds both now, and the fade happens below the
+       rail rather than through it. Unset elsewhere, where it costs nothing. */
     --veil-fade: 2.75rem;
-    height: calc(var(--sticky-header-offset, 5.5rem) + var(--veil-fade));
+    height: calc(
+      var(--sticky-header-offset, 5.5rem) + var(--sticky-rail-offset, 0px) +
+        var(--veil-fade)
+    );
     pointer-events: none;
     z-index: 5;
     background: var(--veil-bg);
@@ -439,6 +451,39 @@ const hasActions = Astro.slots.has("actions");
   }
 
   .page-header--condense.is-condensed .page-header__veil {
+    opacity: 1;
+  }
+
+  /* The lid over the pill row, and the one piece of this that is above the
+     sticky headings rather than below them.
+
+     A section heading sits at z-index 10 so it covers the rows passing under
+     it, which also puts it above the veil (5) — deliberately, so the veil can
+     dissolve behind a docked year instead of stopping dead at its top edge. The
+     cost only shows when a heading *leaves*: its own section pushes it up out
+     of its dock, and on the way up it crosses the pill row, where the veil is
+     the only thing between it and the page and cannot hide it. That is the
+     "Observer States" written across the Home button.
+
+     So the strip the pills float over gets a second, solid layer above the
+     headings. It stops exactly where --sticky-header-offset does, which is
+     where anything else pinned — /travel's view rail — begins, so the two never
+     overlap and nothing else needs to know it is there. Below the pills (30),
+     so they still read as capsules on it rather than under it. */
+  .page-header__cap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--sticky-header-offset, 5.5rem);
+    pointer-events: none;
+    z-index: 20;
+    background: var(--veil-bg);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .page-header--condense.is-condensed .page-header__cap {
     opacity: 1;
   }
 
@@ -488,7 +533,7 @@ const hasActions = Astro.slots.has("actions");
     letter-spacing: -0.02em;
     line-height: 1;
     white-space: nowrap;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -515,7 +560,7 @@ const hasActions = Astro.slots.has("actions");
   }
 
   .condensed-title:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 
@@ -527,6 +572,7 @@ const hasActions = Astro.slots.has("actions");
 
   @media (prefers-reduced-motion: reduce) {
     .page-header__veil,
+    .page-header__cap,
     .condensed-title {
       transition: none;
     }

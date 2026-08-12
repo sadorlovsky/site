@@ -10,7 +10,9 @@ import {
   formatMonthYear,
   formatTripCount,
   formatVisitCount,
+  fillYearGaps,
   getCountriesByContinent,
+  getCountriesWithCities,
   getJourneys,
   getTravelFacts,
   getUnmappedCountries,
@@ -312,7 +314,10 @@ test("finds the most active year", () => {
 test("finds the latest country seen for the first time", () => {
   expect(getTravelFacts(factsTripsData).latestNewCountry).toEqual({
     name: { en: "United Kingdom", ru: "Великобритания" },
-    a2: "gb-eng",
+    // "gb", not the "gb-eng" this used to assert: the card names the country,
+    // so it flies the country's flag. The nation the journey actually landed in
+    // is the timeline's business, and the timeline still draws both.
+    a2: "gb",
     year: 2024,
     month: 10,
   });
@@ -387,6 +392,118 @@ test("a country first seen on an outing keeps that date", () => {
   });
 });
 
+test("a country flies its own flag, not one of its nations'", () => {
+  const gb = getCountriesWithCities(factsTripsData).find(
+    (country) => country.code === "GBR",
+  )!;
+
+  // The journey reaches England and Scotland; the country is neither.
+  expect(gb.a2).toBe("gb");
+  expect(getTravelFacts(factsTripsData).mostVisitedCountry!.a2).toBe("ru");
+});
+
+test("a city keeps the outings out of its count but the country keeps the date", () => {
+  const [kazakhstan] = getCountriesWithCities(outingTripsData);
+
+  // Almaty appears in all three trips, two of which are outings.
+  expect(kazakhstan.cities).toEqual([{ name: "Almaty", visits: 1 }]);
+  // And 2024 is still the year I first stood there, outing or not.
+  expect(kazakhstan.firstYear).toBe(2024);
+});
+
+test("a city is counted once per trip and dated from the first", () => {
+  const byCode = new Map(
+    getCountriesWithCities(factsTripsData).map((country) => [
+      country.code,
+      country,
+    ]),
+  );
+
+  expect(byCode.get("RUS")!.cities).toEqual([
+    { name: "Saint Petersburg", visits: 2 },
+  ]);
+  expect(byCode.get("RUS")!.firstYear).toBe(2021);
+
+  // England and Scotland are one journey through one country, so neither city
+  // scores twice and the country is dated once.
+  expect(byCode.get("GBR")!.cities).toEqual([
+    { name: "Edinburgh", visits: 1 },
+    { name: "London", visits: 1 },
+  ]);
+  expect(byCode.get("GBR")!.firstYear).toBe(2024);
+
+  // Reached only by a trip with no date, so there is no year to show.
+  expect(byCode.get("JPN")!.firstYear).toBeNull();
+});
+
+// The order the world arrived in, which a year alone cannot give: these three
+// journeys put two countries in one year and two more in one journey.
+const chronologyTripsData: Trip[] = [
+  {
+    // Later in the year than Latvia below, but with two cities — so a sort by
+    // city count would lift it above the trip that actually happened first.
+    year: 2019,
+    month: 9,
+    endMonth: null,
+    destinations: [{ cities: ["Prague", "Brno"], country: ["cz", "cze"] }],
+  },
+  {
+    year: 2019,
+    month: 3,
+    endMonth: null,
+    destinations: [{ cities: ["Riga"], country: ["lv", "lva"] }],
+  },
+  {
+    // One journey, two countries new on the same day: the route's own order is
+    // the order they were stood in, and no date on the row could say it.
+    year: 2020,
+    month: 1,
+    endMonth: null,
+    destinations: [
+      { cities: ["Vienna"], country: ["at", "aut"] },
+      { cities: ["Bratislava"], country: ["sk", "svk"] },
+    ],
+  },
+];
+
+test("first sightings are ranked by when they happened, not by the year", () => {
+  const ranked = getCountriesWithCities(chronologyTripsData)
+    .slice()
+    .sort((a, b) => a.firstSeen! - b.firstSeen!);
+
+  expect(ranked.map((country) => country.code)).toEqual([
+    "LVA",
+    "CZE",
+    "AUT",
+    "SVK",
+  ]);
+  expect(ranked.map((country) => country.firstSeen)).toEqual([0, 1, 2, 3]);
+  // Both 2019 countries still show the same year — the rank is what separates
+  // them, and it is not on display.
+  expect(ranked.map((country) => country.firstYear)).toEqual([
+    2019, 2019, 2020, 2020,
+  ]);
+});
+
+test("a country with no dated trip has no place in the chronology", () => {
+  const japan = getCountriesWithCities(factsTripsData).find(
+    (country) => country.code === "JPN",
+  )!;
+
+  expect(japan.firstSeen).toBeNull();
+  expect(japan.firstYear).toBeNull();
+});
+
+test("the countries view and the stats view agree on the most visited city", () => {
+  const busiest = Math.max(
+    ...getCountriesWithCities(datedTrips).flatMap((country) =>
+      country.cities.map((city) => city.visits),
+    ),
+  );
+
+  expect(busiest).toBe(getTravelFacts(datedTrips).mostVisitedCity!.visits);
+});
+
 test("the trips counter and the by-year bars count the same thing", () => {
   const total = getTravelFacts(trips).tripsByYear.reduce(
     (sum, entry) => sum + entry.trips,
@@ -426,4 +543,45 @@ test("agrees Russian nouns with the number in front of them", () => {
 test("formats a month and year in both languages", () => {
   expect(formatMonthYear(2026, 7, "en")).toBe("Jul 2026");
   expect(formatMonthYear(2026, 7, "ru")).toBe("Июл 2026");
+});
+
+test("puts the years with no trips back on the axis", () => {
+  expect(
+    fillYearGaps([
+      { year: 2013, trips: 1 },
+      { year: 2016, trips: 2 },
+      { year: 2017, trips: 1 },
+    ]),
+  ).toEqual([
+    { year: 2013, trips: 1 },
+    { year: 2014, trips: 0 },
+    { year: 2015, trips: 0 },
+    { year: 2016, trips: 2 },
+    { year: 2017, trips: 1 },
+  ]);
+});
+
+test("leaves a gapless run and an empty one alone", () => {
+  const gapless = [
+    { year: 2020, trips: 4 },
+    { year: 2021, trips: 9 },
+  ];
+  expect(fillYearGaps(gapless)).toEqual(gapless);
+  expect(fillYearGaps([])).toEqual([]);
+  expect(fillYearGaps([{ year: 2012, trips: 1 }])).toEqual([
+    { year: 2012, trips: 1 },
+  ]);
+});
+
+test("fills the real series without dropping a trip", () => {
+  const series = fillYearGaps(getTravelFacts(datedTrips).tripsByYear);
+  const years = series.map((entry) => entry.year);
+
+  // Consecutive by construction — the property the chart's axis depends on.
+  expect(years).toEqual(
+    Array.from({ length: years.length }, (_, i) => years[0] + i),
+  );
+  // And the columns add up to the counter above the chart. Outings are not
+  // journeys, so this is tripsCount rather than the number of dated trips.
+  expect(series.reduce((sum, entry) => sum + entry.trips, 0)).toBe(tripsCount);
 });

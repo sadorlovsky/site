@@ -142,9 +142,6 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
 
 <style>
   .blog-page {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-
     min-height: 100vh;
     position: relative;
     overflow: hidden;
@@ -162,7 +159,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.15;
@@ -232,7 +229,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    color: light-dark(#666, #888);
+    color: var(--ink-muted);
   }
 
   .empty-state p {

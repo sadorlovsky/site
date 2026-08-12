@@ -16,6 +16,7 @@ import {
   customType,
   index,
   integer,
+  real,
   sqliteTable,
   text,
   uniqueIndex,
@@ -76,9 +77,16 @@ export const ItemOption = sqliteTable(
 
 export const ExchangeRate = sqliteTable("ExchangeRate", {
   id: integer("id").primaryKey(),
-  fromCurrency: text("fromCurrency").notNull(), // "USD", "EUR", "GBP", "AUD"
+  fromCurrency: text("fromCurrency").notNull(), // "USD", "EUR", "GBP", "AUD", "KZT"
   toCurrency: text("toCurrency").notNull(), // "RUB"
-  rate: integer("rate").notNull(), // 100 means 1 USD = 100 RUB
+  /**
+   * How many roubles one unit costs: 100 means 1 USD = 100 RUB.
+   *
+   * Real, not integer — one tenge is about 0.15 roubles, and a currency worth
+   * less than a rouble cannot be written down in whole ones. The rates that
+   * were integers still read as the same numbers; nothing had to be rescaled.
+   */
+  rate: real("rate").notNull(),
   updatedAt: isoDate("updatedAt").notNull(),
 });
 

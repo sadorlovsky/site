@@ -159,7 +159,8 @@ function AdminPanelInner({
           url: data.url || null,
           category: data.category,
           priority: data.priority || null,
-          weight: data.weight ?? 0,
+          // The server picked it — one above everything else in the table.
+          weight: result.weight ?? 0,
           received: false,
           createdAt: new Date(),
           options: result.options ?? [],

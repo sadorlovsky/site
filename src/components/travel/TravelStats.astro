@@ -11,14 +11,14 @@ import {
 } from "@lib/travel";
 ---
 
-<div class="stats">
+<dl class="stats">
   <div class="card">
-    <h3 data-en="Trips" data-ru="Поездки">Trips</h3>
-    <div class="value">{tripsCount}</div>
+    <dt data-en="Trips" data-ru="Поездки">Trips</dt>
+    <dd class="value">{tripsCount}</dd>
   </div>
   <div class="card">
-    <h3 data-en="Countries" data-ru="Страны">Countries</h3>
-    <div class="with-info">
+    <dt data-en="Countries" data-ru="Страны">Countries</dt>
+    <dd class="with-info">
       <span class="value">{countries.size} / {countryListSize}</span>
       <a
         href="/travel/countries"
@@ -33,7 +33,7 @@ import {
       >
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
-    </div>
+    </dd>
     <ProgressBar
       value={countries.size}
       max={countryListSize}
@@ -44,12 +44,12 @@ import {
     />
   </div>
   <div class="card">
-    <h3 data-en="Cities" data-ru="Города">Cities</h3>
-    <div class="value">{cities.size}</div>
+    <dt data-en="Cities" data-ru="Города">Cities</dt>
+    <dd class="value">{cities.size}</dd>
   </div>
   <div class="card">
-    <h3 data-en="Continents" data-ru="Континенты">Continents</h3>
-    <div class="with-info">
+    <dt data-en="Continents" data-ru="Континенты">Continents</dt>
+    <dd class="with-info">
       <span class="value">{continentsVisited} / {continentsTotal}</span>
       <a
         href="https://education.nationalgeographic.org/resource/Continent/"
@@ -65,7 +65,7 @@ import {
       >
         <Icon name="question" class="info-icon" aria-hidden="true" />
       </a>
-    </div>
+    </dd>
     <ProgressBar
       value={continentsVisited}
       max={continentsTotal}
@@ -75,7 +75,7 @@ import {
       accent
     />
   </div>
-</div>
+</dl>
 
 <script>
   // The "?" links explain the numbers, so they get the site's own tooltip
@@ -92,6 +92,12 @@ import {
     /* The page's own grid gap, so the stats sit on the same rhythm as the map
        and the trip list rather than a tighter one of their own. */
     gap: 1.25rem;
+    /* And out to the page's shared edge. A row's hover wash bleeds 0.75rem past
+       the content edge by design — the text stays put and the wash reaches into
+       the gutter — which used to leave these cards ending 12px short of it, so
+       the page had two different left edges and the wash looked like it was
+       escaping. Now everything that draws a surface ends on the same line. */
+    margin-inline: -0.75rem;
   }
 
   /* The same material as a wishlist card: tint, border, shadow and rim all from
@@ -120,11 +126,25 @@ import {
     box-shadow: var(--glass-rim);
   }
 
-  .card > h3 {
+  /* These four were <h3>, which put three heading levels on /travel in the
+     order h1, h3, h2 — the counters came before the first view's heading and
+     announced themselves as sections above it. They are not sections: each is
+     a label attached to a number, which is exactly what a description list is
+     for, and pairing them properly also means a screen reader reads "Countries,
+     47 of 195" instead of two unrelated fragments in sequence.
+
+     The wrapper divs are legal here — a <dl> may group each term-and-value pair
+     in a <div> — so the card's material and layout are untouched. */
+  .card > dt {
     margin: 0;
     font-size: 0.85rem;
     font-weight: 500;
-    color: light-dark(#666, #9a9aa0);
+    color: var(--ink-muted);
+  }
+
+  /* The indent a <dd> arrives with from the browser. */
+  .stats dd {
+    margin-inline-start: 0;
   }
 
   .value {
@@ -138,6 +158,7 @@ import {
   }
 
   .info-link {
+    position: relative;
     display: inline-flex;
     vertical-align: super;
     padding: 0.1rem;
@@ -145,19 +166,37 @@ import {
     transition: color 0.2s ease;
   }
 
+  /* The glyph is 17×17 and should stay that way — it is a superscript beside a
+     number, and anything larger stops being a footnote and starts competing
+     with the figure it belongs to. But 17 is under the 24 a target needs, so
+     the target grows instead of the mark: an invisible 24×24 centred on the
+     icon, which a finger can hit and an eye never sees.
+
+     Centred by translate rather than by negative insets so it stays square
+     whatever the icon's own padding does. */
+  .info-link::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 24px;
+    height: 24px;
+    transform: translate(-50%, -50%);
+  }
+
   .info-link:hover .info-icon {
-    color: light-dark(#1a1a1a, #fff);
+    color: var(--ink-strong);
   }
 
   .info-link:focus-visible {
-    outline: 2px solid light-dark(#333, #fff);
+    outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
   }
 
   /* Muted like the language switcher's globe — present, not competing with the
      number it belongs to. */
   .info-icon {
-    color: light-dark(#888, #8a8a90);
+    color: var(--ink-muted);
     width: 14px;
     height: 14px;
     transition: color 0.2s ease;

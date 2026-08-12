@@ -15,6 +15,14 @@ export interface ToggleItem {
   href?: string;
   /** Disabled state */
   disabled?: boolean;
+  /** How much is behind this item — a plain number, or a fraction like "2/7".
+      Language-neutral by design: a figure needs no translation, and one that
+      did would be a second label. */
+  count?: string | number;
+  /** `tabs` only: id of the element this tab shows. The tab takes the id
+      `${controls}-tab`, which is what the panel points back at with
+      aria-labelledby. */
+  controls?: string;
 }
 
 export interface Props {
@@ -24,8 +32,14 @@ export interface Props {
   value?: string;
   /** Size variant */
   size?: "sm" | "md";
-  /** Visual variant */
-  variant?: "pill" | "separated";
+  /** Visual variant. `tabs` is the only one that is not a set of toggles: it
+      renders a real tablist and needs initToggleTabs (@client/toggle-tabs) to
+      drive it. */
+  variant?: "pill" | "separated" | "tabs";
+  /** `separated` only. `quiet` marks the current item with ink and a wash
+      instead of the accent capsule — for a row that shares its space with
+      something already louder. */
+  tone?: "accent" | "quiet";
   /** Enable horizontal scrolling */
   scrollable?: boolean;
   /** ARIA label for the group */
@@ -44,6 +58,7 @@ const {
   value,
   size = "md",
   variant = "pill",
+  tone = "accent",
   scrollable = false,
   ariaLabel,
   ariaLabelEn,
@@ -52,18 +67,29 @@ const {
   name,
 } = Astro.props;
 
+const isTabs = variant === "tabs";
+const iconSize = size === "sm" ? 14 : 16;
+
 const classes = [
   "kit-toggle-group",
   `kit-toggle-group--${size}`,
   variant === "separated" && "kit-toggle-group--separated",
+  variant === "separated" && tone === "quiet" && "kit-toggle-group--quiet",
+  isTabs && "kit-toggle-group--tabs",
   scrollable && "kit-toggle-group--scrollable",
+  // Start with both edges declared clear. The scrollable variant's mask is a
+  // stylesheet rule and applies from the first paint, so a row that does not
+  // overflow — every one of them on a wide screen — used to spend the frames
+  // before its script ran with its first and last labels faded out. These come
+  // off again in the same tick if there really is something to scroll to.
+  scrollable && "at-start at-end",
   className,
 ].filter(Boolean).join(" ");
 ---
 
 <div
   class={classes}
-  role="group"
+  role={isTabs ? "tablist" : "group"}
   aria-label={ariaLabel}
   data-aria-label-en={ariaLabelEn}
   data-aria-label-ru={ariaLabelRu}
@@ -73,7 +99,41 @@ const classes = [
   {items.map((item) => {
     const isActive = item.id === value;
 
-    const iconSize = size === "sm" ? 14 : 16;
+    {/* The label and its count are the same in all three variants; only the
+        element and the role around them change. */}
+    const content = (
+      <Fragment>
+        {item.icon && <Icon name={item.icon} width={iconSize} height={iconSize} class="kit-toggle-group__icon" />}
+        <span data-en={item.label} data-ru={item.labelRu}>{item.label}</span>
+        {item.count !== undefined && (
+          <span class="kit-toggle-item__count">{item.count}</span>
+        )}
+      </Fragment>
+    );
+
+    {/* A tab, not a toggle: aria-selected rather than aria-pressed (the two
+        must never appear together), and a roving tabindex so the rail is one
+        stop in the tab order with the arrow keys moving inside it. The server
+        renders the roving state for the tab it opens on; initToggleTabs takes
+        it over from there. */}
+    if (isTabs) {
+      return (
+        <button
+          type="button"
+          id={item.controls ? `${item.controls}-tab` : undefined}
+          class="kit-toggle-item"
+          class:list={[{ "is-active": isActive }]}
+          data-id={item.id}
+          role="tab"
+          aria-selected={isActive}
+          aria-controls={item.controls}
+          tabindex={isActive ? 0 : -1}
+          disabled={item.disabled}
+        >
+          {content}
+        </button>
+      );
+    }
 
     if (item.href) {
       return (
@@ -85,8 +145,7 @@ const classes = [
           aria-current={isActive ? "page" : undefined}
           aria-disabled={item.disabled || undefined}
         >
-          {item.icon && <Icon name={item.icon} width={iconSize} height={iconSize} class="kit-toggle-group__icon" />}
-          <span data-en={item.label} data-ru={item.labelRu}>{item.label}</span>
+          {content}
         </a>
       );
     }
@@ -102,11 +161,12 @@ const classes = [
         name={name}
         value={item.id}
       >
-        {item.icon && <Icon name={item.icon} width={iconSize} height={iconSize} class="kit-toggle-group__icon" />}
-        <span data-en={item.label} data-ru={item.labelRu}>{item.label}</span>
+        {content}
       </button>
     );
   })}
+
+  {isTabs && <span class="kit-toggle-group__marker liquid-glass" aria-hidden="true" />}
 
   <slot name="after" />
 </div>

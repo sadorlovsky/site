@@ -34,11 +34,6 @@ export const prerender = true;
 </PageLayout>
 
 <style>
-  :root {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-  }
-
   main {
     width: 100%;
     min-height: 100vh;
@@ -61,7 +56,7 @@ export const prerender = true;
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -150px;
     right: -100px;
     opacity: 0.25;
@@ -165,7 +160,7 @@ export const prerender = true;
     font-size: clamp(5rem, 20vw, 10rem);
     font-weight: 800;
     line-height: 1;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-display);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -209,14 +204,14 @@ export const prerender = true;
   h1 {
     font-size: clamp(1.5rem, 5vw, 2.5rem);
     font-weight: 700;
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
     margin: 0 0 0.75rem 0;
     letter-spacing: -0.02em;
   }
 
   .subtitle {
     font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-    color: light-dark(#666, #aaa);
+    color: var(--ink-muted);
     margin: 0 0 2.5rem 0;
     max-width: 400px;
     line-height: 1.5;
@@ -224,7 +219,7 @@ export const prerender = true;
 
   /* Home button overrides for enhanced effect */
   .home-btn {
-    box-shadow: 0 4px 20px rgba(237, 87, 96, 0.35);
+    box-shadow: 0 4px 20px rgba(237, 91, 42, 0.35);
   }
 
   .home-btn :global(svg) {
@@ -232,16 +227,16 @@ export const prerender = true;
   }
 
   .home-btn:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 8px 30px rgba(237, 87, 96, 0.45);
+    transform: translateY(calc(-3px * var(--lift))) scale(calc(1 + 0.03 * var(--lift)));
+    box-shadow: 0 8px 30px rgba(237, 91, 42, 0.45);
   }
 
   .home-btn:hover :global(svg) {
-    transform: translateX(4px);
+    transform: translateX(calc(4px * var(--lift)));
   }
 
   .home-btn:active {
-    transform: translateY(-1px) scale(1.01);
+    transform: translateY(calc(-1px * var(--lift))) scale(calc(1 + 0.01 * var(--lift)));
   }
 
   /* Reduced motion */
