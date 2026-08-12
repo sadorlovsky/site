@@ -54,7 +54,6 @@ const { href, title, isoDate, dateLabel } = Astro.props;
     font-weight: 500;
     line-height: 1.45;
     color: var(--ink-body);
-    transition: background-color 0.2s ease;
   }
 
   /* The one hover this site has for a list row. */
@@ -78,9 +77,13 @@ const { href, title, isoDate, dateLabel } = Astro.props;
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .post-row__title {
-      transition: none;
+  /* Same as PostLead: the gradient hides the text with
+     `-webkit-text-fill-color`, which forced colours leaves alone, so the row
+     under the pointer would go blank. */
+  @media (forced-colors: active) {
+    .post-row:hover .post-row__title {
+      background: none;
+      -webkit-text-fill-color: currentColor;
     }
   }
 </style>

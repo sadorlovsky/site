@@ -63,7 +63,6 @@ const { href, title, description, isoDate, dateLabel, lead = false } = Astro.pro
     letter-spacing: -0.02em;
     color: var(--ink-strong);
     text-wrap: balance;
-    transition: background-color 0.2s ease;
   }
 
   .post-lead--first .post-lead__title {
@@ -83,9 +82,12 @@ const { href, title, description, isoDate, dateLabel, lead = false } = Astro.pro
     font-size: 1rem;
     line-height: 1.6;
     color: var(--ink-body);
-    /* A measure, not a margin: 68 characters sits inside the 65–75 a line of
-       text is read at. */
-    max-width: 68ch;
+    /* The site's measure, in the unit DESIGN.md settles on. This was 68ch,
+       which is not 68 characters: `ch` is the width of a zero and overstates
+       Inter's prose by about a quarter, so the sentence ran to roughly 85 —
+       past the 65–75 band, and past the 36rem the same sentence takes on the
+       post's own page. One description, two right edges. */
+    max-width: 36rem;
   }
 
   .post-lead__date {
@@ -95,9 +97,15 @@ const { href, title, description, isoDate, dateLabel, lead = false } = Astro.pro
     color: var(--ink-muted);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .post-lead__title {
-      transition: none;
+  /* The gradient is painted with `-webkit-text-fill-color: transparent`, which
+     forced colours does not force back. Left alone, the title under the
+     pointer is the one thing on the page that disappears. The global rule in
+     global.css cannot reach this: it is `.post-lead__title` against an
+     Astro-scoped `:hover` selector three classes deep, and loses. */
+  @media (forced-colors: active) {
+    .post-lead:hover .post-lead__title {
+      background: none;
+      -webkit-text-fill-color: currentColor;
     }
   }
 </style>

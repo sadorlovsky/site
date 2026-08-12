@@ -2,13 +2,18 @@
 import { Icon } from "astro-icon/components";
 
 /**
- * A post's contents, in two shapes.
+ * A post's contents, in three shapes.
  *
  * Wide enough and it leaves the flow entirely and stands in the left margin
  * beside the reading column, marking the section you are in as you pass it.
  * Narrower than that it is a sheet: a glass pill in the corner opens it, and
  * it scrolls itself instead of the article — a twenty-seven-entry list laid
  * out above the first paragraph is a wall between the reader and the post.
+ *
+ * The third shape is the one underneath both: a heading and a list of links,
+ * in the flow above the first paragraph, which is what a reader gets when the
+ * script that makes a sheet out of it never arrives. A wall is worse than a
+ * pill and better than nothing.
  *
  * The current entry and the pointer are marked the way this site marks things
  * in prose: the words change, nothing is drawn behind them. The rail wore a
@@ -25,6 +30,15 @@ const { headings, label, lang } = Astro.props;
 const headingId = "post-contents-heading";
 const close = lang === "ru" ? "Закрыть" : "Close";
 ---
+
+{/* The one thing that has to be settled before the first paint: whether this
+    page can run a script at all. With one, the contents is a sheet and a pill
+    opens it; without one it stays in the flow, where a reader can still use
+    it. Deferring this to the module below would show the flow layout first and
+    snatch it away. */}
+<script is:inline>
+  document.documentElement.classList.add("contents-sheet");
+</script>
 
 {/* The sheet's opener. Only ever visible below the rail's breakpoint. */}
 <button type="button" class="contents-open liquid-glass" data-contents-open>
@@ -145,63 +159,97 @@ const close = lang === "ru" ? "Закрыть" : "Close";
   }
 
   /* ==========================================================================
-     The sheet, everywhere below the rail's breakpoint.
+     In the flow: what the markup is before anything enhances it.
+
+     The sheet is worth having and is worth a script, but it cannot be the only
+     way in. Hidden behind `translateY(101%)` from the first paint, a contents
+     that no handler ever reaches is a contents that does not exist — and the
+     `<details>` list this replaced worked with the script blocked, slow or
+     failed. So the flow is the floor: a heading and a list of links, above the
+     first paragraph, exactly where the old one stood.
      ========================================================================== */
-  .contents-open {
-    position: fixed;
-    right: 1.25rem;
-    bottom: 1.25rem;
-    z-index: 40;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    height: 2.7rem;
-    padding: 0 1rem;
-    border: none;
-    border-radius: 999px;
-    color: var(--ink-body);
-    font-family: inherit;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    /* Clear of the dock, which is centred on the same edge. */
-    margin-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  .contents-open:focus-visible {
-    outline: 2px solid var(--focus-ring-on-fill);
-    outline-offset: 2px;
-  }
-
   .contents {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    max-height: 70vh;
     display: flex;
     flex-direction: column;
-    padding: 1.1rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
-    /* A sheet is the page closing over the article, not a lens laid on it —
-       the veil, the same material a pinned heading uses. */
-    background-color: var(--veil-bg);
-    backdrop-filter: var(--veil-filter);
-    border-radius: 16px 16px 0 0;
-    box-shadow: var(--glass-shadow);
-    transform: translateY(101%);
-    visibility: hidden;
-    transition:
-      transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-      visibility 0s linear 0.36s;
+    margin: 0 0 2rem;
+    /* The prose measure, so the entries stop where the paragraphs under them
+       will. */
+    max-width: 36rem;
   }
 
-  .contents.is-open {
-    transform: translateY(0);
-    visibility: visible;
-    transition:
-      transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-      visibility 0s;
+  /* Both belong to the sheet and to nothing else: one opens it, one closes it,
+     and in the flow there is nothing to open. */
+  .contents-open,
+  .contents__close {
+    display: none;
+  }
+
+  /* ==========================================================================
+     The sheet, below the rail's breakpoint and only where a script can open
+     it. `html.contents-sheet` is set by the inline script above, before the
+     first paint, so there is no flash of the flow layout on the way in.
+     ========================================================================== */
+  @media (max-width: 1199.98px) {
+    :global(html.contents-sheet) .contents-open {
+      position: fixed;
+      right: 1.25rem;
+      bottom: 1.25rem;
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      height: 2.7rem;
+      padding: 0 1rem;
+      border: none;
+      border-radius: 999px;
+      color: var(--ink-body);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      /* Clear of the dock, which is centred on the same edge. */
+      margin-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    :global(html.contents-sheet) .contents-open:focus-visible {
+      outline: 2px solid var(--focus-ring-on-fill);
+      outline-offset: 2px;
+    }
+
+    :global(html.contents-sheet) .contents {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 60;
+      max-width: none;
+      max-height: 70vh;
+      margin: 0;
+      padding: 1.1rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+      /* A sheet is the page closing over the article, not a lens laid on it —
+         the veil, the same material a pinned heading uses. */
+      background-color: var(--veil-bg);
+      backdrop-filter: var(--veil-filter);
+      border-radius: 16px 16px 0 0;
+      box-shadow: var(--glass-shadow);
+      transform: translateY(101%);
+      visibility: hidden;
+      transition:
+        transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s linear 0.36s;
+    }
+
+    :global(html.contents-sheet) .contents.is-open {
+      transform: translateY(0);
+      visibility: visible;
+      transition:
+        transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s;
+    }
+
+    :global(html.contents-sheet) .contents__close {
+      display: inline-flex;
+    }
   }
 
   .contents-scrim {
@@ -222,9 +270,10 @@ const close = lang === "ru" ? "Закрыть" : "Close";
     display: none;
   }
 
+  /* Shape only — whether it is displayed at all is settled above, with the
+     rest of the sheet. */
   .contents__close {
     flex: none;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 32px;
@@ -252,9 +301,7 @@ const close = lang === "ru" ? "Закрыть" : "Close";
      The margin apparatus. See DESIGN.md Layout for why 1200px exists.
      ========================================================================== */
   @media (min-width: 1200px) {
-    .contents-open,
-    .contents-scrim,
-    .contents__close {
+    .contents-scrim {
       display: none;
     }
 
@@ -264,15 +311,10 @@ const close = lang === "ru" ? "Закрыть" : "Close";
       inset: auto auto auto calc(50% - 400px - 1.5rem - var(--contents-width));
       top: calc(var(--sticky-header-offset, 5.5rem) + 0.5rem);
       width: var(--contents-width);
+      max-width: none;
       max-height: none;
+      margin: 0;
       padding: 0;
-      background: none;
-      backdrop-filter: none;
-      border-radius: 0;
-      box-shadow: none;
-      transform: none;
-      visibility: visible;
-      transition: none;
       /* Above the veil (5), below the cap (20): the apparatus is not passing
          content and has no business dissolving into the page's own dissolve. */
       z-index: 6;
@@ -299,8 +341,10 @@ const close = lang === "ru" ? "Закрыть" : "Close";
     }
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    .contents {
+  /* Only the sheet has a veil to reduce; the rail and the flow are on the page
+     itself. */
+  @media (prefers-reduced-transparency: reduce) and (max-width: 1199.98px) {
+    :global(html.contents-sheet) .contents {
       background-color: light-dark(var(--light-bg), var(--dark-bg));
       backdrop-filter: none;
     }

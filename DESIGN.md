@@ -356,12 +356,14 @@ body text stays generous.
 - **Title** (600, `1.25rem`): group landmarks — a year on the timeline, a
   continent, a checklist category. These are sticky and sit on the veil.
 - **Body** (400, `1rem`, 1.75): paragraphs, dropping to `0.9375rem` under 768px.
-  Prose column caps at 800px.
+  Prose column caps at 800px. A blog post is the one surface that sets its own
+  size — see The Reading Measure.
 - **Label** (600, `0.75rem`, `0.03em`, uppercase for badges): controls, badges,
   counts, chips. Sizes step with the control: `0.7rem` at 28px tall through
   `0.9rem` at 44px.
-- **Mono** (`0.875rem`): inline code takes a tinted ground and a red-tone colour
-  (`#d14` / `#ff6b6b`); block code is transparent on Shiki's own dual theme.
+- **Mono** (`0.875rem`, `1rem` in a post): inline code takes a tinted ground and
+  a red-tone colour (`#d14` / `#ff6b6b`); block code is transparent on Shiki's
+  own dual theme. Inline code is sized in `em`, so it rides whatever it sits in.
 
 ### Named Rules
 
@@ -377,20 +379,45 @@ standing beside the document rather than heading a section of it, and a 1.25rem
 semibold word over a 152px rail would be the loudest thing on a reading page.
 It is still an `h2` and still in the outline.
 
-**The Reading Measure.** A post's prose is 1.1rem on a 1.8 line, larger than
+**The Reading Measure.** A post's prose is **1.3rem** on a 1.7 line, larger than
 the 1rem body this system sets everywhere else, because it is read for twenty
-minutes rather than glanced at. The size is the exception; the measure is not
-negotiable with it. At 1.1rem the 800px column takes 97 characters to the line,
-so running text caps at **36rem** — 74 characters, inside the 65–75 band —
-while listings, tables and images keep the full column.
+minutes rather than glanced at. The size is not a preference — it is the whole
+measure. At 1.3rem the 800px column carries **75 characters** to the line in
+English and **65** in Russian, which are the two ends of the 65–75 band a
+paragraph is read at. So nothing wears a cap: prose, headings, rules, listings,
+tables and images all end on the same right edge, and the size is the only
+number to move if that stops being true.
 
-Two units will lie to you about this. `ch` is the width of a zero and overstates
-Inter's prose by about a quarter, so count characters instead. And `em` resolves
-against each element's own size: the same declaration written in `em` came out
-792px on a heading, 528px on the colophon and 581px on a paragraph — three right
-edges from one rule. The cap is `rem`, resolved once against the root, with
+It was 1.1rem under a `max-width: 36rem`, which is this idea paid for twice,
+and it failed in both currencies. Visually, the cap left 176px between the end
+of a sentence and the end of a listing — invisible on the index, where nothing
+reaches the full column, and unmissable in a post, where every code block
+publishes a right edge the prose does not meet. And the cap did not deliver the
+band it existed for: 36rem measured 67 characters in English and **59** in
+Russian, under a commitment that both languages ship or neither does.
+
+Count characters on the rendered page, not from a formula. Average several
+paragraphs and drop each one's last line: the first line breaks at a word
+boundary, and Russian words are long enough that reading it alone reports 50
+where the paragraph actually runs 59. Two units will lie to you as well. `ch`
+is the width of a zero and overstates Inter's prose by about a quarter. And
+`em` resolves against each element's own size: the same declaration written in
+`em` came out 792px on a heading, 528px on the colophon and 581px on a
+paragraph — three right edges from one rule.
+
+The cap is not gone from the system, only from the post. Anywhere prose is set
+at 1rem and the column is still 800px — the blog index's descriptions — a
+`max-width` in `rem` is still what keeps the line readable, with
 `box-sizing: border-box` so a quote's padding and a list's marker indent fall
 inside it rather than hanging off the end.
+
+**The Scale Follows the Body.** A post's headings are sized against its prose,
+not against the system's 1rem body: `h2` is 1.8rem and `h3` 1.45rem, roughly
+the ratios they held when the prose was 1.1rem. At the old 1.5rem an `h2` stood
+a fifth above 1.3rem prose, which does not read as a heading but as a bold
+sentence. Block code moves with them — 1rem in a post rather than the system's
+0.875rem — at the cost of about four more listings per long post needing their
+scrollport, which they now have.
 
 **The Fluid Heading Rule.** Headings use `clamp()`, not breakpoint steps. Only
 their margins change at 768px.
@@ -754,8 +781,9 @@ indicator to the strip's left edge and left it highlighting the wrong item.
 Three surfaces carry no `prefers-reduced-transparency` fallback at all — the
 admin modal, admin toast, and admin item card — a gap already recorded on
 `/kit`. Fix these when touching those surfaces; do not treat them as precedent.
-The blog's back-to-top button was the fourth and answers the query now, which
-is what "fix these when touching those surfaces" is for.
+The blog's back-to-top button was the fourth; it is gone, and the condensed
+title pill that does its job answers the query. Removing the surface is one of
+the ways "fix these when touching those surfaces" is discharged.
 
 The admin panel's `variables.css` is empty of colour now. It used to hold the
 pre-contrast semantic values, recorded here as a second dialect that had "not

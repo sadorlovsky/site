@@ -28,7 +28,7 @@
         "rule": "design-system-color",
         "value": "rgba(0, 0, 0, 0.075)",
         "createdAt": "2026-08-12T13:40:01.421Z",
-        "reason": "Claude: the kit's own quiet-active wash, set in src/styles/kit/toggle-group.css (.kit-toggle-group--quiet). TagLegend applies that documented treatment to the All chip rather than inventing a value."
+        "reason": "Claude: the kit's own quiet-active wash, set in src/styles/kit/toggle-group.css (.kit-toggle-group--quiet) and applied through ToggleGroup's tone=\"quiet\" by the travel country and checklist filters. It was written for the blog's TagLegend, which was removed before merge; the value is the kit's, not that component's, so the entry stands."
       },
       {
         "rule": "gradient-text",

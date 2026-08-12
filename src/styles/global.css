@@ -434,9 +434,9 @@
 
        Nor does this reach a blur written as a literal, since a token can't
        reach a value that never referred to it. Two such surfaces have a
-       hand-written fallback (.priority-badge, the kit modal's scrim) and four
-       have none at all — the admin modal, toast and item card, and the blog's
-       back-to-top button. Those four are an existing gap, recorded on /kit. */
+       hand-written fallback (.priority-badge, the kit modal's scrim) and three
+       have none at all — the admin modal, toast and item card. Those three are
+       an existing gap, recorded on /kit. */
     --glass-filter: none;
   }
 
@@ -1341,7 +1341,6 @@ a.btn-danger:active {
   .page-title,
   .crumb-current,
   .condensed-title__text,
-  .post-header h1,
   .digit,
   .list-item-title,
   .post-lead__title,

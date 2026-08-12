@@ -40,6 +40,14 @@ const {
 
 // Use forceLang if provided, otherwise default to "en" (client-side JS updates it).
 const displayLang = forceLang || "en";
+
+// Every accessible name in this header follows the same language the visible
+// text does. The `data-aria-label-*` pairs below are for the pages that swap
+// language in the browser, and they are applied by LangInit — which a post page
+// does not carry, because a post is written in one language and served in it.
+// Wording these in English regardless left a Russian post announcing "Home",
+// "Breadcrumb" and a title followed by "back to top".
+const t = (en: string, ru: string) => (displayLang === "ru" ? ru : en);
 const pageTitleHref = pageTitle.href;
 
 // Sub-pages (posts) pass pageTitle.href as a crumb — they carry their own title.
@@ -60,7 +68,9 @@ const hasActions = Astro.slots.has("actions");
   <div class="header-row">
     <nav
       class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
-      aria-label="Breadcrumb"
+      aria-label={t("Breadcrumb", "Навигация по сайту")}
+      data-aria-label-en="Breadcrumb"
+      data-aria-label-ru="Навигация по сайту"
     >
       {/* The label is hidden on narrow screens, where `display: none` would
           leave the link with no accessible name at all — so the aria-label
@@ -68,7 +78,7 @@ const hasActions = Astro.slots.has("actions");
       <a
         href="/"
         class="crumb-home"
-        aria-label="Home"
+        aria-label={t("Home", "Домой")}
         data-aria-label-en="Home"
         data-aria-label-ru="Домой"
       >
@@ -126,7 +136,7 @@ const hasActions = Astro.slots.has("actions");
         <button
           type="button"
           class="condensed-title liquid-glass"
-          aria-label={`${pageTitle.en}, back to top`}
+          aria-label={t(`${pageTitle.en}, back to top`, `${pageTitle.ru}, наверх`)}
           data-aria-label-en={`${pageTitle.en}, back to top`}
           data-aria-label-ru={`${pageTitle.ru}, наверх`}
         >

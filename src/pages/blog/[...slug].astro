@@ -92,7 +92,6 @@ export async function getStaticPaths() {
         translationUrl: translationPost
           ? getPostUrl(translationPost.id, translationPost.data.lang)
           : null,
-        isTranslation: isRussian,
         alternates,
       },
     };
@@ -107,7 +106,6 @@ const {
   prevDate,
   nextDate,
   translationUrl,
-  isTranslation,
   alternates,
 } = Astro.props;
 const { Content, headings } = await render(post);
@@ -394,6 +392,12 @@ const breadcrumbSchema = {
   main {
     min-height: 100vh;
     position: relative;
+    /* `clip`, not `hidden`. Both stop a too-wide listing from dragging the
+       whole document sideways, but `hidden` makes this a scroll container and
+       every sticky descendant docks to it instead of the viewport — the trap
+       the note above the blobs describes. `clip` is the same containment with
+       no scrollport, so the pills still pin. */
+    overflow-x: clip;
   }
 
   /* Ambient background blobs */
@@ -448,11 +452,16 @@ const breadcrumbSchema = {
   .container {
     position: relative;
     z-index: 1;
+    /* The size everything read on this page is set at — the lead above the
+       colophon and the article below it. One custom property rather than two
+       declarations, because the two have to stay equal: they are the same
+       sentence on two surfaces, and the phone step then only has to move one
+       number. See the note on the measure below for why it is 1.3rem. */
+    --prose-size: 1.3rem;
     /* The 800px DESIGN.md documents for every reading surface. This page was
        the one that had drifted to 720, and the redesign made the difference
        visible: the index moved to the documented column, so navigating from
-       the archive into a post shifted the page 80px sideways. At 1.1rem the
-       prose still measures inside the 65–75 characters a line is read at. */
+       the archive into a post shifted the page 80px sideways. */
     max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
@@ -480,11 +489,9 @@ const breadcrumbSchema = {
     flex-wrap: wrap;
     gap: 0.75rem 1rem;
     margin-top: 1.5rem;
-    /* Ends where the prose ends. The facts and the two controls used to reach
-       the full column while everything under them stopped short, which put the
-       header block and the document it introduces on two different right
-       edges — an accident rather than a decision. */
-    max-width: 36rem;
+    /* Ends where the prose ends, which is now the end of the column — the
+       copy-link control sits on the same right edge as every listing below it
+       rather than 176px short of one. */
   }
 
   .colophon__facts {
@@ -522,16 +529,21 @@ const breadcrumbSchema = {
   }
 
   /* The same sentence the index shows for this post, in the same ink. It is
-     read rather than glanced at, which is what --ink-body is for. */
-  /* The same measure the article below it keeps, so the document has one right
-     edge rather than three. It was 60ch — a different unit answering a
-     different question, from before the measure was worked out. */
+     read rather than glanced at, which is what --ink-body is for.
+
+     The same size as the prose, too. It briefly ran a step above at 1.4rem,
+     which against 1.3rem is eight per cent — too little to read as a step in
+     the scale and enough to read as a mistake. It does not need a size to be
+     the lead: it stands above the colophon and the rule, under a gradient h1,
+     and that is what places it. Its measure comes free with the size, the way
+     the article's does. */
   .description {
-    font-size: 1.1rem;
+    font-size: var(--prose-size);
     color: var(--ink-body);
     margin: 1rem 0 0 0;
-    line-height: 1.6;
-    max-width: 36rem;
+    /* Tighter than the article's 1.7: two lines set close read as one block,
+       which is what a lead is. */
+    line-height: 1.55;
   }
 
   .copy-link {
@@ -683,76 +695,63 @@ const breadcrumbSchema = {
   }
 
 
-  /* The measure.
+  /* The measure — and there is no separate declaration for it any more.
 
      The column is 800px because both blog surfaces share it and a reader
-     moving between them should not watch the page slide sideways. Running text
-     does not want all of it: at 1.1rem this column takes 97 characters to the
-     line, against the 65–75 a paragraph is read at — measured, not estimated,
-     because the `ch` unit is the width of a zero and flatters Inter's prose by
-     about a quarter.
+     moving between them should not watch the page slide sideways. The prose is
+     1.3rem because that is the size at which this column *is* the measure:
+     measured on the rendered page, an English post lands on 75 characters to
+     the line and a Russian one on 65 — the two ends of the 65–75 band a
+     paragraph is read at.
 
-     So the column stays and the sentences stop early. Anything that is read
-     word by word caps at 33em, about 75 characters; anything that is looked at
-     rather than read — a listing, a comparison table, an image — keeps the
-     full width, which is the room those actually need. Everything still starts
-     on the same left edge, so the ragged right reads as a measure rather than
-     as a layout that failed. */
-  .content :global(p),
-  .content :global(ul),
-  .content :global(ol),
-  .content :global(dl),
-  .content :global(blockquote),
-  .content :global(h2),
-  .content :global(h3),
-  .content :global(h4),
-  .content :global(figcaption),
-  /* The section rule is part of the reading flow, not something looked at:
-     left out of this set it ran a hundred pixels past the paragraphs it
-     separates, which is the one place a ragged right reads as a mistake. */
-  .content :global(hr) {
-    max-width: 36rem;
-    /* One number, resolved once. The cap has to mean the same thing for every
-       element wearing it, and two things were stopping it:
+     It used to be 1.1rem with a `max-width: 36rem` over every running element,
+     which is the same idea paid for twice. Two things were wrong with it. The
+     cap left 176px of nothing between the end of a sentence and the end of a
+     listing — and a listing, being the one thing that reached the full column,
+     published a right edge the prose visibly failed to meet. And it did not
+     hold: 36rem carried 67 characters in English and 59 in Russian, below the
+     band it was there to protect, on a site where both languages ship or
+     neither does.
 
-       `em` resolves against each element's own font-size, so the same
-       declaration came out 792px on an h2, 528px on the colophon and 581px on
-       a paragraph — three right edges from one rule. `rem` resolves against
-       the root and lands on all of them.
-
-       `content-box` then left a blockquote's padding and 4px bar, and a
-       list's marker indent, hanging off the end — the quote overshot the
-       paragraphs by 44px, directly above the rule. Both are the same family of
-       trap as measuring prose in `ch`: a unit answering against something
-       other than what you were looking at. */
-    box-sizing: border-box;
-  }
-
-  /* Content typography */
+     So the size does the work and nothing needs a cap. Prose, headings, rules,
+     listings and tables all end on the same right edge. The one number that
+     moves is the size, and it is measurable: change it and the character count
+     changes with it. */
   .content {
-    font-size: 1.1rem;
-    line-height: 1.8;
+    font-size: var(--prose-size);
+    /* 1.8 was tuned for 1.1rem. At 1.3rem it opens the paragraph too far —
+       the line is longer now, and the leading no longer has to compensate for
+       a short one. */
+    line-height: 1.7;
     color: var(--ink-body);
   }
 
+  /* The scale moves with the body. At 1.5rem an h2 stood only a fifth above
+     1.3rem prose, which is not a heading, it is a bold sentence. These keep
+     roughly the ratios the old pair had against 1.1rem. */
   .content :global(h2) {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 600;
     margin: 2.5rem 0 1rem 0;
     color: var(--ink-strong);
   }
 
   .content :global(h3) {
-    font-size: 1.25rem;
+    font-size: 1.45rem;
     font-weight: 600;
     margin: 2rem 0 0.75rem 0;
     color: var(--ink-strong);
   }
 
+  /* Lists, quotes and cells inherit the size from `.content`; `p` is the one
+     element global.css sets directly (1rem, and 0.9375rem under 768px), so
+     inheritance never reaches it. `inherit` puts it back in the same stream,
+     which is what keeps the size a single number — including the phone step,
+     which now only has to move `.content`. */
   .content :global(p) {
     margin: 0 0 1.5rem 0;
-    font-size: 1.1rem;
-    line-height: 1.8;
+    font-size: inherit;
+    line-height: inherit;
   }
 
   /* The most repeated accent text on the site, and it shipped as one bare
@@ -814,7 +813,6 @@ const breadcrumbSchema = {
     border: 1px solid var(--hairline);
     padding: 1.35rem 1.25rem;
     margin: 1.5rem 0;
-    overflow-x: auto;
   }
 
   /* "plaintext" is what Shiki calls a fence with no language on it, which is
@@ -859,6 +857,10 @@ const breadcrumbSchema = {
     font-weight: 600;
     line-height: 1;
     cursor: pointer;
+    /* The button sits inside the `pre` it belongs to, so a hand-drag across
+       the listing would otherwise carry the word "Copy" into the clipboard
+       along with the code. */
+    user-select: none;
     opacity: 0;
     transition:
       opacity 0.2s ease,
@@ -895,20 +897,28 @@ const breadcrumbSchema = {
     }
   }
 
+  /* The listing scrolls, the frame does not. Putting `overflow-x` on the `pre`
+     made it the scrollport, and both things pinned to its corner — the copy
+     button and the language label — rode the content out of view exactly when
+     a reader was deepest in a wide block. The `code` is what has to move; the
+     `pre` is the frame it moves inside. */
   .content :global(pre code) {
+    display: block;
+    overflow-x: auto;
     background: none;
     padding: 0;
-    font-size: 0.875rem;
+    /* Was 0.875rem against 1.1rem prose. Left there against 1.3rem it reads as
+       a footnote to the paragraph above it rather than as the thing the
+       paragraph is about; this keeps roughly the ratio it always had. */
+    font-size: 1rem;
     line-height: 1.6;
   }
 
   /* Tables get the ledger's material: hairline rules from the token rather
      than two hand-picked greys, a header in strong ink, and the row wash the
-     rest of the site answers a pointer with. They also stop pushing the page
-     sideways — `display: block` makes the table its own scroll box, which is
-     the only way a five-column comparison fits a phone without the article
-     going with it. */
-  /* The table keeps `display: table`, so it keeps the role and the row and
+     rest of the site answers a pointer with.
+
+     The table keeps `display: table`, so it keeps the role and the row and
      cell relationships an assistive reader navigates by. The scrolling belongs
      to the box around it, which the client script adds — and that box is
      focusable and named, because a region that scrolls and no key can reach is
@@ -924,11 +934,34 @@ const breadcrumbSchema = {
     outline-offset: 2px;
   }
 
+  /* Width only, no `min-width: max-content`. A table asked for its max-content
+     width never wraps a cell, so three short columns of prose are handed to
+     the scrollport along with the five-column comparison that needed it — and
+     until the script has run there is no scrollport, only a table wider than
+     the page. Left alone, a table takes the column, wraps what it can, and
+     grows past it only when a cell genuinely cannot be narrower; that is
+     exactly when scrolling it is the right answer. */
   .content :global(table) {
     width: 100%;
-    min-width: max-content;
     margin: 0;
     border-collapse: collapse;
+  }
+
+  /* Before the script runs — and instead of it, if it never does — the table is
+     still a direct child of the prose, with no scrollport around it and `main`
+     clipping whatever it cannot fit. A five-column comparison loses its last
+     inch that way, so until it is wrapped it scrolls itself.
+
+     `display: block` is the thing the wrapper exists to avoid: it costs the
+     table its role and its row-and-cell relationships. It is worth paying for
+     the seconds before the wrapper arrives, and worth paying permanently over
+     handing a reader a table with a column missing. The moment `.table-scroll`
+     is around it, the selector stops matching and the table is a table again. */
+  .content > :global(table) {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   .content :global(th) {
@@ -963,7 +996,7 @@ const breadcrumbSchema = {
      is one unbreakable run, and `anywhere` is what global.css already gives
      inline code everywhere else. */
   .content :global(td code) {
-    white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1037,10 +1070,12 @@ const breadcrumbSchema = {
     margin: 0;
   }
 
+  /* Not centred. It starts where every other line on the page starts, and now
+     ends where they do too: the caption and the image it belongs to share the
+     column, so a centred caption would only have been centred against itself. */
   .content :global(figcaption) {
     font-size: 0.9rem;
     color: var(--ink-muted);
-    text-align: center;
     margin-top: 0.75rem;
     font-style: italic;
   }
@@ -1094,25 +1129,21 @@ const breadcrumbSchema = {
       padding: 1.5rem 1rem 3rem;
     }
 
-    .post-header {
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-    }
-
-    .content {
-      font-size: 1rem;
-    }
-
-    .content :global(p) {
-      font-size: 1rem;
+    /* A phone has no room to spend on the measure: at 1.3rem a 358px column
+       carries about 37 characters, half a line. The size steps down to what
+       the desktop used to run at, which is as far as it can go before the
+       column stops being the thing that sets the measure and the screen
+       starts. The lead comes with it — one property, both surfaces. */
+    .container {
+      --prose-size: 1.1rem;
     }
 
     .content :global(h2) {
-      font-size: 1.3rem;
+      font-size: 1.45rem;
     }
 
     .content :global(h3) {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
     }
 
     .content :global(pre) {

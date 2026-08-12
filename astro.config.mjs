@@ -76,9 +76,20 @@ const contrast = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-/** #rgb, #rrggbb and #rrggbbaa, composited over the ground it will sit on. */
+/** The three hex lengths CSS has. Longest first, so `#aabbcc` is never read as
+ *  `#aab` with a tail left over, and the lookahead stops a four-digit value
+ *  from matching its own first three. */
+const HEX = /#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})(?![0-9a-fA-F])/;
+
+/**
+ * #rgb, #rrggbb and #rrggbbaa, composited over the ground it will sit on.
+ * Null for anything else — a 4- or 5-digit value has no meaning in CSS, and
+ * reading one anyway produced a channel of NaN, a contrast of NaN, a ramp that
+ * could never pass and the literal colour `#NaNNaNNaN` baked into the build.
+ */
 function readColor(hex, ground) {
   const raw = hex.replace("#", "");
+  if (raw.length !== 3 && raw.length !== 6 && raw.length !== 8) return null;
   const full =
     raw.length === 3
       ? raw
@@ -116,6 +127,9 @@ const toHex = (rgb) =>
 function legible(hex, scheme) {
   const ground = CODE_GROUND[scheme];
   const start = readColor(hex, ground);
+  // Nothing this function can say about a colour it could not read. The theme
+  // keeps what it wrote.
+  if (!start) return hex;
   if (contrast(start, ground) >= 4.5) return toHex(start);
   const towardBlack = scheme === "light";
   for (let t = 0.05; t <= 1.0001; t += 0.05) {
@@ -134,12 +148,36 @@ const legibleTokens = {
     const style = node.properties?.style;
     if (typeof style !== "string") return;
     node.properties.style = style
-      .replace(/(^|;)\s*color:\s*(#[0-9a-fA-F]{3,8})/g, (_m, lead, hex) =>
-        `${lead}color:${legible(hex, "light")}`,
+      .replace(
+        new RegExp(`(^|;)\\s*color:\\s*(${HEX.source})`, "g"),
+        (_m, lead, hex) => `${lead}color:${legible(hex, "light")}`,
       )
-      .replace(/--shiki-dark:\s*(#[0-9a-fA-F]{3,8})/g, (_m, hex) =>
-        `--shiki-dark:${legible(hex, "dark")}`,
+      .replace(
+        new RegExp(`--shiki-dark:\\s*(${HEX.source})`, "g"),
+        (_m, hex) => `--shiki-dark:${legible(hex, "dark")}`,
       );
+  },
+};
+
+/**
+ * Takes Shiki's `overflow-x: auto` off the `<pre>`.
+ *
+ * It writes that inline, where no stylesheet can answer it without
+ * `!important`, and it makes the frame the scrollport: the copy button and the
+ * language label are pinned to the `pre`'s corner, so both rode the content
+ * out of view the moment a reader scrolled a wide listing. The blog's own CSS
+ * puts the scrolling on the `code` inside instead — the frame stays, the
+ * listing moves.
+ */
+const scrollTheCode = {
+  name: "scroll-the-code",
+  pre(node) {
+    const style = node.properties?.style;
+    if (typeof style !== "string") return;
+    node.properties.style = style
+      .replace(/(^|;)\s*overflow-x\s*:[^;]*/g, "$1")
+      .replace(/;{2,}/g, ";")
+      .replace(/^;|;$/g, "");
   },
 };
 
@@ -199,7 +237,7 @@ export default defineConfig({
         light: "vitesse-light",
         dark: "vitesse-dark",
       },
-      transformers: [legibleTokens],
+      transformers: [legibleTokens, scrollTheCode],
     },
   },
   fonts: [

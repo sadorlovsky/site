@@ -108,4 +108,16 @@ const Element = href ? "a" : "div";
       transition: none;
     }
   }
+
+  /* The hover paints the title with `-webkit-text-fill-color: transparent`,
+     and forced colours does not force that property back — the row under the
+     pointer would be the one row with no title. global.css lists
+     `.list-item-title` for the same reason, but it cannot win against a scoped
+     `a.list-item:hover` selector, so the repaint belongs here too. */
+  @media (forced-colors: active) {
+    a.list-item:hover .list-item-title {
+      background: none;
+      -webkit-text-fill-color: currentColor;
+    }
+  }
 </style>

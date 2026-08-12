@@ -12,11 +12,10 @@
 // the language the post is written in.
 
 const COPY = {
-  en: { idle: "Copy", done: "Copied", label: "Copy code", table: "Table" },
+  en: { idle: "Copy", done: "Copied", table: "Table" },
   ru: {
     idle: "Копировать",
     done: "Скопировано",
-    label: "Скопировать код",
     table: "Таблица",
   },
 };
@@ -33,7 +32,13 @@ function mount(pre: HTMLElement, lang: "en" | "ru") {
   button.type = "button";
   button.className = "code-copy";
   button.textContent = words.idle;
-  button.setAttribute("aria-label", words.label);
+  // No aria-label. It used to read "Copy code" over a button labelled
+  // "Копировать", and a name that does not contain its own visible words is a
+  // button voice control cannot be asked for. The word on it is the name.
+  //
+  // `aria-live` because the only sign the copy worked is the label changing to
+  // "Copied", and a label change on its own is announced to nobody.
+  button.setAttribute("aria-live", "polite");
 
   let restore: ReturnType<typeof setTimeout> | undefined;
   button.addEventListener("click", async () => {

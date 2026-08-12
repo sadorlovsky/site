@@ -93,9 +93,13 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   color: var(--accent-ink);
 }
 
-.kit-toggle-item:hover:not(:disabled):not([aria-pressed="true"]):not(
-    .is-active
-  ) {
+/* `:disabled` only ever matches a form control, so an item that is not a
+   button — a link, or the span the language switcher stands in for a missing
+   translation — says it is out with `aria-disabled` and would otherwise still
+   brighten under the pointer. Both spellings mean the same thing here. */
+.kit-toggle-item:hover:not(:disabled):not([aria-disabled="true"]):not(
+    [aria-pressed="true"]
+  ):not(.is-active) {
   color: var(--ink-strong);
 }
 
@@ -104,7 +108,12 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   outline-offset: 2px;
 }
 
-.kit-toggle-item:disabled {
+/* An item that is out. `:disabled` only reaches a `<button>`; a link — or the
+   span the language switcher renders where a translation does not exist — says
+   the same thing with `aria-disabled`, and used to look and behave like a live
+   one. */
+.kit-toggle-item:disabled,
+.kit-toggle-item[aria-disabled="true"] {
   opacity: 0.5;
   cursor: not-allowed;
 }

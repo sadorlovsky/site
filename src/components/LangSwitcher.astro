@@ -32,6 +32,13 @@ const missingLabel = {
   en: "This post has no English version",
   ru: "У этого поста нет русской версии",
 };
+
+// In link mode the page is written in one language and served in it, so the
+// group's own name is written in that language too — there is no LangInit on a
+// post to swap it afterwards. In runtime mode the page does change language in
+// the browser, and the data-* pair below is what changes this with it.
+const groupLabel =
+  links && current === "ru" ? "Выбор языка" : "Language selection";
 ---
 
 <div
@@ -42,7 +49,7 @@ const missingLabel = {
     "liquid-glass",
   ]}
   role="group"
-  aria-label="Language selection"
+  aria-label={groupLabel}
   data-aria-label-en="Language selection"
   data-aria-label-ru="Выбор языка"
   data-storage-key={storageKey}
@@ -78,6 +85,11 @@ const missingLabel = {
               title={missingLabel[code]}
             >
               {label}
+              {/* `aria-disabled` on a `<span>` with no role is exposed to
+                  nobody, and a `title` is a tooltip a pointer has to find. The
+                  sentence itself, read out with the label, is what says there
+                  is nothing on the other side. */}
+              <span class="lang-switcher__missing">{missingLabel[code]}</span>
             </span>
           ),
         )
@@ -204,6 +216,19 @@ const missingLabel = {
     color: var(--ink-muted);
     opacity: 0.45;
     cursor: not-allowed;
+  }
+
+  /* Read out, never drawn: the capsule has room for three letters. */
+  .lang-switcher__missing {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
   }
 
   /* Globe icon — muted, above the indicator. */

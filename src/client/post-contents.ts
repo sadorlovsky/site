@@ -48,6 +48,15 @@ function initSheet(nav: HTMLElement) {
   open.addEventListener("click", () => setOpen(true));
   close?.addEventListener("click", () => setOpen(false));
   scrim.addEventListener("click", () => setOpen(false));
+  // Crossing into the rail takes the sheet with it: the pill, the scrim and
+  // the close button all go `display: none` at 1200px, and none of the three
+  // handlers above can fire again. Whatever the sheet was holding — the body's
+  // scroll lock above all — has to be given back here, or a tablet turned on
+  // its side is a post that cannot be scrolled at all.
+  const rail = window.matchMedia("(min-width: 1200px)");
+  rail.addEventListener("change", (event) => {
+    if (event.matches && nav.classList.contains("is-open")) setOpen(false);
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && nav.classList.contains("is-open")) {
       setOpen(false);

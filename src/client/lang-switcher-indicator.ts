@@ -32,8 +32,14 @@ function initSwitcher(group: HTMLElement) {
   const indicator = group.querySelector<HTMLElement>(
     ".lang-switcher__indicator",
   );
+  // Not `.is-unavailable`. That one is a `<span>` standing in for a language
+  // this post was never written in; sliding the gradient under it and marking
+  // it active is the switcher saying a language was selected, and the magnetic
+  // pull is the switcher saying it can be pressed. Neither is true.
   const items: ItemState[] = Array.from(
-    group.querySelectorAll<HTMLElement>(".lang-switcher__btn"),
+    group.querySelectorAll<HTMLElement>(
+      ".lang-switcher__btn:not(.is-unavailable)",
+    ),
   ).map((el) => ({ el, current: { x: 0, y: 0 }, target: { x: 0, y: 0 } }));
 
   // The item for the currently-selected language. In the switcher's runtime
