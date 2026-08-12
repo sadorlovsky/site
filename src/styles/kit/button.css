@@ -166,33 +166,45 @@ a.kit-btn--danger:active {
 
 /* Secondary - Subtle background */
 .kit-btn--secondary {
-  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 5%, transparent),
+    color-mix(in srgb, var(--ink-strong) 8%, transparent)
+  );
   color: var(--ink-body);
 }
 
 .kit-btn--secondary:hover:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 8%, transparent),
+    color-mix(in srgb, var(--ink-strong) 12%, transparent)
+  );
   color: var(--ink-strong);
 }
 
 .kit-btn--secondary:active:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 10%, transparent),
+    color-mix(in srgb, var(--ink-strong) 15%, transparent)
+  );
 }
 
 /* Ghost - Transparent with border */
 .kit-btn--ghost {
   background: transparent;
   color: var(--ink-muted);
-  box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
+  box-shadow: inset 0 0 0 2px var(--hairline);
 }
 
 .kit-btn--ghost:hover:not(:disabled) {
   color: var(--ink-strong);
-  box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
+  box-shadow: inset 0 0 0 2px var(--hairline-hover);
 }
 
 .kit-btn--ghost:active:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 3%, transparent),
+    color-mix(in srgb, var(--ink-strong) 5%, transparent)
+  );
 }
 
 .kit-btn--ghost[aria-pressed="true"],
@@ -202,39 +214,64 @@ a.kit-btn--danger:active {
   box-shadow: 0 2px 8px rgba(237, 91, 42, 0.35);
 }
 
-/* Danger - Destructive actions */
+/* Danger - Destructive actions.
+
+   Ground, ring and label are one colour at several strengths, mixed from
+   --danger. They were two: the label read the token while the wash and the ring
+   were Tailwind's red-600 and red-500, left over from the ramp the semantic
+   tokens replaced — a mismatch nothing could see because no two of them were
+   ever side by side at full strength. The dark scheme still takes more of the
+   colour, because its red is the lighter one and has a near-black page to
+   register against. */
 .kit-btn--danger {
-  background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.15));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 10%, transparent),
+    color-mix(in srgb, var(--danger) 15%, transparent)
+  );
   color: var(--danger);
   box-shadow: inset 0 0 0 1px
-    light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.25));
+    light-dark(
+      color-mix(in srgb, var(--danger) 20%, transparent),
+      color-mix(in srgb, var(--danger) 25%, transparent)
+    );
 }
 
 .kit-btn--danger:hover:not(:disabled) {
-  background: light-dark(rgba(220, 38, 38, 0.15), rgba(239, 68, 68, 0.22));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 15%, transparent),
+    color-mix(in srgb, var(--danger) 22%, transparent)
+  );
   box-shadow: inset 0 0 0 1px
-    light-dark(rgba(220, 38, 38, 0.3), rgba(239, 68, 68, 0.35));
+    light-dark(
+      color-mix(in srgb, var(--danger) 30%, transparent),
+      color-mix(in srgb, var(--danger) 35%, transparent)
+    );
 }
 
 .kit-btn--danger:active:not(:disabled) {
-  background: light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.28));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 20%, transparent),
+    color-mix(in srgb, var(--danger) 28%, transparent)
+  );
 }
 
-/* Success - Confirmation actions */
+/* Success - Confirmation actions. The glow is the button's own green thinned;
+   it used to be #10b981, the Tailwind emerald the success tokens replaced, so
+   the light under the button came from a different green than the button. */
 .kit-btn--success {
   background: var(--success-gradient);
   color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--success-start) 30%, transparent);
 }
 
 .kit-btn--success:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--success-start) 40%, transparent);
   transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--success:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--success-start) 30%, transparent);
 }
 
 /* =============================================================================
@@ -357,6 +394,6 @@ a.kit-btn--danger:active {
   }
 
   .kit-btn--secondary {
-    box-shadow: inset 0 0 0 1px light-dark(#ccc, #555);
+    box-shadow: inset 0 0 0 1px var(--hairline-hover);
   }
 }
