@@ -168,13 +168,15 @@
   --accent-deep-start: rgb(199, 62, 114);
   --accent-deep-end: rgb(207, 63, 0);
 
-  /* Four gradients, so the choice is made once rather than at forty call sites
+  /* Five gradients, so the choice is made once rather than at forty call sites
      — which is how white text ended up on the bright pair in the first place.
      Reach for the one that matches what the surface has to carry:
 
      --accent-gradient          a surface: decoration, or a ground under
                                 --accent-ink (blobs, glows, bars, buttons, the
                                 sliding lozenge behind a label)
+     --accent-gradient-mirror   the same surface where two of them share a
+                                screen and want telling apart — see below
      --accent-gradient-display  the gradient IS large text — 24px and up, where
                                 the bar is 3:1 and the bright pair clears it
      --accent-gradient-text     the gradient IS small text, where the bar is
@@ -188,6 +190,21 @@
     135deg,
     var(--accent-start),
     var(--accent-end)
+  );
+  /* The same two stops, entered from the other end. Four pages float a pair of
+     blurred blobs behind the content, and the second of each pair used to be
+     indigo into violet — a second brand colour, picked before this one was, and
+     left behind when the accent moved. Two hues 200° apart in the same 80px
+     blur is not a pair of decorations; it is the page disagreeing with itself
+     about what colour the site is.
+
+     Reversed rather than identical because the pair still wants telling apart:
+     one corner opens on rose and the other on coral, which at 0.1 opacity is
+     the whole of the difference and enough of it. */
+  --accent-gradient-mirror: linear-gradient(
+    135deg,
+    var(--accent-end),
+    var(--accent-start)
   );
   --accent-gradient-display: var(--accent-gradient);
   --accent-gradient-text: linear-gradient(
