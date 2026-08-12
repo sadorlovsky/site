@@ -58,6 +58,10 @@ const sorts = [
             data-en={country.name.en}
             data-ru={country.name.ru}
           >{country.name.en}</span>
+          {/* How many cities the row is about to list. The row runs to the end
+              of the line and often wraps, so the count is the one place it says
+              its own length before you have read it. */}
+          <span class="travel-metric city-count">({country.cities.length})</span>
           <span class="separator" aria-hidden="true">—</span>
           {country.cities.map((city, i) => (
             <>
@@ -254,6 +258,12 @@ const sorts = [
   .flag {
     margin-right: 4px;
     vertical-align: -0.12em;
+  }
+
+  /* Sits inline after the name rather than at the end of the row, because the
+     row keeps going. */
+  .city-count {
+    margin-left: 0.2rem;
   }
 
   /* The same colour the timeline gives the arrows between its cities. */
