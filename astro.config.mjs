@@ -325,6 +325,26 @@ export default defineConfig({
             style: "normal",
             src: ["./src/assets/fonts/InterVariable.woff2"],
           },
+        ],
+      },
+    },
+    // The italic is a family of its own, and only because <Font preload /> is
+    // all-or-nothing across a family's variants. Declared beside the upright it
+    // was preloaded with it: 388 KB fetched at the highest priority the browser
+    // has, on every page, ahead of the LCP image — and the home page, /travel
+    // and the wishlist contain not one <em>, <i> or <blockquote> between them.
+    // Split out and left unpreloaded, it is fetched the ordinary way, which for
+    // a webfont means only where text actually asks for it. The three places
+    // that ask are in global.css and the post page; anything set in italic
+    // without naming this variable gets the browser's synthetic slant instead,
+    // so keep the two in step.
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter-italic",
+      fallbacks: ["system-ui", "sans-serif"],
+      options: {
+        variants: [
           {
             weight: "100 900",
             style: "italic",
