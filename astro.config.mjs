@@ -80,15 +80,39 @@ const cdnDomain = (isProd ? CDN_DOMAIN : (CDN_DEV_DOMAIN ?? CDN_DOMAIN)) ?? "";
 // build output is what Vercel actually reads: the adapter writes that file
 // wholesale, and whether the platform merges vercel.json's `headers` into a
 // Build Output API deployment is undocumented either way.
-function immutableAssets() {
+// The second rule this plugin writes, and the reason it is here rather than in
+// src/middleware.ts: middleware does not run for a prerendered page. There is
+// no middleware function in .vercel/output/functions at all — it is compiled
+// into the Node function, and serving a static file never calls that. So the
+// build output is the only place a header can be attached to /, /travel or a
+// post.
+//
+// `max-age=0` and nothing else is Vercel's default for these, which means every
+// navigation to a page the visitor already has spends a round trip to be told
+// nothing changed. From Almaty that is ~290 ms of pure distance: the measured
+// TTFB floor is 287 ms for 519 bytes of static from Frankfurt, so the wait is
+// the trip, not the work.
+//
+// stale-while-revalidate says: serve the copy on disk immediately, then refresh
+// it in the background. The visitor waits for nothing and is at most one
+// navigation behind. max-age stays 0 deliberately — a browser cache cannot be
+// purged by a deploy or by anything else, so freshness is checked every time
+// and only the *waiting* is skipped.
+//
+// An hour is the window a page may be behind a deploy by. Long enough to cover
+// a session's worth of navigation, short enough that a correction is not still
+// hidden tomorrow.
+const HTML_CACHE_CONTROL = "public, max-age=0, stale-while-revalidate=3600";
+
+function outputHeaders() {
   let root;
   return {
-    name: "immutable-assets",
+    name: "output-headers",
     hooks: {
       "astro:config:done": ({ config }) => {
         root = config.root;
       },
-      "astro:build:done": async ({ logger }) => {
+      "astro:build:done": async ({ logger, pages }) => {
         const file = new URL("./.vercel/output/config.json", root);
         const config = JSON.parse(await readFile(file, "utf8"));
         const routes = config.routes ?? [];
@@ -105,18 +129,49 @@ function immutableAssets() {
         // if the adapter ever renames or fixes this, the build should say so.
         if (rule === -1 || filesystem === -1) {
           throw new Error(
-            "immutable-assets: expected a /_astro immutable route and a " +
+            "output-headers: expected a /_astro immutable route and a " +
               "filesystem phase in .vercel/output/config.json, found " +
               `rule=${rule} filesystem=${filesystem}. The adapter's output ` +
               "changed — re-check whether this patch is still needed.",
           );
         }
 
-        if (rule < filesystem) return; // already ahead of it, nothing to do
+        if (rule > filesystem) {
+          routes.splice(filesystem, 0, ...routes.splice(rule, 1));
+          logger.info("/_astro assets now cached immutably");
+        }
 
-        routes.splice(filesystem, 0, ...routes.splice(rule, 1));
+        // Only the pages that were actually prerendered. `pages` holds exactly
+        // those — a route rendered on demand is not in it — so the rule can
+        // name them one by one instead of matching a shape and hoping. The
+        // wishlist is server-rendered and stays out of this by construction:
+        // it is served by an ISR function, where Vercel's own caching decides
+        // what a response may carry.
+        const paths = pages
+          .map(({ pathname }) => pathname.replace(/^\/|\/$/g, ""))
+          .filter(Boolean)
+          .sort();
+        // The group is optional so that `/` — the index, whose pathname is
+        // empty — is matched by the same rule as the rest.
+        const src = `^/(?:${paths.join("|")})?/?$`;
+
+        if (paths.length > 0 && !routes.some((r) => r.src === src)) {
+          // Ahead of the filesystem phase and `continue: true`, for the same
+          // reason the /_astro rule has to be: the phase serves the file and
+          // stops, so a rule behind it is only ever read by paths that are not
+          // files. Re-found rather than reused — the splice above moved it.
+          const phase = routes.findIndex((r) => r.handle === "filesystem");
+          routes.splice(phase, 0, {
+            src,
+            headers: { "cache-control": HTML_CACHE_CONTROL },
+            continue: true,
+          });
+          logger.info(
+            `${paths.length + 1} prerendered pages now revalidate in the background`,
+          );
+        }
+
         await writeFile(file, JSON.stringify(config, null, "\t"), "utf8");
-        logger.info("/_astro assets now cached immutably");
       },
     },
   };
@@ -293,7 +348,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => !page.includes("/wishlist/~"),
     }),
-    immutableAssets(),
+    outputHeaders(),
   ],
   markdown: {
     // Catppuccin's grounds are #eff1f5 and #303446 — a blue-lilac pair, and
