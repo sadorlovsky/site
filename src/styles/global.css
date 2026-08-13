@@ -434,9 +434,9 @@
 
        Nor does this reach a blur written as a literal, since a token can't
        reach a value that never referred to it. Two such surfaces have a
-       hand-written fallback (.priority-badge, the kit modal's scrim) and four
-       have none at all — the admin modal, toast and item card, and the blog's
-       back-to-top button. Those four are an existing gap, recorded on /kit. */
+       hand-written fallback (.priority-badge, the kit modal's scrim) and three
+       have none at all — the admin modal, toast and item card. Those three are
+       an existing gap, recorded on /kit. */
     --glass-filter: none;
   }
 
@@ -857,12 +857,23 @@ pre code {
   font-size: 0.875rem;
 }
 
-/* Shiki dual theme support - dark mode override */
+/* Shiki dual theme support - dark mode override.
+
+   The token colours swap with the scheme; the ground does not come from the
+   theme any more. Shiki writes its own background as an inline style, which is
+   why this needs the same !important the tokens do — and why the ground is
+   named here once, beside them, instead of in whichever page happens to hold
+   a code block. A code block is a recess in this page, not a card imported
+   from the theme's own page: #f1f1f7 is the ghost-white page one step down,
+   #111114 the near-black one step further in. */
+.astro-code {
+  background-color: light-dark(#f1f1f7, #111114) !important;
+}
+
 @media (prefers-color-scheme: dark) {
   .astro-code,
   .astro-code span {
     color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
@@ -1330,9 +1341,9 @@ a.btn-danger:active {
   .page-title,
   .crumb-current,
   .condensed-title__text,
-  .post-header h1,
   .digit,
   .list-item-title,
+  .post-lead__title,
   h1 {
     background: none;
     -webkit-text-fill-color: currentColor;

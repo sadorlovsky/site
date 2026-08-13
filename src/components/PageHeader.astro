@@ -14,6 +14,10 @@ interface Props {
     ru: string;
   };
   langSwitcher?: string;
+  /** A post exists once per language, so its switcher navigates rather than
+      remembers. Pass the two URLs and which one is being read. */
+  langLinks?: { en: string | null; ru: string | null };
+  langCurrent?: "en" | "ru";
   parentLink?: {
     href: string;
     label: { en: string; ru: string };
@@ -27,6 +31,8 @@ const {
   pageTitle,
   subtitle,
   langSwitcher,
+  langLinks,
+  langCurrent,
   parentLink,
   forceLang,
   condenseOnScroll,
@@ -34,6 +40,14 @@ const {
 
 // Use forceLang if provided, otherwise default to "en" (client-side JS updates it).
 const displayLang = forceLang || "en";
+
+// Every accessible name in this header follows the same language the visible
+// text does. The `data-aria-label-*` pairs below are for the pages that swap
+// language in the browser, and they are applied by LangInit — which a post page
+// does not carry, because a post is written in one language and served in it.
+// Wording these in English regardless left a Russian post announcing "Home",
+// "Breadcrumb" and a title followed by "back to top".
+const t = (en: string, ru: string) => (displayLang === "ru" ? ru : en);
 const pageTitleHref = pageTitle.href;
 
 // Sub-pages (posts) pass pageTitle.href as a crumb — they carry their own title.
@@ -54,7 +68,9 @@ const hasActions = Astro.slots.has("actions");
   <div class="header-row">
     <nav
       class:list={["crumbs", "liquid-glass", { "crumbs--solo": soloCrumb }]}
-      aria-label="Breadcrumb"
+      aria-label={t("Breadcrumb", "Навигация по сайту")}
+      data-aria-label-en="Breadcrumb"
+      data-aria-label-ru="Навигация по сайту"
     >
       {/* The label is hidden on narrow screens, where `display: none` would
           leave the link with no accessible name at all — so the aria-label
@@ -62,13 +78,17 @@ const hasActions = Astro.slots.has("actions");
       <a
         href="/"
         class="crumb-home"
-        aria-label="Home"
+        aria-label={t("Home", "Домой")}
         data-aria-label-en="Home"
         data-aria-label-ru="Домой"
       >
         <Icon name="home" aria-hidden="true" />
+        {/* The label follows forceLang for the same reason the names above do:
+            a post carries no LangInit to swap it afterwards, so a Russian post
+            said "Home" beside "Блог". The data-* pair still serves the pages
+            that do change language in the browser. */}
         <span class="crumb-home__label" data-en="Home" data-ru="Домой">
-          Home
+          {t("Home", "Домой")}
         </span>
       </a>
       {
@@ -120,7 +140,7 @@ const hasActions = Astro.slots.has("actions");
         <button
           type="button"
           class="condensed-title liquid-glass"
-          aria-label={`${pageTitle.en}, back to top`}
+          aria-label={t(`${pageTitle.en}, back to top`, `${pageTitle.ru}, наверх`)}
           data-aria-label-en={`${pageTitle.en}, back to top`}
           data-aria-label-ru={`${pageTitle.ru}, наверх`}
         >
@@ -136,11 +156,15 @@ const hasActions = Astro.slots.has("actions");
     }
 
     {
-      (langSwitcher || hasActions) && (
+      (langSwitcher || langLinks || hasActions) && (
         <div class="header-end">
-          {langSwitcher && (
+          {(langSwitcher || langLinks) && (
             <div class="lang-shell">
-              <LangSwitcher storageKey={langSwitcher} />
+              <LangSwitcher
+                storageKey={langSwitcher}
+                links={langLinks}
+                current={langCurrent}
+              />
             </div>
           )}
           <slot name="actions" />
@@ -213,7 +237,12 @@ const hasActions = Astro.slots.has("actions");
     gap: 0.5rem;
     padding: 0.35rem 0.85rem 0.35rem 0.4rem;
     border-radius: 999px;
-    font-size: 0.95rem;
+    /* One size for the whole path. The house's label had always been 0.85rem
+       while everything beside it inherited 0.95rem — invisible while the
+       parent crumb was a bare word, and plain the moment it became a capsule
+       of the same height: two identical pills, one of them set a step
+       larger. */
+    font-size: 0.85rem;
     font-weight: 600;
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -243,7 +272,6 @@ const hasActions = Astro.slots.has("actions");
   }
 
   .crumb-home__label {
-    font-size: 0.85rem;
     font-weight: 600;
     line-height: 1;
   }
@@ -262,16 +290,20 @@ const hasActions = Astro.slots.has("actions");
     .crumb-home__label {
       display: none;
     }
+
+    /* Once the title pill is out, the crumb's middle link is the one thing in
+       the row that can go: the pill says where you are more precisely than
+       "Blog" does, and the house still says how to leave. Both pills keep
+       their full accessible names. */
+    .page-header--condense.is-condensed .crumb-sep,
+    .page-header--condense.is-condensed .crumb-link {
+      display: none;
+    }
   }
 
   /* Same recipe as the language switcher's gradient indicator: accent fill,
-     white glyph, and the identical accent glow. */
-  .crumb-home:hover {
-    color: var(--accent-ink);
-    background: var(--accent-gradient);
-    box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
-  }
-
+     white glyph, and the identical accent glow. Shared with .crumb-link
+     below. */
   .crumb-home :global(svg) {
     width: 1.05rem;
     height: 1.05rem;
@@ -282,14 +314,39 @@ const hasActions = Astro.slots.has("actions");
     user-select: none;
   }
 
+  /* The same capsule as the house, because it is the same kind of thing: a
+     step of the path you can go back to. It was a bare word beside a pill,
+     which made half the breadcrumb a control and half of it a label — and it
+     showed in the spacing as much as in the behaviour, since the house's own
+     0.7rem of padding sat between it and the separator while nothing sat on
+     the other side. Two capsules put the same air on both sides of the slash.
+
+     Not a sliding indicator, though — that is the dock's and the language
+     switcher's idiom, and it means "one of these is selected". A breadcrumb is
+     a path: its parts are different levels, not alternatives, so each answers
+     the pointer on its own. */
   .crumb-link {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    height: 2rem;
+    padding: 0 0.7rem;
+    border-radius: 999px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
+    white-space: nowrap;
+    transition:
+      color 0.3s ease,
+      background 0.3s ease,
+      box-shadow 0.3s ease;
+    will-change: transform; /* magnetic pull toward the cursor */
   }
 
+  .crumb-home:hover,
   .crumb-link:hover {
-    color: var(--ink-body);
+    color: var(--accent-ink);
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   }
 
   .crumb-current {
@@ -308,12 +365,21 @@ const hasActions = Astro.slots.has("actions");
     opacity: 0.75;
   }
 
+  /* The ring takes the shape of the thing it rings. Both steps of the path are
+     capsules now, so a 4px rounded rectangle around them was a second shape
+     nobody chose; the current page's crumb is still text and keeps a corner
+     from the documented scale. */
   .crumb-home:focus-visible,
-  .crumb-link:focus-visible,
+  .crumb-link:focus-visible {
+    outline: 2px solid var(--focus-ring-on-fill);
+    outline-offset: 2px;
+    border-radius: 999px;
+  }
+
   .crumb-current--link:focus-visible {
     outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   /* Right cluster */
@@ -341,12 +407,23 @@ const hasActions = Astro.slots.has("actions");
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* Hero title */
+  /* Hero title.
+
+     No size of its own: this is an `h1`, and global.css already sets the
+     Display step DESIGN.md documents — `clamp(2rem, 5vw, 3rem)`. It carried
+     `clamp(1.9rem, 5vw, 2.75rem)` from the dock redesign, where the title
+     stopped being a one-line span with an ellipsis and became this, and the
+     number came with it unexplained. It bought nothing measurable: the longest
+     title on the site, 48 characters, sets two lines at either size, and below
+     600px the fluid middle never applies at all, so the whole difference was
+     4px on a desktop and 1.6px on a phone. Two Display steps eight per cent
+     apart are not a scale, they are a drift. */
   .page-title {
     margin: 1.25rem 0 0 0;
-    font-size: clamp(1.9rem, 5vw, 2.75rem);
     font-weight: 700;
     letter-spacing: -0.03em;
+    /* Tighter than the 1.1 the global rule sets, because a page title is the
+       one heading here that regularly runs to two lines. */
     line-height: 1.05;
     width: fit-content;
     max-width: 100%;
@@ -527,12 +604,26 @@ const hasActions = Astro.slots.has("actions");
     will-change: transform, opacity;
   }
 
+  /* A page title was always a word or two — "Blog", "Travel" — and this pill
+     was built for that. A post's title is a sentence, and it ran through the
+     breadcrumb on one side and the language switcher on the other on its way
+     out of the row. It is bounded by whatever the side clusters actually take
+     (`--header-side`, published by page-header-condense.ts) doubled, because
+     the pill is centred and grows both ways at once; past that the title
+     ellipsizes. The wording an assistive reader gets is the whole title either
+     way, because that lives in aria-label rather than in the visible text. */
+  .condensed-title {
+    max-width: calc(100% - 2 * var(--header-side, 6.5rem));
+  }
+
   .condensed-title__text {
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     background: var(--accent-gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -599,5 +690,5 @@ const hasActions = Astro.slots.has("actions");
   }
 </style>
 
-<script src="@client/crumb-home-magnet.ts"></script>
+<script src="@client/crumb-magnet.ts"></script>
 <script src="@client/page-header-condense.ts"></script>

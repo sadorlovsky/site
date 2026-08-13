@@ -11,6 +11,78 @@
         ],
         "createdAt": "2026-08-12T12:41:17.826Z",
         "reason": "Claude: the only match is the blockquote rule — a quote's typographic left rule, not a card, and it uses neutral --hairline (#ddd/#444) rather than an accent. Predates this work (55ee876)."
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "14px",
+        "createdAt": "2026-08-12T13:00:12.791Z",
+        "reason": "Claude: the site's list-row wash radius, set and argued in src/components/ListItem.astro (rows wrap to several lines, so a 999px pill bows outward). PostRow shares ListItem's hover geometry to the value on purpose."
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.055)",
+        "createdAt": "2026-08-12T13:00:12.954Z",
+        "reason": "Claude: the incumbent row/chip hover wash, already in src/components/ListItem.astro and src/styles/kit/toggle-group.css. DESIGN.md requires the pointed-at row to read the same on every list."
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.075)",
+        "createdAt": "2026-08-12T13:40:01.421Z",
+        "reason": "Claude: the kit's own quiet-active wash, set in src/styles/kit/toggle-group.css (.kit-toggle-group--quiet) and applied through ToggleGroup's tone=\"quiet\" by the travel country and checklist filters. It was written for the blog's TagLegend, which was removed before merge; the value is the kit's, not that component's, so the entry stands."
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/components/blog/PostLead.astro"
+        ],
+        "createdAt": "2026-08-12T14:36:52.516Z",
+        "reason": "Claude: the site's committed list-hover idiom, not decoration. DESIGN.md pins --accent-gradient-text for small text and src/components/ListItem.astro applies the same hover to every row on /travel; it replaced a background wash that read as a card on a three-line block."
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/pages/blog/[...slug].astro"
+        ],
+        "createdAt": "2026-08-12T15:12:17.110Z",
+        "reason": "Claude: the only match is the prose blockquote, which this build changed to the site's own rule from global.css — neutral --hairline, a quote's typographic left rule rather than a card or a callout. The same pair is already ignored for global.css."
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.7rem",
+        "createdAt": "2026-08-12T15:12:17.374Z",
+        "reason": "Claude: DESIGN.md's label ladder documents 0.7rem as the size at a 28px control height ('sizes step with the control: 0.7rem at 28px tall through 0.9rem at 44px'); the kit's --sm toggle item already ships it. The detector's ramp does not encode the control-height steps."
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/components/blog/PostRow.astro"
+        ],
+        "createdAt": "2026-08-12T18:22:24.042Z",
+        "reason": "Claude: the site's committed list-hover idiom. DESIGN.md pins --accent-gradient-text for small text and src/components/ListItem.astro applies the same hover to every row on /travel; the same pair is already ignored for PostLead.astro. Unifying the two blog hovers on it was the user's request."
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.4)",
+        "createdAt": "2026-08-12T18:22:24.258Z",
+        "reason": "Claude: the site's own modal scrim, set in src/styles/admin/modal.css (.modal-overlay). The blog's contents sheet reuses that pair rather than inventing a dimming value."
+      },
+      {
+        "rule": "design-system-color",
+        "value": "rgba(0, 0, 0, 0.7)",
+        "createdAt": "2026-08-12T18:22:24.466Z",
+        "reason": "Claude: the dark half of the same scrim pair from src/styles/admin/modal.css."
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "src/components/PageHeader.astro"
+        ],
+        "createdAt": "2026-08-12T18:23:59.250Z",
+        "reason": "Claude: all three matches are the site's pinned title treatment — the page title, the breadcrumb leaf and the condensed pill. DESIGN.md names --accent-gradient-display and --accent-gradient-text for exactly this ('the gradient IS large text' / 'is small text'), and repaints them under forced-colors. Predates this session's edits, which only added the langLinks passthrough and two responsive rules."
       }
     ]
   }

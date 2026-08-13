@@ -321,10 +321,10 @@ import { Icon } from "astro-icon/components";
           <code>backdrop-filter: blur(10px)</code> spelled out rather than taken
           from <code>--glass-filter</code>. A token can't reach a value that
           never referred to it, so <code>.priority-badge</code> and the kit
-          modal's scrim carry their own <code>backdrop-filter: none</code>. Four
-          more surfaces blur with a literal and have
+          modal's scrim carry their own <code>backdrop-filter: none</code>.
+          Three more surfaces blur with a literal and have
           <strong>no fallback at all</strong> — the admin modal, toast and item
-          card, and the blog's back-to-top button. That is a gap, not a rule;
+          card. That is a gap, not a rule;
           they are listed here so the next person doesn't have to rediscover
           them. If you find yourself writing a blur radius by hand, that is the
           moment to ask whether the token would do.
@@ -478,6 +478,28 @@ import { Icon } from "astro-icon/components";
           />
         </div>
 
+        <h3>An Item That Is Out</h3>
+        <p>
+          <code>disabled</code> on an item is a <code>disabled</code> attribute
+          when it renders a button and <code>aria-disabled</code> when it
+          renders a link — <code>:disabled</code> in CSS only ever matches a
+          form control, so both spellings are named wherever the kit dims an
+          item or holds the hover back. A component that is neither, like the
+          language switcher's span for a translation that does not exist, uses
+          the <code>aria-disabled</code> half.
+        </p>
+        <div class="component-row" id="toggle-disabled-demo">
+          <ToggleGroup
+            variant="separated"
+            size="sm"
+            items={[
+              { id: "en", label: "ENG", href: "#toggle-disabled-demo" },
+              { id: "ru", label: "RUS", href: "#toggle-disabled-demo", disabled: true },
+            ]}
+            value="en"
+          />
+        </div>
+
         <h3>Separated Variant</h3>
         <p>
           For filter categories. A ghost row: the items are plain labels with
@@ -581,6 +603,26 @@ import { Icon } from "astro-icon/components";
           design; a count that needed translating would be a second label. An
           item may go without one, and the gap says something too.
         </p>
+        <p>
+          On the accent capsule the figure is written on the brand, so the Ink
+          Rule applies to it as much as to the label: it inherits the capsule's
+          own ink rather than staying muted grey, which measured 1.15:1 there in
+          the dark scheme. The weight stays lighter, so it still reads as a
+          figure attached to a word rather than as part of it.
+        </p>
+        <div class="component-row" id="toggle-counts-demo">
+          <ToggleGroup
+            variant="separated"
+            size="sm"
+            items={[
+              { id: "timeline", label: "Timeline", count: 47 },
+              { id: "countries", label: "Countries", count: 32 },
+              { id: "continents", label: "Continents", count: "2/7" },
+              { id: "stats", label: "Stats" },
+            ]}
+            value="timeline"
+          />
+        </div>
 
         <h3>With Icons</h3>
         <p>Pass <code>icon</code> to items. Icon size adjusts to toggle size (14px for sm, 16px for md).</p>

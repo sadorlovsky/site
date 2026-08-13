@@ -93,9 +93,13 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   color: var(--accent-ink);
 }
 
-.kit-toggle-item:hover:not(:disabled):not([aria-pressed="true"]):not(
-    .is-active
-  ) {
+/* `:disabled` only ever matches a form control, so an item that is not a
+   button — a link, or the span the language switcher stands in for a missing
+   translation — says it is out with `aria-disabled` and would otherwise still
+   brighten under the pointer. Both spellings mean the same thing here. */
+.kit-toggle-item:hover:not(:disabled):not([aria-disabled="true"]):not(
+    [aria-pressed="true"]
+  ):not(.is-active) {
   color: var(--ink-strong);
 }
 
@@ -104,7 +108,12 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   outline-offset: 2px;
 }
 
-.kit-toggle-item:disabled {
+/* An item that is out. `:disabled` only reaches a `<button>`; a link — or the
+   span the language switcher renders where a translation does not exist — says
+   the same thing with `aria-disabled`, and used to look and behave like a live
+   one. */
+.kit-toggle-item:disabled,
+.kit-toggle-item[aria-disabled="true"] {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -376,6 +385,20 @@ a.kit-toggle-item[aria-pressed="true"]:visited {
   .kit-toggle-item[aria-selected="true"]
   .kit-toggle-item__count {
   color: var(--ink-muted);
+}
+
+/* On the accent capsule the count is written *on* the brand, and the Ink Rule
+   applies to it like anything else: muted grey measures 1.15:1 on that ground
+   in the dark scheme and 1.62:1 in the light one — the figure was there and
+   could not be read. It inherits the capsule's own ink instead, and keeps the
+   lighter weight so it still reads as a figure attached to a word. */
+.kit-toggle-group--separated
+  .kit-toggle-item[aria-pressed="true"]
+  .kit-toggle-item__count,
+.kit-toggle-group--separated
+  .kit-toggle-item.is-active
+  .kit-toggle-item__count {
+  color: inherit;
 }
 
 /* Tab sizes — the separated chip's capsule geometry, with a little more room

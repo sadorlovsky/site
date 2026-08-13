@@ -356,12 +356,14 @@ body text stays generous.
 - **Title** (600, `1.25rem`): group landmarks — a year on the timeline, a
   continent, a checklist category. These are sticky and sit on the veil.
 - **Body** (400, `1rem`, 1.75): paragraphs, dropping to `0.9375rem` under 768px.
-  Prose column caps at 800px.
+  Prose column caps at 800px. A blog post is the one surface that sets its own
+  size — see The Reading Measure.
 - **Label** (600, `0.75rem`, `0.03em`, uppercase for badges): controls, badges,
   counts, chips. Sizes step with the control: `0.7rem` at 28px tall through
   `0.9rem` at 44px.
-- **Mono** (`0.875rem`): inline code takes a tinted ground and a red-tone colour
-  (`#d14` / `#ff6b6b`); block code is transparent on Shiki's own dual theme.
+- **Mono** (`0.875rem`, `1rem` in a post): inline code takes a tinted ground and
+  a red-tone colour (`#d14` / `#ff6b6b`); block code is transparent on Shiki's
+  own dual theme. Inline code is sized in `em`, so it rides whatever it sits in.
 
 ### Named Rules
 
@@ -369,6 +371,53 @@ body text stays generous.
 and semibold, sticky under the page chrome, with the page's veil behind it so
 rows dissolve as they pass beneath. Never a 12px uppercase label. Switching
 between views must never change what a heading *is*.
+
+The one exception, named so it stays one: a post's contents drops to 0.9rem in
+muted ink once it leaves the flow for the margin at 1200px. In the flow it is a
+group heading and takes the landmark; in the margin it labels an instrument
+standing beside the document rather than heading a section of it, and a 1.25rem
+semibold word over a 152px rail would be the loudest thing on a reading page.
+It is still an `h2` and still in the outline.
+
+**The Reading Measure.** A post's prose is **1.3rem** on a 1.7 line, larger than
+the 1rem body this system sets everywhere else, because it is read for twenty
+minutes rather than glanced at. The size is not a preference — it is the whole
+measure. At 1.3rem the 800px column carries **75 characters** to the line in
+English and **65** in Russian, which are the two ends of the 65–75 band a
+paragraph is read at. So nothing wears a cap: prose, headings, rules, listings,
+tables and images all end on the same right edge, and the size is the only
+number to move if that stops being true.
+
+It was 1.1rem under a `max-width: 36rem`, which is this idea paid for twice,
+and it failed in both currencies. Visually, the cap left 176px between the end
+of a sentence and the end of a listing — invisible on the index, where nothing
+reaches the full column, and unmissable in a post, where every code block
+publishes a right edge the prose does not meet. And the cap did not deliver the
+band it existed for: 36rem measured 67 characters in English and **59** in
+Russian, under a commitment that both languages ship or neither does.
+
+Count characters on the rendered page, not from a formula. Average several
+paragraphs and drop each one's last line: the first line breaks at a word
+boundary, and Russian words are long enough that reading it alone reports 50
+where the paragraph actually runs 59. Two units will lie to you as well. `ch`
+is the width of a zero and overstates Inter's prose by about a quarter. And
+`em` resolves against each element's own size: the same declaration written in
+`em` came out 792px on a heading, 528px on the colophon and 581px on a
+paragraph — three right edges from one rule.
+
+The cap is not gone from the system, only from the post. Anywhere prose is set
+at 1rem and the column is still 800px — the blog index's descriptions — a
+`max-width` in `rem` is still what keeps the line readable, with
+`box-sizing: border-box` so a quote's padding and a list's marker indent fall
+inside it rather than hanging off the end.
+
+**The Scale Follows the Body.** A post's headings are sized against its prose,
+not against the system's 1rem body: `h2` is 1.8rem and `h3` 1.45rem, roughly
+the ratios they held when the prose was 1.1rem. At the old 1.5rem an `h2` stood
+a fifth above 1.3rem prose, which does not read as a heading but as a bold
+sentence. Block code moves with them — 1rem in a post rather than the system's
+0.875rem — at the cost of about four more listings per long post needing their
+scrollport, which they now have.
 
 **The Fluid Heading Rule.** Headings use `clamp()`, not breakpoint steps. Only
 their margins change at 768px.
@@ -389,8 +438,18 @@ line.
 
 Breakpoints, in order of how often they are used: **480px** (phone layout
 changes), **640px** and **600px** (component reflow), **768px** (typography and
-heading margins). There is no formal breakpoint scale; these are the four the
-site actually reaches for.
+heading margins), and **1200px** — the one wide one, where a blog post's
+contents leaves the flow and stands in the left margin. There is no formal
+breakpoint scale; these are the five the site actually reaches for.
+
+The wide one was bought rather than taken. Every other breakpoint here answers
+the question "has this run out of room"; 1200px answers "is there room to
+spare", which is a different question and the reason a fifth was needed at all.
+The number is arithmetic, not taste: the reading column is 800px, so each
+margin is `(100vw - 800px) / 2` — 200px at the breakpoint itself. The apparatus
+takes `min(230px, that margin - 3rem)`, so it opens at **152px** and grows to
+230px by about 1560px, where it stops. Below 1200px the contents is an ordinary
+landmark and a list.
 
 Sticky elements compose by publishing their own stuck height as a custom
 property on the page: `--sticky-header-offset` from the condensing header and
@@ -695,8 +754,9 @@ indicator to the strip's left edge and left it highlighting the wrong item.
   silently destroys the frost.
 - **Don't** scale a card, an image, or a text block on hover. Translate and
   shadow instead.
-- **Don't** introduce a fourth ink value, a fifth breakpoint, or a second
-  easing curve without removing one first.
+- **Don't** introduce a fourth ink value, a sixth breakpoint, or a second
+  easing curve without removing one first. The fifth was added deliberately and
+  argued for in Layout; that it took an argument is the point of the rule.
 - **Don't** make a group heading a small uppercase eyebrow. It is a 1.25rem
   semibold landmark or it is not a heading.
 - **Don't** use `#fff` as the light page or `#000` as the dark one.
@@ -718,10 +778,12 @@ indicator to the strip's left edge and left it highlighting the wrong item.
 
 ### Known drift
 
-Four surfaces carry no `prefers-reduced-transparency` fallback at all — the
-admin modal, admin toast, admin item card, and the blog's back-to-top button —
-a gap already recorded on `/kit`. Fix these when touching those surfaces; do
-not treat them as precedent.
+Three surfaces carry no `prefers-reduced-transparency` fallback at all — the
+admin modal, admin toast, and admin item card — a gap already recorded on
+`/kit`. Fix these when touching those surfaces; do not treat them as precedent.
+The blog's back-to-top button was the fourth; it is gone, and the condensed
+title pill that does its job answers the query. Removing the surface is one of
+the ways "fix these when touching those surfaces" is discharged.
 
 The admin panel's `variables.css` is empty of colour now. It used to hold the
 pre-contrast semantic values, recorded here as a second dialect that had "not
