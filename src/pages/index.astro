@@ -318,9 +318,12 @@ const personSchema = {
     }
   }
 
+  /* The individual `rotate` property, not a transform: shape-follow.ts owns
+     `transform` on this element, and an animation on the same property would
+     win against it every frame. The two compose instead. */
   @keyframes spin {
     to {
-      transform: rotate(1turn);
+      rotate: 1turn;
     }
   }
 
@@ -417,3 +420,4 @@ const personSchema = {
 </style>
 
 <script src="@client/eye-moving.ts"></script>
+<script src="@client/shape-follow.ts"></script>
