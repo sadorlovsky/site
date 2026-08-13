@@ -1,7 +1,7 @@
 import { actions } from "astro:actions";
 import type { Lang } from "@lib/i18n";
 import { initTooltips } from "./tooltip";
-import { getVisitorId } from "./visitor-id";
+import { getVisitorId, isFirstVisit } from "./visitor-id";
 import {
   forgetMessage,
   hideMessageBead,
@@ -17,9 +17,14 @@ let currentLang: Lang = "en";
  * Whose reservation a card is carrying, as the button's `data-reservation`.
  *
  * The server renders "other" for anything taken, because it has no idea who is
- * looking; the per-visitor fetch below is what promotes a card to "mine". The
- * button stays hidden (`.reserve-btn--loading`) until that lands, so the
- * pessimistic first guess is never on screen.
+ * looking; the per-visitor fetch below is what promotes a card to "mine". A
+ * taken card's button stays hidden (`.reserve-btn--loading`) until that lands,
+ * so the pessimistic first guess is never on screen.
+ *
+ * Only a taken card, though. A free one says "none", which no answer can
+ * contradict — nobody's reservation is going to appear out of a request — so it
+ * is shown straight away rather than held back with the rest. Same for every
+ * card on a first visit: see isFirstVisit().
  */
 type ReservationState = "none" | "mine" | "other";
 
@@ -36,6 +41,19 @@ const RESERVATION_RETRY_DELAYS = [300, 1000, 2500];
  * everything taken, because the server has no idea who is looking.
  */
 let reservationsKnown = true;
+
+/**
+ * Items this visitor has reserved or cancelled by hand, by item id.
+ *
+ * The buttons answer clicks before the reservations fetch does — that is the
+ * whole point of wiring them early — so a press can land while the request is
+ * still out, and what comes back is then a picture of the world from before it.
+ * Applied blindly it walks a just-reserved card back to "Reserve" while the
+ * reservation sits in the database, and the visitor is looking at a button that
+ * disagrees with the server. A click is newer than the answer to a question
+ * asked before it, so the fetch does not get to speak for these.
+ */
+const locallyDecided = new Set<number>();
 
 /**
  * A badge's translations live on its inner label, not on the badge itself: the
@@ -65,11 +83,26 @@ export async function initializeWishlist() {
 
   initReservationMessages(currentLang);
 
-  // Fetch fresh reservations from API and update UI
-  await fetchAndApplyReservations();
-
+  // Wiring before revealing, and the order is load-bearing: showButtons hides a
+  // card it believes is someone else's by disabling the button, and a disabled
+  // button is one this function declines to wire. Run it the other way round
+  // and every card the server called taken spends the session inert — including
+  // the ones the fetch below is about to hand back as free.
   initializeReserveButtons();
   initializeLangChangeListener();
+
+  // Everything the fetch cannot contradict goes on screen now. A free card is
+  // one of those: "nobody has it" is the server's to know, and no answer turns
+  // it into someone's reservation — so it has no business waiting on a request
+  // that took 365-415ms warm and 2.26s on a cold function, to say `{}`. On a
+  // first visit the taken cards are safe too, since a visitor with a fresh id
+  // owns none of them.
+  showButtons(isFirstVisit() ? "all" : "free");
+
+  // What is genuinely per-visitor still comes from the network, and the cards
+  // it can still change — someone else's reservation that is really this
+  // visitor's — stay hidden until it lands, exactly as before.
+  await fetchAndApplyReservations();
 }
 
 /** One row of /api/wishlist/reservations, which answers per visitor. */
@@ -98,6 +131,8 @@ async function loadReservations(): Promise<boolean> {
         if (!itemId) return;
 
         const id = parseInt(itemId);
+        if (locallyDecided.has(id)) return;
+
         const state = reservations[id];
         button.dataset.reservation = !state
           ? "none"
@@ -290,17 +325,56 @@ function setRetryLabel(button: HTMLButtonElement, lang: Lang): void {
   if (text) button.setAttribute("aria-label", text);
 }
 
-function showButtons() {
+/**
+ * Which buttons this pass is allowed to reveal.
+ *
+ * "free" is the pass that runs before the fetch: it settles the cards whose
+ * answer is already known and leaves every taken one hidden, so the server's
+ * pessimistic "someone else's" still never reaches the screen. "all" is the
+ * pass after the fetch — and the first-visit pass, where there is nothing left
+ * to learn.
+ */
+type ButtonScope = "free" | "all";
+
+/**
+ * Undo the hiding below, so a pass can disagree with the one before it.
+ *
+ * "Someone else's" is the only state that writes to the button rather than to
+ * its text, and it writes inline — which stuck, because nothing put it back.
+ * /wishlist is served from the ISR cache and neither reserving nor cancelling
+ * revalidates it, so the `isReserved` in the HTML is as old as the cache entry;
+ * the per-visitor fetch correcting it to "free" is ordinary, not exotic. Before
+ * this, that correction left the card with a hidden button, no badge, and no
+ * way to reserve it. The retry button was invisible for the same reason.
+ */
+function revealButton(button: HTMLButtonElement): void {
+  button.style.visibility = "";
+  button.style.pointerEvents = "";
+  button.disabled = false;
+}
+
+function showButtons(scope: ButtonScope = "all") {
   document
     .querySelectorAll<HTMLButtonElement>(".reserve-btn")
     .forEach((button) => {
       const reservation = reservationOf(button);
       const isReserved = reservation !== "none";
 
+      if (scope === "free" && isReserved) return;
+
+      // Whatever an earlier pass concluded about this card, this one is about
+      // to conclude it again from scratch — so start from a button that is
+      // simply a button. Only the "someone else's" branch below hides one, and
+      // only it hides one again.
+      revealButton(button);
+
       // Get badge elements
       const article = button.closest("article");
       const reservedBadge = article?.querySelector(
         ".reserved-badge",
+      ) as HTMLElement;
+      const ownBadge = article?.querySelector(
+        ".own-reservation-badge",
       ) as HTMLElement;
 
       // The fetch never landed, so on a taken card "whose" is unknown rather
@@ -311,6 +385,16 @@ function showButtons() {
       if (!reservationsKnown && isReserved) {
         setRetryLabel(button, currentLang);
         button.classList.add("reserve-btn--retry");
+        // Reserving or cancelling blind would be a guess; fetching again on a
+        // fresh page is not. This is where the button *becomes* a retry, and so
+        // where the reload has to be attached: initializeReserveButtons ran
+        // long before the fetch had given up and saw an ordinary button. Its
+        // own handler stays on and does nothing here — it acts on "mine" and
+        // "none", and this branch only ever runs on a taken card.
+        if (!button.dataset.retryWired) {
+          button.dataset.retryWired = "true";
+          button.addEventListener("click", () => location.reload());
+        }
         if (reservedBadge) {
           reservedBadge.hidden = false;
           setBadgeLabel(reservedBadge, currentLang);
@@ -325,6 +409,18 @@ function showButtons() {
           (currentLang === "ru"
             ? button.dataset.ruCancel
             : button.dataset.enCancel) ?? null;
+        // The whole of "this one is yours" is settled here, not split with
+        // initializeReserveButtons as it used to be. That split is what broke
+        // an own reservation on reload: the buttons were wired before the
+        // per-visitor answer arrived, read the server's pessimistic "other",
+        // and hid themselves with inline styles that this pass never removed —
+        // leaving a card with no button and no badge at all.
+        button.classList.add("own-reservation");
+        showMessageBead(article);
+        if (ownBadge) {
+          ownBadge.hidden = false;
+          setBadgeLabel(ownBadge, currentLang);
+        }
         if (reservedBadge) reservedBadge.hidden = true;
       } else if (isReserved) {
         // Someone else's reservation - hide button, show badge
@@ -335,12 +431,14 @@ function showButtons() {
           reservedBadge.hidden = false;
           setBadgeLabel(reservedBadge, currentLang);
         }
+        if (ownBadge) ownBadge.hidden = true;
       } else {
         button.textContent =
           (currentLang === "ru"
             ? button.dataset.ruReserve
             : button.dataset.enReserve) ?? null;
         if (reservedBadge) reservedBadge.hidden = true;
+        if (ownBadge) ownBadge.hidden = true;
       }
 
       // Show button
@@ -354,62 +452,29 @@ function initializeReserveButtons() {
   const visitorId = getVisitorId();
 
   reserveButtons.forEach((button) => {
-    // The reservations fetch gave up. Reserving or cancelling blind would be a
-    // guess; fetching again on a fresh page is not.
-    if (button.classList.contains("reserve-btn--retry")) {
-      button.addEventListener("click", () => location.reload());
-      return;
-    }
+    // Every button gets wired, and the two guards that used to stand here are
+    // gone. Both belonged to an older order of events, when this ran after the
+    // fetch: the retry one now fires where the retry is made, and the
+    // `disabled` one was written for received items — which render no reserve
+    // button at all — so all it ever caught were the buttons showButtons had
+    // just hidden, the very cards the fetch can still hand back as free.
 
-    // Skip received items
-    if (button.disabled) {
-      return;
-    }
-
-    const reservation = reservationOf(button);
-
-    // Get badge elements (in the item-image section)
-    const article = button.closest("article");
-    const ownBadge = article?.querySelector(
-      ".own-reservation-badge",
-    ) as HTMLElement;
-    const reservedBadge = article?.querySelector(
-      ".reserved-badge",
-    ) as HTMLElement;
-
-    // Set initial button state
-    if (reservation !== "none") {
-      if (reservation === "mine") {
-        // Own reservation - show Cancel, own badge, and the message bead
-        button.textContent =
-          (currentLang === "ru"
-            ? button.dataset.ruCancel
-            : button.dataset.enCancel) ?? null;
-        button.classList.add("own-reservation");
-        showMessageBead(article);
-        if (ownBadge) {
-          ownBadge.hidden = false;
-          setBadgeLabel(ownBadge, currentLang);
-        }
-        if (reservedBadge) reservedBadge.hidden = true;
-      } else {
-        // Someone else's reservation - hide button, show reserved badge
-        button.style.visibility = "hidden";
-        button.style.pointerEvents = "none";
-        button.disabled = true;
-        if (reservedBadge) {
-          reservedBadge.hidden = false;
-          setBadgeLabel(reservedBadge, currentLang);
-        }
-        if (ownBadge) ownBadge.hidden = true;
-      }
-    }
-
+    // What the card looks like is showButtons' business alone. This function
+    // runs before the per-visitor fetch has answered, so anything it decided
+    // here would be decided from the server's pessimistic guess.
     button.addEventListener("click", async function () {
       const itemId = this.dataset.itemId;
       if (!itemId) return;
 
+      const id = parseInt(itemId);
       const current = reservationOf(this);
+      // Someone else's, or unknown-whose after the fetch gave up. Nothing to
+      // toggle; a retry button carries its own handler.
+      if (current === "other") return;
+
+      // Past here the visitor has decided something about this card, and an
+      // answer to a question asked before the click does not get to undo it.
+      locallyDecided.add(id);
 
       // Get badge for this item
       const itemArticle = this.closest("article");
@@ -458,7 +523,7 @@ function initializeReserveButtons() {
         let error: unknown = null;
         try {
           ({ error } = await actions.unreserve({
-            itemId: parseInt(itemId),
+            itemId: id,
             visitorId,
           }));
         } catch {
@@ -509,7 +574,7 @@ function initializeReserveButtons() {
         let error: unknown = null;
         try {
           ({ error } = await actions.reserve({
-            itemId: parseInt(itemId),
+            itemId: id,
             visitorId,
           }));
         } catch {

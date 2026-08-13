@@ -7,6 +7,7 @@ import sitemap from "@astrojs/sitemap";
 import { loadEnv } from "vite";
 import browserslist from "browserslist";
 import { browserslistToTargets } from "lightningcss";
+import { readFile, writeFile } from "node:fs/promises";
 
 // Targets deliberately include Safari/iOS < 17.5 so Lightning CSS lowers
 // light-dark() into @media (prefers-color-scheme) fallbacks at build time.
@@ -59,6 +60,67 @@ const isProd = process.env.NODE_ENV === "production";
 // undefined domain reaches image.domains, config validation fails with
 // "image.domains.0: Required", and the dev server exits before it starts.
 const cdnDomain = (isProd ? CDN_DOMAIN : (CDN_DEV_DOMAIN ?? CDN_DOMAIN)) ?? "";
+
+// The Vercel adapter emits a route that stamps `immutable` onto everything
+// under /_astro, and that route never fires. normalizeRoutes() puts
+// {handle: "filesystem"} in front of it, the filesystem phase serves the file
+// and stops, and the rule sitting behind it only ever sees paths that are not
+// files. So every content-hashed asset went out with Vercel's default
+// `public, max-age=0, must-revalidate` and got revalidated on every single
+// navigation — both Inter variable fonts, 723 KB together, preloaded on all
+// five pages, for a measured 476 ms of 304s per page view.
+//
+// Moving the rule ahead of the filesystem phase is what the adapter itself
+// does for the static headers it generates (createRoutesWithStaticHeaders in
+// @astrojs/vercel splices at exactly this index), and `continue: true` keeps
+// routing going, so the file is still served by the filesystem phase — with
+// the header attached.
+//
+// This patches .vercel/output/config.json rather than vercel.json because the
+// build output is what Vercel actually reads: the adapter writes that file
+// wholesale, and whether the platform merges vercel.json's `headers` into a
+// Build Output API deployment is undocumented either way.
+function immutableAssets() {
+  let root;
+  return {
+    name: "immutable-assets",
+    hooks: {
+      "astro:config:done": ({ config }) => {
+        root = config.root;
+      },
+      "astro:build:done": async ({ logger }) => {
+        const file = new URL("./.vercel/output/config.json", root);
+        const config = JSON.parse(await readFile(file, "utf8"));
+        const routes = config.routes ?? [];
+
+        const filesystem = routes.findIndex((r) => r.handle === "filesystem");
+        const rule = routes.findIndex(
+          (r) =>
+            r.src?.includes("_astro") &&
+            r.headers?.["cache-control"]?.includes("immutable"),
+        );
+
+        // Loud on purpose. A silent skip here is how the site ended up
+        // revalidating 723 KB of fonts on every navigation in the first place;
+        // if the adapter ever renames or fixes this, the build should say so.
+        if (rule === -1 || filesystem === -1) {
+          throw new Error(
+            "immutable-assets: expected a /_astro immutable route and a " +
+              "filesystem phase in .vercel/output/config.json, found " +
+              `rule=${rule} filesystem=${filesystem}. The adapter's output ` +
+              "changed — re-check whether this patch is still needed.",
+          );
+        }
+
+        if (rule < filesystem) return; // already ahead of it, nothing to do
+
+        routes.splice(filesystem, 0, ...routes.splice(rule, 1));
+        await writeFile(file, JSON.stringify(config, null, "\t"), "utf8");
+        logger.info("/_astro assets now cached immutably");
+      },
+    },
+  };
+}
 
 // The grounds a code block is painted on — the pair named in global.css beside
 // the Shiki token rules, restated here because the transformer below measures
@@ -199,6 +261,15 @@ export default defineConfig({
       target: "esnext",
       cssTarget,
       cssMinify: "lightningcss",
+      // Every flag in flag-icons is a file under the inline limit, so Vite was
+      // turning all 439 of them into data: URIs and welding them into the
+      // stylesheet: 500 639 bytes of render-blocking CSS on /travel, where 34
+      // flags are actually shown. Left as files they are fetched only when a
+      // rule that uses one applies, they no longer hold up the first paint, and
+      // they are hashed — so the immutable rule further down caches them for a
+      // year. Everything else keeps Vite's default judgement.
+      assetsInlineLimit: (filePath) =>
+        filePath.includes("flag-icons") ? false : undefined,
     },
     ssr: {
       noExternal: ["@simplewebauthn/server"],
@@ -222,6 +293,7 @@ export default defineConfig({
     sitemap({
       filter: (page) => !page.includes("/wishlist/~"),
     }),
+    immutableAssets(),
   ],
   markdown: {
     // Catppuccin's grounds are #eff1f5 and #303446 — a blue-lilac pair, and
@@ -253,6 +325,26 @@ export default defineConfig({
             style: "normal",
             src: ["./src/assets/fonts/InterVariable.woff2"],
           },
+        ],
+      },
+    },
+    // The italic is a family of its own, and only because <Font preload /> is
+    // all-or-nothing across a family's variants. Declared beside the upright it
+    // was preloaded with it: 388 KB fetched at the highest priority the browser
+    // has, on every page, ahead of the LCP image — and the home page, /travel
+    // and the wishlist contain not one <em>, <i> or <blockquote> between them.
+    // Split out and left unpreloaded, it is fetched the ordinary way, which for
+    // a webfont means only where text actually asks for it. The three places
+    // that ask are in global.css and the post page; anything set in italic
+    // without naming this variable gets the browser's synthetic slant instead,
+    // so keep the two in step.
+    {
+      provider: fontProviders.local(),
+      name: "Inter",
+      cssVariable: "--font-inter-italic",
+      fallbacks: ["system-ui", "sans-serif"],
+      options: {
+        variants: [
           {
             weight: "100 900",
             style: "italic",

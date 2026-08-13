@@ -73,6 +73,11 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
     {cdnDomain && <link rel="preconnect" href={`https://${cdnDomain}`} />}
     <link rel="dns-prefetch" href="https://static.cloudflareinsights.com" />
     <Font cssVariable="--font-inter" preload />
+    {/* Neither of these is preloaded: the page's first paint is upright Latin
+        text, and both of these are for something further down it — a code
+        block, a quote, an emphasised word. The @font-face lands in the head
+        either way, so the file is on its way as soon as any text matches it. */}
+    <Font cssVariable="--font-inter-italic" />
     <Font cssVariable="--font-fira-code" />
     <slot name="head" />
   </head>

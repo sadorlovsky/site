@@ -7,6 +7,10 @@
  *   2. Wrap translatable content in an element with class "lang-content"
  *   3. Use data-en/data-ru attributes for translated text
  *
+ * "lang-content" marks where the swap from English to Russian is worth hiding
+ * until it has happened. It no longer hides the region itself — see the style
+ * block below — so wrapping a whole page in it costs nothing.
+ *
  * Example:
  *   <PageLayout title="My Page">
  *     <LangInit />
@@ -68,12 +72,26 @@
 </script>
 
 <style is:global>
-  /* Hide content with .lang-content class until language is applied */
-  .lang-content {
-    opacity: 0;
-  }
+  /* The server renders English, and every data-en attribute holds exactly the
+     text its element already contains — all 316 of them on /wishlist. So an
+     English visitor has nothing to swap in and nothing to wait for, and only
+     Russian needs covering here.
 
-  html.lang-ready .lang-content {
-    opacity: 1;
+     Hiding .lang-content itself covered far more than the text: the grid, the
+     cards and all 63 photographs stayed invisible until DOMContentLoaded, for
+     both languages, which is why the page appeared to arrive all at once and
+     late. Covering the translated elements instead leaves the layout and the
+     images to paint as they arrive; opacity keeps them in flow, so nothing
+     shifts when the text lands.
+
+     .lang-ru is set by the script above, synchronously in <head>, so it is in
+     place before the first paint — Russian text is still never shown in
+     English first. The scope stays inside .lang-content on purpose: the dock's
+     labels sit outside it and are not covered today, and hiding the site's
+     navigation until DOMContentLoaded would be a new regression, not a fix.
+     data-title-ru, data-aria-label-ru and data-tooltip-ru need no rule at all
+     — none of them change what is drawn. */
+  html.lang-ru:not(.lang-ready) .lang-content [data-ru] {
+    opacity: 0;
   }
 </style>

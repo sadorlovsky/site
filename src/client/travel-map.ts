@@ -1,9 +1,12 @@
-import { Map as MapLibre } from "maplibre-gl";
+// Type-only, so nothing about MapLibre reaches the page until initMap asks for
+// it — see the import inside it, and scheduleInit at the bottom.
 import type {
   FilterSpecification,
   GeoJSONSource,
   LayerSpecification,
+  Map as MapLibre,
 } from "maplibre-gl";
+import mapStylesheetUrl from "maplibre-gl/dist/maplibre-gl.css?url";
 import type { Feature, Point } from "geojson";
 import { countries, cities, cityCoordinates } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
@@ -273,6 +276,31 @@ function sizeZoom(map: MapLibre): number {
   );
 }
 
+/**
+ * MapLibre's stylesheet, attached when the map is about to exist.
+ *
+ * `?url` rather than a plain import on purpose: an imported stylesheet joins
+ * the page's style graph, and Astro then emits a <link> for it in the <head> —
+ * which is exactly what this is avoiding. 70 KB describing map controls and a
+ * canvas has no business blocking the first paint of a page whose map may never
+ * be built. Awaited before the map is constructed so the controls never appear
+ * unstyled.
+ */
+function loadMapStylesheet(): Promise<void> {
+  const existing = document.querySelector(`link[href="${mapStylesheetUrl}"]`);
+  if (existing) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = mapStylesheetUrl;
+    // Resolve either way: a map with unstyled controls beats no map at all.
+    link.addEventListener("load", () => resolve(), { once: true });
+    link.addEventListener("error", () => resolve(), { once: true });
+    document.head.appendChild(link);
+  });
+}
+
 async function initMap(): Promise<void> {
   const container = document.getElementById("map")!;
   if (!container) return;
@@ -296,7 +324,19 @@ async function initMap(): Promise<void> {
 
   const initialZoom = getInitialZoom();
 
-  const map = new MapLibre({
+  // The library arrives here, not at the top of the file. scheduleInit has
+  // always waited for the map to approach the viewport before building it, but
+  // a static import meant the megabyte was downloaded as part of this page's
+  // script either way — the deferral saved the WebGL setup and the tile
+  // requests, never the bytes. Now it saves those too: /travel's own script
+  // drops from 1 076 086 to 48 741 bytes, and maplibre becomes a chunk that is
+  // fetched when the map is actually about to exist.
+  const [{ Map: MapLibreMap }] = await Promise.all([
+    import("maplibre-gl"),
+    loadMapStylesheet(),
+  ]);
+
+  const map = new MapLibreMap({
     container: "map",
     style: "https://tiles.openfreemap.org/styles/positron",
     center: initialCenter,

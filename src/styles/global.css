@@ -838,6 +838,10 @@ blockquote {
   padding: 1rem 1.5rem;
   border-left: 4px solid var(--hairline);
   background-color: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.02));
+  /* Inter's italic is its own family here — see the fonts block in
+     astro.config.mjs for why. It inherits, so the paragraphs inside are
+     covered without naming them. */
+  font-family: var(--font-inter-italic);
   font-style: italic;
 }
 
@@ -911,8 +915,15 @@ b {
   color: var(--ink-strong);
 }
 
+/* The tags a UA stylesheet slants, named here so they get the real italic
+   rather than a synthetic one — see the fonts block in astro.config.mjs. */
 em,
-i {
+i,
+cite,
+dfn,
+var,
+address {
+  font-family: var(--font-inter-italic);
   font-style: italic;
 }
 

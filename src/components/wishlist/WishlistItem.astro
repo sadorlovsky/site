@@ -1,6 +1,10 @@
 ---
-import { Picture, getImage } from "astro:assets";
 import { Icon } from "astro-icon/components";
+import {
+  WISHLIST_IMAGE_SIZES,
+  derivativeKey,
+  derivativeSrcSet,
+} from "@lib/images";
 import Badge from "@components/kit/Badge.astro";
 import {
   formatHostLabel,
@@ -22,18 +26,27 @@ const {
   eager = false,
   reservationsEnabled = true,
 } = Astro.props;
-const imageUrl = getCdnImageUrl(item.imageUrl);
+// Every URL here is a file that already exists on the CDN, written when the
+// picture was uploaded — no <Image>, no getImage, nothing that could route a
+// photograph back through this site's own function. lib/images.ts holds the
+// naming scheme and the reasoning; the short version is that the widths are
+// part of the key, so the srcset is built by string and needs to ask nobody
+// what has been made.
+//
+// The item's `imageUrl` is the original, and nothing on the page points at it:
+// it is the negative, kept to re-derive from.
+const lightSrcSet = derivativeSrcSet(item.imageUrl, getCdnImageUrl);
+// The `src` is the fallback for anything that ignores srcset, and 560 is the
+// width the card is drawn at.
+const lightSrc = getCdnImageUrl(derivativeKey(item.imageUrl, 560));
 
-// Items with a dark-theme render get a hand-built <picture> with media-gated
-// sources (Astro's <Picture> can't do art direction). Others keep <Picture>.
-const imageOpts = {
-  width: 560,
-  height: 420,
-  widths: [400, 560, 800, 1200],
-  quality: 65,
-};
-const imageSizes =
-  "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px";
+// A dark-theme render, where there is one, is a media-gated <source> — art
+// direction, which is a different picture rather than the same one resized.
+const darkSrcSet = item.imageUrlDark
+  ? derivativeSrcSet(item.imageUrlDark, getCdnImageUrl)
+  : null;
+
+const imageSizes = WISHLIST_IMAGE_SIZES;
 
 // Where to buy this. One shop or five, it is the same list rendered the same
 // way — a lone shop link is a one-row list, not a different piece of markup,
@@ -68,14 +81,6 @@ const options = item.options
   // already in the footer.
   .filter((option) => option.labelEn || showOptionPrices);
 
-const darkImageUrl = item.imageUrlDark ? getCdnImageUrl(item.imageUrlDark) : null;
-const [darkAvif, lightAvif, lightWebp] = darkImageUrl
-  ? await Promise.all([
-      getImage({ src: darkImageUrl, ...imageOpts, format: "avif" }),
-      getImage({ src: imageUrl, ...imageOpts, format: "avif" }),
-      getImage({ src: imageUrl, ...imageOpts, format: "webp" }),
-    ])
-  : [null, null, null];
 ---
 
 <article
@@ -88,51 +93,28 @@ const [darkAvif, lightAvif, lightWebp] = darkImageUrl
 >
   <div class="item-image">
     <div class="skeleton"></div>
-    {
-      darkAvif && lightAvif && lightWebp ? (
-        <picture>
-          <source
-            media="(prefers-color-scheme: dark)"
-            type="image/avif"
-            srcset={darkAvif.srcSet.attribute}
-            sizes={imageSizes}
-          />
-          <source
-            type="image/avif"
-            srcset={lightAvif.srcSet.attribute}
-            sizes={imageSizes}
-          />
-          <img
-            class="wishlist-img"
-            src={lightWebp.src}
-            srcset={lightWebp.srcSet.attribute}
-            sizes={imageSizes}
-            alt={item.title}
-            width={560}
-            height={420}
-            loading={eager ? "eager" : "lazy"}
-            decoding="async"
-            fetchpriority={isLCP ? "high" : undefined}
-          />
-        </picture>
-      ) : (
-        <Picture
-          class="wishlist-img"
-          src={imageUrl}
-          alt={item.title}
-          width={560}
-          height={420}
-          widths={[400, 560, 800, 1200]}
+    <picture>
+      {darkSrcSet && (
+        <source
+          media="(prefers-color-scheme: dark)"
+          type="image/webp"
+          srcset={darkSrcSet}
           sizes={imageSizes}
-          formats={["avif"]}
-          fallbackFormat="webp"
-          quality={65}
-          loading={eager ? "eager" : "lazy"}
-          decoding="async"
-          fetchpriority={isLCP ? "high" : undefined}
         />
-      )
-    }
+      )}
+      <img
+        class="wishlist-img"
+        src={lightSrc}
+        srcset={lightSrcSet}
+        sizes={imageSizes}
+        alt={item.title}
+        width={560}
+        height={420}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        fetchpriority={isLCP ? "high" : undefined}
+      />
+    </picture>
     {
       item.received && (
         <Badge

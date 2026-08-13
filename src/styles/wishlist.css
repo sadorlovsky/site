@@ -459,6 +459,19 @@
   color: var(--ink-muted);
 }
 
+/* A price is rendered in dollars and rewritten to roubles by the inline script
+   in WishlistPage.astro, so for a Russian reader the server's version is not
+   the final one. It used to be covered by the blanket .lang-content rule, along
+   with the entire grid; now that only the translated text is covered, prices
+   need saying so themselves — they carry no data-ru, because the number is
+   computed rather than translated.
+
+   Keyed to `prices-ready` rather than LangInit's `lang-ready`: the two run from
+   separate DOMContentLoaded listeners, and LangInit's was registered first. */
+html.lang-ru:not(.prices-ready) [data-price-original] {
+  opacity: 0;
+}
+
 /* Item image */
 .item-image {
   position: relative;
@@ -473,33 +486,58 @@
 .skeleton {
   position: absolute;
   inset: 0;
+  background: light-dark(#e0e0e0, #2a2a2a);
+  overflow: hidden;
+  /* Under the photograph, not over it. The image used to sit at `auto` beneath
+     this layer and was held at opacity 0 until a script said otherwise, so a
+     picture that had already arrived and decoded stayed invisible until the
+     JavaScript ran. Now it covers the shimmer the moment it paints, on its
+     own. */
+  z-index: 0;
+}
+
+/* The travelling highlight, as a band that moves rather than a gradient whose
+   position is redrawn. `background-position` cannot be composited: every frame
+   of it repainted the card's whole 4:3 image area, inside an overflow clip and
+   a rounded corner, on each card still waiting for its photograph. A transform
+   on a pseudo-element is handed to the compositor and never touches the main
+   thread. The look is the same band of light crossing the same tile. */
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
-    light-dark(#e0e0e0, #2a2a2a) 0%,
+    transparent 0%,
     light-dark(#f0f0f0, #3a3a3a) 50%,
-    light-dark(#e0e0e0, #2a2a2a) 100%
+    transparent 100%
   );
-  background-size: 200% 100%;
   animation: shimmer 1.5s infinite ease-in-out;
-  z-index: 1;
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: 200% 0;
+  from {
+    transform: translateX(-100%);
   }
-  100% {
-    background-position: -200% 0;
+  to {
+    transform: translateX(100%);
   }
+}
+
+/* The photograph covers this layer by itself now, so the class no longer
+   decides whether anything is visible — it retires the shimmer once the image
+   is in, so 63 cards stop invalidating paint on every frame forever, and
+   clears the way for a picture with transparency. Both happen underneath the
+   image, which is also why `animation: none` landing before the 300ms fade has
+   finished is no longer a visible jolt. */
+.item-image.loaded .skeleton::after {
+  animation: none;
 }
 
 .item-image.loaded .skeleton {
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
-  /* Stop the infinite shimmer once the image is in — otherwise every
-     card keeps invalidating paint on each frame forever */
-  animation: none;
 }
 
 /* The photograph doesn't move on hover. object-fit: cover plus a zoom crops
@@ -513,12 +551,8 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-}
-
-.item-image.loaded img {
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  /* Above .skeleton (0), below .wishlist-badge (2). */
+  z-index: 1;
 }
 
 /* Badges. The double class isn't decoration: the glass variant sets
@@ -764,7 +798,10 @@
   cursor: pointer;
   box-shadow: var(--glass-shadow);
   transition: color 0.3s ease;
-  will-change: transform; /* magnetic pull toward the cursor */
+  /* The magnetic pull's `will-change: transform` is set by client/magnet.ts
+     when the pointer enters the card and dropped when the button settles.
+     Declared here it applied to every button at once, for as long as the page
+     was open. */
 }
 
 /* Sliding gradient indicator — the dock's "magic line", sized to the whole

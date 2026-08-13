@@ -40,6 +40,24 @@ function lerp(start: number, end: number, factor: number): number {
   return start + (end - start) * factor;
 }
 
+/**
+ * Bumped whenever anything could have moved a magnet on screen.
+ *
+ * An element's resting position changes when the page scrolls or resizes —
+ * never because the cursor moved. Measuring it on every pointermove meant
+ * calling getBoundingClientRect immediately after the animation frame had
+ * written `style.transform` to the same element, which is a read straight after
+ * a write: the browser has to flush layout before it can answer. That is a
+ * forced reflow in the hottest path on the page, once per mouse movement, and
+ * the wishlist has 57 of these on it.
+ */
+let geometryEpoch = 0;
+const invalidateGeometry = () => {
+  geometryEpoch += 1;
+};
+window.addEventListener("scroll", invalidateGeometry, { passive: true });
+window.addEventListener("resize", invalidateGeometry, { passive: true });
+
 /** Wire one element up to the cursor. Safe to call again on the same element —
     a page-load handler re-running over a document that was never replaced must
     not leave two loops fighting over one transform. */
@@ -63,6 +81,21 @@ export function initMagnet(el: HTMLElement, options: MagnetOptions = {}): void {
   const target = { x: 0, y: 0 };
   let running = false;
 
+  /** The element's centre with any magnetic drift taken back out. */
+  const centre = { x: 0, y: 0 };
+  let centreEpoch = -1;
+
+  function readCentre() {
+    const rect = el.getBoundingClientRect();
+    // Subtracting the current offset gives the centre the element would have at
+    // rest. Measuring the drifted position instead fed the pull back into
+    // itself: the closer it came to the cursor, the closer its centre appeared
+    // to be, and the target shrank as it travelled.
+    centre.x = rect.left + rect.width / 2 - current.x;
+    centre.y = rect.top + rect.height / 2 - current.y;
+    centreEpoch = geometryEpoch;
+  }
+
   function animate() {
     current.x = lerp(current.x, target.x, smooth);
     current.y = lerp(current.y, target.y, smooth);
@@ -74,6 +107,11 @@ export function initMagnet(el: HTMLElement, options: MagnetOptions = {}): void {
       requestAnimationFrame(animate);
     } else {
       running = false;
+      // Hand the layer back. Held permanently — as a `will-change: transform`
+      // in the stylesheet does — this promotes every magnet on the page to a
+      // compositor layer for the whole session, to pay for an animation that
+      // only ever runs under the cursor.
+      el.style.willChange = "";
     }
   }
 
@@ -90,14 +128,38 @@ export function initMagnet(el: HTMLElement, options: MagnetOptions = {}): void {
     kick();
   }
 
+  // The layer is asked for on the way in, a frame or more before the first
+  // transform lands, so the compositor has time to prepare it — requesting it
+  // in the same breath as the change is most of the way to not asking at all.
+  // The reading taken here is the one each hover starts from.
+  tracked.addEventListener("pointerenter", () => {
+    if (inert?.()) return;
+    el.style.willChange = "transform";
+    readCentre();
+  });
+
+  /**
+   * A transition inside the scope can move the element without the cursor
+   * having moved: a wishlist card lifts 8px when the pointer arrives, over
+   * 0.4s, so the reading taken on the way in describes where the button was
+   * before the lift, and the pull sits nearly 3px low for the length of the
+   * hover. transitionend bubbles, so this catches the scope's own and its
+   * children's. The element's own drift is the one that must not count — that
+   * is this loop's writing coming back to it.
+   */
+  tracked.addEventListener("transitionend", (event) => {
+    if (event.target === el && event.propertyName === "transform") return;
+    centreEpoch = -1;
+  });
+
   tracked.addEventListener("pointermove", (e) => {
     if (inert?.()) {
       rest();
       return;
     }
-    const rect = el.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width / 2);
-    const dy = e.clientY - (rect.top + rect.height / 2);
+    if (centreEpoch !== geometryEpoch) readCentre();
+    const dx = e.clientX - centre.x;
+    const dy = e.clientY - centre.y;
     if (Math.hypot(dx, dy) < radius) {
       target.x = Math.max(-max, Math.min(max, dx * strength));
       target.y = Math.max(-max, Math.min(max, dy * strength));

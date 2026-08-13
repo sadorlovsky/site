@@ -1,5 +1,9 @@
 ---
-import "maplibre-gl/dist/maplibre-gl.css";
+// Neither stylesheet is pulled in here any more. MapLibre's is loaded by
+// client/travel-map.ts alongside the library itself — imported here it was
+// 70 KB of render-blocking CSS describing controls and a canvas that may never
+// be built — and flag-icons is preloaded from the travel page, which is where
+// the flags are.
 
 interface Props {
   mode?: "normal" | "globe";
