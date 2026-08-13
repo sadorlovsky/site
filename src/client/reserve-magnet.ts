@@ -96,6 +96,21 @@ function initMagnet(button: HTMLButtonElement) {
     readCentre();
   });
 
+  // The card lifts 8px when the cursor arrives, over 0.4s, and the centre read
+  // on pointerenter is the one it had before it moved — so every frame of the
+  // hover pulls toward a point up to 8px below where the button now is, and
+  // only a scroll or a resize would ever correct it. Take the reading again
+  // once the lift has landed, through the same channel a scroll uses.
+  scope.addEventListener("transitionend", (event) => {
+    if (
+      event.target === scope &&
+      !event.pseudoElement &&
+      event.propertyName === "transform"
+    ) {
+      centreEpoch = -1;
+    }
+  });
+
   scope.addEventListener("pointermove", (e) => {
     // Received items and other people's reservations render a disabled (or
     // hidden) button — it shouldn't twitch under the cursor.
