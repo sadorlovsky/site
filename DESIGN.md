@@ -17,6 +17,19 @@ colors:
   ink-muted-dark: "#9a9aa0"
   hairline-light: "#dddddd"
   hairline-dark: "#444444"
+  hairline-hover-light: "#bbbbbb"
+  hairline-hover-dark: "#666666"
+  hairline-contrast-light: "#999999"
+  hairline-contrast-dark: "#777777"
+  field-bg-dark: "rgba(30, 30, 35, 0.8)"
+  link-hover-dark: "#ff9eae"
+  visited-light: "#8b5a7c"
+  visited-dark: "#d4a5c9"
+  code-light: "#c81f48"
+  code-dark: "#ff6b6b"
+  mark-light: "#fbbf24"
+  mark-dark: "#f0b429"
+  mark-ink: "#1a1400"
   focus-ring-on-fill-light: "#333333"
   focus-ring-on-fill-dark: "#ffffff"
   success-start: "#00875d"
@@ -54,12 +67,30 @@ typography:
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: "-0.02em"
+  heading-3:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "clamp(1.25rem, 3vw, 1.75rem)"
+    fontWeight: 600
+  heading-4:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "clamp(1.125rem, 2.5vw, 1.375rem)"
+    fontWeight: 600
+  heading-5:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "clamp(1rem, 2vw, 1.125rem)"
+    fontWeight: 600
+    letterSpacing: "-0.01em"
   body:
     fontFamily: "InterVariable, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.75
     fontFeature: "'liga' 1, 'calt' 1, 'ss03' 1"
+  body-compact:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 400
+    lineHeight: 1.75
   label:
     fontFamily: "InterVariable, system-ui, sans-serif"
     fontSize: "0.75rem"
@@ -71,7 +102,25 @@ typography:
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
+  control-xs:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "0.7rem"
+    fontWeight: 600
+  control-sm:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 600
+  control-md:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "0.8rem"
+    fontWeight: 600
+  control-lg:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "0.9rem"
+    fontWeight: 600
 rounded:
+  mark: "2px"
+  code: "4px"
   xs: "6px"
   sm: "8px"
   md: "10px"
@@ -271,6 +320,10 @@ locally. 189 declarations now read a token.
   in practice: 30 declarations sat between body and muted, closer to muted.
 - **Hairline** (`#ddd` / `#444`): 2px control borders, rules, dividers. At
   `prefers-contrast: more` these tighten to `#999` / `#777`.
+- **Hairline Hover** (`#bbb` / `#666`): the same edge with the pointer on it —
+  one step nearer the ink, never a colour change. Four stylesheets had written
+  this pair out by hand, two of them within three lines of a hand-written copy
+  of the hairline itself; it is `--hairline-hover` now.
 - **Focus Ring on Fill** (`#333` / `#fff`): the focus ring for a control whose
   focus arrives *on* a fill, where an accent outline would land on the accent
   and vanish. Twelve places had reached this pair independently.
@@ -355,15 +408,25 @@ body text stays generous.
   sections. `3rem` of space above, `1.25rem` below.
 - **Title** (600, `1.25rem`): group landmarks — a year on the timeline, a
   continent, a checklist category. These are sticky and sit on the veil.
+- **Prose headings** (600, fluid): the levels under Headline, for the inside of
+  a post — h3 `clamp(1.25rem, 3vw, 1.75rem)`, h4 `clamp(1.125rem, 2.5vw,
+  1.375rem)`, h5 `clamp(1rem, 2vw, 1.125rem)`, h6 `clamp(0.875rem, 1.5vw,
+  1rem)` in uppercase. They only ever appear in written content; the interface
+  itself stops at Title.
 - **Body** (400, `1rem`, 1.75): paragraphs, dropping to `0.9375rem` under 768px.
-  Prose column caps at 800px. A blog post is the one surface that sets its own
-  size — see The Reading Measure.
+  Prose column caps at 800px. That compact step is also what a table takes at
+  any width — a table is read, and it used to sit at `0.95rem`, a fourth
+  reading size a fifth of a pixel away from this one. A blog post is the one
+  surface that sets its own size — see The Reading Measure.
 - **Label** (600, `0.75rem`, `0.03em`, uppercase for badges): controls, badges,
-  counts, chips. Sizes step with the control: `0.7rem` at 28px tall through
-  `0.9rem` at 44px.
-- **Mono** (`0.875rem`, `1rem` in a post): inline code takes a tinted ground and
-  a red-tone colour (`#d14` / `#ff6b6b`); block code is transparent on Shiki's
-  own dual theme. Inline code is sized in `em`, so it rides whatever it sits in.
+  counts, chips. Sizes step with the control: `0.7rem` at 28px tall, `0.75rem`
+  at 32px, `0.8rem` at 38px, `0.9rem` at 44px. A control of a given height has
+  one size, whatever kind of control it is — the large select carried `0.95rem`
+  next to a large button's `0.9rem` until this was written down.
+- **Mono** (`0.875rem`, `1rem` in a post): inline code takes a tinted ground —
+  the page's own ink at 6%, not a black of its own — and a red-tone colour
+  (`#c81f48` / `#ff6b6b`); block code is transparent on Shiki's own dual theme.
+  Inline code is sized in `em`, so it rides whatever it sits in.
 
 ### Named Rules
 
@@ -517,6 +580,11 @@ past even hover brightness and decays over ~1.5s. Nothing scales — scaling
 resamples a photograph and the text on top of it for the length of the
 transition.
 
+Controls have a ground of their own, `--field-bg`: white at 80% on the light
+page, `rgba(30, 30, 35, 0.8)` on the dark one. Not a card and not a capsule —
+it is what an input, a select or an admin form field is filled with, and it was
+the one surface tint with no name, written out identically in four stylesheets.
+
 A third material sits outside both: **the veil**, the page's own colour at 97%
 with a 24px saturating blur, used by anything pinned with content scrolling
 underneath. It is not glass — a capsule is a neutral tint you look *through*,
@@ -608,11 +676,18 @@ parent's radius minus its border width, not the same value and not zero.
   a matching glow (`0 2px 8px rgba(237,87,96,.3)`). The face is the brand at
   full brightness; only the lettering is dark. Hover deepens the shadow and
   lifts 1px; active returns to 0.
-- **Secondary:** a 5%/8% neutral wash, no border, text at body ink.
-- **Ghost:** transparent with a 2px inset ring. When active or
-  `aria-pressed="true"` it takes the accent gradient and white text.
+- **Secondary:** a neutral wash, no border, text at body ink. The wash is the
+  page's own ink thinned — 5% on paper, twice that on the dark page, where white
+  at 5% is nothing — never a black or a white of its own.
+- **Ghost:** transparent with a 2px inset ring at `--hairline`, going to
+  `--hairline-hover` under the pointer. When active or `aria-pressed="true"` it
+  takes the accent gradient and white text.
 - **Danger:** tinted red ground, red text, red inset ring. Never a solid fill.
-- **Success:** green gradient, treated exactly as primary.
+  Ground, ring and label are one colour at four strengths, mixed from `--danger`
+  rather than typed out: they were two reds for a while, the label semantic and
+  the ground a leftover Tailwind red-600, and nothing said they had drifted.
+- **Success:** green gradient, treated exactly as primary. Its glow is the
+  button's own `--success-start` thinned, for the same reason.
 - **Focus:** `2px solid var(--accent-start)` at `2px` offset, on every variant.
 - **Loading:** text goes transparent and a 1em spinner with a transparent
   right-edge rotates in place at 0.6s — the button never changes size.

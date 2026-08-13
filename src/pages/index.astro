@@ -222,14 +222,75 @@ const personSchema = {
     height: 2.5rem;
     color: var(--ink-muted);
     border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    /* isolation, so the two layers below can sit at negative z-index behind
+       the icon without falling through to the page. */
+    position: relative;
+    isolation: isolate;
+    transition:
+      color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .social-links a:hover {
-    color: var(--accent-ink);
-    background: var(--accent-gradient);
-    transform: translateY(calc(-2px * var(--lift)));
-    box-shadow: 0 4px 15px rgba(237, 91, 42, 0.4);
+  /* The light. It is the page's own ambient blobs at pocket size — same
+     accent, same blur, same overflow past the shape that casts it — which is
+     why a button lighting up reads as this page rather than as a hover
+     effect. Kept at 0.4: at full strength it competes with the dock above,
+     and the row of links is not the page's primary way out. */
+  .social-links a::before {
+    content: "";
+    position: absolute;
+    inset: -70%;
+    z-index: -2;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(234, 96, 144, 0.55),
+      rgba(237, 91, 42, 0.28) 45%,
+      transparent 70%
+    );
+    filter: blur(10px);
+    opacity: 0;
+    transform: scale(0.45);
+    transition:
+      opacity 200ms linear,
+      transform 520ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* The glass under the light, which is what keeps the button a button: at
+     this glow strength the light alone would not describe a shape. */
+  .social-links a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 50%;
+    background-color: var(--glass-bg);
+    backdrop-filter: var(--glass-filter);
+    box-shadow: var(--glass-rim-lit);
+    opacity: 0;
+    transform: scale(0.82);
+    transition:
+      opacity 140ms linear,
+      transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .social-links a:hover,
+  .social-links a:focus-visible {
+    color: var(--ink-strong);
+    transform: scale(1.08);
+  }
+
+  .social-links a:hover::before,
+  .social-links a:focus-visible::before {
+    opacity: 0.4;
+    transform: scale(1.06);
+  }
+
+  .social-links a:hover::after,
+  .social-links a:focus-visible::after {
+    opacity: 1;
+    transform: scale(1);
   }
 
   .social-links svg {
@@ -257,9 +318,12 @@ const personSchema = {
     }
   }
 
+  /* The individual `rotate` property, not a transform: shape-follow.ts owns
+     `transform` on this element, and an animation on the same property would
+     win against it every frame. The two compose instead. */
   @keyframes spin {
     to {
-      transform: rotate(1turn);
+      rotate: 1turn;
     }
   }
 
@@ -291,10 +355,32 @@ const personSchema = {
       border-radius: 50%;
     }
 
-    .dock-wrap,
-    .social-links a {
+    .dock-wrap {
       transition: none;
       animation: none;
+    }
+
+    /* The light still arrives — it is the feedback, and a reader who asked
+       for less motion still needs to know which button is under the pointer.
+       What goes is the travel: nothing scales, nothing grows. */
+    .social-links a {
+      animation: none;
+      transition: color 180ms linear;
+    }
+
+    .social-links a:hover,
+    .social-links a:focus-visible {
+      transform: none;
+    }
+
+    .social-links a::before,
+    .social-links a::after,
+    .social-links a:hover::before,
+    .social-links a:focus-visible::before,
+    .social-links a:hover::after,
+    .social-links a:focus-visible::after {
+      transform: none;
+      transition: opacity 140ms linear;
     }
   }
 
@@ -334,3 +420,4 @@ const personSchema = {
 </style>
 
 <script src="@client/eye-moving.ts"></script>
+<script src="@client/shape-follow.ts"></script>
