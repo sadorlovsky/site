@@ -407,12 +407,23 @@ const hasActions = Astro.slots.has("actions");
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* Hero title */
+  /* Hero title.
+
+     No size of its own: this is an `h1`, and global.css already sets the
+     Display step DESIGN.md documents — `clamp(2rem, 5vw, 3rem)`. It carried
+     `clamp(1.9rem, 5vw, 2.75rem)` from the dock redesign, where the title
+     stopped being a one-line span with an ellipsis and became this, and the
+     number came with it unexplained. It bought nothing measurable: the longest
+     title on the site, 48 characters, sets two lines at either size, and below
+     600px the fluid middle never applies at all, so the whole difference was
+     4px on a desktop and 1.6px on a phone. Two Display steps eight per cent
+     apart are not a scale, they are a drift. */
   .page-title {
     margin: 1.25rem 0 0 0;
-    font-size: clamp(1.9rem, 5vw, 2.75rem);
     font-weight: 700;
     letter-spacing: -0.03em;
+    /* Tighter than the 1.1 the global rule sets, because a page title is the
+       one heading here that regularly runs to two lines. */
     line-height: 1.05;
     width: fit-content;
     max-width: 100%;
