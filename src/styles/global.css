@@ -499,9 +499,13 @@ body {
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
   border: var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  /* Above the viewport by its own height plus the inset, so no part of it
-     peeks. */
+  /* Above the viewport by its own height plus the inset, so no part of the box
+     peeks. The shadow is not part of the box: 0 10px 30px paints some 40px
+     below the bottom edge, which parked a soft grey smudge in the top-left
+     corner of every page. So the glass shadow arrives with the link, on focus.
+     Hiding it with visibility or opacity is not an option — neither can be
+     focused, and this is the one element on the site that has to be. */
+  box-shadow: none;
   transform: translateY(calc(-100% - 0.75rem));
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -514,6 +518,7 @@ body {
    exists to prevent. */
 .skip-link:focus {
   transform: translateY(0);
+  box-shadow: var(--glass-shadow);
   outline: 2px solid var(--accent-start);
   outline-offset: 2px;
 }
