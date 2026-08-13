@@ -4,7 +4,7 @@ import { getWishlistItems, categories, isValidCategory } from "@lib/wishlist";
 
 export const prerender = false;
 
-Astro.response.headers.set("CDN-Cache-Control", "no-store");
+// No CDN-Cache-Control — see the note on the same line's removal in index.astro.
 
 const { category } = Astro.params;
 

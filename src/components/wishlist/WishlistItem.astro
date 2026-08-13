@@ -1,6 +1,10 @@
 ---
 import { Icon } from "astro-icon/components";
-import { derivativeKey, derivativeSrcSet } from "@lib/images";
+import {
+  WISHLIST_IMAGE_SIZES,
+  derivativeKey,
+  derivativeSrcSet,
+} from "@lib/images";
 import Badge from "@components/kit/Badge.astro";
 import {
   formatHostLabel,
@@ -42,8 +46,7 @@ const darkSrcSet = item.imageUrlDark
   ? derivativeSrcSet(item.imageUrlDark, getCdnImageUrl)
   : null;
 
-const imageSizes =
-  "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px";
+const imageSizes = WISHLIST_IMAGE_SIZES;
 
 // Where to buy this. One shop or five, it is the same list rendered the same
 // way — a lone shop link is a one-row list, not a different piece of markup,

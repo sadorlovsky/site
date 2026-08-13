@@ -4,7 +4,14 @@ import { getWishlistItems, categories } from "@lib/wishlist";
 
 export const prerender = false;
 
-Astro.response.headers.set("CDN-Cache-Control", "no-store");
+// No CDN-Cache-Control here. `no-store` used to be, and it did not stop this
+// page being cached — ISR holds a copy regardless, and `x-vercel-cache: HIT`
+// says so. All it stopped was the *edge* holding one, so every visit walked
+// `fra1::dub1::` to fetch a document Frankfurt was not allowed to keep. Cost,
+// measured: +39 ms at p50. Nothing here is per-visitor — whose reservation is
+// whose arrives from /api/wishlist/reservations afterwards, and admin edits
+// call revalidateWishlist() — so there was never anything for the header to
+// protect.
 
 const items = await getWishlistItems();
 const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";

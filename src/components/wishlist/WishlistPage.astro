@@ -8,7 +8,9 @@ import MobileFilterBar from "@components/wishlist/MobileFilterBar.astro";
 import ReservationMessage from "@components/wishlist/ReservationMessage.astro";
 import Button from "@components/kit/Button.astro";
 import { Icon } from "astro-icon/components";
+import { getCdnImageUrl } from "@lib/wishlist";
 import type { WishlistItemWithReservation, Category } from "@lib/wishlist";
+import { WISHLIST_IMAGE_SIZES, derivativeSrcSet } from "@lib/images";
 import "@styles/wishlist.css";
 
 interface Props {
@@ -21,9 +23,60 @@ interface Props {
 const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 
 const allCategory = categories.find((c) => c.id === "all")!;
+
+/**
+ * How many photographs skip lazy loading and are fetched with the document.
+ *
+ * Three, not six. A narrow viewport shows one card and part of a second, so
+ * half of six were bandwidth spent on pictures nobody had scrolled to — against
+ * the one picture the visitor is waiting for. Three still covers the first row
+ * of the widest layout.
+ */
+const EAGER_CARDS = 3;
+
+// The first card's photograph is this page's LCP, and until now the browser
+// found it only after parsing its way through ~390 KB of document to reach the
+// <img>. fetchpriority="high" on that tag ranks it against everything else in
+// flight; it cannot make it start sooner. Named in the head, it starts with
+// the stylesheets.
+//
+// Same srcset and the same sizes as the card renders, from the same helpers —
+// a preload that picks a different candidate downloads a second file rather
+// than the one about to be displayed.
+const lcpItem = items[0];
+const lcpSrcSet = lcpItem
+  ? derivativeSrcSet(lcpItem.imageUrl, getCdnImageUrl)
+  : null;
+const lcpDarkSrcSet = lcpItem?.imageUrlDark
+  ? derivativeSrcSet(lcpItem.imageUrlDark, getCdnImageUrl)
+  : null;
 ---
 
 <PageLayout title="Wishlist — Zach">
+  <Fragment slot="head">
+    {/* Two renders of one picture means two preloads, each gated to the scheme
+        that will actually show it — an ungated pair would fetch both. */}
+    {lcpDarkSrcSet && (
+      <link
+        rel="preload"
+        as="image"
+        media="(prefers-color-scheme: dark)"
+        imagesrcset={lcpDarkSrcSet}
+        imagesizes={WISHLIST_IMAGE_SIZES}
+        fetchpriority="high"
+      />
+    )}
+    {lcpSrcSet && (
+      <link
+        rel="preload"
+        as="image"
+        media={lcpDarkSrcSet ? "(prefers-color-scheme: light)" : undefined}
+        imagesrcset={lcpSrcSet}
+        imagesizes={WISHLIST_IMAGE_SIZES}
+        fetchpriority="high"
+      />
+    )}
+  </Fragment>
   <LangInit />
 
   <script is:inline>
@@ -146,7 +199,7 @@ const allCategory = categories.find((c) => c.id === "all")!;
             <WishlistItem
               item={item}
               isLCP={index === 0}
-              eager={index < 6}
+              eager={index < EAGER_CARDS}
               reservationsEnabled={reservationsEnabled}
             />
           ))

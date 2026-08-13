@@ -59,6 +59,18 @@ export function heightFor(width: number): number {
 }
 
 /**
+ * How wide a wishlist photograph is drawn, at every viewport the grid has.
+ *
+ * Shared rather than written where it is used, because the `<img>` and the
+ * `<link rel=preload>` for the same picture have to agree to the character. The
+ * browser picks a candidate from srcset and sizes together, so two different
+ * strings are two different choices — and the preload then fetches a file the
+ * markup never asks for, which is the one outcome worse than no preload.
+ */
+export const WISHLIST_IMAGE_SIZES =
+  "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px";
+
+/**
  * The R2 key of one derivative, from the original's key.
  *
  * `wishlist/1731-a1b2c3.jpg` at 560 becomes `wishlist/1731-a1b2c3.560.webp`.
