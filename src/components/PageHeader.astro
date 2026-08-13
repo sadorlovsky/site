@@ -83,8 +83,12 @@ const hasActions = Astro.slots.has("actions");
         data-aria-label-ru="Домой"
       >
         <Icon name="home" aria-hidden="true" />
+        {/* The label follows forceLang for the same reason the names above do:
+            a post carries no LangInit to swap it afterwards, so a Russian post
+            said "Home" beside "Блог". The data-* pair still serves the pages
+            that do change language in the browser. */}
         <span class="crumb-home__label" data-en="Home" data-ru="Домой">
-          Home
+          {t("Home", "Домой")}
         </span>
       </a>
       {
@@ -233,7 +237,12 @@ const hasActions = Astro.slots.has("actions");
     gap: 0.5rem;
     padding: 0.35rem 0.85rem 0.35rem 0.4rem;
     border-radius: 999px;
-    font-size: 0.95rem;
+    /* One size for the whole path. The house's label had always been 0.85rem
+       while everything beside it inherited 0.95rem — invisible while the
+       parent crumb was a bare word, and plain the moment it became a capsule
+       of the same height: two identical pills, one of them set a step
+       larger. */
+    font-size: 0.85rem;
     font-weight: 600;
     animation: barIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
@@ -263,7 +272,6 @@ const hasActions = Astro.slots.has("actions");
   }
 
   .crumb-home__label {
-    font-size: 0.85rem;
     font-weight: 600;
     line-height: 1;
   }
@@ -294,13 +302,8 @@ const hasActions = Astro.slots.has("actions");
   }
 
   /* Same recipe as the language switcher's gradient indicator: accent fill,
-     white glyph, and the identical accent glow. */
-  .crumb-home:hover {
-    color: var(--accent-ink);
-    background: var(--accent-gradient);
-    box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
-  }
-
+     white glyph, and the identical accent glow. Shared with .crumb-link
+     below. */
   .crumb-home :global(svg) {
     width: 1.05rem;
     height: 1.05rem;
@@ -311,14 +314,39 @@ const hasActions = Astro.slots.has("actions");
     user-select: none;
   }
 
+  /* The same capsule as the house, because it is the same kind of thing: a
+     step of the path you can go back to. It was a bare word beside a pill,
+     which made half the breadcrumb a control and half of it a label — and it
+     showed in the spacing as much as in the behaviour, since the house's own
+     0.7rem of padding sat between it and the separator while nothing sat on
+     the other side. Two capsules put the same air on both sides of the slash.
+
+     Not a sliding indicator, though — that is the dock's and the language
+     switcher's idiom, and it means "one of these is selected". A breadcrumb is
+     a path: its parts are different levels, not alternatives, so each answers
+     the pointer on its own. */
   .crumb-link {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    height: 2rem;
+    padding: 0 0.7rem;
+    border-radius: 999px;
     color: var(--ink-muted);
     text-decoration: none;
-    transition: color 0.2s ease;
+    white-space: nowrap;
+    transition:
+      color 0.3s ease,
+      background 0.3s ease,
+      box-shadow 0.3s ease;
+    will-change: transform; /* magnetic pull toward the cursor */
   }
 
+  .crumb-home:hover,
   .crumb-link:hover {
-    color: var(--ink-body);
+    color: var(--accent-ink);
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 16px rgba(237, 91, 42, 0.45);
   }
 
   .crumb-current {
@@ -337,12 +365,21 @@ const hasActions = Astro.slots.has("actions");
     opacity: 0.75;
   }
 
+  /* The ring takes the shape of the thing it rings. Both steps of the path are
+     capsules now, so a 4px rounded rectangle around them was a second shape
+     nobody chose; the current page's crumb is still text and keeps a corner
+     from the documented scale. */
   .crumb-home:focus-visible,
-  .crumb-link:focus-visible,
+  .crumb-link:focus-visible {
+    outline: 2px solid var(--focus-ring-on-fill);
+    outline-offset: 2px;
+    border-radius: 999px;
+  }
+
   .crumb-current--link:focus-visible {
     outline: 2px solid var(--focus-ring-on-fill);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   /* Right cluster */
@@ -557,13 +594,15 @@ const hasActions = Astro.slots.has("actions");
   }
 
   /* A page title was always a word or two — "Blog", "Travel" — and this pill
-     was built for that. A post's title is a sentence, and on a phone it ran
-     off the right edge and straight through the breadcrumb on its way. The
-     pill is bounded by the row it floats in and the title ellipsizes; the
-     wording an assistive reader gets is the whole title either way, because
-     that lives in aria-label rather than in the visible text. */
+     was built for that. A post's title is a sentence, and it ran through the
+     breadcrumb on one side and the language switcher on the other on its way
+     out of the row. It is bounded by whatever the side clusters actually take
+     (`--header-side`, published by page-header-condense.ts) doubled, because
+     the pill is centred and grows both ways at once; past that the title
+     ellipsizes. The wording an assistive reader gets is the whole title either
+     way, because that lives in aria-label rather than in the visible text. */
   .condensed-title {
-    max-width: calc(100% - 6.5rem);
+    max-width: calc(100% - 2 * var(--header-side, 6.5rem));
   }
 
   .condensed-title__text {
@@ -640,5 +679,5 @@ const hasActions = Astro.slots.has("actions");
   }
 </style>
 
-<script src="@client/crumb-home-magnet.ts"></script>
+<script src="@client/crumb-magnet.ts"></script>
 <script src="@client/page-header-condense.ts"></script>

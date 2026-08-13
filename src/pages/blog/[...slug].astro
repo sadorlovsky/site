@@ -546,30 +546,39 @@ const breadcrumbSchema = {
     line-height: 1.55;
   }
 
+  /* A ghost control at the 32px step, round like everything else in the
+     chrome. It wore a 1px border and an 8px radius — the only bordered square
+     on a page whose vocabulary is pills and glass, and it read as a leftover
+     from an earlier design because it was one. Nothing is drawn until the
+     pointer arrives; a link is copied far less often than a post is read.
+
+     The script hides it where the clipboard is unavailable, so `display` is
+     its own business — see the `is-ready` class below. */
   .copy-link {
     display: none;
     align-items: center;
     justify-content: center;
     width: 32px;
     height: 32px;
-    border: 1px solid light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
-    border-radius: 8px;
-    background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
+    border: none;
+    border-radius: 999px;
+    background: transparent;
     color: var(--ink-muted);
     cursor: pointer;
-    transition: all 0.2s;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .copy-link {
+    .copy-link.is-ready {
       display: inline-flex;
     }
   }
 
   .copy-link:hover {
-    color: var(--ink-body);
-    background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
-    border-color: light-dark(rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0.18));
+    color: var(--ink-strong);
+    background: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.09));
   }
 
   .copy-link:focus-visible {
@@ -724,6 +733,20 @@ const breadcrumbSchema = {
        a short one. */
     line-height: 1.7;
     color: var(--ink-body);
+  }
+
+  /* Where a heading stops when the contents sends you to it.
+
+     Without this it stops at the top of the viewport, which is under the
+     chrome: the pill row ends 62px down and the veil fades out at 106, so the
+     heading you asked for landed behind the thing that was covering it and the
+     first thing visible was the paragraph after it. `--sticky-header-offset`
+     is the header's own published height, so this follows it when the row
+     wraps or the labels change. */
+  .content :global(h2),
+  .content :global(h3),
+  .content :global(h4) {
+    scroll-margin-top: calc(var(--sticky-header-offset, 5.5rem) + 0.75rem);
   }
 
   /* The scale moves with the body. At 1.5rem an h2 stood only a fifth above
@@ -1171,15 +1194,36 @@ const breadcrumbSchema = {
 <script src="@client/post-prose.ts"></script>
 
 <script>
-  // Copy link button
-  const copyLinkBtn = document.getElementById("copy-link");
+  // The copy-link control.
+  //
+  // It only appears where it can work. `navigator.clipboard` exists in secure
+  // contexts only, so on a dev server reached over http at a LAN address — the
+  // way this site is looked at on a phone — the API is simply absent and the
+  // old handler threw on every click with nothing to show for it. The button
+  // is dealt into the page by the same rule the code blocks' copy buttons
+  // already follow: no clipboard, no button.
+  function initCopyLink() {
+    const button = document.getElementById("copy-link");
+    if (!button || button.dataset.ready === "true") return;
+    if (!navigator.clipboard) return;
+    button.dataset.ready = "true";
+    button.classList.add("is-ready");
 
-  if (copyLinkBtn) {
-    copyLinkBtn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(window.location.href);
-      copyLinkBtn.classList.add("copied");
-      setTimeout(() => copyLinkBtn.classList.remove("copied"), 2000);
+    let restore: ReturnType<typeof setTimeout> | undefined;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+      } catch {
+        // Denied permission or a context that lied about having the API.
+        // Saying nothing is right here: the address is in the bar either way.
+        return;
+      }
+      button.classList.add("copied");
+      clearTimeout(restore);
+      restore = setTimeout(() => button.classList.remove("copied"), 2000);
     });
   }
 
+  initCopyLink();
+  document.addEventListener("astro:page-load", initCopyLink);
 </script>
