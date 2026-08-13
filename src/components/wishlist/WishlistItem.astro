@@ -59,12 +59,16 @@ const options = item.options
       ...option,
       labelEn: option.label || host,
       labelRu: option.labelRu || option.label || host,
-      priceUsdLabel: option.priceUsd
-        ? `$${(option.priceUsd / 100).toFixed(0)}`
-        : null,
-      priceRubLabel: option.priceRub
-        ? `₽${(option.priceRub / 100).toFixed(0)}`
-        : null,
+      // `!== null`: null is "no price we can read", 0 is a price that rounds to
+      // nothing, and only the first of those should leave the label off.
+      priceUsdLabel:
+        option.priceUsd !== null
+          ? `$${(option.priceUsd / 100).toFixed(0)}`
+          : null,
+      priceRubLabel:
+        option.priceRub !== null
+          ? `₽${(option.priceRub / 100).toFixed(0)}`
+          : null,
     };
   })
   // A row with no label and no price of its own would be an empty line: that
@@ -257,10 +261,10 @@ const [darkWebp, lightWebp] = darkImageUrl
       <span
         class="item-price"
         data-price-original={item.price}
-        data-price-usd={item.priceUsd
+        data-price-usd={item.priceUsd !== null
           ? `$${(item.priceUsd / 100).toFixed(0)}`
           : null}
-        data-price-rub={item.priceRub
+        data-price-rub={item.priceRub !== null
           ? `₽${(item.priceRub / 100).toFixed(0)}`
           : null}
         data-original-is-usd={item.price.startsWith("$") ? "true" : null}
@@ -322,6 +326,20 @@ const [darkWebp, lightWebp] = darkImageUrl
               {item.isReserved ? "Reserved" : "Reserve"}
             </button>
           </div>
+        )
+      }
+      {
+        /* Where a failed reservation says what happened. Empty and hidden until
+           there is something to say, on the card that failed rather than in a
+           corner of the window — the sentence is about this present, and the
+           button it belongs to has just changed back under the reader's cursor.
+
+           role="alert" because it always answers something the visitor did a
+           moment ago, and it arrives at the same time as a button silently
+           reverting; a polite region can wait until after the next thing they
+           read, by which point the revert has no explanation attached to it. */
+        !item.received && reservationsEnabled && (
+          <p class="reserve-error" role="alert" hidden />
         )
       }
     </div>

@@ -1,0 +1,138 @@
+---
+import ProgressBar from "@components/kit/ProgressBar.astro";
+import {
+  datedTrips,
+  formatCityCount,
+  getCountriesByContinent,
+} from "@lib/travel";
+import "@styles/travel.css";
+
+const continents = getCountriesByContinent(datedTrips);
+
+// The untouched continents close the view in a single line, and that line is
+// names only. They used to be five rows of the same shape the countries above
+// them use — and a row here means "a place I have been, and how much of it"
+// thirty-two times before you reach them. Five more meaning the opposite, each
+// with a nought over a total, read as data that had failed to load rather than
+// as a nought; there was nothing to compare down that column, and Antarctica
+// fell out of it anyway with a dash, because 0 / 0 is not a target.
+//
+// No sizes either, and no total. Every figure this line could carry is a figure
+// about places nobody has been, and the page already has four counters saying
+// how much there is and how much of it is done. What is left for this line to
+// say is which parts of the world they are, and that is a list of names.
+//
+// Named, though, and all of them: half the point of a continents view is what
+// is still to go, and a missing Africa would read as a rendering bug rather
+// than as zero.
+const visited = continents.filter((continent) => continent.countries.length > 0);
+
+// In the order the continents come in, which is the order they are in
+// everywhere else on the site. With no numbers on the line there is nothing for
+// a sort by size to express, and Antarctica lands at the end here anyway.
+const remaining = continents.filter(
+  (continent) => continent.countries.length === 0,
+);
+---
+
+<div class="travel-sections">
+  {
+    visited.map((continent) => (
+      <section>
+        <header class="travel-section-head">
+          <h2
+            class="travel-section-title"
+            data-en={continent.name.en}
+            data-ru={continent.name.ru}
+          >
+            {continent.name.en}
+          </h2>
+          <span class="travel-metric">
+            {continent.visited} / {continent.total}
+          </span>
+        </header>
+        {/* Same reason the fraction below is withheld for Antarctica: a
+            continent with no countries to count has no progress to draw. */}
+        {continent.total > 0 && (
+          <ProgressBar
+            value={continent.visited}
+            max={continent.total}
+            showPercent={false}
+            accent
+            label={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+            data-aria-label-en={`${continent.name.en}: ${continent.visited} of ${continent.total} countries visited`}
+            data-aria-label-ru={`${continent.name.ru}: посещено ${continent.visited} из ${continent.total} стран`}
+          />
+        )}
+        <ul class="travel-grid countries" role="list">
+          {continent.countries.map((country) => (
+            <li class="travel-row">
+              <span class={`travel-flag fi fi-${country.a2}`} aria-hidden="true" />
+              <span
+                class="travel-name"
+                data-en={country.name.en}
+                data-ru={country.name.ru}
+              >
+                {country.name.en}
+              </span>
+              <span
+                class="travel-metric travel-metric--trailing"
+                data-en={formatCityCount(country.cities.length, "en")}
+                data-ru={formatCityCount(country.cities.length, "ru")}
+              >
+                {formatCityCount(country.cities.length, "en")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    remaining.length > 0 && (
+      <p class="remaining">
+        <span class="lead" data-en="Still to go:" data-ru="Ещё предстоит:">
+          Still to go:
+        </span>{" "}
+        {remaining.map((continent, i) => (
+          <>
+            <span data-en={continent.name.en} data-ru={continent.name.ru}>
+              {continent.name.en}
+            </span>
+            {i < remaining.length - 1 && ", "}
+          </>
+        ))}
+      </p>
+    )
+  }
+</div>
+
+<style>
+  /* Air under the progress bar. Without it the bar touches the first row of
+     countries and reads as that row's underline rather than as the section's
+     summary. 0.5rem is the gap the heading above it keeps, and the rows now
+     carry 0.5rem of padding of their own on top of it. */
+  .countries {
+    margin-top: 0.5rem;
+  }
+
+  /* A closing line, not a footnote: it is the last thing the view has to say
+     rather than an aside about it, so it stays at the body size the rows above
+     it are set in. Only its colour steps back. */
+  .remaining {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+
+  /* The words that were a section heading, now opening a sentence — in the
+     colour of a heading and nothing else, since a 1.25rem landmark over a
+     single line was the weight this change was written to shed. */
+  .lead {
+    color: var(--ink-body);
+    font-weight: 600;
+  }
+</style>

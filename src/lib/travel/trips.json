@@ -152,6 +152,12 @@
   },
   {
     "year": 2026,
+    "month": 8,
+    "endMonth": null,
+    "destinations": [{ "country": ["uz", "uzb"], "cities": ["Tashkent"] }]
+  },
+  {
+    "year": 2026,
     "month": 7,
     "endMonth": null,
     "description": "Kyrgyzstan",

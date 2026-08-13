@@ -56,7 +56,11 @@ export interface ItemFormData {
   url?: string;
   category: string;
   priority?: string;
-  weight: number;
+  /**
+   * Deliberately no `weight`. It is a position in the list, not a property of
+   * the item: dragging writes it, the create endpoint seeds it, and nothing
+   * about this form has an opinion on where the item sits.
+   */
   options: ItemOptionFormData[];
 }
 

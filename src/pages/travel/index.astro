@@ -5,13 +5,20 @@ import LangInit from "@components/LangInit.astro";
 import TravelMap from "@components/travel/TravelMap.astro";
 import TravelStats from "@components/travel/TravelStats.astro";
 import TravelTripList from "@components/travel/TravelTripList.astro";
-// import TravelViewSwitcher from "@components/travel/TravelViewSwitcher.astro";
-// import TravelCountries from "@components/travel/TravelCountries.astro";
-// import TravelChecklist from "@components/travel/TravelChecklist.astro";
-// import TravelContinents from "@components/travel/TravelContinents.astro";
-// import TravelStatsDashboard from "@components/travel/TravelStatsDashboard.astro";
-// import TravelFirstVisits from "@components/travel/TravelFirstVisits.astro";
-// import TravelRepeatDestinations from "@components/travel/TravelRepeatDestinations.astro";
+import TravelViewSwitcher from "@components/travel/TravelViewSwitcher.astro";
+import TravelCountries from "@components/travel/TravelCountries.astro";
+import TravelContinents from "@components/travel/TravelContinents.astro";
+import TravelStatsDashboard from "@components/travel/TravelStatsDashboard.astro";
+import TravelChecklist from "@components/travel/TravelChecklist.astro";
+
+// The flags, as a URL rather than an import. Imported the ordinary way, this
+// lands in the page's bundled stylesheet — and flag-icons is 501 KB of inlined
+// SVG for two hundred and seventy-one flags, five times the weight of the
+// entire HTML document and render-blocking in front of it. Every one of the six
+// travel components used to import it, which is a lot of ways to say the same
+// thing and no way at all to control when it arrives. Asked for by URL, it
+// stays a file this page decides how to load — see the head below.
+import flagIcons from "flag-icons/css/flag-icons.min.css?url";
 
 export const prerender = true;
 ---
@@ -22,7 +29,24 @@ export const prerender = true;
   <Fragment slot="head">
     <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
     <link rel="preconnect" href="https://demotiles.maplibre.org" crossorigin />
+    {/* Fetched at the same priority a stylesheet would be, but not waited on:
+        as a preload it downloads alongside everything else without holding up
+        the first paint, and the script below promotes it the moment the
+        document is parsed. The flags then arrive a frame or two after the text
+        they sit in, which is the trade — a page that renders now with the
+        flags catching up beats a page that renders when half a megabyte of
+        country outlines has landed.
+
+        Promoted by a hoisted script rather than an onload attribute on the link
+        — Astro may well inline it, and the site's CSP allows that either way,
+        but the behaviour belongs in a script rather than in an attribute where
+        nothing can typecheck or lint it. */}
+    <link rel="preload" as="style" href={flagIcons} id="flag-icons" />
+    <noscript><link rel="stylesheet" href={flagIcons} /></noscript>
   </Fragment>
+  <script>
+    document.getElementById("flag-icons")?.setAttribute("rel", "stylesheet");
+  </script>
   <LangInit />
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
@@ -39,30 +63,80 @@ export const prerender = true;
       condenseOnScroll
     />
     <TravelMap />
+    {/* The four counters stay outside the switcher: they answer "how much" for
+        the whole page, and the map and every view below are read against them.
+        The stats view answers a different question — which city, which country,
+        which year — and is a panel you go and look at. */}
     <TravelStats />
-    <TravelTripList />
-    <!-- <TravelViewSwitcher currentView="timeline" />
-    <div id="view-timeline" class="travel-view" data-view="timeline">
+    {/* The rail and its panels share one box because a sticky element can only
+        travel as far as its containing block, and the rail has to stay pinned
+        for the whole length of whichever view is open — a hundred and
+        twenty-five rows, in the checklist's case. Wrapped together, its
+        containing block is this column and it reaches the end of the view;
+        left as a direct child of the page grid, its containing block is a grid
+        area holding nothing but itself. */}
+    <div class="travel-views">
+    <TravelViewSwitcher currentView="timeline" />
+    {/* Panels of the rail above. tabindex="0" because three of the five hold
+        no focusable element at all — without it a keyboard reader arrowing to
+        the checklist would have two hundred and fifty rows they cannot reach
+        or scroll from the keyboard. The ids are what the tabs point at with
+        aria-controls, and each tab's own id is this one plus "-tab". */}
+    <div
+      id="view-timeline"
+      class="travel-view"
+      data-view="timeline"
+      role="tabpanel"
+      aria-labelledby="view-timeline-tab"
+      tabindex="0"
+    >
       <TravelTripList />
     </div>
-    <div id="view-countries" class="travel-view" data-view="countries" hidden>
+    <div
+      id="view-countries"
+      class="travel-view"
+      data-view="countries"
+      role="tabpanel"
+      aria-labelledby="view-countries-tab"
+      tabindex="0"
+      hidden
+    >
       <TravelCountries />
     </div>
-    <div id="view-checklist" class="travel-view" data-view="checklist" hidden>
-      <TravelChecklist />
-    </div>
-    <div id="view-continents" class="travel-view" data-view="continents" hidden>
+    <div
+      id="view-continents"
+      class="travel-view"
+      data-view="continents"
+      role="tabpanel"
+      aria-labelledby="view-continents-tab"
+      tabindex="0"
+      hidden
+    >
       <TravelContinents />
     </div>
-    <div id="view-stats" class="travel-view" data-view="stats" hidden>
+    <div
+      id="view-checklist"
+      class="travel-view"
+      data-view="checklist"
+      role="tabpanel"
+      aria-labelledby="view-checklist-tab"
+      tabindex="0"
+      hidden
+    >
+      <TravelChecklist />
+    </div>
+    <div
+      id="view-stats"
+      class="travel-view"
+      data-view="stats"
+      role="tabpanel"
+      aria-labelledby="view-stats-tab"
+      tabindex="0"
+      hidden
+    >
       <TravelStatsDashboard />
     </div>
-    <div id="view-first-visits" class="travel-view" data-view="first-visits" hidden>
-      <TravelFirstVisits />
     </div>
-    <div id="view-repeats" class="travel-view" data-view="repeats" hidden>
-      <TravelRepeatDestinations />
-    </div> -->
   </main>
 </PageLayout>
 
@@ -94,12 +168,21 @@ export const prerender = true;
 </script>
 
 <style>
-  :root {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-  }
+  /* Ambient light, and over everything on purpose.
 
-  /* Ambient background blobs */
+     These are siblings of <main>, so their z-index competes with main's own,
+     and the obvious reading of "background blob" is to put them under it. That
+     was tried and it is wrong, because it makes the ambience something the
+     chrome can block: the pinned veil then covers the glow in the top strip
+     while the page below still has it, and the strip reads as a flat rectangle
+     cut out of the page, ending in a hard line where the colour resumes.
+
+     At 80px of blur and a tenth of opacity this is a light source, not a
+     surface. Light falls on the furniture too. Laid last, it tints the page,
+     the glass and the veil by the same amount, so there is no seam to find —
+     and that is what lets --veil-bg be opaque enough to stop anything reading
+     through it, which was the whole complaint. Below the tooltip (z-index
+     1000), which has to stay clean because it is text on a bead of glass. */
   .blob {
     position: fixed;
     border-radius: 50%;
@@ -111,7 +194,7 @@ export const prerender = true;
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.15;
@@ -121,7 +204,7 @@ export const prerender = true;
   .blob-2 {
     width: 400px;
     height: 400px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: var(--accent-gradient-mirror);
     bottom: -150px;
     left: -100px;
     opacity: 0.1;
@@ -167,6 +250,17 @@ export const prerender = true;
        why only resizing showed it. */
     grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
+  }
+
+  /* Carries the page grid's own gap, so the rail sits the same 1.25rem above
+     its view that the map sits above the counters. Flex rather than grid on
+     purpose: a flex item's containing block is the flex container, which is
+     the whole column — see the note on the wrapper above. */
+  .travel-views {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    min-width: 0;
   }
 
   .travel-view {

@@ -7,8 +7,19 @@ interface Props {
 const { year, class: className } = Astro.props;
 ---
 
+{/* The year is a heading, and now says so. It always was one to the eye —
+    1.25rem, semibold, sticky, with a rule under it, sitting over rows that
+    pass beneath — and travel.css spells out at length that a group heading is
+    a landmark rather than a label. It was a <div>, so none of that reached
+    anything that navigates by headings, and /travel read as one h1 with a
+    hundred and twenty-five unlabelled rows under it.
+
+    h2 because the page title above is the h1, and a year sits directly under
+    it. Nothing here changes visually: .year-header carried every one of these
+    values already, and the reset below only takes back the margins and the
+    size a bare h2 would bring with it. */}
 <div class:list={["year-group", className]}>
-  <div class="year-header">{year}</div>
+  <h2 class="year-header">{year}</h2>
   <div class="year-items">
     <slot />
   </div>
@@ -24,12 +35,19 @@ const { year, class: className } = Astro.props;
   }
 
   .year-header {
+    /* Takes back what global.css gives every h2: the 3rem above, the 1.25rem
+       below, and the fluid clamp() that would have carried it up to 2.25rem.
+       This heading's size is a fixed 1.25rem for a reason — it is measured
+       against ListItem's rows, not against the page's headings. */
+    margin: 0 0 0.5rem;
     position: sticky;
     /* On pages with a pinned condensing header (/travel), the header's script
        publishes its stuck height as --sticky-header-offset on <main>, so the
        year docks just below the floating pills instead of colliding with
-       them. Elsewhere the variable is unset and the year sticks to the top. */
-    top: var(--sticky-header-offset, 0px);
+       them. /travel pins a second thing under those pills — the view rail —
+       which publishes --sticky-rail-offset the same way, so the year clears
+       both. Elsewhere neither is set and the year sticks to the top. */
+    top: calc(var(--sticky-header-offset, 0px) + var(--sticky-rail-offset, 0px));
     /* The same veil as the pinned header's strip: both are the page closing
        over what scrolls beneath them, and they used to say so with two sets of
        hand-written values. */
@@ -40,11 +58,23 @@ const { year, class: className } = Astro.props;
     /* Years are numbers first: tabular figures keep them aligned down the page
        as the eye scans the column. */
     font-variant-numeric: tabular-nums;
-    padding: 0.5rem 0;
-    border-bottom: var(--glass-border);
+    /* Out to the edge a ListItem's hover wash reaches (0.75rem) and back in by
+       the same amount, so the year stays on the content edge while its rule and
+       its veil end where the rows' wash does. Every list on the site pairs this
+       heading with those rows, so the two share one edge everywhere. */
+    padding: 0.5rem 0.75rem;
+    margin-inline: -0.75rem;
+    /* The rule, drawn rather than declared — see --rule-lit. It rides the
+       veil's own background-color as a second layer instead of a border, which
+       is what lets it fade at both ends; the size and position lists cycle over
+       the token's three gradients. */
+    background-image: var(--rule-lit);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: 100% 1px;
     margin-bottom: 0.5rem;
     z-index: 10;
-    color: light-dark(#333, #fafafa);
+    color: var(--ink-body);
   }
 
   .year-items {

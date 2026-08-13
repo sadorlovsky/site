@@ -32,15 +32,25 @@ function initSwitcher(group: HTMLElement) {
   const indicator = group.querySelector<HTMLElement>(
     ".lang-switcher__indicator",
   );
+  // Not `.is-unavailable`. That one is a `<span>` standing in for a language
+  // this post was never written in; sliding the gradient under it and marking
+  // it active is the switcher saying a language was selected, and the magnetic
+  // pull is the switcher saying it can be pressed. Neither is true.
   const items: ItemState[] = Array.from(
-    group.querySelectorAll<HTMLElement>(".lang-switcher__btn"),
+    group.querySelectorAll<HTMLElement>(
+      ".lang-switcher__btn:not(.is-unavailable)",
+    ),
   ).map((el) => ({ el, current: { x: 0, y: 0 }, target: { x: 0, y: 0 } }));
 
-  // The button for the currently-selected language (aria-pressed reflects it).
+  // The item for the currently-selected language. In the switcher's runtime
+  // mode that is a button reflecting the stored preference with aria-pressed;
+  // in its link mode — a blog post, which exists once per language — it is the
+  // anchor for the page you are already on, and a link says that with
+  // aria-current rather than by claiming to be pressed.
   function activeLangButton(): HTMLElement | null {
     return (
       group.querySelector<HTMLElement>(
-        '.lang-switcher__btn[aria-pressed="true"]',
+        '.lang-switcher__btn[aria-pressed="true"], .lang-switcher__btn[aria-current="page"]',
       ) ??
       items[0]?.el ??
       null

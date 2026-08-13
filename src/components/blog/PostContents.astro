@@ -1,0 +1,354 @@
+---
+import { Icon } from "astro-icon/components";
+
+/**
+ * A post's contents, in three shapes.
+ *
+ * Wide enough and it leaves the flow entirely and stands in the left margin
+ * beside the reading column, marking the section you are in as you pass it.
+ * Narrower than that it is a sheet: a glass pill in the corner opens it, and
+ * it scrolls itself instead of the article — a twenty-seven-entry list laid
+ * out above the first paragraph is a wall between the reader and the post.
+ *
+ * The third shape is the one underneath both: a heading and a list of links,
+ * in the flow above the first paragraph, which is what a reader gets when the
+ * script that makes a sheet out of it never arrives. A wall is worse than a
+ * pill and better than nothing.
+ *
+ * The current entry and the pointer are marked the way this site marks things
+ * in prose: the words change, nothing is drawn behind them. The rail wore a
+ * filled rounded rectangle for both, which is a control's vocabulary borrowed
+ * for a list of links.
+ */
+interface Props {
+  headings: { depth: number; slug: string; text: string }[];
+  label: string;
+  lang: "en" | "ru";
+}
+
+const { headings, label, lang } = Astro.props;
+const headingId = "post-contents-heading";
+const close = lang === "ru" ? "Закрыть" : "Close";
+---
+
+{/* The one thing that has to be settled before the first paint: whether this
+    page can run a script at all. With one, the contents is a sheet and a pill
+    opens it; without one it stays in the flow, where a reader can still use
+    it. Deferring this to the module below would show the flow layout first and
+    snatch it away. */}
+<script is:inline>
+  document.documentElement.classList.add("contents-sheet");
+</script>
+
+{/* The sheet's opener. Only ever visible below the rail's breakpoint. */}
+<button type="button" class="contents-open liquid-glass" data-contents-open>
+  <Icon name="checklist" width={16} height={16} aria-hidden="true" />
+  <span>{label}</span>
+</button>
+
+<nav class="contents" aria-labelledby={headingId} data-post-contents data-lang={lang}>
+  <div class="contents__head">
+    <h2 class="contents__title" id={headingId}>{label}</h2>
+    <button type="button" class="contents__close" data-contents-close aria-label={close}>
+      <Icon name="chevron-up" width={18} height={18} aria-hidden="true" />
+    </button>
+  </div>
+  <ol class="contents__list" data-contents-list>
+    {
+      headings.map((heading) => (
+        <li class:list={["contents__item", { "contents__item--sub": heading.depth === 3 }]}>
+          <a class="contents__link" href={`#${heading.slug}`} data-contents-link={heading.slug}>
+            {heading.text}
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<div class="contents-scrim" data-contents-scrim hidden></div>
+
+<style>
+  .contents__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .contents__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink-strong);
+  }
+
+  .contents__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .contents__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The fade points where there is more, and only there. */
+  .contents__list[data-fade="bottom"] {
+    mask-image: linear-gradient(to bottom, black calc(100% - 1.5rem), transparent);
+  }
+
+  .contents__list[data-fade="top"] {
+    mask-image: linear-gradient(to bottom, transparent, black 1.5rem);
+  }
+
+  .contents__list[data-fade="both"] {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 1.5rem,
+      black calc(100% - 1.5rem),
+      transparent
+    );
+  }
+
+  .contents__item {
+    margin: 0;
+  }
+
+  .contents__link {
+    display: block;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .contents__link:hover,
+  .contents__link:visited:hover {
+    color: var(--ink-strong);
+  }
+
+  .contents__link:visited {
+    color: var(--ink-muted);
+  }
+
+  .contents__link:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .contents__item--sub .contents__link {
+    padding-left: 0.9rem;
+    font-size: 0.85rem;
+  }
+
+  /* Where you are: ink and weight, the way a word is emphasised in text. */
+  .contents__item.is-current > .contents__link {
+    color: var(--ink-strong);
+    font-weight: 600;
+  }
+
+  /* ==========================================================================
+     In the flow: what the markup is before anything enhances it.
+
+     The sheet is worth having and is worth a script, but it cannot be the only
+     way in. Hidden behind `translateY(101%)` from the first paint, a contents
+     that no handler ever reaches is a contents that does not exist — and the
+     `<details>` list this replaced worked with the script blocked, slow or
+     failed. So the flow is the floor: a heading and a list of links, above the
+     first paragraph, exactly where the old one stood.
+     ========================================================================== */
+  .contents {
+    display: flex;
+    flex-direction: column;
+    margin: 0 0 2rem;
+    /* The prose measure, so the entries stop where the paragraphs under them
+       will. */
+    max-width: 36rem;
+  }
+
+  /* Both belong to the sheet and to nothing else: one opens it, one closes it,
+     and in the flow there is nothing to open. */
+  .contents-open,
+  .contents__close {
+    display: none;
+  }
+
+  /* ==========================================================================
+     The sheet, below the rail's breakpoint and only where a script can open
+     it. `html.contents-sheet` is set by the inline script above, before the
+     first paint, so there is no flash of the flow layout on the way in.
+     ========================================================================== */
+  @media (max-width: 1199.98px) {
+    :global(html.contents-sheet) .contents-open {
+      position: fixed;
+      right: 1.25rem;
+      bottom: 1.25rem;
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      height: 2.7rem;
+      padding: 0 1rem;
+      border: none;
+      border-radius: 999px;
+      color: var(--ink-body);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      /* Clear of the dock, which is centred on the same edge. */
+      margin-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    :global(html.contents-sheet) .contents-open:focus-visible {
+      outline: 2px solid var(--focus-ring-on-fill);
+      outline-offset: 2px;
+    }
+
+    :global(html.contents-sheet) .contents {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 60;
+      max-width: none;
+      max-height: 70vh;
+      margin: 0;
+      padding: 1.1rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+      /* A sheet is the page closing over the article, not a lens laid on it —
+         the veil, the same material a pinned heading uses. */
+      background-color: var(--veil-bg);
+      backdrop-filter: var(--veil-filter);
+      border-radius: 16px 16px 0 0;
+      box-shadow: var(--glass-shadow);
+      transform: translateY(101%);
+      visibility: hidden;
+      transition:
+        transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s linear 0.36s;
+    }
+
+    :global(html.contents-sheet) .contents.is-open {
+      transform: translateY(0);
+      visibility: visible;
+      transition:
+        transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+        visibility 0s;
+    }
+
+    :global(html.contents-sheet) .contents__close {
+      display: inline-flex;
+    }
+  }
+
+  .contents-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    /* The scrim this site already uses, from the admin modal. */
+    background: light-dark(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
+    opacity: 0;
+    transition: opacity 0.36s ease;
+  }
+
+  .contents-scrim.is-open {
+    opacity: 1;
+  }
+
+  .contents-scrim[hidden] {
+    display: none;
+  }
+
+  /* Shape only — whether it is displayed at all is settled above, with the
+     rest of the sheet. */
+  .contents__close {
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin-top: -0.35rem;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    /* Points the way the sheet will go. */
+    transform: rotate(180deg);
+  }
+
+  .contents__close:hover {
+    color: var(--ink-strong);
+  }
+
+  .contents__close:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+  }
+
+  /* ==========================================================================
+     The margin apparatus. See DESIGN.md Layout for why 1200px exists.
+     ========================================================================== */
+  @media (min-width: 1200px) {
+    .contents-scrim {
+      display: none;
+    }
+
+    .contents {
+      --contents-width: min(230px, calc((100vw - 800px) / 2 - 3rem));
+      position: fixed;
+      inset: auto auto auto calc(50% - 400px - 1.5rem - var(--contents-width));
+      top: calc(var(--sticky-header-offset, 5.5rem) + 0.5rem);
+      width: var(--contents-width);
+      max-width: none;
+      max-height: none;
+      margin: 0;
+      padding: 0;
+      /* Above the veil (5), below the cap (20): the apparatus is not passing
+         content and has no business dissolving into the page's own dissolve. */
+      z-index: 6;
+    }
+
+    .contents__title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      color: var(--ink-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .contents__list {
+      max-height: calc(100vh - var(--sticky-header-offset, 5.5rem) - 6rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .contents,
+    .contents-scrim,
+    .contents__link {
+      transition: none;
+    }
+  }
+
+  /* Only the sheet has a veil to reduce; the rail and the flow are on the page
+     itself. */
+  @media (prefers-reduced-transparency: reduce) and (max-width: 1199.98px) {
+    :global(html.contents-sheet) .contents {
+      background-color: light-dark(var(--light-bg), var(--dark-bg));
+      backdrop-filter: none;
+    }
+  }
+</style>
+
+<script src="@client/post-contents.ts"></script>

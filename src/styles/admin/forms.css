@@ -11,7 +11,7 @@
   font-size: 0.8rem;
   font-weight: 600;
   margin-bottom: 0.4rem;
-  color: light-dark(#444, #bbb);
+  color: var(--ink-body);
 }
 
 /* The kit input's recipe, applied to the modal's raw fields. The edge is an
@@ -29,10 +29,21 @@
   padding: 0.6rem 0.9rem;
   font-size: 0.9rem;
   border-radius: 10px;
-  background-color: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  background-color: var(--field-bg);
+  color: var(--ink-strong);
   box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Same sixteen-pixel floor as the kit's fields, for the same reason — see the
+   note in kit/input.css. The admin panel is used from a phone more often than
+   from a desk: it is where a photographed present gets added to the list. */
+@media (pointer: coarse) {
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    font-size: 1rem;
+  }
 }
 
 .form-group .select {
@@ -41,7 +52,7 @@
 
 .form-group input:hover:not(:disabled):not(:focus),
 .form-group textarea:hover:not(:disabled):not(:focus) {
-  box-shadow: inset 0 0 0 2px light-dark(#bbb, #555);
+  box-shadow: inset 0 0 0 2px var(--hairline-hover);
 }
 
 .form-group input:focus,
@@ -52,7 +63,7 @@
 
 .form-group input::placeholder,
 .form-group textarea::placeholder {
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
 }
 
 .form-group textarea {
@@ -85,12 +96,19 @@
   }
 }
 
-/* Messages */
+/* Messages.
+
+   The wash is 6% on paper — the tint global.css already uses under inline code —
+   and drawn from the same family as the word on it rather than from Tailwind's
+   defaults, which is what these were. The green message was the one that
+   actually failed: #059669 on its old 10% wash measured 3.26:1, and the
+   documented #00875d would still have been 3.93:1 there, which is why --success
+   sits a step below it. 4.64:1 and 7.46:1 now; the red reads 5.26:1 and 4.69:1. */
 .error-message {
   padding: 0.75rem 1rem;
-  background: light-dark(rgba(220, 38, 38, 0.1), rgba(127, 29, 29, 0.5));
-  color: light-dark(var(--color-error-dark), var(--color-error-lighter));
-  border: 1px solid light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.3));
+  background: light-dark(rgba(194, 20, 26, 0.06), rgba(176, 0, 3, 0.5));
+  color: var(--danger);
+  border: 1px solid light-dark(rgba(194, 20, 26, 0.2), rgba(248, 113, 113, 0.3));
   border-radius: 10px;
   font-size: 0.85rem;
   margin-top: 1rem;
@@ -98,9 +116,9 @@
 
 .success-message {
   padding: 0.75rem 1rem;
-  background: light-dark(rgba(16, 185, 129, 0.1), rgba(20, 83, 45, 0.5));
-  color: light-dark(var(--color-success-dark), var(--color-success-lighter));
-  border: 1px solid light-dark(rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.3));
+  background: light-dark(rgba(0, 135, 93, 0.06), rgba(4, 107, 75, 0.5));
+  color: var(--success);
+  border: 1px solid light-dark(rgba(0, 135, 93, 0.2), rgba(110, 231, 183, 0.3));
   border-radius: 10px;
   font-size: 0.85rem;
   margin-top: 1rem;
@@ -114,7 +132,7 @@
 }
 
 .image-upload {
-  border: 2px dashed light-dark(#ccc, #555);
+  border: 2px dashed var(--hairline-hover);
   border-radius: 12px;
   padding: 1.5rem;
   text-align: center;
@@ -124,13 +142,13 @@
 
 .image-upload:hover {
   border-color: var(--accent-start);
-  background: light-dark(rgba(237, 98, 146, 0.05), rgba(237, 98, 146, 0.1));
+  background: light-dark(rgba(234, 96, 144, 0.05), rgba(234, 96, 144, 0.1));
 }
 
 .image-upload.dragover {
   border-color: var(--accent-start);
-  background: light-dark(rgba(237, 98, 146, 0.1), rgba(237, 98, 146, 0.15));
-  transform: scale(1.02);
+  background: light-dark(rgba(234, 96, 144, 0.1), rgba(234, 96, 144, 0.15));
+  transform: scale(calc(1 + 0.02 * var(--lift)));
 }
 
 .image-upload input {
@@ -138,7 +156,7 @@
 }
 
 .image-upload p {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -169,7 +187,7 @@
 .image-preview span {
   flex: 1;
   font-size: 0.75rem;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   word-break: break-all;
 }
 
@@ -189,7 +207,7 @@
   border: var(--glass-border);
   border-radius: 50%;
   background-color: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.05));
-  color: light-dark(var(--color-error-dark), var(--color-error-light));
+  color: var(--danger);
   font-size: 1.25rem;
   line-height: 1;
   cursor: pointer;
@@ -203,13 +221,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(
-    135deg,
-    var(--color-error),
-    var(--color-error-dark)
-  );
+  background: var(--danger-gradient);
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
     transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease;
@@ -258,7 +272,7 @@
   margin: -0.2rem 0 0.75rem 0;
   font-size: 0.75rem;
   line-height: 1.45;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 .option-rows {

@@ -1,0 +1,256 @@
+/* The design code shared by the views behind /travel's switcher.
+   ============================================================================
+
+   The timeline is the page's oldest view, the one it opens on, and the one
+   every other view is read against — so it is the reference here, and these
+   rules are its rules restated for lists it does not itself draw. Nothing
+   below is a new invention: measured on the page, each value is either
+   ListItem's (the timeline's row) or YearGroup's (its year heading).
+
+   What the four other views had instead, measured: a row hover in three
+   different answers — the countries view washed at rgba(0,0,0,.03) over a 6px
+   radius in 0.15s, while continents, checklist and stats had no hover at all
+   against the timeline's rgba(0,0,0,.055) over 14px in 0.25s; row text at
+   13.6px where the timeline sets 16px, and a count beside it at 12.8px where
+   the timeline's date is 14.4px; a section label as a 12.8px uppercase eyebrow
+   where a year is 20px and semibold; flags at 18px against the timeline's 21px;
+   and every row carrying 8px of margin nobody wrote, inherited from the
+   document's `li` typography, which is what made these lists sit looser than
+   the timeline they sat next to.
+
+   Two things the timeline does that are easy to miss and are the whole reason
+   its rows read as rows:
+
+   - The hover wash bleeds into the gutter. A row is padded 0.75rem inline and
+     pulled back by the same amount, so the text still starts on the page's
+     content edge — level with the heading above it — while the wash reaches
+     past it. Every row here does the same, which is also what fixed the
+     countries view sitting 8px to the right of every other view.
+   - A group heading is a landmark: the group's name at 1.25rem, sticky under
+     the page header, with the page's own veil behind it so rows pass beneath.
+     The four other views had labels a third that size, so switching tabs used
+     to change what a heading *was*.
+
+   Nothing here paints a surface. The four counters above the switcher are the
+   page's only cards; below the switcher the page is flat. */
+
+.travel-view {
+  /* The wash that means "the thing being pointed at". ListItem's, and the
+     wishlist's filter chips' and popover buttons' — one alpha for the whole
+     site. */
+  --travel-hover: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
+
+  /* How far a row's wash reaches past its text. ListItem's 0.75rem. */
+  --travel-row-inset: 0.75rem;
+
+  /* Everything on these views that is not the content itself — a key or a count
+     beside it, the cities trailing a country, the years under the chart — now
+     reads --ink-muted directly.
+
+     This was --travel-muted, and before that it was --travel-muted plus a
+     --travel-quiet that existed only to work around it being #888. Both of
+     those arguments were won here first and then copied out: global.css took
+     this exact light-dark() pair for --ink-muted and gave the rest of the site
+     what /travel had already worked out. A local token holding the same two
+     values is no longer a decision, only a second place to change. */
+}
+
+/* A panel is focusable so the keyboard can reach and scroll views that hold
+   nothing focusable of their own (see the note in pages/travel/index.astro).
+   Only the keyboard gets the ring: a click inside a three-thousand-pixel block
+   would otherwise draw an outline around the entire page. */
+.travel-view:focus {
+  outline: none;
+}
+
+.travel-view:focus-visible {
+  outline: 2px solid var(--focus-ring-on-fill);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+/* The stack of sections a view is made of. 1.5rem is YearGroup's gap between
+   one year and the next. */
+.travel-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ============================================================================
+   A group heading — the year heading, for groups that are not years.
+
+   Identical to YearGroup.astro on purpose, down to the veil and the sticky
+   offset: a continent, a checklist category and "Trips by year" are the same
+   kind of landmark a year is, and the two must move together. The one thing
+   added is room for a count at the end of the line, which a year has no use
+   for.
+   ============================================================================ */
+.travel-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  /* Two things are already pinned above this one, and each publishes its own
+     stuck height on <main>: PageHeader's floating pills
+     (--sticky-header-offset, from page-header-condense.ts) and the view rail
+     under them (--sticky-rail-offset, from TravelViewSwitcher). Adding both is
+     what makes a heading dock below the rail rather than slide under it.
+     YearGroup — the timeline's year, the heading this one is a restatement of
+     — reads the same pair. */
+  top: calc(var(--sticky-header-offset, 0px) + var(--sticky-rail-offset, 0px));
+  z-index: 10;
+  background-color: var(--veil-bg);
+  backdrop-filter: var(--veil-filter);
+  /* Out to the same edge a row's hover wash reaches, and back in by the same
+     amount so the title still starts on the content edge. Everything on this
+     page that draws a surface or a rule now ends on one line — the counters,
+     the rail, this, and the wash — instead of the wash alone hanging 12px
+     past the rest. */
+  padding: 0.5rem var(--travel-row-inset);
+  margin-inline: calc(-1 * var(--travel-row-inset));
+  margin-bottom: 0.5rem;
+  /* The same drawn rule the year heading wears — see --rule-lit. These two are
+     the same landmark in two views and have to end the same way. */
+  background-image: var(--rule-lit);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 1px;
+}
+
+.travel-section-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  /* Both reset the document's heading typography, which would otherwise arrive
+     at 700 and -0.02em — a year heading is a div and gets neither. */
+  letter-spacing: normal;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-body);
+}
+
+/* The quiet text bracketing a figure rather than heading a list — the four
+   facts in the stats view, where it is both the question above the answer and
+   the amount below it. One spec for the pair on purpose: they are the two soft
+   lines around the one loud one, and when they differed by a twentieth of a rem
+   and a hundred units of weight, the difference read as a wobble rather than as
+   a decision. It is also what the counters above the switcher label themselves
+   with, because that is the same job again.
+
+   It deliberately has no rule under it; a hairline is what made those four read
+   as sections. */
+.travel-caption {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: var(--ink-muted);
+}
+
+/* Every number in these views: the count in a section head, the cities beside
+   a country, the year beside a bar. The timeline's date column exactly — one
+   size, one colour, always tabular so columns of them line up instead of
+   wandering with the digit widths. */
+.travel-metric {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Pushed to the end of its row so the numbers line up down the column rather
+   than trailing each name at a different offset. */
+.travel-metric--trailing {
+  margin-left: auto;
+  padding-left: 0.5rem;
+}
+
+/* ============================================================================
+   The row
+   ============================================================================ */
+
+/* Countries in columns. Multi-column rather than grid so a sorted list fills
+   downwards and the reader can scan one column at a time — the continents view
+   is sorted by size, so its first column is the countries worth reading and
+   the second is the one-city tail. `columns` also balances the last block
+   itself, which a grid cannot do without knowing the row count.
+
+   The gap is 2rem rather than 1.5rem because rows now bleed 0.75rem of wash on
+   each side; at 1.5rem two hovered rows in neighbouring columns would touch. */
+.travel-grid {
+  columns: var(--travel-columns, 2);
+  column-gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.travel-row {
+  display: flex;
+  align-items: center;
+  /* The 4px the timeline puts between a flag and the city beside it. */
+  gap: 0.25rem;
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--ink-strong);
+  /* The wash reaches into the gutter while the text stays on the content edge
+     — see the note at the top of this file. ListItem's padding exactly, which
+     is what makes a row here the same height as a trip: 0.5rem against a 1.9
+     line comes out at the timeline's 46px. */
+  padding: 0.5rem var(--travel-row-inset);
+  margin-inline: calc(-1 * var(--travel-row-inset));
+  /* Without this, the document's list typography adds 8px under every row: the
+     pitch these lists used to have, which nobody chose. */
+  margin-block: 0;
+  border-radius: 14px;
+  transition: background-color 0.25s ease;
+  /* break-inside keeps a row whole at the column boundary, which multi-column
+     layout will otherwise split mid-line. */
+  break-inside: avoid;
+}
+
+.travel-row:hover {
+  background-color: var(--travel-hover);
+}
+
+/* A row whose content is a running line rather than a few fixed parts — the
+   countries view, where the cities go on until they wrap. Same shell, laid out
+   as text; the 1.9 line-height above is the timeline's, so a wrapped list of
+   cities breathes exactly as a wrapped journey does. */
+.travel-row--flow {
+  display: block;
+}
+
+.travel-flag {
+  flex-shrink: 0;
+  /* Not a size of its own: flag-icons scales with the font, so leaving this
+     alone is what keeps a flag here the same width as a flag in the timeline. */
+  border-radius: 3px;
+}
+
+.travel-name {
+  /* No weight and no colour of its own: a name in these rows is the row's
+     content, exactly as a city name is in the timeline, and inherits both. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A name that is a place still to go rather than one that has been. */
+.travel-name--muted {
+  color: var(--ink-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .travel-row {
+    transition: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .travel-grid {
+    columns: 1;
+  }
+}

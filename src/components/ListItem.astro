@@ -64,14 +64,14 @@ const Element = href ? "a" : "div";
     font-size: 0.9rem;
     /* The chrome's muted colour. Dark mode had #666, which on a near-black page
        sat right at the edge of legible. */
-    color: light-dark(#888, #9a9aa0);
+    color: var(--ink-muted);
   }
 
   .list-item-title {
     display: block;
     font-size: 1.25rem;
     font-weight: 600;
-    color: light-dark(#111, #fafafa);
+    color: var(--ink-strong);
     line-height: 1.4;
     transition: all 0.2s ease;
   }
@@ -81,7 +81,7 @@ const Element = href ? "a" : "div";
   }
 
   a.list-item:hover .list-item-title {
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient-text);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -106,6 +106,18 @@ const Element = href ? "a" : "div";
     .list-item.interactive,
     .list-item-title {
       transition: none;
+    }
+  }
+
+  /* The hover paints the title with `-webkit-text-fill-color: transparent`,
+     and forced colours does not force that property back — the row under the
+     pointer would be the one row with no title. global.css lists
+     `.list-item-title` for the same reason, but it cannot win against a scoped
+     `a.list-item:hover` selector, so the repaint belongs here too. */
+  @media (forced-colors: active) {
+    a.list-item:hover .list-item-title {
+      background: none;
+      -webkit-text-fill-color: currentColor;
     }
   }
 </style>

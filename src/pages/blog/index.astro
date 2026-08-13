@@ -1,155 +1,176 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import PageLayout from "@layouts/PageLayout.astro";
 import PageHeader from "@components/PageHeader.astro";
 import LangInit from "@components/LangInit.astro";
 import YearGroup from "@components/YearGroup.astro";
-import ListItem from "@components/ListItem.astro";
+import PostLead from "@components/blog/PostLead.astro";
+import PostRow from "@components/blog/PostRow.astro";
 import { getEffectivePubDate } from "@lib/blog";
 
 export const prerender = true;
 
+type Lang = "en" | "ru";
+type Post = CollectionEntry<"blog">;
+
 const allPosts = await getCollection("blog");
 
-// Separate posts by language
-const enPosts = allPosts
-  .filter((post) => post.data.lang === "en")
-  .sort((a, b) => getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime());
+const LOCALE: Record<Lang, string> = { en: "en-US", ru: "ru-RU" };
 
-const ruPosts = allPosts
-  .filter((post) => post.data.lang === "ru")
-  .sort((a, b) => getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime());
+const COPY = {
+  en: {
+    title: "Blog",
+    subtitle: "Thoughts, ideas, and occasional musings",
+    latest: "Latest",
+    empty: "No posts yet. Check back soon!",
+  },
+  ru: {
+    title: "Блог",
+    subtitle: "Мысли, идеи и размышления",
+    latest: "Недавнее",
+    empty: "Постов пока нет. Загляните позже!",
+  },
+} as const;
 
-// Group posts by year (for each language)
-// Posts are already sorted by pubDate desc, so we preserve that order within each year
-function groupByYear(posts: typeof allPosts) {
-  const byYear = posts.reduce<Record<number, typeof posts>>((acc, post) => {
-    const year = getEffectivePubDate(post, allPosts).getFullYear();
-    if (!acc[year]) acc[year] = [];
-    acc[year].push(post);
-    return acc;
-  }, {});
-  // Sort posts within each year by pubDate descending, then by title for stable ordering
-  for (const year of Object.keys(byYear)) {
-    byYear[Number(year)].sort((a, b) => {
-      const dateDiff = getEffectivePubDate(b, allPosts).getTime() - getEffectivePubDate(a, allPosts).getTime();
-      if (dateDiff !== 0) return dateDiff;
-      return a.data.title.localeCompare(b.data.title);
-    });
-  }
-  const years = Object.keys(byYear)
-    .map(Number)
-    .sort((a, b) => b - a);
-  return { byYear, years };
-}
-
-const enGrouped = groupByYear(enPosts);
-const ruGrouped = groupByYear(ruPosts);
-
-// Helper to get URL from post ID
-// en/post-name -> /blog/post-name
-// ru/post-name -> /blog/ru/post-name
-function getPostUrl(id: string, lang: "en" | "ru"): string {
+/** en/post-name → /blog/post-name; ru/post-name → /blog/ru/post-name */
+function getPostUrl(id: string, lang: Lang): string {
   const name = id.replace(/^(en|ru)\//, "");
   return lang === "ru" ? `/blog/ru/${name}` : `/blog/${name}`;
 }
 
+/** Everything a row or a lead needs, resolved once per post. */
+function toEntry(post: Post, lang: Lang) {
+  const date = getEffectivePubDate(post, allPosts);
+  return {
+    href: getPostUrl(post.id, lang),
+    title: post.data.title,
+    description: post.data.description,
+    date,
+    isoDate: date.toISOString(),
+    /* The year is the group heading a row sits under, so a row's date carries
+       only the part the heading does not. A lead has no year above it. */
+    rowDate: date.toLocaleDateString(LOCALE[lang], {
+      day: "numeric",
+      month: "short",
+    }),
+    leadDate: date.toLocaleDateString(LOCALE[lang], {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+  };
+}
+
+type Entry = ReturnType<typeof toEntry>;
+
+function groupByYear(entries: Entry[]) {
+  const byYear = new Map<number, Entry[]>();
+  for (const entry of entries) {
+    const year = entry.date.getFullYear();
+    byYear.set(year, [...(byYear.get(year) ?? []), entry]);
+  }
+  return [...byYear.entries()].sort((a, b) => b[0] - a[0]);
+}
+
+function buildSection(lang: Lang) {
+  const entries = allPosts
+    .filter((post) => post.data.lang === lang)
+    .map((post) => toEntry(post, lang))
+    .sort(
+      (a, b) =>
+        b.date.getTime() - a.date.getTime() || a.title.localeCompare(b.title),
+    );
+
+  /* Three, and then the rest. A post is in one place or the other, never in
+     both: the band is what is new, the ledger is what is kept. */
+  return {
+    lang,
+    entries,
+    band: entries.slice(0, 3),
+    archive: groupByYear(entries.slice(3)),
+  };
+}
+
+const sections = [buildSection("en"), buildSection("ru")];
 ---
 
 <PageLayout title="Blog — Zach">
   <LangInit />
 
-  <main id="main" class="blog-page">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
+  {/* Outside <main>, and that is load-bearing rather than tidy. The blobs used
+      to live inside it, which forced `overflow: hidden` on their parent to
+      keep them from opening the page sideways — and an ancestor with a clipped
+      overflow is a scroll container, so every `position: sticky` inside it
+      stuck to that box instead of to the viewport. The year headings this page
+      has always declared sticky never once stuck. /travel has had them outside
+      all along, which is why the same headings work there. */}
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
 
-    <div class="container lang-content">
-      <PageHeader
-        pageTitle={{ en: "Blog", ru: "Блог" }}
-        subtitle={{
-          en: "Thoughts, ideas, and occasional musings",
-          ru: "Мысли, идеи и размышления",
-        }}
-        langSwitcher="lang"
-      />
+  <main id="main" class="container lang-content">
+    <!--
+      THESIS: A blog index is two materials, not one list — three recent posts
+      with room to be read, and every older post as a ledger row that scans in
+      a column. It refuses the grid of equal cards where the fifteenth post
+      weighs as much as yesterday's.
+      OWN-WORLD: The site's own — liquid glass chrome over a flat page, the
+      sunset accent spent once, Inter with ss03, and the 0.75rem row inset that
+      every list, rule and sticky heading here already ends on.
+      STORY: A returning reader sees what is new, then finds the post they half
+      remember by date, title or subject, reading down one column.
+      FIRST VIEWPORT: The gradient "Blog" title, its one line under it, then the
+      newest post — bolder and standing in more space than the two behind it,
+      not larger — each with its description and its date.
+      FORM: Masthead, recent band, compressed archive — candidate 6 of the
+      ordered structural list; surface seed 2e7c45c0.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+    -->
+    <PageHeader
+      pageTitle={{ en: COPY.en.title, ru: COPY.ru.title }}
+      subtitle={{ en: COPY.en.subtitle, ru: COPY.ru.subtitle }}
+      langSwitcher="lang"
+      condenseOnScroll
+    />
 
-      <!-- English Posts -->
-      <div class="posts-list posts-list--en">
-        {
-          enGrouped.years.map((year) => (
-            <YearGroup year={year}>
-              {enGrouped.byYear[year].map((post) => {
-                const pubDate = getEffectivePubDate(post, allPosts);
-                return (
-                  <ListItem href={getPostUrl(post.id, "en")} interactive>
-                    <time slot="date" datetime={pubDate.toISOString()}>
-                      {pubDate.toLocaleDateString("en-US", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </time>
-                    <span slot="title">{post.data.title}</span>
-                  </ListItem>
-                );
-              })}
+    {
+      sections.map(({ lang, entries, band, archive }) => (
+        <section class:list={["posts", `posts--${lang}`]}>
+          {band.length > 0 && (
+            <YearGroup year={COPY[lang].latest} class="band">
+              {band.map((entry, index) => (
+                <PostLead
+                  href={entry.href}
+                  title={entry.title}
+                  description={entry.description}
+                  isoDate={entry.isoDate}
+                  dateLabel={entry.leadDate}
+                  lead={index === 0}
+                />
+              ))}
             </YearGroup>
-          ))
-        }
-        {
-          enPosts.length === 0 && (
-            <div class="empty-state">
-              <p>No posts yet. Check back soon!</p>
-            </div>
-          )
-        }
-      </div>
+          )}
 
-      <!-- Russian Posts -->
-      <div class="posts-list posts-list--ru">
-        {
-          ruGrouped.years.map((year) => (
+          {archive.map(([year, yearEntries]) => (
             <YearGroup year={year}>
-              {ruGrouped.byYear[year].map((post) => {
-                const pubDate = getEffectivePubDate(post, allPosts);
-                return (
-                  <ListItem href={getPostUrl(post.id, "ru")} interactive>
-                    <time slot="date" datetime={pubDate.toISOString()}>
-                      {pubDate.toLocaleDateString("ru-RU", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </time>
-                    <span slot="title">{post.data.title}</span>
-                  </ListItem>
-                );
-              })}
+              {yearEntries.map((entry) => (
+                <PostRow
+                  href={entry.href}
+                  title={entry.title}
+                  isoDate={entry.isoDate}
+                  dateLabel={entry.rowDate}
+                />
+              ))}
             </YearGroup>
-          ))
-        }
-        {
-          ruPosts.length === 0 && (
-            <div class="empty-state">
-              <p data-en="No posts yet. Check back soon!" data-ru="Постов пока нет. Загляните позже!">
-                Постов пока нет. Загляните позже!
-              </p>
-            </div>
-          )
-        }
-      </div>
-    </div>
+          ))}
+
+          {entries.length === 0 && <p class="state">{COPY[lang].empty}</p>}
+        </section>
+      ))
+    }
   </main>
 </PageLayout>
 
 <style>
-  .blog-page {
-    --accent-start: rgb(237, 98, 146);
-    --accent-end: rgb(237, 87, 96);
-
-    min-height: 100vh;
-    position: relative;
-    overflow: hidden;
-  }
-
   /* Ambient background blobs */
   .blob {
     position: fixed;
@@ -162,7 +183,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   .blob-1 {
     width: 500px;
     height: 500px;
-    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    background: var(--accent-gradient);
     top: -200px;
     right: -150px;
     opacity: 0.15;
@@ -172,7 +193,7 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
   .blob-2 {
     width: 400px;
     height: 400px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: var(--accent-gradient-mirror);
     bottom: -150px;
     left: -100px;
     opacity: 0.1;
@@ -199,57 +220,64 @@ function getPostUrl(id: string, lang: "en" | "ru"): string {
     }
   }
 
+  /* main is the container now, the way /travel's is: nothing wraps it, so
+     nothing can clip it, and the sticky headings inside it measure themselves
+     against the viewport. */
   .container {
     position: relative;
     z-index: 1;
-    max-width: 720px;
+    min-height: 100vh;
+    /* The reading column DESIGN.md documents. The page was 720px, which is a
+       prose measure — right for a post and forty pixels short for a ledger
+       whose four lanes have to sit in it without the title lane closing up. */
+    max-width: 800px;
     margin: 0 auto;
     padding: 2rem 1.5rem 4rem;
+    box-sizing: border-box;
 
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
 
-  .posts-list {
+  .posts {
     display: flex;
     flex-direction: column;
+    gap: 1.5rem;
   }
 
-  /* Language-based visibility */
-  .posts-list--ru {
+  /* Language-based visibility — the same swap the rest of the site makes. */
+  .posts--ru {
     display: none;
   }
 
-  html.lang-ru .posts-list--en {
+  :global(html.lang-ru) .posts--en {
     display: none;
   }
 
-  html.lang-ru .posts-list--ru {
+  :global(html.lang-ru) .posts--ru {
     display: flex;
   }
 
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: light-dark(#666, #888);
+  /* The band's own heading needs the air a year heading gets from the rows
+     above it; the first group on the page has none. */
+  .posts :global(.band) {
+    margin-bottom: 0.5rem;
   }
 
-  .empty-state p {
-    font-size: 1.1rem;
+  .state {
     margin: 0;
+    padding: 2rem 0.75rem;
+    color: var(--ink-muted);
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
     .blob-1,
     .blob-2 {
       animation: none;
     }
-
   }
 
-  /* Mobile adjustments */
   @media (max-width: 640px) {
     .blob-1 {
       width: 300px;

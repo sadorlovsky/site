@@ -1,0 +1,89 @@
+---
+/**
+ * A row of the blog ledger: a date and a title, and nothing else.
+ *
+ * It carried tags and a reading time in two more lanes, which is what a row
+ * looks like when every fact about a post is treated as equally worth the
+ * reader's eye. They were not: what the archive is scanned for is the title,
+ * and the date is what places it. Four lanes of small grey type around the one
+ * thing being looked for is noise wearing the clothes of information.
+ *
+ * It deliberately is not ListItem. That component is the travel list's row and
+ * widening or narrowing it here would move every trip on /travel to pay for a
+ * blog layout. The hover is shared with it exactly — the title takes the
+ * accent gradient — because "the thing being pointed at" reads the same on
+ * every list on this site.
+ */
+interface Props {
+  href: string;
+  title: string;
+  isoDate: string;
+  dateLabel: string;
+}
+
+const { href, title, isoDate, dateLabel } = Astro.props;
+---
+
+<a class="post-row" href={href}>
+  <time class="post-row__date" datetime={isoDate}>{dateLabel}</time>
+  <span class="post-row__title">{title}</span>
+</a>
+
+<style>
+  .post-row {
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    column-gap: 0.85rem;
+    align-items: baseline;
+    padding: 0.5rem 0;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-row__date {
+    font-size: 0.85rem;
+    /* The whole point of the lane: fifteen dates that line up on the digit
+       rather than on the glyph widths of "May" against "Jan". */
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-muted);
+    white-space: nowrap;
+  }
+
+  .post-row__title {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--ink-body);
+  }
+
+  /* The one hover this site has for a list row. */
+  .post-row:hover .post-row__title {
+    background: var(--accent-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .post-row:focus-visible {
+    outline: 2px solid var(--accent-start);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .post-row {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.1rem;
+    }
+  }
+
+  /* Same as PostLead: the gradient hides the text with
+     `-webkit-text-fill-color`, which forced colours leaves alone, so the row
+     under the pointer would go blank. */
+  @media (forced-colors: active) {
+    .post-row:hover .post-row__title {
+      background: none;
+      -webkit-text-fill-color: currentColor;
+    }
+  }
+</style>

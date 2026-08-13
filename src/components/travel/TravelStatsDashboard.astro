@@ -1,0 +1,264 @@
+---
+import TravelYearChart from "./TravelYearChart.astro";
+import {
+  datedTrips,
+  formatMonthYear,
+  formatTripCount,
+  formatVisitCount,
+  getTravelFacts,
+} from "@lib/travel";
+import "@styles/travel.css";
+
+const facts = getTravelFacts(datedTrips);
+
+// Both "most visited" cards are counted in visits rather than trips. The number
+// is the same either way — a journey that touches a place counts once, however
+// many stops it makes there — but a card headed "Most visited country" that
+// answers "17 trips" reads as if it were answering some other question. The
+// busiest-year card below really is about trips and keeps the word.
+//
+// The line above the answer and the line below it are the same spec, and both
+// are .travel-caption. They used to be a caption over the answer and a metric
+// under it — 0.85rem at 500 against 0.9rem at 400, in colours that are the same
+// value in the dark scheme. Nobody can read a twentieth of a rem and a hundred
+// units of weight as a decision; it reads as a wobble. Three type sizes per
+// fact, four facts, twelve typographic events in a block where only the middle
+// line is the point. Two now: quiet, loud, quiet.
+---
+
+<div class="travel-sections">
+  <div class="facts">
+    {
+      facts.mostVisitedCity && (
+        <section>
+          <h2
+            class="travel-caption"
+            data-en="Most visited city"
+            data-ru="Самый посещаемый город"
+          >
+            Most visited city
+          </h2>
+          <div class="answer">
+            <div class="value">
+              <span class={`fi fi-${facts.mostVisitedCity.a2}`} aria-hidden="true" />
+              <span
+                data-en={facts.mostVisitedCity.name.en}
+                data-ru={facts.mostVisitedCity.name.ru}
+              >
+                {facts.mostVisitedCity.name.en}
+              </span>
+            </div>
+            <span
+              class="travel-caption amount"
+              data-en={formatVisitCount(facts.mostVisitedCity.visits, "en")}
+              data-ru={formatVisitCount(facts.mostVisitedCity.visits, "ru")}
+            >
+              {formatVisitCount(facts.mostVisitedCity.visits, "en")}
+            </span>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      facts.mostVisitedCountry && (
+        <section>
+          <h2
+            class="travel-caption"
+            data-en="Most visited country"
+            data-ru="Самая посещаемая страна"
+          >
+            Most visited country
+          </h2>
+          <div class="answer">
+            <div class="value">
+              <span
+                class={`fi fi-${facts.mostVisitedCountry.a2}`}
+                aria-hidden="true"
+              />
+              <span
+                data-en={facts.mostVisitedCountry.name.en}
+                data-ru={facts.mostVisitedCountry.name.ru}
+              >
+                {facts.mostVisitedCountry.name.en}
+              </span>
+            </div>
+            <span
+              class="travel-caption amount"
+              data-en={formatVisitCount(facts.mostVisitedCountry.visits, "en")}
+              data-ru={formatVisitCount(facts.mostVisitedCountry.visits, "ru")}
+            >
+              {formatVisitCount(facts.mostVisitedCountry.visits, "en")}
+            </span>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      facts.mostActiveYear && (
+        <section>
+          <h2
+            class="travel-caption"
+            data-en="Busiest year"
+            data-ru="Самый активный год"
+          >
+            Busiest year
+          </h2>
+          <div class="answer">
+            <div class="value">{facts.mostActiveYear.year}</div>
+            <span
+              class="travel-caption amount"
+              data-en={formatTripCount(facts.mostActiveYear.trips, "en")}
+              data-ru={formatTripCount(facts.mostActiveYear.trips, "ru")}
+            >
+              {formatTripCount(facts.mostActiveYear.trips, "en")}
+            </span>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      facts.latestNewCountry && (
+        <section>
+          <h2
+            class="travel-caption"
+            data-en="Latest new country"
+            data-ru="Последняя новая страна"
+          >
+            Latest new country
+          </h2>
+          <div class="answer">
+            <div class="value">
+              <span
+                class={`fi fi-${facts.latestNewCountry.a2}`}
+                aria-hidden="true"
+              />
+              <span
+                data-en={facts.latestNewCountry.name.en}
+                data-ru={facts.latestNewCountry.name.ru}
+              >
+                {facts.latestNewCountry.name.en}
+              </span>
+            </div>
+            <span
+              class="travel-caption amount"
+              data-en={formatMonthYear(
+                facts.latestNewCountry.year,
+                facts.latestNewCountry.month,
+                "en",
+              )}
+              data-ru={formatMonthYear(
+                facts.latestNewCountry.year,
+                facts.latestNewCountry.month,
+                "ru",
+              )}
+            >
+              {formatMonthYear(
+                facts.latestNewCountry.year,
+                facts.latestNewCountry.month,
+                "en",
+              )}
+            </span>
+          </div>
+        </section>
+      )
+    }
+  </div>
+
+  {facts.tripsByYear.length > 0 && <TravelYearChart />}
+</div>
+
+<style>
+  /* Two facts across. The rows sit further apart than the columns, which breaks
+     the page's even 1.5rem on purpose: the two lines of a fact are a few pixels
+     apart, so the space that groups them has to be unmistakably larger than the
+     space inside them. At an even gap the facts read as one slab of lines,
+     which is what they looked like. */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.25rem 1.5rem;
+  }
+
+  /* And inside a fact, the opposite: the two lines are pulled in tight and
+     given their own leading, so the grouping is done by space rather than by
+     the reader working out which caption belongs to which number. */
+  .facts section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  /* The answer and its amount on one line, built the way a section head builds
+     its title and its count: baseline, pushed to opposite ends. A fact is two
+     lines now rather than three, and the four amounts fall into a column down
+     the right of each grid cell instead of hanging under four names of four
+     different lengths. */
+  .answer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  /* The name is what gives way when the pair will not fit; the amount is four
+     characters and would be nonsense clipped. */
+  .amount {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .facts .travel-caption {
+    line-height: 1.35;
+  }
+
+  /* A fact's answer, at the size and weight of a group heading — the same
+     1.25rem/600 a year is set at, which is what the counters above the switcher
+     give their own numbers. */
+  .value {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    font-size: 1.25rem;
+    /* Tighter than the document's, because the caption above it sits close now
+       and a loose line box would leave the answer floating off its label. */
+    line-height: 1.3;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-strong);
+    /* Without this a flex item refuses to go below its content's width, so a
+       long country name widens the cell instead of ellipsizing inside it. */
+    min-width: 0;
+  }
+
+  /* No size of its own, so a flag stands to its name here in the same
+     proportion it does in the timeline. */
+  .value .fi {
+    flex-shrink: 0;
+    border-radius: 3px;
+  }
+
+  .value > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* One column earlier than before. A name and its amount now share a line, so
+     "Saint Petersburg" and "10 visits" want about 280px between them; two
+     columns below this and the cell is narrower than that, and the name starts
+     ellipsizing to make room for four characters. Given the whole width it
+     never has to. */
+  @media (max-width: 640px) {
+    .facts {
+      grid-template-columns: 1fr;
+    }
+
+    .value {
+      font-size: 1.1rem;
+    }
+  }
+</style>

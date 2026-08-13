@@ -2,9 +2,12 @@
 
 /* Items Grid */
 .items-list {
+  /* Named, because the insertion beam has to be drawn in the middle of it. */
+  --grid-gap: 1.25rem;
+
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 1.25rem;
+  gap: var(--grid-gap);
 }
 
 @media (max-width: 1400px) {
@@ -33,7 +36,7 @@
 
 .no-items {
   text-align: center;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   padding: 3rem;
   font-size: 1rem;
 }
@@ -88,7 +91,7 @@
   /* The lift is shallower than the public card's 8px: these sit in a six-column
      grid where a big rise reads as the row breaking apart. */
   .item-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(calc(-4px * var(--lift)));
     box-shadow:
       0 20px 40px -10px light-dark(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.5)),
       0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
@@ -118,28 +121,218 @@
   opacity: 0.55;
 }
 
-/* Draggable state */
-.item-card.draggable {
+/* =============================================================================
+   Reordering.
+
+   Three things have to be legible while a card is in the air: what is being
+   carried, where it would land, and that the rest of the grid is holding still
+   until it does. The panel used to say all three with box-shadows on the cards
+   themselves, which is why none of them read — a shadow is the card's own
+   depth, and every one of these is about the space between cards.
+   ============================================================================= */
+
+/* The grip. Nothing until the cursor finds the card, and even then a quiet
+   glass tab: the photograph is the card's subject and this is a control. It
+   sits on the image, so it takes the on-media tokens — the same neutral capsule
+   the status badges wear a few centimetres to its left. */
+.item-grip {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  /* Above the card's own rim, which is on ::before at 3. */
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   cursor: grab;
+  color: #fff;
+  background-color: var(--glass-bg-on-media);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border-on-media);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  transform: translateY(calc(-6px * var(--lift)));
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.item-card.draggable:active {
+.item-grip:active {
   cursor: grabbing;
 }
 
-.item-card.dragging {
-  opacity: 0.4;
-  transform: scale(0.98);
+.item-card:hover .item-grip,
+.item-card:focus-visible .item-grip,
+.item-card.keyboard-moving .item-grip {
+  opacity: 1;
+  transform: none;
 }
 
-/* Keyboard moving state — the accent ring and glow the wishlist's random pick
-   wears, which is the site's way of saying "this one, right now". */
-.item-card.keyboard-moving {
-  outline: 3px solid var(--accent-start);
-  outline-offset: 2px;
+/* No hover to arrive on, so it simply stays. */
+@media (hover: none) {
+  .item-grip {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .item-grip {
+    background-color: rgb(24, 24, 28);
+    backdrop-filter: none;
+  }
+}
+
+/* The card being carried is not in the grid any more, and what is left in its
+   place is a slot. Fading it to 40% — what this used to do — reads as
+   "disabled", and it kept its shadow and its frost, so the grid looked like it
+   had grown one broken card rather than opened a space. */
+.item-card.dragging {
+  background: light-dark(rgba(237, 91, 42, 0.05), rgba(234, 96, 144, 0.06));
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.item-card.dragging::before {
+  box-shadow: none;
+  border: 2px dashed
+    light-dark(rgba(237, 91, 42, 0.4), rgba(234, 96, 144, 0.32));
+}
+
+.item-card.dragging > * {
+  opacity: 0.1;
+}
+
+/* Including the grip, which the hover rule above would otherwise keep lit on
+   the one card that has just left. */
+.item-card.dragging:hover .item-grip {
+  opacity: 0.1;
+}
+
+.item-image,
+.item-content {
+  transition: opacity 0.25s ease;
+}
+
+/* The insertion beam. It is drawn in the gutter, because that is what it means:
+   not "this card", but "here, between these two".
+
+   The marker it replaces was a 4px box-shadow on a card's own edge, and it had
+   both halves of the problem. It cost the card its shadow the moment it lit up,
+   since the two shared one property. And at the end of a row it pointed at the
+   right-hand edge of the screen for a drop that would land at the left of the
+   next one — the end of one row and the start of the next being one gap, drawn
+   twice, a screen apart. */
+.item-card.drop-before::after,
+.item-card.drop-after::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 999px;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--accent-start), var(--accent-end));
+  /* A hairline of the page's own colour first, so the beam stays a beam
+     against a card edge it happens to sit close to, then the glow. */
   box-shadow:
-    0 0 0 6px rgba(237, 87, 96, 0.22),
-    var(--glass-shadow);
+    0 0 0 1.5px light-dark(rgba(248, 248, 255, 0.75), rgba(25, 25, 25, 0.6)),
+    0 0 16px light-dark(rgba(237, 91, 42, 0.45), rgba(234, 96, 144, 0.5));
+  animation: drop-beam 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.item-card.drop-before::after {
+  left: calc(var(--grid-gap) / -2 - 1.5px);
+}
+
+.item-card.drop-after::after {
+  right: calc(var(--grid-gap) / -2 - 1.5px);
+}
+
+@keyframes drop-beam {
+  from {
+    transform: scaleY(0.25);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* One column: the gutters are horizontal, and so is the beam. */
+@media (max-width: 500px) {
+  .item-card.drop-before::after,
+  .item-card.drop-after::after {
+    top: auto;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-start), var(--accent-end));
+    animation-name: drop-beam-across;
+  }
+
+  .item-card.drop-before::after {
+    top: calc(var(--grid-gap) / -2 - 1.5px);
+  }
+
+  .item-card.drop-after::after {
+    bottom: calc(var(--grid-gap) / -2 - 1.5px);
+  }
+
+  @keyframes drop-beam-across {
+    from {
+      transform: scaleX(0.25);
+      opacity: 0;
+    }
+    to {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+}
+
+/* While something is in the air the grid holds still. A card lifting under the
+   cursor would compete with the beam for attention and, worse, move the very
+   edges the drop is being measured against — the geometry is read once, when
+   the drag starts, and a hovered card that has risen 4px is no longer where the
+   arithmetic thinks it is. */
+.items-list.is-sorting .item-card:hover {
+  transform: none;
+  box-shadow: var(--glass-shadow);
+}
+
+.items-list.is-sorting .item-card:hover::before {
+  box-shadow: var(--glass-rim);
+}
+
+.items-list.is-sorting .item-card:hover .item-image img {
+  transform: none;
+}
+
+.items-list.is-sorting .item-card.dragging,
+.items-list.is-sorting .item-card.dragging:hover {
+  box-shadow: none;
+}
+
+/* Keyboard moving — the same card, lifted. There is no beam to draw here
+   because the card itself moves through the grid on every keystroke, so the
+   state has to say "you are holding this one": it rises, takes the lit rim the
+   hover state uses, and wears the accent ring. */
+.item-card.keyboard-moving {
+  z-index: 2;
+  outline: 2px solid var(--accent-end);
+  outline-offset: 3px;
+  transform: translateY(calc(-4px * var(--lift)));
+  box-shadow:
+    0 18px 36px -12px light-dark(rgba(237, 91, 42, 0.35), rgba(0, 0, 0, 0.6)),
+    0 0 0 7px light-dark(rgba(237, 91, 42, 0.13), rgba(234, 96, 144, 0.15));
 }
 
 .item-card.keyboard-moving::before {
@@ -156,21 +349,21 @@
   outline: none;
 }
 
-/* Drop markers — the accent bar on the side the card would land. */
-.item-card.drag-over-before {
-  box-shadow:
-    -4px 0 0 0 var(--accent-start),
-    var(--glass-shadow);
-}
+/* Selection is left alone. It used to be killed across the whole grid so that a
+   drag off a title wouldn't start one — with the grip owning drags, a title is
+   just text again, and copying one out of the panel works. */
 
-.item-card.drag-over-after {
-  box-shadow:
-    4px 0 0 0 var(--accent-start),
-    var(--glass-shadow);
-}
-
-.items-list.drag-enabled {
-  user-select: none;
+/* What a keyboard move says, for a reader that can't see the card move. */
+.drag-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Item Image */
@@ -190,7 +383,7 @@
 }
 
 .item-card:hover .item-image img {
-  transform: scale(1.03);
+  transform: scale(calc(1 + 0.03 * var(--lift)));
 }
 
 /* Status Badge Overlay */
@@ -247,7 +440,7 @@
 }
 
 .status-received {
-  --status-dot: #34d399;
+  --status-dot: var(--success);
 }
 
 .status-reserved {
@@ -286,7 +479,7 @@
 .item-id {
   font-size: 0.65rem;
   font-weight: 600;
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   font-family: ui-monospace, monospace;
   flex-shrink: 0;
   padding-top: 0.1rem;
@@ -295,7 +488,7 @@
 .item-header h3 {
   font-size: 0.85rem;
   font-weight: 600;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -308,7 +501,7 @@
 
 .item-title-ru {
   font-size: 0.75rem;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   line-height: 1.3;
   margin: 0;
   display: -webkit-box;
@@ -329,7 +522,7 @@
 .item-price {
   font-size: 0.8rem;
   font-weight: 700;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
   white-space: nowrap;
   padding: 0.2rem 0.55rem;
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
@@ -339,7 +532,7 @@
 .item-price-rub {
   font-size: 0.7rem;
   font-weight: 600;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   white-space: nowrap;
 }
 
@@ -348,7 +541,7 @@
   margin: 0.35rem 0 0 0;
   font-size: 0.7rem;
   font-weight: 600;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
 }
 
 /* Categories */
@@ -371,7 +564,7 @@
 
 .item-description {
   font-size: 0.7rem;
-  color: light-dark(#555, #aaa);
+  color: var(--ink-muted);
   line-height: 1.4;
   margin: 0;
   display: -webkit-box;
@@ -383,7 +576,7 @@
 
 .desc-label {
   font-weight: 600;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
   font-size: 0.6rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -396,7 +589,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.65rem;
-  color: light-dark(#888, #777);
+  color: var(--ink-muted);
   padding-top: 0.35rem;
 }
 
@@ -405,11 +598,11 @@
 }
 
 .meta-separator {
-  color: light-dark(#ccc, #555);
+  color: var(--ink-muted);
 }
 
 .meta-reserved {
-  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
+  color: var(--warning);
 }
 
 .reserved-by {
@@ -439,7 +632,7 @@
   text-transform: uppercase;
   letter-spacing: 0.02em;
   background: light-dark(rgba(0, 0, 0, 0.055), rgba(255, 255, 255, 0.07));
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
 }
 
 .tag-priority {
@@ -458,7 +651,7 @@
 
 .tag-priority-high {
   --tag-dot: var(--accent-start);
-  color: light-dark(#333, #fff);
+  color: var(--ink-body);
 }
 
 .tag-priority-medium {
@@ -467,12 +660,6 @@
 
 .tag-priority-low {
   --tag-dot: light-dark(#bbb, #666);
-}
-
-.tag-weight {
-  color: light-dark(#888, #777);
-  font-family: ui-monospace, monospace;
-  font-size: 0.6rem;
 }
 
 /* Item Actions */
@@ -510,7 +697,7 @@
   font-weight: 600;
   cursor: pointer;
   background-color: light-dark(rgba(0, 0, 0, 0.035), rgba(255, 255, 255, 0.05));
-  color: light-dark(#555, #b4b4b8);
+  color: var(--ink-muted);
   transition:
     color 0.25s ease,
     background-color 0.25s ease;
@@ -523,7 +710,7 @@
   border-radius: inherit;
   background: var(--action-fill);
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(calc(1 - 0.1 * var(--lift)));
   transition:
     transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease;
@@ -549,9 +736,14 @@
   transform: scale(1);
 }
 
+/* The label over the fill. White everywhere except the accent, which is the one
+   fill that stays bright — 3.19:1 under white — and so takes dark ink instead.
+   A shared `color: #fff` here was the sixth site of that bug, and the hardest
+   to see: the fill arrives through --action-fill, so nothing in this rule
+   mentions the accent at all. */
 .action-btn:hover,
 .action-btn:focus-visible {
-  color: #fff;
+  color: var(--action-ink, #fff);
 }
 
 .action-btn:hover::after,
@@ -560,47 +752,32 @@
 }
 
 .action-btn:focus-visible {
-  outline: 2px solid light-dark(#333, #fff);
+  outline: 2px solid var(--focus-ring-on-fill);
   outline-offset: 2px;
 }
 
 .action-edit {
   flex: 1;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--accent-start),
-    var(--accent-end)
-  );
+  --action-fill: var(--accent-gradient);
+  --action-ink: var(--accent-ink);
 }
 
 .action-reserved {
   width: 34px;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--color-warning),
-    var(--color-warning-dark)
-  );
-  color: light-dark(var(--color-warning-dark), var(--color-warning-light));
+  --action-fill: var(--warning-gradient);
+  color: var(--warning);
 }
 
 .action-received {
   width: 34px;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--color-success),
-    var(--color-success-dark)
-  );
-  color: light-dark(var(--color-success-dark), var(--color-success-light));
+  --action-fill: var(--success-gradient);
+  color: var(--success);
 }
 
 .action-delete {
   width: 34px;
-  --action-fill: linear-gradient(
-    135deg,
-    var(--color-error),
-    var(--color-error-dark)
-  );
-  color: light-dark(var(--color-error-dark), var(--color-error-light));
+  --action-fill: var(--danger-gradient);
+  color: var(--danger);
 }
 
 /* Already reserved / already received. A toggle that is on has to look on, but
@@ -650,12 +827,12 @@
 .user-name {
   font-weight: 600;
   font-size: 0.95rem;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
 }
 
 .user-count {
   font-size: 0.8rem;
-  color: light-dark(#666, #999);
+  color: var(--ink-muted);
   background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
   padding: 0.25rem 0.65rem;
   border-radius: 999px;
@@ -696,7 +873,7 @@
 .reservation-item-title {
   font-size: 0.85rem;
   font-weight: 500;
-  color: light-dark(var(--color-text-primary), var(--color-text-primary-dark));
+  color: var(--ink-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -705,7 +882,7 @@
 .reservation-item-price {
   font-size: 0.75rem;
   font-weight: 600;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* What the reserver wrote. Quoted rather than styled as a field: it is someone
@@ -717,7 +894,7 @@
     light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.16));
   font-size: 0.8rem;
   line-height: 1.45;
-  color: light-dark(#333, #ccc);
+  color: var(--ink-body);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

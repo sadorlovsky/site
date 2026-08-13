@@ -9,9 +9,273 @@
   --light-bg: #f8f8ff;
   --dark-bg: #191919;
 
-  /* Accent colors */
-  --accent-start: rgb(237, 98, 146);
-  --accent-end: rgb(237, 87, 96);
+  /* Everything that is a label rather than the thing itself: a count beside a
+     word, a separator between two cities, a hint under a field, a date beside
+     a title.
+
+     /travel worked this value out already and wrote down why — #888 is 3.35:1
+     against the light page, under the 4.5 small text needs, and this is
+     precisely the ink that lands on 10 and 11px text. But it worked it out
+     locally, so the kit, the trip list and the /kit page each kept their own
+     #888 or #999 and each failed the same way. One token, at the value that
+     passes, and the next component to want muted ink has somewhere to get it. */
+  --ink-muted: light-dark(#6a6a6a, #9a9aa0);
+
+  /* Its two neighbours, which DESIGN.md has named since the day it was written
+     and which nothing could read until now.
+
+     --ink-strong is the thing itself: a heading, a title, the answer to what a
+     row is about. --ink-body is a sentence — prose, a description, anything
+     read rather than glanced at. Between them and --ink-muted they cover every
+     job the greys were doing, and the greys were doing it in about twenty
+     values: #111 #222 #333 #444 #555 #666 #777 #888 #999 #aaa #bbb #ccc #ddd
+     #eee, plus #b4b4b8, #9a9aa0, #8a8a90, #767676, #aeaeae and #6a6a6a for the
+     ones that had already been argued about somewhere. A ladder that fine is
+     not a decision anybody made; it is what happens when each component picks
+     its own grey and none of them can see each other. */
+  --ink-strong: light-dark(#111, #fafafa);
+  --ink-body: light-dark(#333, #e0e0e0);
+
+  /* A line that separates without being seen — a rule under a heading, a field's
+     edge, the border of a resting control. Not ink: nothing is written in it,
+     so it answers to the 3:1 a component boundary needs and not to 4.5. */
+  --hairline: light-dark(#ddd, #444);
+
+  /* The same edge with the pointer on it. A resting control's border is
+     --hairline and its hovered one is one step nearer the ink — which four
+     stylesheets had each written out as `light-dark(#bbb, #666)`, two of them
+     within three lines of a hand-written copy of --hairline itself. Two more
+     greys nobody named, in a file that opens with the story of twenty of them. */
+  --hairline-hover: light-dark(#bbb, #666);
+
+  /* A field's ground: an input, a select, an admin form control. Whiter than
+     the page in the light scheme and darker than it in the dark one, both at
+     0.8 so whatever is behind a control still tells through it.
+
+     Not --card-bg and not --glass-bg, which is why it is here: it was the third
+     surface tint on the site and the only one with no name, written identically
+     in four stylesheets. */
+  --field-bg: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
+
+  /* The same job for the one rule that is looked at: the line under a sticky
+     heading — the year on /travel, a section head, the veil in /kit. It is the
+     only edge on the site that sits still on screen while a page slides under
+     it, so it is the only one worth drawing rather than declaring.
+
+     It is a background, not a border, because a border is one colour end to
+     end and this one has a shape. Three layers, painted bottom-up:
+
+       the line     out of nothing at the left, held at full strength under the
+                    heading, then thinning and dissolving before the right edge
+                    — so it ends where the content does and not at a hard stop
+                    against the page
+       the glint    a soft bloom a quarter of the way along, where the light in
+                    the room lands on the edge. Faintly rose in the dark scheme,
+                    because the light in that room is the ambient blobs
+       the catch    a second, dimmer one past the middle: one highlight reads as
+                    a lamp pointed at the line, two read as metal
+
+     Consumers apply it as `background-image` over their own background-color,
+     with `background: bottom / 100% 1px no-repeat` — the size and position
+     lists cycle, so one pair covers all three layers.
+
+     The old rule here was --glass-border, which is a capsule's edge: white at
+     0.7 alpha, which is right on a tinted lens and invisible on the light page,
+     where it was white-on-#f8f8ff. Light-scheme separators are made of ink, not
+     of highlight — hence the near-black core below, with white only in the
+     glints, where it lifts the line instead of being it.
+
+     No contrast bar applies: nothing is written in a rule and no control is
+     bounded by one, so this answers to neither 4.5 nor the 3:1 of SC 1.4.11 —
+     what separates a year from the rows under it is the space and the weight of
+     the heading, and the line only has to be seen. It is: the core reads 1.44:1
+     on the light page against the 1.28:1 --hairline manages there, and 1.48:1
+     on the dark one against the 1.29:1 the old white border managed. The dark
+     glint peaks at 4.16:1, which is what makes it read as a catch of light
+     rather than as a thicker stretch of line. */
+  --rule-lit:
+    linear-gradient(
+      90deg,
+      transparent 50%,
+      light-dark(rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.14)) 64%,
+      transparent 78%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 12%,
+      light-dark(rgba(255, 255, 255, 0.55), rgba(255, 240, 245, 0.36)) 27%,
+      transparent 42%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      light-dark(rgba(17, 17, 17, 0.17), rgba(255, 255, 255, 0.13)) 5%,
+      light-dark(rgba(17, 17, 17, 0.17), rgba(255, 255, 255, 0.13)) 60%,
+      light-dark(rgba(17, 17, 17, 0.07), rgba(255, 255, 255, 0.05)) 85%,
+      transparent 100%
+    );
+
+  /* The focus ring for the one case the accent cannot serve: a control whose
+     focus arrives *on* a fill — the chrome buttons, the dock item, the admin's
+     actions — where an accent outline lands on the accent and disappears. It
+     sits at the usual 2px offset, so it is measured against the page rather
+     than the fill: 11.95:1 and 17.58:1.
+
+     Twelve places had worked this out separately and written the same pair. */
+  --focus-ring-on-fill: light-dark(#333, #fff);
+
+  /* How far a thing is allowed to travel when it answers the pointer. 1 is the
+     distance the designer drew; 0 is the same gesture with the journey removed
+     and the destination kept, which is what `prefers-reduced-motion` asks for.
+
+     Written into the distance rather than applied to the element, so a
+     transform that carries *layout* — the dock's indicator, a tick centred on
+     its line, the cursor tooltip — simply never opts in and cannot be caught
+     by it. That was the whole bug in the block at the end of this file. */
+  --lift: 1;
+
+  /* The accent: a sunset, rose into orange, 37° of hue apart.
+
+     The two stops are not equals, and the spread is bought entirely from one of
+     them. --accent-start is used *flat* in forty places — focus rings, tag dots,
+     toast dots, the wishlist blob, every link on the dark page — where it has
+     nothing to blend with and simply is the brand's colour; --accent-end is used
+     flat in five, nearly all of them a gradient's far edge. So the rose is
+     pinned and the coral does the travelling. An earlier pass rotated both 45°
+     apart, which did make the sweep resolve on a word as short as "Zach" and
+     also turned the site pink everywhere the start stop stands alone. Moving
+     only the end buys more separation than that did (ΔE 11.7 against its 9.9)
+     and costs nothing anyone sees outside a gradient.
+
+     The rose is also 0.7% darker in lightness than the rgb(237, 98, 146) this
+     site carried for years — same hue, same chroma, no visible change. It buys
+     2.94:1 → 3.02:1 against the light page, which is the 3:1 a focus ring owes
+     SC 1.4.11 and the leading edge of display type owes 24px text. Restoring
+     the rounder old number puts both back under the bar; that shortfall is why
+     every rgba() wash derived from this colour moved with it. */
+  --accent-start: rgb(234, 96, 144);
+  --accent-end: rgb(237, 91, 42);
+
+  /* What is written *on* the accent.
+
+     A colour this bright cannot carry white text: 3.09:1 at one stop and
+     3.07:1 at the other, against the 4.5 that 12.8px of button label needs.
+     There are two ways out — dim the accent until white works, or keep the
+     accent and change the ink. This is the second, because the first costs the
+     brand its brightness on every primary action, dock pill and language
+     toggle at once.
+
+     Near-black, and warm rather than neutral: at hue 352 it reads as the same
+     light absorbed rather than as a grey borrowed from somewhere else. 4.86:1
+     on the rose stop, 4.54:1 on the coral. This is the whole of the fix — the
+     ink is what makes the accent legible, so the accent itself never had to
+     move to pass. */
+  --accent-ink: rgb(64, 20, 42);
+
+  /* The same two hues at reading strength, for the one job the bright pair
+     genuinely cannot do: *being* small text on the light page. A 16px
+     condensed title needs 4.5:1 and the bright pair gives 3.09. Nothing else
+     uses this — a button takes the bright gradient and --accent-ink instead.
+
+     Derived, not picked: each stop keeps its bright twin's hue and chroma and
+     drops in lightness until it clears 4.5:1 on the page — 4.56:1 and 4.55:1.
+     Move a bright stop and its deep twin is recomputed, never re-eyeballed;
+     that is what keeps a link the same colour as the gradient it sits in. */
+  --accent-deep-start: rgb(199, 62, 114);
+  --accent-deep-end: rgb(207, 63, 0);
+
+  /* Five gradients, so the choice is made once rather than at forty call sites
+     — which is how white text ended up on the bright pair in the first place.
+     Reach for the one that matches what the surface has to carry:
+
+     --accent-gradient          a surface: decoration, or a ground under
+                                --accent-ink (blobs, glows, bars, buttons, the
+                                sliding lozenge behind a label)
+     --accent-gradient-mirror   the same surface where two of them share a
+                                screen and want telling apart — see below
+     --accent-gradient-display  the gradient IS large text — 24px and up, where
+                                the bar is 3:1 and the bright pair clears it
+     --accent-gradient-text     the gradient IS small text, where the bar is
+                                4.5:1 and only the deep pair clears it
+
+     The last is the only one that changes with the scheme, and only because
+     the page under it does: on the dark page the bright pair already measures
+     5.4:1, so it stays there — the deep pair would be text going dim on a dark
+     ground for no reason. */
+  --accent-gradient: linear-gradient(
+    135deg,
+    var(--accent-start),
+    var(--accent-end)
+  );
+  /* The same two stops, entered from the other end. Four pages float a pair of
+     blurred blobs behind the content, and the second of each pair used to be
+     indigo into violet — a second brand colour, picked before this one was, and
+     left behind when the accent moved. Two hues 200° apart in the same 80px
+     blur is not a pair of decorations; it is the page disagreeing with itself
+     about what colour the site is.
+
+     Reversed rather than identical because the pair still wants telling apart:
+     one corner opens on rose and the other on coral, which at 0.1 opacity is
+     the whole of the difference and enough of it. */
+  --accent-gradient-mirror: linear-gradient(
+    135deg,
+    var(--accent-end),
+    var(--accent-start)
+  );
+  --accent-gradient-display: var(--accent-gradient);
+  --accent-gradient-text: linear-gradient(
+    135deg,
+    light-dark(var(--accent-deep-start), var(--accent-start)),
+    light-dark(var(--accent-deep-end), var(--accent-end))
+  );
+
+  /* Confirmations, at the same reading strength. White on #10b981 measures
+     2.54:1 — the worst pair on the site, and it was carrying the word that
+     means a thing worked. */
+  --success-start: #00875d;
+  --success-end: #046b4b;
+  --success-gradient: linear-gradient(
+    135deg,
+    var(--success-start),
+    var(--success-end)
+  );
+
+  /* State, as ink rather than as a surface — a word, a dot, an icon, a field's
+     message. The gradient above is a *ground*; these are what state looks like
+     when it is written, and the two are not interchangeable. --success-start is
+     built to carry ink at 4.5 and reads 4.30:1 as ink itself, which is why the
+     pair below is not just an alias for it.
+
+     These existed already, twice. DESIGN.md declared danger, warning and info
+     and no stylesheet could read them; the admin panel declared its own
+     --color-error/-warning/-success ramp in the global scope, at Tailwind's
+     defaults, on pages that load both files. Two of that ramp's text values do
+     not pass: #d97706 is 3.01:1 on the page and #059669 is 3.26:1 on the 10%
+     green wash the success message actually puts under it. The panel is not a
+     second product and does not need a second palette.
+
+     The green is the one value here that is new rather than promoted: the
+     documented #00875d still measures 3.93:1 on that same wash, so this sits a
+     step lower — 5.02:1 on paper, 4.60:1 on the wash, legible on both grounds
+     it is ever asked to sit on. */
+  --danger: light-dark(#c2141a, #f87171);
+  --warning: light-dark(#955d00, #fcd34d);
+  --info: light-dark(#4338ca, #a5b4fc);
+  --success: light-dark(#007b52, #6ee7b7);
+
+  /* State as a *ground* — a filled toggle, a solid pill, anything a word sits
+     on top of. Derived from --success-start/--success-end rather than invented:
+     each pair is its own hue held at exactly those two lightnesses, which is
+     what makes them carry white at 4.5 (4.95 to 7.53 across all six stops).
+
+     Note the convention runs opposite to the accent's, on purpose. The accent
+     stays bright and darkens its ink, because brightness is what the brand is.
+     A semantic ground owes nothing to the brand, so it darkens instead and
+     keeps white — which is also why the bright Tailwind fills these replace
+     could not work at all: white measured 2.15:1 on the amber and 2.54:1 on
+     the green. */
+  --danger-gradient: linear-gradient(135deg, #ce2626, #b00003);
+  --warning-gradient: linear-gradient(135deg, #9c6410, #824c00);
 
   /* Liquid glass — the single source of truth for every floating capsule
      (home pill, condensed title, language switcher, nav dock). Components
@@ -31,6 +295,17 @@
   --glass-shadow:
     0 10px 30px light-dark(rgba(20, 20, 40, 0.12), rgba(0, 0, 0, 0.38)),
     0 2px 6px light-dark(rgba(20, 20, 40, 0.06), rgba(0, 0, 0, 0.28));
+  /* The same lift, cut for something chip-sized. --glass-shadow is drawn for a
+     capsule floating over the page — a 2.7rem header pill with a whole document
+     behind it — and under a 32px lens lying in a rail it stops reading as lift
+     and starts reading as a halo. In the light scheme that is the entire
+     problem: the tint is nearly the page colour and the border is white on
+     white, so the halo becomes the only thing you can see and the capsule
+     turns into a soft white blob. */
+  --glass-shadow-sm:
+    0 3px 10px light-dark(rgba(20, 20, 40, 0.1), rgba(0, 0, 0, 0.34)),
+    0 1px 2px light-dark(rgba(20, 20, 40, 0.07), rgba(0, 0, 0, 0.24));
+
   --glass-rim:
     inset 1.5px 1.5px 1px -1px
       light-dark(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.32)),
@@ -44,8 +319,29 @@
      headings on /travel. Not --glass-*: a capsule is a neutral tint you look
      through, while this is the page's own colour closing over what passes
      beneath. The two were separately hardcoded, a hex and a blur radius apart. */
-  --veil-bg: light-dark(rgba(248, 248, 255, 0.9), rgba(25, 25, 25, 0.9));
-  --veil-filter: blur(16px);
+  /* The blur went up and the saturation arrived — it was the one material on
+     the site without any, and at 16px a heading's worth of text underneath
+     smeared into word-shaped smudges instead of dissolving.
+
+     The tint went with it, from a tenth of light passed to a thirtieth. A tenth
+     of near-white text on a near-black page is twenty-five levels above the
+     ground, which is enough to read the rows going under a heading, and blur
+     alone will not fix that: it attacks high frequencies, so it turns text into
+     a smudge and leaves a large soft shape — a row's hover wash — plain to see.
+
+     Going opaque is only safe because of where a page's ambience sits. On
+     /travel it is two blurred blobs laid over everything, chrome included, so
+     they tint this strip and the page below it by the same amount and there is
+     no seam. Under the page instead, this tint would cover the glow in the
+     strip while the page kept it, and the veil would read as a flat rectangle
+     cut out of the page — which is exactly what it did when both were tried the
+     other way round.
+
+     What passes through regardless is the mask's own fade: the bottom 2.75rem
+     of this strip runs every alpha down to nothing by design, and a sticky
+     heading is meant to be sitting over that stretch, covering it. */
+  --veil-bg: light-dark(rgba(248, 248, 255, 0.97), rgba(25, 25, 25, 0.97));
+  --veil-filter: blur(24px) saturate(140%);
 
   /* A card's tint. Cards take their border, shadow and rim from the tokens
      above but keep a tint of their own, heavier than the chrome's 0.55: a card
@@ -154,9 +450,9 @@
 
        Nor does this reach a blur written as a literal, since a token can't
        reach a value that never referred to it. Two such surfaces have a
-       hand-written fallback (.priority-badge, the kit modal's scrim) and four
-       have none at all — the admin modal, toast and item card, and the blog's
-       back-to-top button. Those four are an existing gap, recorded on /kit. */
+       hand-written fallback (.priority-badge, the kit modal's scrim) and three
+       have none at all — the admin modal, toast and item card. Those three are
+       an existing gap, recorded on /kit. */
     --glass-filter: none;
   }
 
@@ -173,10 +469,97 @@ body {
   margin: 0;
 }
 
+/* The way past the chrome, for a keyboard.
+
+   Off-screen rather than `display: none` or zero-sized: a link that is not
+   rendered is not focusable either, and one clipped to nothing is announced
+   without ever appearing, so the first Tab does something invisible. This
+   travels in from above the fold instead, which is also the direction it sends
+   you.
+
+   It wears the chrome's glass, because it is chrome — it just spends almost
+   all of its life out of frame. */
+.skip-link {
+  position: fixed;
+  /* PageLayout declares viewport-fit=cover, which is a promise to deal with
+     the notch rather than a request to ignore it. In landscape on a notched
+     phone the left inset is around 47px, so a link pinned at 0.75rem sits
+     underneath the cutout — and this one is the first thing in the tab order,
+     which makes it the worst candidate on the page for being invisible. */
+  top: max(0.75rem, env(safe-area-inset-top, 0px));
+  left: max(0.75rem, env(safe-area-inset-left, 0px));
+  z-index: 1100;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--ink-strong);
+  background-color: var(--glass-bg);
+  background-image: var(--glass-sheen);
+  backdrop-filter: var(--glass-filter);
+  border: var(--glass-border);
+  /* Above the viewport by its own height plus the inset, so no part of the box
+     peeks. The shadow is not part of the box: 0 10px 30px paints some 40px
+     below the bottom edge, which parked a soft grey smudge in the top-left
+     corner of every page. So the glass shadow arrives with the link, on focus.
+     Hiding it with visibility or opacity is not an option — neither can be
+     focused, and this is the one element on the site that has to be. */
+  box-shadow: none;
+  transform: translateY(calc(-100% - 0.75rem));
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* :focus rather than :focus-visible, which is the one place on this site that
+   distinction should not be drawn. The heuristic behind focus-visible exists to
+   spare a mouse user a ring they did not ask for — but nothing reaches this
+   link except the keyboard, and if the heuristic guesses wrong the cost is a
+   focused element the reader cannot see, which is the exact failure the link
+   exists to prevent. */
+.skip-link:focus {
+  transform: translateY(0);
+  box-shadow: var(--glass-shadow);
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+/* No --lift here on purpose: this transform is not decoration, it is the
+   difference between a focused link being on screen and being off it. Under
+   reduced motion it should still arrive — instantly. */
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .skip-link {
+    background-color: light-dark(#f0f0f0, #2a2a2e);
+    background-image: none;
+  }
+}
+
 body {
   background-color: light-dark(var(--light-bg), var(--dark-bg));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* The other half of viewport-fit=cover, which PageLayout has been asking for
+     without ever answering. Cover means the page owns the whole screen
+     including the cutout and the rounded corners, and it is landscape that
+     collects the bill: the inset on a notched phone is about 47px, and the
+     reading column is 800px inside an 844px viewport, so the first character
+     of every line was underneath the notch.
+
+     Inline only. The vertical insets are already handled by what sits at each
+     end — the header's veil runs to the top edge on purpose, and the wishlist's
+     mobile filter bar has carried env(safe-area-inset-bottom) all along — and
+     padding the body vertically would push the page down past both.
+
+     Nothing moves on a device without insets: env() resolves to the 0px
+     fallback, which is also what every desktop browser reports. And the
+     full-bleed layers are unaffected either way, since the blobs and the veil
+     are positioned against the viewport rather than flowed in the body. */
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 
 pre,
@@ -213,7 +596,7 @@ h6 {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 h1 {
@@ -321,7 +704,7 @@ p {
   line-height: 1.75;
   margin-top: 0;
   margin-bottom: 1.5rem;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--ink-body);
 }
 
 /* =============================================================================
@@ -333,30 +716,41 @@ p {
    - Button links: Use .kit-btn classes, fully reset
    ============================================================================= */
 
-/* Base link styles - accent colored */
+/* Base link styles - accent colored.
+
+   The light scheme takes the deep coral, the dark scheme the bright rose. Both
+   are the accent; only one of them can be read on paper. The bright coral this
+   used to be measured 3.24:1 against the page — fine as a large heading, a
+   third short of the 4.5 a link inside a sentence needs, and every link in
+   every blog post is inside a sentence. */
 a {
-  color: light-dark(var(--accent-end), var(--accent-start));
+  color: light-dark(var(--accent-deep-end), var(--accent-start));
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   text-decoration-color: light-dark(
-    rgba(237, 87, 96, 0.4),
-    rgba(237, 98, 146, 0.4)
+    rgba(207, 63, 0, 0.4),
+    rgba(234, 96, 144, 0.4)
   );
   transition:
     color 0.15s ease,
     text-decoration-color 0.15s ease;
 }
 
+/* Hover moves away from the page in both schemes rather than always toward the
+   rose: on paper that means deeper, on the dark page brighter. Reaching for the
+   bright rose in the light scheme took a link from 4.5:1 to 2.94:1 — hovering
+   it made it harder to read, which is the wrong direction for a state that
+   means "this is the one you're pointing at". */
 a:hover {
-  color: light-dark(var(--accent-start), #ff9eae);
+  color: light-dark(var(--accent-deep-start), #ff9eae);
   text-decoration-color: currentColor;
 }
 
 /* No visited state for links by default -
    content links opt-in via .link-content class */
 a:visited {
-  color: light-dark(var(--accent-end), var(--accent-start));
+  color: light-dark(var(--accent-deep-end), var(--accent-start));
 }
 
 /* Content links - used in blog posts, prose content */
@@ -373,21 +767,21 @@ article a:visited,
 
 /* Navigation links - no underline, subtle color */
 .link-nav {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   text-decoration: none;
 }
 
 .link-nav:hover {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 .link-nav:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Muted/subtle links */
 .link-muted {
-  color: light-dark(#666, #888);
+  color: var(--ink-muted);
   text-decoration-color: light-dark(
     rgba(102, 102, 102, 0.3),
     rgba(136, 136, 136, 0.3)
@@ -395,12 +789,12 @@ article a:visited,
 }
 
 .link-muted:hover {
-  color: light-dark(#333, #ccc);
+  color: var(--ink-body);
   text-decoration-color: currentColor;
 }
 
 .link-muted:visited {
-  color: light-dark(#666, #888);
+  color: var(--ink-muted);
 }
 
 /* Lists */
@@ -421,7 +815,7 @@ ol ol {
 
 li {
   margin-bottom: 0.5rem;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--ink-body);
 }
 
 li:last-child {
@@ -430,11 +824,11 @@ li:last-child {
 
 /* List item markers */
 ul > li::marker {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 ol > li::marker {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
   font-weight: 600;
 }
 
@@ -442,7 +836,7 @@ ol > li::marker {
 blockquote {
   margin: 2rem 0;
   padding: 1rem 1.5rem;
-  border-left: 4px solid light-dark(#ddd, #444);
+  border-left: 4px solid var(--hairline);
   background-color: light-dark(rgba(0, 0, 0, 0.02), rgba(255, 255, 255, 0.02));
   font-style: italic;
 }
@@ -455,13 +849,28 @@ blockquote p:last-child {
   margin-bottom: 0;
 }
 
-/* Inline code */
+/* Inline code. The light-scheme red is measured against this tint rather than
+   against the page: #d14 clears 4.5 on bare paper and lands at 4.10 once the
+   6% wash is under it, which is the ground it actually always has. */
 code {
   padding: 0.125rem 0.375rem;
-  background-color: light-dark(rgba(0, 0, 0, 0.06), rgba(255, 255, 255, 0.06));
+  /* The wash is the page's ink at 6%, not black at 6% — the same tint, said in
+     terms of something the palette owns. One expression covers both schemes
+     because --ink-strong already flips. */
+  background-color: color-mix(in srgb, var(--ink-strong) 6%, transparent);
   border-radius: 4px;
   font-size: 0.875em;
-  color: light-dark(#d14, #ff6b6b);
+  color: light-dark(#c81f48, #ff6b6b);
+  /* Inline code is usually a word, and then one day it is a class attribute or
+     a URL with no spaces in it, and an unbreakable run pushes the whole page
+     sideways — which is what /kit was doing on a phone. `anywhere` rather than
+     `break-word` so the break can happen mid-token when there is no better
+     opportunity, which for a path or an attribute there never is.
+
+     Only inline. A code *block* keeps its lines intact and scrolls in its own
+     box (see the `pre` rule above); breaking those would reflow indentation
+     that is carrying meaning. */
+  overflow-wrap: anywhere;
 }
 
 /* Code blocks */
@@ -472,12 +881,23 @@ pre code {
   font-size: 0.875rem;
 }
 
-/* Shiki dual theme support - dark mode override */
+/* Shiki dual theme support - dark mode override.
+
+   The token colours swap with the scheme; the ground does not come from the
+   theme any more. Shiki writes its own background as an inline style, which is
+   why this needs the same !important the tokens do — and why the ground is
+   named here once, beside them, instead of in whichever page happens to hold
+   a code block. A code block is a recess in this page, not a card imported
+   from the theme's own page: #f1f1f7 is the ghost-white page one step down,
+   #111114 the near-black one step further in. */
+.astro-code {
+  background-color: light-dark(#f1f1f7, #111114) !important;
+}
+
 @media (prefers-color-scheme: dark) {
   .astro-code,
   .astro-code span {
     color: var(--shiki-dark) !important;
-    background-color: var(--shiki-dark-bg) !important;
     font-style: var(--shiki-dark-font-style) !important;
     font-weight: var(--shiki-dark-font-weight) !important;
     text-decoration: var(--shiki-dark-text-decoration) !important;
@@ -488,7 +908,7 @@ pre code {
 strong,
 b {
   font-weight: 600;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 em,
@@ -499,7 +919,7 @@ i {
 /* Small text */
 small {
   font-size: 0.875rem;
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 /* Horizontal rules */
@@ -518,21 +938,24 @@ dl {
 dt {
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
 }
 
 dd {
   margin-left: 1.5rem;
   margin-bottom: 1rem;
-  color: light-dark(#333, #e0e0e0);
+  color: var(--ink-body);
 }
 
 /* Tables */
+/* A table is read, so it takes a reading size: the one step below body the site
+   already has — what a paragraph drops to under 768px. It used to sit at
+   0.95rem, a fourth reading size a fifth of a pixel away from that one. */
 table {
   width: 100%;
   margin-bottom: 1.5rem;
   border-collapse: collapse;
-  font-size: 0.95rem;
+  font-size: 0.9375rem;
 }
 
 th,
@@ -544,7 +967,7 @@ td {
 
 th {
   font-weight: 600;
-  color: light-dark(#111, #fafafa);
+  color: var(--ink-strong);
   border-bottom: 2px solid light-dark(#333, #666);
 }
 
@@ -554,10 +977,16 @@ abbr[title] {
   cursor: help;
 }
 
-/* Mark/highlight */
+/* Mark/highlight — the palette's amber rather than Material's yellow.
+
+   A highlighter wants to stay warm and stay yellow, so this keeps its hue
+   rather than becoming a second accent; it is the badge amber's family, one
+   step brighter because it sits under text rather than beside it. Black ink on
+   it in both schemes, which is what a highlighter does: the mark is a light
+   laid over the page, not a surface that follows the scheme. */
 mark {
-  background-color: light-dark(#ffeb3b, #ffd700);
-  color: light-dark(#000, #000);
+  background-color: light-dark(#fbbf24, #f0b429);
+  color: #1a1400;
   padding: 0.125rem 0.25rem;
   border-radius: 2px;
 }
@@ -579,11 +1008,20 @@ sub {
   bottom: -0.25em;
 }
 
-/* Selection */
+/* Selection — the accent, not a browser blue.
+
+   This was the one colour on the site belonging to no palette: a stock blue in
+   both schemes, on a page with no blue in it anywhere. Selection is a surface
+   the site draws even though it did not author it, and leaving it at the
+   default is the same as leaving the focus ring at the default.
+
+   Tinted rather than solid so the text keeps its own colour and its contrast
+   with it: at these alphas the page moves about six lightness levels, which
+   reads as a wash of the accent rather than a repaint. */
 ::selection {
   background-color: light-dark(
-    rgba(0, 102, 204, 0.2),
-    rgba(102, 179, 255, 0.3)
+    rgba(200, 63, 114, 0.22),
+    rgba(234, 96, 144, 0.3)
   );
   color: inherit;
 }
@@ -632,7 +1070,10 @@ a.btn:active {
 a.btn-primary,
 a.btn-primary:hover,
 a.btn-primary:visited,
-a.btn-primary:active,
+a.btn-primary:active {
+  color: var(--accent-ink);
+}
+
 a.btn-success,
 a.btn-success:hover,
 a.btn-success:visited,
@@ -644,29 +1085,29 @@ a.btn-secondary,
 a.btn-secondary:hover,
 a.btn-secondary:visited,
 a.btn-secondary:active {
-  color: light-dark(#333, #eee);
+  color: var(--ink-body);
 }
 
 a.btn-ghost,
 a.btn-ghost:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 a.btn-ghost:hover,
 a.btn-ghost:active {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 a.btn-ghost.active,
 a.btn-ghost.active:visited {
-  color: white;
+  color: var(--accent-ink);
 }
 
 a.btn-danger,
 a.btn-danger:hover,
 a.btn-danger:visited,
 a.btn-danger:active {
-  color: light-dark(#dc2626, #f87171);
+  color: var(--danger);
 }
 
 .btn:disabled {
@@ -680,67 +1121,94 @@ a.btn-danger:active {
 
 /* Primary - gradient accent button */
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 4px 15px rgba(237, 87, 96, 0.3);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 15px rgba(237, 91, 42, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(237, 87, 96, 0.4);
+  transform: scale(calc(1 + 0.05 * var(--lift)));
+  box-shadow: 0 6px 20px rgba(237, 91, 42, 0.4);
 }
 
-/* Secondary - subtle background */
+/* Secondary - subtle background. The same wash inline code wears: the page's
+   own ink, thinned. The dark scheme takes twice as much of it because white at
+   5% on a near-black page is nothing. */
 .btn-secondary {
-  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.1));
-  color: light-dark(#333, #eee);
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 5%, transparent),
+    color-mix(in srgb, var(--ink-strong) 10%, transparent)
+  );
+  color: var(--ink-body);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 10%, transparent),
+    color-mix(in srgb, var(--ink-strong) 15%, transparent)
+  );
 }
 
 /* Ghost - transparent with border */
 .btn-ghost {
   background: transparent;
-  color: light-dark(#666, #aaa);
-  border: 2px solid light-dark(#ddd, #444);
+  color: var(--ink-muted);
+  border: 2px solid var(--hairline);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  color: light-dark(#111, #fff);
-  border-color: light-dark(#bbb, #666);
+  color: var(--ink-strong);
+  border-color: var(--hairline-hover);
 }
 
 .btn-ghost.active {
-  color: white;
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: var(--accent-ink);
+  background: var(--accent-gradient);
   border-color: transparent;
-  box-shadow: 0 2px 10px rgba(237, 87, 96, 0.35);
+  box-shadow: 0 2px 10px rgba(237, 91, 42, 0.35);
 }
 
-/* Success - green gradient */
+/* Success - green gradient.
+
+   The glow is the button's own green, thinned. It used to be #10b981 — the
+   Tailwind emerald the success tokens replaced — so the light under the button
+   was a different green from the button, by a whole step of lightness. */
 .btn-success {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   color: white;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 4px 15px color-mix(in srgb, var(--success-start) 30%, transparent);
 }
 
 .btn-success:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  transform: scale(calc(1 + 0.05 * var(--lift)));
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--success-start) 40%, transparent);
 }
 
-/* Danger - red tones */
+/* Danger - red tones.
+
+   Wash, edge and label are one colour at four strengths, which is the whole
+   idea of a quiet destructive button. They were two: the label read --danger
+   while the wash and the border were Tailwind's red-600 and red-500, left over
+   from the ramp the semantic tokens replaced. color-mix rather than hand-mixed
+   rgba, so the wash is derived from the label's colour and cannot drift from it
+   again; the strengths are the ones that were there, and the fills keep their
+   two per scheme because the dark token is the lighter red and needs more of
+   itself to register against a near-black page. */
 .btn-danger {
-  background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.2));
-  color: light-dark(#dc2626, #f87171);
-  border: 2px solid light-dark(rgba(220, 38, 38, 0.3), rgba(239, 68, 68, 0.3));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 10%, transparent),
+    color-mix(in srgb, var(--danger) 20%, transparent)
+  );
+  color: var(--danger);
+  border: 2px solid color-mix(in srgb, var(--danger) 30%, transparent);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: light-dark(rgba(220, 38, 38, 0.15), rgba(239, 68, 68, 0.3));
-  border-color: light-dark(rgba(220, 38, 38, 0.5), rgba(239, 68, 68, 0.5));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 15%, transparent),
+    color-mix(in srgb, var(--danger) 30%, transparent)
+  );
+  border-color: color-mix(in srgb, var(--danger) 50%, transparent);
 }
 
 /* Button sizes */
@@ -773,26 +1241,26 @@ a.btn-danger:active {
   font-size: 0.85rem;
   font-weight: 500;
   line-height: 1.4;
-  color: light-dark(#111, #f9fafb);
-  background-color: light-dark(rgba(255, 255, 255, 0.8), rgba(30, 30, 35, 0.8));
+  color: var(--ink-strong);
+  background-color: var(--field-bg);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 16px;
-  border: 2px solid light-dark(#ddd, #444);
+  border: 2px solid var(--hairline);
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .select:hover {
-  border-color: light-dark(#bbb, #555);
+  border-color: var(--ink-muted);
 }
 
 .select:focus {
   outline: none;
   border-color: var(--accent-start);
-  box-shadow: 0 0 0 3px rgba(237, 98, 146, 0.15);
+  box-shadow: 0 0 0 3px rgba(234, 96, 144, 0.15);
 }
 
 .select:focus-visible {
@@ -821,9 +1289,11 @@ a.btn-danger:active {
   background-position: right 0.5rem center;
 }
 
+/* 0.9rem, not the 0.95rem it had: a control's label steps with its height, and
+   this is the same 44px .btn-lg is. Two controls of one height had two sizes. */
 .select-lg {
   padding: 0.8rem 2.75rem 0.8rem 1rem;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   border-radius: 12px;
   background-size: 18px;
   background-position: right 0.85rem center;
@@ -861,7 +1331,7 @@ a.btn-danger:active {
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
-  color: light-dark(#1a1a1a, #fff);
+  color: var(--ink-strong);
   background-color: var(--glass-bg);
   background-image: var(--glass-sheen);
   backdrop-filter: var(--glass-filter);
@@ -904,23 +1374,125 @@ a.btn-danger:active {
   }
 }
 
-/* Accessibility - Reduced motion */
+/* =============================================================================
+   Forced colours
+
+   Windows High Contrast replaces the palette wholesale with the four or five
+   colours the reader chose, and it does that by forcing `color` and
+   `background-color`. It does not force `-webkit-text-fill-color`, and that is
+   the property every gradient heading on this site uses to make its own text
+   transparent so the gradient behind it shows through. Forced there, the
+   background goes but the transparency stays: the page title, the breadcrumb,
+   the condensed pill and the 404's digits all vanish.
+
+   So the gradient comes off and the text is painted again, in the colour the
+   reader picked rather than one of ours. The identity is the first thing to go
+   in this mode by design — the point of it is that the reader's contrast
+   choice outranks the designer's.
+
+   The glass goes with it for the same reason: a translucent tint over a forced
+   background is a smear, and the border it depends on to read as an edge has
+   already been replaced by a solid system colour. */
+@media (forced-colors: active) {
+  .page-title,
+  .crumb-current,
+  .condensed-title__text,
+  .digit,
+  .list-item-title,
+  .post-lead__title,
+  h1 {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: LinkText;
+  }
+
+  .liquid-glass,
+  .floating-tooltip,
+  .skip-link {
+    background-image: none;
+    backdrop-filter: none;
+  }
+
+  /* --rule-lit is a background, and backgrounds are not painted in this mode —
+     which is the one place the drawn rule is worse than the border it replaced,
+     because a border survives here as a system colour. So the heading gets a
+     real one back. The fades and the glints are exactly what this reader has
+     asked not to be given: a rule at their own contrast, or nothing. */
+  .year-header,
+  .travel-section-head,
+  .glass-demo__veil {
+    border-bottom: 1px solid CanvasText;
+  }
+
+  /* Both of these carry meaning by colour alone here — a filled indicator and
+     a lit rim — and forced colours flattens exactly that. An outline is the one
+     thing the mode keeps. */
+  .kit-btn--primary,
+  .kit-btn--ghost[aria-pressed="true"],
+  .kit-btn--ghost.is-active {
+    outline: 2px solid ButtonText;
+  }
+}
+
+/* =============================================================================
+   Reduced motion
+
+   Asking for less motion is not asking for none. What the setting is actually
+   about is movement through space — the thing that provokes the symptom — and a
+   page that answers it by switching every animation off also throws away the
+   colour, the shadow and the lift that were telling you which control you are
+   pointing at. So the three kinds of motion here are treated as three
+   different questions.
+
+   1. Loops that only decorate — the drifting blobs, the morphing shape, the
+      spinning gradient. Nothing starts them and nothing ends them, so there is
+      no state for them to be explaining. They stop.
+
+   2. Movement that IS feedback — a card lifting, a button rising, an indicator
+      travelling to the item you just pointed at. The journey goes, the
+      destination stays: --lift collapses to 0 below, so anything that opted in
+      arrives without travelling. Each of those transforms is still written as
+      a distance times --lift, which is what makes this one declaration enough.
+
+   3. Everything that answers the pointer without moving — the hover wash, the
+      deepening shadow, the rim catching more light, opacity. It STAYS. Once
+      the movement is gone this is the entire remaining vocabulary for "this
+      one", and muting it is how a page ends up feeling broken rather than
+      calm.
+
+   What was here before was `animation`, `transition` and `transform` all set
+   to none with !important, the last of them on `*:hover *`. That selector
+   matches every descendant of any hovered element — and html and body are
+   hovered whenever the pointer is anywhere in the window, so it matched
+   essentially the whole document. It took the nav dock's indicator with it:
+   the pill is positioned by a transform, so with the mouse anywhere on the
+   page it snapped back to the dock's left edge and sat there highlighting the
+   wrong item. The tooltip, positioned the same way, went to the corner of the
+   viewport.
+
+   None of that blanket was protecting anything, either. Every script that
+   moves something — magnet.ts, nav-dock.ts, tooltip.ts, eye-moving.ts,
+   lang-switcher-indicator.ts, travel-map.ts — reads the media query itself and
+   bows out on its own.
+   ============================================================================= */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  :root {
+    --lift: 0;
+  }
+
+  /* No !important, deliberately: a component with a loop that is genuinely
+     feedback rather than decoration has to be able to say so. The button's
+     spinner is the one that does, and it says it in kit/button.css next to the
+     rule it is overriding — the kit's stylesheets are imported per component,
+     so their position relative to this file is not fixed, and an exception
+     written here would win or lose depending on which page you were on. */
   *,
   *::before,
   *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-
-  /* Disable transforms on interactive states and their descendants */
-  *:hover,
-  *:focus,
-  *:active,
-  *:hover *,
-  *:focus *,
-  *:active * {
-    transform: none !important;
+    animation: none;
   }
 }

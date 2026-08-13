@@ -25,15 +25,41 @@ function initCondense(header: HTMLElement) {
   // .page-header--condense .header-row) and a small breathing gap — as a CSS
   // variable scoped to the page's <main>.
   const scope = header.closest<HTMLElement>("main");
-  if (scope) {
-    const rem =
-      parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    const publish = () => {
-      const offset = Math.round(row.offsetHeight + 1.05 * rem);
-      scope.style.setProperty("--sticky-header-offset", `${offset}px`);
-    };
-    publish();
-    new ResizeObserver(publish).observe(row);
+  const rem =
+    parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+  // What the two side clusters take, so the pill between them knows how much
+  // of the row is not its own.
+  //
+  // The pill is centred with `left: 50%`, which means the room it may have is
+  // twice the distance to the *nearer* neighbour, not the width left over
+  // after both. Bounded by `calc(100% - 6.5rem)` it stayed clear of a page
+  // title of one word and drove straight through the breadcrumb and the
+  // language switcher on a post: a 75-character title measured 590px against
+  // the 476px actually free between them, and the ellipsis only arrived at 120
+  // characters, long after the collision.
+  const sides = () => {
+    const left = row.querySelector<HTMLElement>(".crumbs")?.offsetWidth ?? 0;
+    const right = row.querySelector<HTMLElement>(".header-end")?.offsetWidth ?? 0;
+    return Math.round(Math.max(left, right) + 0.75 * rem);
+  };
+
+  const publish = () => {
+    scope?.style.setProperty(
+      "--sticky-header-offset",
+      `${Math.round(row.offsetHeight + 1.05 * rem)}px`,
+    );
+    row.style.setProperty("--header-side", `${sides()}px`);
+  };
+  publish();
+
+  // The row's own size does not change when a label inside it does — switching
+  // language rewrites the breadcrumb without moving the row — so both sides are
+  // watched as well.
+  const resize = new ResizeObserver(publish);
+  resize.observe(row);
+  for (const side of row.querySelectorAll<HTMLElement>(".crumbs, .header-end")) {
+    resize.observe(side);
   }
 
   // The compact pill doubles as the way back to the top: it carries the page

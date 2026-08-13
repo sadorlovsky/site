@@ -47,7 +47,6 @@ export function ItemModal({
     url: "",
     category: "",
     priority: "",
-    weight: 0,
     options: [],
   }));
 
@@ -80,7 +79,6 @@ export function ItemModal({
         url: item.url || "",
         category: item.category,
         priority: item.priority || "",
-        weight: item.weight,
         options: item.options.map((option) => ({
           label: option.label || "",
           labelRu: option.labelRu || "",
@@ -101,7 +99,6 @@ export function ItemModal({
         url: "",
         category: "",
         priority: "",
-        weight: 0,
         options: [],
       });
       setSelectedCategories([]);
@@ -144,10 +141,7 @@ export function ItemModal({
     >,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "weight" ? parseInt(value, 10) || 0 : value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const addOption = () => {
@@ -535,6 +529,10 @@ export function ItemModal({
               </div>
             </div>
 
+            {/* No weight field beside this one any more. Weight is a position
+                now, written by dragging the list; a number typed here only ever
+                fought with the next drag, which rewrites them all. Priority
+                stays, but as a label on the card — it no longer sorts. */}
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="priority">Priority</label>
@@ -550,17 +548,6 @@ export function ItemModal({
                   <option value="medium">Medium</option>
                   <option value="low">Low</option>
                 </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="weight">Weight (higher = more important)</label>
-                <input
-                  type="number"
-                  id="weight"
-                  name="weight"
-                  value={formData.weight}
-                  onChange={handleInputChange}
-                  min={0}
-                />
               </div>
             </div>
           </form>

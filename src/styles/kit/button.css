@@ -51,10 +51,16 @@ a.kit-btn:active {
 }
 
 /* Explicit colors for link buttons (override global link styles) */
+/* Primary and success part ways here: the accent is bright enough that its
+   label has to be ink, while the confirmation green is deep enough to carry
+   white. Same rule, different grounds. */
 a.kit-btn--primary,
 a.kit-btn--primary:hover,
 a.kit-btn--primary:visited,
-a.kit-btn--primary:active,
+a.kit-btn--primary:active {
+  color: var(--accent-ink);
+}
+
 a.kit-btn--success,
 a.kit-btn--success:hover,
 a.kit-btn--success:visited,
@@ -66,31 +72,31 @@ a.kit-btn--secondary,
 a.kit-btn--secondary:hover,
 a.kit-btn--secondary:visited,
 a.kit-btn--secondary:active {
-  color: light-dark(#333, #ddd);
+  color: var(--ink-body);
 }
 
 a.kit-btn--ghost,
 a.kit-btn--ghost:visited {
-  color: light-dark(#666, #aaa);
+  color: var(--ink-muted);
 }
 
 a.kit-btn--ghost:hover,
 a.kit-btn--ghost:active {
-  color: light-dark(#111, #fff);
+  color: var(--ink-strong);
 }
 
 a.kit-btn--ghost.is-active,
 a.kit-btn--ghost.is-active:visited,
 a.kit-btn--ghost[aria-pressed="true"],
 a.kit-btn--ghost[aria-pressed="true"]:visited {
-  color: white;
+  color: var(--accent-ink);
 }
 
 a.kit-btn--danger,
 a.kit-btn--danger:hover,
 a.kit-btn--danger:visited,
 a.kit-btn--danger:active {
-  color: light-dark(#dc2626, #f87171);
+  color: var(--danger);
 }
 
 .kit-btn:focus-visible {
@@ -143,92 +149,129 @@ a.kit-btn--danger:active {
 
 /* Primary - Gradient accent button */
 .kit-btn--primary {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.3);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(237, 91, 42, 0.3);
 }
 
 .kit-btn--primary:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(237, 87, 96, 0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(237, 91, 42, 0.4);
+  transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--primary:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(237, 87, 96, 0.3);
+  box-shadow: 0 2px 6px rgba(237, 91, 42, 0.3);
 }
 
 /* Secondary - Subtle background */
 .kit-btn--secondary {
-  background: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.08));
-  color: light-dark(#333, #ddd);
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 5%, transparent),
+    color-mix(in srgb, var(--ink-strong) 8%, transparent)
+  );
+  color: var(--ink-body);
 }
 
 .kit-btn--secondary:hover:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12));
-  color: light-dark(#111, #fff);
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 8%, transparent),
+    color-mix(in srgb, var(--ink-strong) 12%, transparent)
+  );
+  color: var(--ink-strong);
 }
 
 .kit-btn--secondary:active:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.15));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 10%, transparent),
+    color-mix(in srgb, var(--ink-strong) 15%, transparent)
+  );
 }
 
 /* Ghost - Transparent with border */
 .kit-btn--ghost {
   background: transparent;
-  color: light-dark(#666, #aaa);
-  box-shadow: inset 0 0 0 2px light-dark(#ddd, #444);
+  color: var(--ink-muted);
+  box-shadow: inset 0 0 0 2px var(--hairline);
 }
 
 .kit-btn--ghost:hover:not(:disabled) {
-  color: light-dark(#111, #fff);
-  box-shadow: inset 0 0 0 2px light-dark(#bbb, #666);
+  color: var(--ink-strong);
+  box-shadow: inset 0 0 0 2px var(--hairline-hover);
 }
 
 .kit-btn--ghost:active:not(:disabled) {
-  background: light-dark(rgba(0, 0, 0, 0.03), rgba(255, 255, 255, 0.05));
+  background: light-dark(
+    color-mix(in srgb, var(--ink-strong) 3%, transparent),
+    color-mix(in srgb, var(--ink-strong) 5%, transparent)
+  );
 }
 
 .kit-btn--ghost[aria-pressed="true"],
 .kit-btn--ghost.is-active {
-  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
-  color: white;
-  box-shadow: 0 2px 8px rgba(237, 87, 96, 0.35);
+  background: var(--accent-gradient);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px rgba(237, 91, 42, 0.35);
 }
 
-/* Danger - Destructive actions */
+/* Danger - Destructive actions.
+
+   Ground, ring and label are one colour at several strengths, mixed from
+   --danger. They were two: the label read the token while the wash and the ring
+   were Tailwind's red-600 and red-500, left over from the ramp the semantic
+   tokens replaced — a mismatch nothing could see because no two of them were
+   ever side by side at full strength. The dark scheme still takes more of the
+   colour, because its red is the lighter one and has a near-black page to
+   register against. */
 .kit-btn--danger {
-  background: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.15));
-  color: light-dark(#dc2626, #f87171);
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 10%, transparent),
+    color-mix(in srgb, var(--danger) 15%, transparent)
+  );
+  color: var(--danger);
   box-shadow: inset 0 0 0 1px
-    light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.25));
+    light-dark(
+      color-mix(in srgb, var(--danger) 20%, transparent),
+      color-mix(in srgb, var(--danger) 25%, transparent)
+    );
 }
 
 .kit-btn--danger:hover:not(:disabled) {
-  background: light-dark(rgba(220, 38, 38, 0.15), rgba(239, 68, 68, 0.22));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 15%, transparent),
+    color-mix(in srgb, var(--danger) 22%, transparent)
+  );
   box-shadow: inset 0 0 0 1px
-    light-dark(rgba(220, 38, 38, 0.3), rgba(239, 68, 68, 0.35));
+    light-dark(
+      color-mix(in srgb, var(--danger) 30%, transparent),
+      color-mix(in srgb, var(--danger) 35%, transparent)
+    );
 }
 
 .kit-btn--danger:active:not(:disabled) {
-  background: light-dark(rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.28));
+  background: light-dark(
+    color-mix(in srgb, var(--danger) 20%, transparent),
+    color-mix(in srgb, var(--danger) 28%, transparent)
+  );
 }
 
-/* Success - Confirmation actions */
+/* Success - Confirmation actions. The glow is the button's own green thinned;
+   it used to be #10b981, the Tailwind emerald the success tokens replaced, so
+   the light under the button came from a different green than the button. */
 .kit-btn--success {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: var(--success-gradient);
   color: white;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--success-start) 30%, transparent);
 }
 
 .kit-btn--success:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--success-start) 40%, transparent);
+  transform: translateY(calc(-1px * var(--lift)));
 }
 
 .kit-btn--success:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--success-start) 30%, transparent);
 }
 
 /* =============================================================================
@@ -284,7 +327,11 @@ a.kit-btn--danger:active {
 }
 
 /* Restore color for spinner visibility */
-.kit-btn--primary.kit-btn--loading::after,
+.kit-btn--primary.kit-btn--loading::after {
+  border-color: var(--accent-ink);
+  border-right-color: transparent;
+}
+
 .kit-btn--success.kit-btn--loading::after {
   border-color: white;
   border-right-color: transparent;
@@ -292,12 +339,12 @@ a.kit-btn--danger:active {
 
 .kit-btn--secondary.kit-btn--loading::after,
 .kit-btn--ghost.kit-btn--loading::after {
-  border-color: light-dark(#333, #ddd);
+  border-color: var(--ink-body);
   border-right-color: transparent;
 }
 
 .kit-btn--danger.kit-btn--loading::after {
-  border-color: light-dark(#dc2626, #f87171);
+  border-color: var(--danger);
   border-right-color: transparent;
 }
 
@@ -312,16 +359,32 @@ a.kit-btn--danger:active {
    ============================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
+  /* The rise is already gone — --lift is 0, so the translate below resolves to
+     nothing and the button arrives without travelling. What is left is the
+     ground and the shadow, and with the movement removed that is the whole of
+     the feedback, so it keeps its transition rather than snapping.
+
+     This block used to be `transition: none` plus `transform: none` on hover,
+     which took the colour with the movement and left a control that changed
+     between two states with nothing in between to say it had. */
   .kit-btn {
-    transition: none;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
-  .kit-btn:hover:not(:disabled) {
-    transform: none;
-  }
+  /* The spinner keeps turning, at half speed. It was switched off here, which
+     left a submitting button showing a static arc and no way to tell a slow
+     save from a stuck one — the loading state deliberately hides its own label,
+     so the ring is the only thing left saying anything at all.
 
+     A steady linear sweep is also not what the setting is about: what provokes
+     symptoms is large or unpredictable movement across the field of view, not a
+     16px ring turning at a constant rate in the middle of a button you are
+     waiting on. Slower rather than faster for the same reason. */
   .kit-btn--loading::after {
-    animation: none;
+    animation: kit-btn-spin 1.2s linear infinite;
   }
 }
 
@@ -331,6 +394,6 @@ a.kit-btn--danger:active {
   }
 
   .kit-btn--secondary {
-    box-shadow: inset 0 0 0 1px light-dark(#ccc, #555);
+    box-shadow: inset 0 0 0 1px var(--hairline-hover);
   }
 }

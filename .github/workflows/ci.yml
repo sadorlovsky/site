@@ -1,0 +1,40 @@
+name: CI
+
+# The tests exist to catch things no reviewer would spot by reading a diff — a
+# country added to trips.json with no continent behind it disappears from the
+# continents view while every fraction on the page still adds up. Nothing ran
+# them: deploy.yml is about migrations, and Vercel's build does not run Vitest,
+# so the guard only fired if someone happened to type `bun test` locally.
+#
+# Deliberately separate from deploy.yml. That workflow only wakes for a push
+# carrying a migration; this one has to see every push and every pull request,
+# which is the whole point of it.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      # `vitest` alone would sit in watch mode if the CI variable ever went
+      # missing; `run` says once and means it.
+      - name: Run tests
+        run: bunx vitest run
+
+      - name: Typecheck
+        run: bunx astro check

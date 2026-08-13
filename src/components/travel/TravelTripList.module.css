@@ -30,7 +30,7 @@
 
 /* Arrow between cities inside a country — lives inside the tint. */
 .separator {
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   font-size: 0.85rem;
   margin: 0 0.25rem;
 }
@@ -40,7 +40,7 @@
    space after it is the wrap point for the next country. The country's own right
    padding already gaps it from the last city, so only a hair of left margin. */
 .interSep {
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   font-size: 0.85rem;
   margin-left: 0.1rem;
 }
@@ -138,19 +138,21 @@
   margin-top: 2px;
   padding-inline-start: 0.5rem;
   font-size: 0.85rem;
-  color: light-dark(#7a7a7a, #8f8f8f);
+  color: var(--ink-muted);
 }
 
 .landmarkIcon {
   margin-right: 0.35rem;
   font-size: 0.7rem;
-  color: light-dark(#b81f54, #ed6292);
+  color: light-dark(var(--accent-deep-start), var(--accent-start));
   opacity: 0.7;
 }
 
+/* The separator is already muted ink; dimming it further by six tenths put it
+   at 2.8:1, and a token chosen to just clear 4.5 has nothing to spare. Spacing
+   is what separates the names — the dot only has to be visible. */
 .landmarkSep {
   margin: 0 0.35rem;
-  opacity: 0.6;
 }
 
 /* Mobile pulls .destination into the left gutter by the capsule padding; the
@@ -173,7 +175,7 @@
 }
 
 .flagDivider {
-  color: light-dark(#999, #666);
+  color: var(--ink-muted);
   margin: 0 3px 0 0;
   font-size: 0.7rem;
 }
