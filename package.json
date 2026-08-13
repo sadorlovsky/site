@@ -17,7 +17,9 @@
     "db:seed": "bun run scripts/db/seed.ts",
     "db:reset": "rm -f local.db && bun run db:migrate && bun run db:seed",
     "test": "vitest",
-    "db:migrate:remote": "bun run scripts/db/migrate.ts --remote"
+    "db:migrate:remote": "bun run scripts/db/migrate.ts --remote",
+    "images:backfill": "bun run scripts/images/backfill.ts",
+    "images:check": "bun run scripts/images/backfill.ts --check"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.5",
@@ -40,7 +42,8 @@
     "maplibre-gl": "^5.24.0",
     "polylabel": "^2.1.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

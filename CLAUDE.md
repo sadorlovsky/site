@@ -30,6 +30,9 @@ bun db:seed      # Refill the local database with dev data
 bun db:reset     # Delete local.db, migrate, seed
 
 bun db:migrate:remote   # Apply them to Turso. CI's job — see below
+
+bun images:check     # Does every wishlist image have all four widths?
+bun images:backfill  # Make the ones that don't
 ```
 
 Everything local by default, production only when spelled out. Dev talks to
@@ -70,6 +73,7 @@ src/
 └── styles/          # CSS files
 db/migrations/       # Generated SQL, applied in order — never edited by hand
 scripts/db/          # migrate, seed, and the build-skip check Vercel runs
+scripts/images/      # backfill: the derivatives an upload would have made
 ```
 
 ## Path Aliases
@@ -113,6 +117,57 @@ This needs `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` in three places — GitHu
 Actions secrets (to migrate), Vercel (for the runtime *and* for the ignore
 step), and `.env` locally (for scripts) — plus `VERCEL_DEPLOY_HOOK_URL` as an
 Actions secret.
+
+### Wishlist Images
+
+**Nothing resizes a photograph at request time.** Every width is written once,
+when the picture is uploaded, and served straight off `cdn.orlovsky.dev` with no
+function in the path. `src/lib/images.ts` holds the scheme and the reasoning.
+
+What the database stores in `imageUrl` / `imageUrlDark` is the **original's** R2
+key. Nothing on the site points at it. The markup asks for derivatives, whose
+keys are the original's with the extension replaced:
+
+```
+wishlist/1731234567-a1b2c3.jpg          ← the row's imageUrl, the negative
+wishlist/1731234567-a1b2c3.400.webp     ← what the page actually serves
+wishlist/1731234567-a1b2c3.560.webp
+wishlist/1731234567-a1b2c3.800.webp
+wishlist/1731234567-a1b2c3.1024.webp
+```
+
+Those keys are built by string, so **nothing checks whether the files exist**. A
+row whose derivatives were never written is a broken card, not a slow one.
+
+Uploading through the admin panel handles all of it: `POST /api/~/upload`
+derives the four widths and writes them beside the original before it answers.
+
+**Adding an item any other way — a script, a direct INSERT, an agent doing
+either — does not.** Put the original in R2, insert the row, then:
+
+```bash
+bun images:backfill            # against ./local.db
+bun images:backfill --remote   # against Turso, when the row is in production
+```
+
+It reads every `imageUrl` and `imageUrlDark` in that database, makes whatever is
+missing, and skips what is already there — so it is safe to run at any time, and
+it is the last step of adding an item by hand. `bun images:check` reports gaps
+without writing and exits non-zero when it finds any.
+
+Also true of images:
+
+- **JPEG, PNG and WebP only.** GIF is refused on upload: every picture is
+  resized, and resizing an animated GIF keeps one frame.
+- **Sources should be at least 1024px wide.** A narrower one is enlarged to fill
+  the `1024w` slot rather than written short, because a srcset that lies is worse
+  than a few kilobytes of upscale.
+- **Changing `IMAGE_WIDTHS` means a `bun images:backfill --force` before the
+  deploy that reads them** — the new widths do not exist until something writes
+  them.
+- Everything in the bucket is written with `Cache-Control: public,
+  max-age=31536000, immutable`. Keys are unique per upload and files are never
+  edited in place, so a changed picture is a new key.
 
 ### Environment Variables
 - Server secrets: `import { SECRET_NAME } from 'astro:env/server'`

@@ -11,6 +11,7 @@ import {
   R2_BUCKET_NAME,
 } from "astro:env/server";
 import { generateSecureId } from "./crypto";
+import { IMMUTABLE_CACHE_CONTROL } from "../images";
 
 interface UploadResult {
   success: boolean;
@@ -44,6 +45,10 @@ function createR2Client(): AwsClient | null {
 
 /**
  * Upload a file to R2 using S3-compatible API
+ *
+ * Everything written here is immutable — see the constant's own note. Before
+ * it, objects went out carrying nothing but a Content-Type, and how long
+ * Cloudflare held them was Cloudflare's business.
  */
 export async function uploadToR2(
   file: ArrayBuffer,
@@ -65,6 +70,7 @@ export async function uploadToR2(
       method: "PUT",
       headers: {
         "Content-Type": contentType,
+        "Cache-Control": IMMUTABLE_CACHE_CONTROL,
       },
       body: file,
     });
