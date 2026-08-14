@@ -1114,23 +1114,34 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
   color: var(--ink-muted);
 }
 
-/* The field sits *inside* frosted glass, so it can't be the kit's opaque input:
-   a solid white box would punch a hole in the panel. Tint only, and the focus
-   ring is the kit's accent inset. */
 textarea.message-popover-input {
   resize: none;
-  background-color: light-dark(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0.22));
-  box-shadow: inset 0 0 0 1px
-    light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.14));
 }
 
-textarea.message-popover-input:hover:not(:disabled):not(:focus) {
-  box-shadow: inset 0 0 0 1px
-    light-dark(rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.24));
-}
+/* The field sits *inside* frosted glass, so it can't be the kit's opaque input:
+   a solid white box would punch a hole in the panel. Tint only, and the focus
+   ring is the kit's accent inset.
 
-textarea.message-popover-input:focus {
-  box-shadow: inset 0 0 0 2px var(--accent-start);
+   Scoped to the lens, because that is the only thing the tint was ever a
+   workaround for. The sheet is the veil and has no hole to punch, so its field
+   is the kit's own — the 80% ground and the 2px hairline ring every other field
+   on this site wears, which is also what stops the ring changing width when it
+   takes focus. */
+@media (min-width: 600.02px) {
+  textarea.message-popover-input {
+    background-color: light-dark(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0.22));
+    box-shadow: inset 0 0 0 1px
+      light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.14));
+  }
+
+  textarea.message-popover-input:hover:not(:disabled):not(:focus) {
+    box-shadow: inset 0 0 0 1px
+      light-dark(rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.24));
+  }
+
+  textarea.message-popover-input:focus {
+    box-shadow: inset 0 0 0 2px var(--accent-start);
+  }
 }
 
 .message-popover-error {
@@ -1186,6 +1197,208 @@ textarea.message-popover-input:focus {
   .message-btn::before,
   .message-popover {
     transition: none;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   The panel's second shape: a sheet, on a phone.
+
+   Anchoring is the wrong instrument on a 390px screen. The panel is 320px of a
+   375–430px viewport, so "beside the bead" is already most of the width — and
+   the bead sits in a card footer near the bottom edge, under the filter bar,
+   which is exactly where the software keyboard the panel exists to summon
+   arrives. Floating UI answers that by shifting the panel over the bead it
+   belongs to and overlapping it, which is the best a lens can do and still not
+   what a phone wants.
+
+   So below 600px — this page's own phone line, the width at which the filters
+   leave the top of the document for a bar pinned to the bottom edge — the panel
+   stops being a lens laid on the grid and becomes the page closing over it:
+   full width at the bottom edge, on the veil, over a scrim, with the grid's
+   scroll locked behind it. The blog's contents does this at its own breakpoint
+   for the same reason, and this is deliberately the same sheet.
+
+   The veil rather than glass, for the reason recorded there: a capsule is a
+   neutral tint you look through, and a sheet is not looked through. It also
+   answers `prefers-reduced-transparency` without a line here, since the tokens
+   collapse to the page's own colour in global.css.
+
+   Three things about the shape are not CSS, and the script owns them
+   (client/reservation-message.ts): Floating UI has to stop writing left/top,
+   the kit's control sizes step from 32px to 44px, and the sheet rides up by
+   however much visualViewport says the keyboard is covering. It also drops
+   `liquid-glass` from the element — on a phone this is not glass, and saying so
+   in the class list is cheaper, and truer, than out-specifying four
+   declarations from here.
+   ----------------------------------------------------------------------------- */
+
+/* Shape only — whether it is displayed at all is settled with the rest of the
+   sheet, below. */
+.message-popover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.message-popover-close {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  /* The sheet's fourth control, and every control in it is at the 44px step.
+     The glyph stays 18px: the target grows, the mark does not. */
+  width: 44px;
+  height: 44px;
+  /* Pulled back out to the padding line, so the chevron sits on the same edge
+     as the title beside it rather than a control's slack inside it. */
+  margin-right: -0.75rem;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+  /* Points the way the sheet will go. */
+  transform: rotate(180deg);
+}
+
+.message-popover-close:hover {
+  color: var(--ink-strong);
+}
+
+.message-popover-close:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 2px;
+}
+
+/* The scrim this site already uses, from the admin modal and the blog's sheet. */
+.message-scrim {
+  position: fixed;
+  inset: 0;
+  /* Over the filter bar pinned to the same edge (100), under the sheet (1000). */
+  z-index: 999;
+  display: none;
+  background: light-dark(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  transition: opacity 0.36s ease;
+}
+
+.message-scrim.is-open {
+  opacity: 1;
+}
+
+.message-scrim[hidden] {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .message-scrim {
+    display: block;
+  }
+
+  .message-popover {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    /* Whatever the keyboard leaves, less a strip of page above it so the sheet
+       reads as sitting on something. Past that it scrolls itself rather than
+       growing off the top of the screen — a 320×568 phone with the keyboard up
+       has 271px to give and the sheet wants 320. */
+    max-height: calc(100dvh - var(--sheet-keyboard, 0px) - 2rem);
+    overflow-y: auto;
+    padding-block: 1.1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    padding-inline: max(1.25rem, env(safe-area-inset-left, 0px))
+      max(1.25rem, env(safe-area-inset-right, 0px));
+    /* A modal keeps its 16px and flattens the two corners it no longer has. */
+    border-radius: 16px 16px 0 0;
+    /* The one edge still on screen. --glass-border is a capsule's white rim and
+       is invisible on the light page, which is the complaint --rule-lit exists
+       to answer under sticky headings; a divider between two surfaces is what
+       --hairline is for. */
+    border-top: 1px solid var(--hairline);
+    background-color: var(--veil-bg);
+    backdrop-filter: var(--veil-filter);
+    /* No shadow. --glass-shadow points down, which from here is off the screen,
+       and the vocabulary has no upward variant to reach for. The scrim is the
+       separation and the hairline is the edge. */
+    box-shadow: none;
+    /* The lens fades and scales out of its bead; a sheet arrives from the edge
+       it is attached to and does nothing else. */
+    opacity: 1;
+    transform: translateY(101%);
+    transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .message-popover.is-open {
+    transform: translateY(calc(-1 * var(--sheet-keyboard, 0px)));
+  }
+
+  .message-popover-close {
+    display: inline-flex;
+  }
+
+  /* In the flow of a sheet the title is the sheet's landmark, at the size every
+     other group heading on this site takes. Beside a bead it was a label on a
+     lens and 0.9rem was right; standing alone above the fold it is not. */
+  .message-popover-title {
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .message-popover-hint {
+    font-size: 0.8rem;
+  }
+
+  .message-popover-footer {
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+
+  .message-popover-count,
+  .message-popover-error {
+    font-size: 0.75rem;
+  }
+
+  /* The count goes back to the field it counts. Three items on one line do not
+     fit a 320px screen once the buttons are at the 44px step, and the count is
+     the one of the three that was never a target. */
+  .message-popover-count {
+    order: -1;
+    width: 100%;
+    text-align: right;
+  }
+
+  .message-popover-actions {
+    width: 100%;
+  }
+
+  /* Save takes the rest of the line and Skip keeps its label's width. Halving
+     the row between them would give a destructive "Delete" — which is what Skip
+     becomes once there is a message — the same weight as the action it undoes. */
+  .message-popover-save {
+    flex: 1;
+  }
+}
+
+/* The sheet re-declares `transition`, so it has to re-answer this: the block
+   above it no longer wins. */
+@media (max-width: 600px) and (prefers-reduced-motion: reduce) {
+  .message-popover,
+  .message-scrim {
+    transition: none;
+  }
+}
+
+/* --hairline does not tighten at the token, whatever the shape of that sentence
+   in DESIGN.md suggests — each component asks for the contrast pair itself, as
+   the kit's fields and the filter bar both do. This edge is the only line
+   between a modal and the page it covers, so it asks too. */
+@media (max-width: 600px) and (prefers-contrast: more) {
+  .message-popover {
+    border-top: 2px solid light-dark(#999, #777);
   }
 }
 

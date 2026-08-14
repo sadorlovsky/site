@@ -9,6 +9,9 @@
 // Messages are held in a Map keyed by item id rather than on the DOM. They only
 // ever arrive for the visitor who wrote them, and a data attribute on a card is
 // a place for other people's scripts to read them from.
+//
+// Below 600px the panel is not that lens but a sheet at the bottom edge; see
+// "The sheet" below, and the block of the same name in styles/wishlist.css.
 
 import { actions } from "astro:actions";
 import { computePosition, autoUpdate, offset, flip, shift } from "@floating-ui/dom";
@@ -17,6 +20,12 @@ import type { Lang } from "@lib/i18n";
 import { getVisitorId } from "./visitor-id";
 
 const CLOSE_DURATION = 220; // must outlast the CSS exit transition
+/** The sheet's slide is 0.36s, and it is the exit the same rule applies to. */
+const SHEET_CLOSE_DURATION = 380;
+/** This page's phone line — where the filters become a bar on the bottom edge. */
+const SHEET_QUERY = "(max-width: 600px)";
+/** Under this, the visual viewport shrank for a toolbar and not for a keyboard. */
+const KEYBOARD_FLOOR = 120;
 
 let lang: Lang = "en";
 let popover: HTMLElement | null = null;
@@ -25,10 +34,15 @@ let counter: HTMLElement | null = null;
 let errorLine: HTMLElement | null = null;
 let dismissBtn: HTMLButtonElement | null = null;
 let saveBtn: HTMLButtonElement | null = null;
+let closeBtn: HTMLButtonElement | null = null;
+let scrim: HTMLElement | null = null;
 
 let anchor: HTMLButtonElement | null = null;
 let stopFollowing: (() => void) | null = null;
 let closeTimer: number | undefined;
+let sheetMedia: MediaQueryList | null = null;
+let scrimTimer: number | undefined;
+let stopWatchingKeyboard: (() => void) | null = null;
 /** A write is in flight. `setBusy` disables the buttons; this covers the rest. */
 let saving = false;
 
@@ -141,6 +155,10 @@ function originFor(placement: Placement): string {
 
 function position() {
   if (!popover || !anchor) return;
+  // A sheet is positioned by its edges. `autoUpdate` is stopped when the shape
+  // changes, but a frame already in flight would still land here and write the
+  // inline left/top that beats them.
+  if (isSheet()) return;
   computePosition(anchor, popover, {
     strategy: "fixed",
     placement: "top-end",
@@ -159,6 +177,154 @@ function position() {
     popover.style.top = `${y}px`;
     popover.style.setProperty("--popover-origin", originFor(placement));
   });
+}
+
+/* -------------------------------------------------------------------------
+   The sheet
+
+   Which shape the panel wears is a media query's answer, but three parts of
+   wearing it are not CSS's to give: Floating UI has to stop writing left/top,
+   the kit's control sizes have to step up for a thumb, and the sheet has to
+   ride above whatever the software keyboard is covering.
+   ------------------------------------------------------------------------- */
+
+function isSheet(): boolean {
+  return sheetMedia?.matches ?? false;
+}
+
+/** The grid must not scroll behind an open sheet: it is a modal, not a popover. */
+function lockPage(locked: boolean) {
+  document.body.style.overflow = locked ? "hidden" : "";
+}
+
+function hideScrim() {
+  if (!scrim) return;
+  scrim.classList.remove("is-open");
+  window.clearTimeout(scrimTimer);
+  // It leaves after the sheet has, so its fade is not cut short.
+  scrimTimer = window.setTimeout(() => {
+    if (scrim && !scrim.classList.contains("is-open")) scrim.hidden = true;
+  }, SHEET_CLOSE_DURATION);
+}
+
+/**
+ * A sheet pinned to the bottom edge and a software keyboard want the same
+ * pixels, and the sheet loses: `position: fixed` is measured against the layout
+ * viewport, which the keyboard does not shrink, so the field the whole sheet
+ * exists for ends up underneath it. `visualViewport` reports the difference and
+ * the sheet rides up by exactly that much.
+ *
+ * The floor is there because iOS reports a shrunken visual viewport for its own
+ * collapsing toolbars with no keyboard on screen at all, and a sheet hovering
+ * 50px above the bottom edge for no reason is worse than one that never moved.
+ * Nothing between a toolbar and a keyboard is that size.
+ */
+function watchKeyboard(on: boolean) {
+  const viewport = window.visualViewport;
+  if (!on || !viewport) {
+    stopWatchingKeyboard?.();
+    stopWatchingKeyboard = null;
+    return;
+  }
+  if (stopWatchingKeyboard) return;
+
+  const measure = () => {
+    if (!popover) return;
+    const covered = window.innerHeight - viewport.height - viewport.offsetTop;
+    const inset = covered > KEYBOARD_FLOOR ? Math.round(covered) : 0;
+    popover.style.setProperty("--sheet-keyboard", `${inset}px`);
+  };
+
+  viewport.addEventListener("resize", measure);
+  viewport.addEventListener("scroll", measure);
+  stopWatchingKeyboard = () => {
+    viewport.removeEventListener("resize", measure);
+    viewport.removeEventListener("scroll", measure);
+  };
+  measure();
+}
+
+/**
+ * Puts the shape the viewport asked for onto the panel.
+ *
+ * Runs on every open, and again whenever the breakpoint is crossed while the
+ * panel is up — re-shaping rather than closing, because the panel may be
+ * holding text that exists nowhere else and turning a phone sideways is not a
+ * decision to discard it.
+ */
+function applyShape() {
+  if (!popover || !textarea) return;
+  const sheet = isSheet();
+
+  // A sheet over a scrim with the page locked behind it is modal. An anchored
+  // popover is not, and must not claim to be: `aria-modal` hides the rest of
+  // the document, and the card this is about is the rest of the document.
+  if (sheet) popover.setAttribute("aria-modal", "true");
+  else popover.removeAttribute("aria-modal");
+
+  // On a phone this is not glass but the veil. Dropping the class is cheaper —
+  // and truer in the DOM — than out-specifying its four declarations from a
+  // page stylesheet.
+  popover.classList.toggle("liquid-glass", !sheet);
+
+  // The kit's own steps, swapped rather than copied: 44px under a thumb, 32px
+  // under a cursor, each bringing the padding, radius and type that go with it.
+  textarea.classList.toggle("kit-input--lg", sheet);
+  textarea.classList.toggle("kit-input--sm", !sheet);
+  for (const button of [dismissBtn, saveBtn]) {
+    button?.classList.toggle("kit-btn--lg", sheet);
+    button?.classList.toggle("kit-btn--sm", !sheet);
+  }
+
+  if (sheet) {
+    stopFollowing?.();
+    stopFollowing = null;
+    // Whatever Floating UI last wrote outranks the sheet's own edges.
+    popover.style.left = "";
+    popover.style.top = "";
+    popover.style.removeProperty("--popover-origin");
+    lockPage(true);
+    watchKeyboard(true);
+    // Only when the panel is already up. On the way in, the scrim needs the
+    // same frame of closed styles the sheet does, and `openPopover` gives the
+    // two of them that frame together.
+    if (popover.classList.contains("is-open") && scrim) {
+      window.clearTimeout(scrimTimer);
+      scrim.hidden = false;
+      scrim.classList.add("is-open");
+    }
+  } else {
+    lockPage(false);
+    watchKeyboard(false);
+    hideScrim();
+    popover.style.removeProperty("--sheet-keyboard");
+    if (anchor && !stopFollowing) {
+      stopFollowing = autoUpdate(anchor, popover, position);
+    }
+  }
+}
+
+/**
+ * Tab stays inside the sheet, and only inside the sheet. The anchored popover
+ * is not modal: tabbing off its last button and back into the card it belongs
+ * to is how it is meant to be left.
+ */
+function trapTab(event: KeyboardEvent) {
+  if (event.key !== "Tab" || !popover || !anchor || !isSheet()) return;
+  const stops = Array.from(
+    popover.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), textarea:not([disabled])",
+    ),
+  );
+  if (stops.length === 0) return;
+
+  const active = document.activeElement;
+  const inside = popover.contains(active);
+  const leaving = event.shiftKey ? active === stops[0] : active === stops.at(-1);
+  if (!leaving && inside) return;
+
+  event.preventDefault();
+  (event.shiftKey ? stops.at(-1) : stops[0])?.focus();
 }
 
 function setError(message: string | null) {
@@ -208,6 +374,10 @@ function openPopover(bead: HTMLButtonElement, { focus = true } = {}) {
   if (anchor && anchor !== bead) anchor.setAttribute("aria-expanded", "false");
   window.clearTimeout(closeTimer);
   stopFollowing?.();
+  // Nulled as well as called: `applyShape` starts a fresh follow only when
+  // nothing is following, and a stopped cleanup left in the variable reads as
+  // one that is still running.
+  stopFollowing = null;
 
   anchor = bead;
   textarea.value = messages.get(itemId) ?? "";
@@ -220,17 +390,31 @@ function openPopover(bead: HTMLButtonElement, { focus = true } = {}) {
   updateCounter();
   syncDismissButton();
 
+  const sheet = isSheet();
   popover.hidden = false;
+  if (sheet && scrim) {
+    window.clearTimeout(scrimTimer);
+    scrim.hidden = false;
+  }
+  // Shape first: it is what decides whether the closed styles the next line
+  // freezes are a lens scaled out of its bead or a sheet below the edge. It
+  // also starts the follow, on the shape that has an anchor to follow.
+  applyShape();
   // The entrance transition needs a frame with the closed styles applied.
   void popover.offsetHeight;
   popover.classList.add("is-open");
+  if (sheet) scrim?.classList.add("is-open");
   bead.setAttribute("aria-expanded", "true");
-
-  stopFollowing = autoUpdate(bead, popover, position);
 
   if (focus) {
     textarea.focus();
     textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  } else if (sheet) {
+    // A modal must not leave focus out on the page it has just covered. The
+    // close button rather than the field, because this path is the panel
+    // opening by itself after a reservation and a keyboard is not what that
+    // moment asked for — the same reason the focus was declined here at all.
+    closeBtn?.focus();
   }
 }
 
@@ -238,20 +422,38 @@ function closePopover({ restoreFocus = true } = {}) {
   if (!popover || popover.hidden) return;
 
   const returnTo = anchor;
+  const sheet = isSheet();
+  // Read before anything moves it: the sheet gives the keyboard back by blurring
+  // below, which would otherwise answer the question this asks.
+  const hadFocus = popover.contains(document.activeElement);
+
   popover.classList.remove("is-open");
+  hideScrim();
+  lockPage(false);
+  watchKeyboard(false);
   anchor?.setAttribute("aria-expanded", "false");
   stopFollowing?.();
   stopFollowing = null;
   anchor = null;
 
+  // Hand the keyboard back while the sheet is still leaving rather than when it
+  // has gone. Focus in a field that is about to be `hidden` lands on <body>
+  // anyway, and on iOS it takes the keyboard with it a beat too late.
+  if (sheet && hadFocus) (document.activeElement as HTMLElement | null)?.blur();
+
   window.clearTimeout(closeTimer);
   closeTimer = window.setTimeout(() => {
-    if (popover && !popover.classList.contains("is-open")) popover.hidden = true;
-  }, CLOSE_DURATION);
+    if (popover && !popover.classList.contains("is-open")) {
+      popover.hidden = true;
+      // Cleared here and not above: dropping it while the sheet is still on
+      // screen would slam it down the keyboard's height first.
+      popover.style.removeProperty("--sheet-keyboard");
+    }
+  }, sheet ? SHEET_CLOSE_DURATION : CLOSE_DURATION);
 
-  // Only pull focus back if it is still inside the panel we just dismissed —
+  // Only pull focus back if it was still inside the panel we just dismissed —
   // clicking elsewhere on the page has already put it where it belongs.
-  if (restoreFocus && returnTo && popover.contains(document.activeElement)) {
+  if (restoreFocus && returnTo && hadFocus) {
     returnTo.focus();
   }
 }
@@ -323,6 +525,13 @@ export function initReservationMessages(initialLang: Lang): void {
   errorLine = popover.querySelector(".message-popover-error");
   dismissBtn = popover.querySelector(".message-popover-dismiss");
   saveBtn = popover.querySelector(".message-popover-save");
+  closeBtn = popover.querySelector(".message-popover-close");
+  scrim = document.getElementById("reservation-message-scrim");
+
+  sheetMedia = window.matchMedia(SHEET_QUERY);
+  sheetMedia.addEventListener("change", () => {
+    if (anchor) applyShape();
+  });
 
   // Delegated: beads are hidden at render time and revealed later, and the grid
   // is rebuilt whenever a category filter runs.
@@ -346,6 +555,8 @@ export function initReservationMessages(initialLang: Lang): void {
   });
 
   saveBtn?.addEventListener("click", commit);
+
+  closeBtn?.addEventListener("click", () => closePopover());
 
   dismissBtn?.addEventListener("click", () => {
     const itemId = itemIdOf(anchor);
@@ -378,6 +589,8 @@ export function initReservationMessages(initialLang: Lang): void {
       closePopover();
     }
   });
+
+  document.addEventListener("keydown", trapTab);
 }
 
 /** The language switcher fires while the popover may be open. */
