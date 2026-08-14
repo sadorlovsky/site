@@ -279,8 +279,23 @@ export default defineConfig({
     isr: {
       // Bypass token for on-demand revalidation
       bypassToken: VERCEL_ISR_BYPASS_TOKEN,
-      // Exclude API routes and admin pages from ISR
-      exclude: [/^\/api\/.*/, /^\/wishlist\/~(\/.*)?$/],
+      // Exclude API routes, the actions endpoint and admin pages from ISR.
+      //
+      // /_actions is not optional and not a nicety: everything the adapter does
+      // not exclude is routed to the ISR function, and Vercel keys that cache on
+      // path and method alone — the request body is not part of it. So the first
+      // POST /_actions/reserve ran, wrote its row and had its `{success: true}`
+      // stored; every reserve after that, any item, any visitor, was answered
+      // from that entry without the function being invoked at all. The button
+      // reported success, nothing reached the database, and a reload showed no
+      // reservation. `expiration: false` below means "until revalidated", so
+      // that entry never aged out. Cancelling went the same way through
+      // /_actions/unreserve.
+      exclude: [
+        /^\/api\/.*/,
+        /^\/_actions(\/.*)?$/,
+        /^\/wishlist\/~(\/.*)?$/,
+      ],
     },
   }),
   image: {
