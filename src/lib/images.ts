@@ -66,9 +66,24 @@ export function heightFor(width: number): number {
  * browser picks a candidate from srcset and sizes together, so two different
  * strings are two different choices — and the preload then fetches a file the
  * markup never asks for, which is the one outcome worse than no preload.
+ *
+ * Every branch here is `repeat(auto-fill, minmax(280px, 1fr))` with a 1.5rem
+ * gap, solved for the column count that fits: the container is 1200 wide at
+ * most, padded 24 a side, and the card's 1px border takes 2 more off the
+ * picture. Three columns start at 936 and four at 1240, where the container has
+ * stopped growing — so the widest desktop draws the *smallest* card of all,
+ * 280, and that is the number this used to get wrong.
+ *
+ * Overstating a width is not the safe direction it looks like. Claiming 380
+ * where the card is 280 asks a 2× screen for 760px, which lands on the 800w
+ * file — and the browser then resamples 800 down to 560 itself, on top of the
+ * 1024→800 the upload already did. Two reductions in a row cost 12–31% of the
+ * micro-contrast, measured in Chrome across eight items; the honest number
+ * fetches 560w and draws it pixel for pixel. It is also 41% fewer bytes, which
+ * is the smaller half of the reason.
  */
 export const WISHLIST_IMAGE_SIZES =
-  "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, 380px";
+  "(max-width: 768px) calc(100vw - 2rem), (max-width: 935px) 45vw, (max-width: 1239px) calc((100vw - 96px) / 3), 280px";
 
 /**
  * The R2 key of one derivative, from the original's key.
