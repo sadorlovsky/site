@@ -15,6 +15,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun run scripts/db/migrate.ts",
     "db:seed": "bun run scripts/db/seed.ts",
+    "db:pull": "bun run scripts/db/pull.ts",
     "db:reset": "rm -f local.db && bun run db:migrate && bun run db:seed",
     "test": "vitest",
     "db:migrate:remote": "bun run scripts/db/migrate.ts --remote",

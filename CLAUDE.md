@@ -28,6 +28,7 @@ bun db:generate  # Write a migration for the current schema.ts
 bun db:migrate   # Apply pending migrations to ./local.db
 bun db:seed      # Refill the local database with dev data
 bun db:reset     # Delete local.db, migrate, seed
+bun db:pull      # Refill it with the live wishlist instead
 
 bun db:migrate:remote   # Apply them to Turso. CI's job — see below
 
@@ -43,6 +44,16 @@ credentials are always in scope — nothing may treat that as permission.
 
 Start a fresh checkout with `bun db:reset`; there is no database until you do,
 because nothing rebuilds it on dev server start.
+
+`bun db:pull` is the one command that reads production without being told to,
+and it is safe because it cannot write there: the target is the same hardcoded
+`file:local.db`, and only the four wishlist tables move. AdminCredential and
+AdminSession stay as they are — production's passkeys would not authenticate
+against `ADMIN_RP_ID=localhost` anyway, so copying them buys nothing and costs a
+secret on a laptop. It replaces the data, not the schema, so migrate first; it
+refuses to run when production is further along, because those columns would be
+dropped on the way in. Images need no step: `imageUrl` is an R2 key and the
+bucket is shared, so `CDN_DEV_DOMAIN` serves the same file production does.
 
 To reach the admin panel locally, `POST /api/~/auth/dev-login` sets a session
 cookie without a passkey. It only answers on localhost.
