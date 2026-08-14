@@ -2,8 +2,29 @@ import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro/zod";
 import { db, Reservation, WishlistItem, and, eq, sql } from "@lib/db";
 import { RESERVATION_MESSAGE_MAX_LENGTH } from "@lib/wishlist";
+import { revalidateWishlist } from "@lib/admin/revalidate";
 
 const reservationsEnabled = import.meta.env.RESERVATIONS_ENABLED !== "false";
+
+/**
+ * Refresh the cached pages this item appears on, without letting that failure
+ * become the visitor's.
+ *
+ * The row is already written by the time this runs. ISR holds /wishlist until
+ * something asks it not to (`expiration: false`), so a card the server rendered
+ * as free stays free in the HTML for the next visitor; the per-visitor fetch in
+ * client/wishlist.ts corrects it on arrival, which is why this was survivable
+ * while it was missing, but it corrects it after first paint. If the refresh
+ * itself fails there is nothing to tell the reserver — they reserved it — so it
+ * is logged and swallowed.
+ */
+async function refreshWishlistPages(category: string): Promise<void> {
+  try {
+    await revalidateWishlist({ category });
+  } catch (error) {
+    console.error("Revalidation after a reservation change failed:", error);
+  }
+}
 
 export const server = {
   reserve: defineAction({
@@ -63,6 +84,8 @@ export const server = {
         )
       `);
 
+      await refreshWishlistPages(item[0].category);
+
       return { success: true };
     },
   }),
@@ -96,6 +119,16 @@ export const server = {
 
       // Delete reservation
       await db.delete(Reservation).where(eq(Reservation.itemId, itemId));
+
+      // Read after the delete, not before: the category is only wanted to name
+      // the page to refresh, and an item that vanished between the two is one
+      // whose pages an admin edit has already refreshed.
+      const item = await db
+        .select({ category: WishlistItem.category })
+        .from(WishlistItem)
+        .where(eq(WishlistItem.id, itemId));
+
+      if (item.length > 0) await refreshWishlistPages(item[0].category);
 
       return { success: true };
     },

@@ -9,8 +9,19 @@ import { VERCEL_ISR_BYPASS_TOKEN } from "astro:env/server";
 /**
  * Trigger ISR revalidation for wishlist pages
  * Called after any mutation (create, update, delete)
+ *
+ * With no argument every wishlist page is revalidated, which is what an admin
+ * edit wants: it can change an item's category, so the page it left is as stale
+ * as the one it joined.
+ *
+ * `only` narrows that to the pages a single item actually appears on — /wishlist
+ * and its own category. Reserving is a visitor-facing action on a public
+ * endpoint, and refreshing all nine pages per click would put the ISR write bill
+ * in the hands of anyone willing to press a button twice.
  */
-export async function revalidateWishlist(): Promise<void> {
+export async function revalidateWishlist(only?: {
+  category: string;
+}): Promise<void> {
   const siteUrl = import.meta.env.SITE;
 
   if (!VERCEL_ISR_BYPASS_TOKEN || !siteUrl) {
@@ -23,7 +34,13 @@ export async function revalidateWishlist(): Promise<void> {
   const bypassToken = VERCEL_ISR_BYPASS_TOKEN;
 
   // Revalidate /wishlist and all category pages (/wishlist/<category>)
-  const paths = categories.map((c) => c.href);
+  const wanted = only
+    ? // "all" is /wishlist itself, which is in the list either way. An unknown
+      // category leaves just that page, which is the honest answer: there is no
+      // page for a category that does not exist.
+      categories.filter((c) => c.id === "all" || c.id === only.category)
+    : categories;
+  const paths = wanted.map((c) => c.href);
 
   const results = await Promise.allSettled(
     paths.map((path) =>
