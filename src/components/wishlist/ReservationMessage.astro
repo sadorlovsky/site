@@ -12,12 +12,20 @@
  * clipping, which is what the per-card version had to fight with `overflow:
  * visible` and `contain: none` overrides.
  *
- * Positioning is Floating UI's job (client/reservation-message.ts), anchored to
- * the message bead in the card's footer.
+ * One element, two shapes. On a pointer it is that lens, anchored to the
+ * message bead in the card's footer by Floating UI. On a phone it is a sheet at
+ * the bottom edge — the same one the blog's contents becomes, for the same
+ * reason: a 320px panel beside a bead is most of a 390px screen, and the
+ * software keyboard this panel exists to summon lands on top of wherever the
+ * bead was. Both shapes are driven from client/reservation-message.ts; the
+ * reasoning for the second lives with its rules in styles/wishlist.css.
  */
+import { Icon } from "astro-icon/components";
 import { RESERVATION_MESSAGE_MAX_LENGTH } from "@lib/wishlist";
 // The panel borrows the kit's field and buttons rather than growing its own;
-// neither stylesheet is pulled in by anything else the wishlist renders.
+// neither stylesheet is pulled in by anything else the wishlist renders. The
+// size classes below are the pointer's; the script swaps them for the 44px step
+// when the panel is a sheet.
 import "@styles/kit/input.css";
 import "@styles/kit/button.css";
 ---
@@ -29,14 +37,32 @@ import "@styles/kit/button.css";
   aria-labelledby="reservation-message-title"
   hidden
 >
-  <h2
-    class="message-popover-title"
-    id="reservation-message-title"
-    data-en="Leave a message"
-    data-ru="Оставить сообщение"
-  >
-    Leave a message
-  </h2>
+  <div class="message-popover-head">
+    <h2
+      class="message-popover-title"
+      id="reservation-message-title"
+      data-en="Leave a message"
+      data-ru="Оставить сообщение"
+    >
+      Leave a message
+    </h2>
+    {/*
+      The sheet's own way out, and only the sheet's. A pointer has Escape and
+      the whole page to click on; a thumb has the scrim, which is a target
+      nobody can see. "Skip" is not that button — it turns into "Delete" the
+      moment there is a message, and a sheet whose only visible exit is
+      sometimes destructive is not one.
+    */}
+    <button
+      type="button"
+      class="message-popover-close"
+      aria-label="Close"
+      data-aria-label-en="Close"
+      data-aria-label-ru="Закрыть"
+    >
+      <Icon name="chevron-up" width={18} height={18} aria-hidden="true" />
+    </button>
+  </div>
   <p
     class="message-popover-hint"
     data-en="Only the owner of the wishlist sees it."
@@ -88,3 +114,9 @@ import "@styles/kit/button.css";
     </div>
   </div>
 </div>
+
+{/* The sheet's scrim, and the reason a tap anywhere else closes it without the
+    document handler having to know a sheet exists: it is simply outside the
+    panel. Sits above the filter bar pinned to the same edge, so a chip under it
+    cannot be pressed through. */}
+<div class="message-scrim" id="reservation-message-scrim" hidden></div>
