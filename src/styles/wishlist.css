@@ -1342,17 +1342,6 @@ textarea.message-popover-input:focus {
 }
 
 /* Responsive */
-/* Drag-to-scroll cursor for desktop (only when scrollable) */
-@media (hover: hover) and (pointer: fine) {
-  .filter-categories.is-scrollable {
-    cursor: grab;
-  }
-
-  .filter-categories.is-scrollable:active {
-    cursor: grabbing;
-  }
-}
-
 @media (max-width: 768px) {
   .wishlist-container {
     padding: 2rem 1rem 4rem;
@@ -1371,71 +1360,67 @@ textarea.message-popover-input:focus {
     left: -100px;
   }
 
+  /* =============================================================================
+     The filter row wraps here, on purpose, into one cloud the width of the page.
+
+     It used to be a horizontal scroller, and in a dev build it was one: this
+     block said `flex-wrap: nowrap` and the edge fades, the drag and the
+     scroll-to-active came with it. None of that ever shipped. The production
+     bundle emits the kit's stylesheet *after* the page's, and
+     `.kit-toggle-group--separated` carries `flex-wrap: wrap` at the very same
+     specificity — so the later sheet won, the row wrapped anyway, and the
+     machinery attached to it was dead code on the only build a visitor sees.
+     Nothing here out-specifies that any more. Anything that ever wants to
+     contradict a kit declaration from a page stylesheet has to *win*, not tie.
+
+     Wrapping is also the better answer, which is why the fix is to commit to it
+     rather than to reach for a heavier selector. Eight categories plus "All" is
+     the entire taxonomy of this page; a 261px window over 559px of chips shows
+     three and a half of them, and hiding half the menu behind a swipe is a poor
+     trade on the one screen whose job is to say what kinds of things are here.
+     Two rows cost 38px. The scroller keeps the job it is genuinely right for —
+     the bar pinned to the bottom edge, which is one line or it is covering the
+     content it filters.
+
+     `display: contents` is what makes those two rows read as designed rather
+     than as a leftover. As three flex items — "All", the nav, the die — the nav
+     is a *column*, so the die's 40px comes off every line it wraps onto and not
+     just the first: at 390pt that turns two rows into three, the last one
+     carrying a single chip. Flattened, all ten items share one wrap and one gap,
+     and 390pt and 430pt both land on two full rows. The nav keeps its explicit
+     role and label, so losing its box does not lose the landmark.
+     ============================================================================= */
   .filters {
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    /* The base row is `space-between`, which on a wrapping flex container
+       spreads every line to both edges — nine filters strung out across three
+       ragged rows. The cloud is packed from the left. */
+    justify-content: flex-start;
+    /* The chips' own gap horizontally (kit-toggle-group--separated is drawn to
+       sit close), the rhythm's own step vertically, so two lines of pills read
+       as two lines rather than as one slab. */
+    column-gap: 0.15rem;
+    row-gap: 0.5rem;
   }
 
-  .filter-categories {
-    flex: 1;
-    min-width: 0;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    gap: 0.4rem;
-    /* Fade both edges by default */
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black calc(100% - 16px),
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black calc(100% - 16px),
-      transparent
-    );
+  /* Descendant-qualified, and that is the whole point of the note above rather
+     than an accident of formatting: `.kit-toggle-group` sets `display:
+     inline-flex` at one class, exactly as `--separated` sets `flex-wrap: wrap`
+     at one class, and the kit's sheet is emitted after this one. A bare
+     `.filter-categories` here would tie and lose in the build while looking
+     right in dev — the same failure this block was written to end. */
+  .filters .filters-start,
+  .filters .filters-end,
+  .filters .filter-categories {
+    display: contents;
   }
 
-  .filter-categories::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* At start position - remove left fade */
-  .filter-categories.at-start {
-    mask-image: linear-gradient(
-      to right,
-      black,
-      black calc(100% - 16px),
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      black,
-      black calc(100% - 16px),
-      transparent
-    );
-  }
-
-  /* At end position - remove right fade */
-  .filter-categories.at-end {
-    mask-image: linear-gradient(to right, transparent, black 16px, black);
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      black 16px,
-      black
-    );
-  }
-
-  /* At both ends - no fade */
-  .filter-categories.at-start.at-end {
-    mask-image: none;
-    -webkit-mask-image: none;
+  /* The die is an action and not a filter, and parking it on the row's right
+     edge is what still says so now that it stands in the same flow as the
+     chips. An auto margin on the last item takes whatever its line has left. */
+  .kit-btn.filter-random {
+    margin-left: auto;
   }
 
   /* minmax(0, 1fr), not 1fr: a bare `1fr` is `minmax(auto, 1fr)`, and that auto

@@ -62,36 +62,9 @@ const hasEndSlot = Astro.slots.has("end");
   }
 </div>
 
-<script>
-  import { initScrollableCategories, type ScrollableCategoriesInstance } from "@client/scrollable-categories";
-
-  let instance: ScrollableCategoriesInstance | null = null;
-  let resizeHandler: (() => void) | null = null;
-
-  function initFilterCategories() {
-    // Clean up previous instance
-    if (instance) {
-      instance.destroy();
-      instance = null;
-    }
-    if (resizeHandler) {
-      window.removeEventListener("resize", resizeHandler);
-      resizeHandler = null;
-    }
-
-    const scroller = document.querySelector<HTMLElement>(".filter-categories");
-    if (!scroller) return;
-
-    instance = initScrollableCategories({ scroller });
-
-    // Scroll to active category
-    instance.scrollToActive();
-
-    // Re-check edge fades on resize
-    resizeHandler = instance.updateEdgeFades;
-    window.addEventListener("resize", resizeHandler, { passive: true });
-  }
-
-  initFilterCategories();
-  document.addEventListener("astro:page-load", initFilterCategories);
-</script>
+{/* No script here on purpose. This row used to run initScrollableCategories —
+    edge fades, drag-to-scroll, scroll-the-active-chip-into-view — for a
+    horizontal scroller that only existed in a dev build; see the note in
+    wishlist.css. The row wraps at every width now, so there is nothing to
+    scroll and nothing to keep in view, and the shared module stays where it is
+    still doing real work: the bar pinned at the bottom of a phone. */}
