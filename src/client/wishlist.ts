@@ -350,7 +350,54 @@ type ButtonScope = "free" | "all";
 function revealButton(button: HTMLButtonElement): void {
   button.style.visibility = "";
   button.style.pointerEvents = "";
+  button.classList.remove("reserve-btn--taken");
   button.disabled = false;
+}
+
+/**
+ * The accessible name for the state a button has just been put into.
+ *
+ * One function because the three names are one decision. They were written out
+ * at four call sites, and one of them — the branch that hands a returning
+ * holder their Cancel — simply forgot, leaving a button labelled "Отменить"
+ * that announced "Зарезервировано". A visible label and a spoken one
+ * describing different buttons is worse than either being wrong.
+ */
+function setStateAriaLabel(
+  button: HTMLButtonElement,
+  state: "reserve" | "cancel" | "reserved",
+): void {
+  const key = (
+    { reserve: "Reserve", cancel: "Cancel", reserved: "Reserved" } as const
+  )[state];
+  const label =
+    currentLang === "ru"
+      ? button.dataset[`ariaLabelRu${key}`]
+      : button.dataset[`ariaLabelEn${key}`];
+  if (label) button.setAttribute("aria-label", label);
+}
+
+/**
+ * Someone else has this one: the pill says so and stops being pressable.
+ *
+ * It used to hide itself instead, which left a footer holding a price and a
+ * gap where the control belongs — and a gap reads as a card that failed to
+ * load, not as a present that is spoken for. On a phone, where a card is
+ * roughly a screen, a half-claimed list turned into thirty of those in a row.
+ *
+ * `disabled` rather than `aria-disabled`: there is nothing to press, and
+ * leaving thirty inert pills in the tab order costs a keyboard reader far more
+ * than the announcement is worth. The card still says "reserved" out loud —
+ * the badge over the photograph carries the same word.
+ */
+function markTaken(button: HTMLButtonElement): void {
+  button.textContent =
+    (currentLang === "ru"
+      ? button.dataset.ruReserved
+      : button.dataset.enReserved) ?? null;
+  setStateAriaLabel(button, "reserved");
+  button.classList.add("reserve-btn--taken");
+  button.disabled = true;
 }
 
 function showButtons(scope: ButtonScope = "all") {
@@ -370,6 +417,9 @@ function showButtons(scope: ButtonScope = "all") {
 
       // Get badge elements
       const article = button.closest("article");
+      // The card's own half of that reset — see revealButton. Only the
+      // "someone else's" branch puts it back.
+      article?.classList.remove("item-taken");
       const reservedBadge = article?.querySelector(
         ".reserved-badge",
       ) as HTMLElement;
@@ -409,6 +459,13 @@ function showButtons(scope: ButtonScope = "all") {
           (currentLang === "ru"
             ? button.dataset.ruCancel
             : button.dataset.enCancel) ?? null;
+        // …and the accessible name with it. updateAriaLabels ran before the
+        // per-visitor fetch answered, off the server's pessimistic "other", so
+        // without this the holder's button reads "Отменить" and announces
+        // "Зарезервировано: …" — the visible label and the spoken one
+        // describing different buttons. Every branch here now names itself;
+        // markTaken does the same for the branch below.
+        setStateAriaLabel(button, "cancel");
         // The whole of "this one is yours" is settled here, not split with
         // initializeReserveButtons as it used to be. That split is what broke
         // an own reservation on reload: the buttons were wired before the
@@ -423,10 +480,9 @@ function showButtons(scope: ButtonScope = "all") {
         }
         if (reservedBadge) reservedBadge.hidden = true;
       } else if (isReserved) {
-        // Someone else's reservation - hide button, show badge
-        button.style.visibility = "hidden";
-        button.style.pointerEvents = "none";
-        button.disabled = true;
+        // Someone else's reservation — the pill states it and the badge agrees
+        markTaken(button);
+        article?.classList.add("item-taken");
         if (reservedBadge) {
           reservedBadge.hidden = false;
           setBadgeLabel(reservedBadge, currentLang);
@@ -437,6 +493,7 @@ function showButtons(scope: ButtonScope = "all") {
           (currentLang === "ru"
             ? button.dataset.ruReserve
             : button.dataset.enReserve) ?? null;
+        setStateAriaLabel(button, "reserve");
         if (reservedBadge) reservedBadge.hidden = true;
         if (ownBadge) ownBadge.hidden = true;
       }
@@ -508,12 +565,7 @@ function initializeReserveButtons() {
         // The message goes with the reservation, but only once the server has
         // agreed to delete it — a rollback has to be able to put it back.
         hideMessageBead(itemArticle, { forget: false });
-        // Update aria-label
-        const reserveAriaLabel =
-          currentLang === "ru"
-            ? this.dataset.ariaLabelRuReserve
-            : this.dataset.ariaLabelEnReserve;
-        if (reserveAriaLabel) this.setAttribute("aria-label", reserveAriaLabel);
+        setStateAriaLabel(this, "reserve");
 
         // Make API call in background. The await is wrapped because a request
         // that never arrives rejects instead of resolving with `error`, and
@@ -562,12 +614,7 @@ function initializeReserveButtons() {
           itemBadge.hidden = false;
           setBadgeLabel(itemBadge, currentLang);
         }
-        // Update aria-label
-        const cancelAriaLabel =
-          currentLang === "ru"
-            ? this.dataset.ariaLabelRuCancel
-            : this.dataset.ariaLabelEnCancel;
-        if (cancelAriaLabel) this.setAttribute("aria-label", cancelAriaLabel);
+        setStateAriaLabel(this, "cancel");
 
         // Make API call in background — see the note on the cancel path above
         // for why this one is wrapped.
@@ -591,16 +638,13 @@ function initializeReserveButtons() {
                goes to the state the server just described instead, which is
                also the state a reload would have shown. */
             this.dataset.reservation = "other";
-            this.textContent =
-              (currentLang === "ru"
-                ? this.dataset.ruReserved
-                : this.dataset.enReserved) ?? null;
             this.classList.remove("own-reservation");
-            const reservedAria =
-              currentLang === "ru"
-                ? this.dataset.ariaLabelRuReserved
-                : this.dataset.ariaLabelEnReserved;
-            if (reservedAria) this.setAttribute("aria-label", reservedAria);
+            // The same inert pill a card reserved by somebody else wears on
+            // arrival — label, accessible name and all. Reached from the other
+            // direction, but it is the identical state, and writing it out a
+            // second time here is how the two would drift.
+            markTaken(this);
+            itemArticle?.classList.add("item-taken");
             /* The card wears one of two badges, and this path swaps which. The
                optimistic click had just raised "you reserved this"; the truth
                is that somebody else did, so that one goes and the neutral
@@ -668,6 +712,43 @@ function formatRubPrice(price: string): string {
   return `${formatted} ₽`;
 }
 
+/**
+ * Both numbers a price shows, for one language.
+ *
+ * The second one used to be a `data-tooltip` on a non-focusable span, which
+ * made it a mouse-only fact on a page whose readers are mostly holding a
+ * phone; and in Russian there was no second number at all — the roubles simply
+ * replaced the shop's price, a computed figure with nothing marking it as one.
+ * It is text now, on both, and the tilde marks whichever number this site
+ * worked out rather than quoted.
+ *
+ * Kept in step with applyPrices in WishlistPage.astro, which paints the same
+ * two nodes before this module lands.
+ */
+function priceParts(
+  el: HTMLElement,
+  lang: Lang,
+): { value: string; alt: string } {
+  const originalPrice = el.dataset.priceOriginal || "";
+  const priceUsd = el.dataset.priceUsd;
+  const priceRub = el.dataset.priceRub;
+  const isOriginalUsd = el.dataset.originalIsUsd === "true";
+  const isOriginalRub = el.dataset.originalIsRub === "true";
+
+  if (lang === "ru") {
+    if (!priceRub) return { value: originalPrice, alt: "" };
+    const roubles = formatRubPrice(priceRub);
+    return isOriginalRub
+      ? { value: roubles, alt: "" }
+      : { value: `~${roubles}`, alt: originalPrice };
+  }
+
+  return {
+    value: originalPrice,
+    alt: !isOriginalUsd && priceUsd ? `~${priceUsd}` : "",
+  };
+}
+
 function updatePricesForLanguage(lang: "en" | "ru") {
   // Every price on a card, the footer's and the per-option ones alike — they
   // carry the same data attributes and want the same treatment.
@@ -676,29 +757,26 @@ function updatePricesForLanguage(lang: "en" | "ru") {
   );
 
   priceElements.forEach((el) => {
-    const originalPrice = el.dataset.priceOriginal || "";
-    const priceUsd = el.dataset.priceUsd;
-    const priceRub = el.dataset.priceRub;
-    const isOriginalUsd = el.dataset.originalIsUsd === "true";
     // "from", on a footer price that is the cheapest of several options
     const prefix =
       (lang === "ru" ? el.dataset.pricePrefixRu : el.dataset.pricePrefixEn) ??
       "";
+    const { value, alt } = priceParts(el, lang);
 
-    // Set displayed price based on language
-    const price =
-      lang === "ru" && priceRub ? formatRubPrice(priceRub) : originalPrice;
-    el.textContent = prefix ? `${prefix} ${price}` : price;
-
-    // Tooltip logic:
-    // - RU language: no tooltip
-    // - EN + price in USD: no tooltip
-    // - EN + price not in USD: show USD price in tooltip
-    el.removeAttribute("data-tooltip");
-
-    if (lang === "en" && !isOriginalUsd && priceUsd) {
-      el.setAttribute("data-tooltip", priceUsd);
+    // Never the host's own textContent: it has two children and that would
+    // replace them both.
+    const valueEl = el.querySelector<HTMLElement>(".price-value");
+    const altEl = el.querySelector<HTMLElement>(".price-alt");
+    if (valueEl) valueEl.textContent = prefix ? `${prefix} ${value}` : value;
+    if (altEl) {
+      altEl.textContent = alt;
+      altEl.hidden = !alt;
     }
+
+    // The conversion is on the card now, so nothing here wants a tooltip. The
+    // attribute is cleared rather than left alone because a price rendered
+    // before this change may still be carrying one.
+    el.removeAttribute("data-tooltip");
   });
 }
 

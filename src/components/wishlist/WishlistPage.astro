@@ -9,6 +9,7 @@ import ReservationMessage from "@components/wishlist/ReservationMessage.astro";
 import Button from "@components/kit/Button.astro";
 import { Icon } from "astro-icon/components";
 import { getCdnImageUrl } from "@lib/wishlist";
+import { plural } from "@lib/i18n";
 import type { WishlistItemWithReservation, Category } from "@lib/wishlist";
 import { WISHLIST_IMAGE_SIZES, derivativeSrcSet } from "@lib/images";
 import "@styles/wishlist.css";
@@ -23,6 +24,45 @@ interface Props {
 const { items, categories, currentCategory, reservationsEnabled } = Astro.props;
 
 const allCategory = categories.find((c) => c.id === "all")!;
+const current = categories.find((c) => c.id === currentCategory) ?? allCategory;
+const isFiltered = current.id !== "all";
+
+/* Every category route used to serve `Wishlist — Zach`, so eight of the nine
+   views on this page were indistinguishable in a tab strip, a history list and
+   a search result. English only, like every other title here: the page swaps
+   language in the browser and document.title is written once, by the server. */
+const documentTitle = isFiltered
+  ? `${current.label} — Wishlist — Zach`
+  : "Wishlist — Zach";
+
+/* What this list holds, in words — the two questions the grid cannot answer
+   without being scrolled to the end of: how long is it, and how much of it is
+   still going. It is the only place the active filter is *said* rather than
+   shown by a lit chip, which is what made it unreachable by a screen reader.
+
+   `free` is what somebody choosing a present actually wants: not received, and
+   not already claimed. It is left unsaid when it equals the total, because
+   "12 gifts · 12 still free" is the same fact told twice.
+
+   Both languages are built here rather than swapped by script, so the count is
+   right at first paint in either. */
+const total = items.length;
+const free = items.filter((i) => !i.received && !i.isReserved).length;
+const showFree = total > 0 && free !== total;
+
+const countEn = [
+  isFiltered ? `${current.label} · ` : "",
+  `${total} ${total === 1 ? "gift" : "gifts"}`,
+  showFree ? ` · ${free} still free` : "",
+].join("");
+
+const countRu = [
+  isFiltered ? `${current.labelRu} · ` : "",
+  `${total} ${plural(total, "подарок", "подарка", "подарков")}`,
+  showFree
+    ? ` · ${free} ещё ${plural(free, "свободен", "свободны", "свободны")}`
+    : "",
+].join("");
 
 /**
  * How many photographs skip lazy loading and are fetched with the document.
@@ -36,7 +76,7 @@ const EAGER_CARDS = 3;
 
 // The first card's photograph is this page's LCP, and until now the browser
 // found it only after parsing its way through ~390 KB of document to reach the
-// <img>. fetchpriority="high" on that tag ranks it against everything else in
+// img tag. fetchpriority="high" on that tag ranks it against everything else in
 // flight; it cannot make it start sooner. Named in the head, it starts with
 // the stylesheets.
 //
@@ -52,7 +92,7 @@ const lcpDarkSrcSet = lcpItem?.imageUrlDark
   : null;
 ---
 
-<PageLayout title="Wishlist — Zach">
+<PageLayout title={documentTitle}>
   <Fragment slot="head">
     {/* Two renders of one picture means two preloads, each gated to the scheme
         that will actually show it — an ungated pair would fetch both. */}
@@ -97,27 +137,54 @@ const lcpDarkSrcSet = lcpItem?.imageUrlDark
       // attributes — the footer's and each purchase option's — so they all get
       // the same treatment here. Kept in step with updatePricesForLanguage in
       // client/wishlist.ts, which redoes this once the module lands.
+      //
+      // Two nodes per price now: the number that leads, and the second one
+      // beside it. Neither script may assign to the host's textContent, which
+      // would take both children with it.
       function applyPrices() {
         const lang = localStorage.getItem("lang") || "en";
         document.querySelectorAll("[data-price-original]").forEach((el) => {
           const originalPrice = el.getAttribute("data-price-original") || "";
+          const priceUsd = el.getAttribute("data-price-usd");
           const priceRub = el.getAttribute("data-price-rub");
+          const isUsd = el.getAttribute("data-original-is-usd") === "true";
+          const isRub = el.getAttribute("data-original-is-rub") === "true";
           // "from", where the footer price is the cheapest of several options
           const prefix =
             el.getAttribute(lang === "ru" ? "data-price-prefix-ru" : "data-price-prefix-en") || "";
 
           let price = originalPrice;
-          if (lang === "ru" && priceRub) {
-            // Format RUB price with space separator
-            const match = priceRub.match(/₽(\d+)/);
-            if (match) {
-              const num = parseInt(match[1], 10);
-              const rounded = Math.round(num / 10) * 10;
-              price = rounded.toLocaleString("ru-RU") + " ₽";
+          let alt = "";
+          if (lang === "ru") {
+            if (priceRub) {
+              // Format RUB price with space separator
+              const match = priceRub.match(/₽(\d+)/);
+              if (match) {
+                const num = parseInt(match[1], 10);
+                const rounded = Math.round(num / 10) * 10;
+                price = rounded.toLocaleString("ru-RU") + " ₽";
+              }
+              // The tilde belongs to whichever number was computed. Roubles
+              // quoted by the shop itself are not, so they do not get it, and
+              // there is no second number to show beside them.
+              if (!isRub) {
+                price = "~" + price;
+                alt = originalPrice;
+              }
             }
+          } else if (!isUsd && priceUsd) {
+            alt = "~" + priceUsd;
           }
 
-          el.textContent = prefix ? prefix + " " + price : price;
+          const valueEl = el.querySelector(".price-value");
+          const altEl = el.querySelector(".price-alt");
+          if (valueEl) {
+            valueEl.textContent = prefix ? prefix + " " + price : price;
+          }
+          if (altEl) {
+            altEl.textContent = alt;
+            altEl.hidden = !alt;
+          }
         });
 
         // Every price now says what it will keep saying. Until this point a
@@ -150,7 +217,33 @@ const lcpDarkSrcSet = lcpItem?.imageUrlDark
         }}
         langSwitcher="lang"
         condenseOnScroll
-      />
+      >
+        {/* The four questions somebody asks themselves in the second before
+            they commit to buying a stranger's relative a present, answered
+            before the button rather than after it: what pressing it does, that
+            it costs them no identity, that it is reversible, and that the only
+            thing holding the reservation is this browser.
+
+            None of that was said anywhere. The nearest sentence — "Only the
+            owner of the wishlist sees it" — lives inside the message panel,
+            which opens once the reservation already exists, and is about the
+            message rather than the reservation.
+
+            Gated on reservationsEnabled: with reserving switched off there is
+            no button for this to describe, and the paragraph would be
+            explaining a control that is not on the page. */}
+        {reservationsEnabled && (
+          <p
+            class="wishlist-note"
+            data-en="Reserving one marks it taken for everyone else — no name, no sign-in. You can undo it, and it's this browser that remembers the reservation is yours."
+            data-ru="Забронировать — значит показать остальным, что подарок занят: без имени и без регистрации. Бронь можно снять, а помнит о ней именно этот браузер."
+          >
+            Reserving one marks it taken for everyone else — no name, no
+            sign-in. You can undo it, and it's this browser that remembers the
+            reservation is yours.
+          </p>
+        )}
+      </PageHeader>
 
       <WishlistFilters
         categories={categories}
@@ -187,24 +280,76 @@ const lcpDarkSrcSet = lcpItem?.imageUrlDark
         </Button>
       </WishlistFilters>
 
-      <div
-        class="wishlist-grid"
-        id="wishlist-grid"
-        aria-label="Wishlist items"
-        data-aria-label-en="Wishlist items"
-        data-aria-label-ru="Список желаний"
-      >
-        {
-          items.map((item, index) => (
-            <WishlistItem
-              item={item}
-              isLCP={index === 0}
-              eager={index < EAGER_CARDS}
-              reservationsEnabled={reservationsEnabled}
-            />
-          ))
-        }
-      </div>
+      {
+        total > 0 && (
+          <p class="wishlist-count" data-en={countEn} data-ru={countRu}>
+            {countEn}
+          </p>
+        )
+      }
+
+      {
+        total === 0 ? (
+          /* A category the owner has emptied, or a list nobody has filled yet.
+             It used to render the header, the filter row and then nothing at
+             all — a blank page under working chrome, which reads as a failure
+             rather than as an answer. The way out is offered only from a
+             filtered view, because from the unfiltered one there is nowhere
+             else to go. */
+          <div class="wishlist-empty">
+            <p
+              class="wishlist-empty__line"
+              data-en={
+                isFiltered
+                  ? `Nothing in ${current.label} at the moment.`
+                  : "Nothing on the list at the moment."
+              }
+              data-ru={
+                isFiltered
+                  ? `В категории «${current.labelRu}» сейчас пусто.`
+                  : "В списке сейчас пусто."
+              }
+            >
+              {isFiltered
+                ? `Nothing in ${current.label} at the moment.`
+                : "Nothing on the list at the moment."}
+            </p>
+            {isFiltered && (
+              <a
+                class="wishlist-empty__link"
+                href={allCategory.href}
+                data-en="See everything"
+                data-ru="Посмотреть всё"
+              >
+                See everything
+              </a>
+            )}
+          </div>
+        ) : (
+          /* A `list` role, because an aria-label on a roleless generic is
+             discarded — label and container both, so this collection said
+             nothing to a screen reader at all. Each card is a `listitem`,
+             which also gives "N items" for free: the one orientation fact 64
+             stacked headings could not supply. */
+          <div
+            class="wishlist-grid"
+            id="wishlist-grid"
+            role="list"
+            aria-label="Wishlist items"
+            data-aria-label-en="Wishlist items"
+            data-aria-label-ru="Список желаний"
+          >
+            {items.map((item, index) => (
+              <WishlistItem
+                item={item}
+                isLCP={index === 0}
+                eager={index < EAGER_CARDS}
+                reservationsEnabled={reservationsEnabled}
+              />
+            ))}
+          </div>
+        )
+      }
     </div>
   </main>
 

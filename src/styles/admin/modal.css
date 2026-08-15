@@ -90,6 +90,18 @@
   background-clip: text;
 }
 
+/* Nothing in global.css's repaint list matches this heading — no `h2`, no
+   `.modal-header` — so in forced colours it kept a transparent fill and the
+   modal opened with no title at all. Repainted here, below its own rule; see
+   the same note in auth.css for why it cannot live in global.css. */
+@media (forced-colors: active) {
+  .modal-header h2 {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: LinkText;
+  }
+}
+
 /* A round glass button, like the home pill and the random-pick die: it answers
    with the accent arriving behind it rather than by growing. Nothing in the
    chrome scales under a cursor. */
