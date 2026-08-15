@@ -11,11 +11,15 @@ lang: en
 
 ---
 
+Every CLAUDE.md I've ever written has gone through the same arc: start comprehensive, watch Claude ignore half of it, strip it down to what actually matters, feel annoyed I wrote the rest. The current one on this project is 40 lines. The first version was 200.
+
+{/* 😤 PLACEHOLDER: meme — something about writing a detailed guide that gets ignored. "Instructions: do X carefully. Claude: *does something completely different*" or the "nobody asked" format. Should be relatable to anyone who's written docs for an AI. */}
+
 ## What is CLAUDE.md
 
-A lot of people treat `CLAUDE.md` like a random note file. That usually leads to disappointment: too vague, too long, too much generic advice, and then the model ignores half of it.
+Most people treat `CLAUDE.md` like a note file — dump everything in there, hope for the best. That usually ends in disappointment: too vague, too long, too much generic advice, and the model ignores half of it.
 
-What it actually is: a markdown file Claude loads at the start of every session. Not a config file, not a magic lock, just high-priority context. Claude reads it and tries to follow it, but only if the instructions are concrete enough to survive contact with the rest of the session.
+What it actually is: a Markdown file Claude loads at the start of every session. Not a config file, not a hard lock — just high-priority context. Claude reads it and tries to follow it, but only if the instructions are concrete enough to survive alongside everything else in the session.
 
 **My rule of thumb:** shorter and sharper beats comprehensive almost every time.
 
@@ -44,6 +48,8 @@ That loading behavior is why small local files beat one giant universal file.
 ---
 
 ## Structure of a good CLAUDE.md
+
+{/* 📸 PLACEHOLDER: screenshot — a real CLAUDE.md file open in an editor (VS Code or similar). Should show the actual structure: short, sectioned, no walls of text. Ideally with syntax highlighting. Annotate which parts Claude actually uses vs which parts are noise. */}
 
 The best `CLAUDE.md` files are boring in a good way: practical, specific, easy to scan.
 
@@ -87,7 +93,7 @@ src/
 
 ## Writing principles
 
-### Be specific, not vague
+### Be specific — actually specific
 
 ```markdown
 ❌ "Format code properly"
@@ -103,17 +109,17 @@ src/
 ✅ "Commit messages: type(scope): description — e.g. feat(auth): add JWT refresh"
 ```
 
-### Keep it under 200 lines
+### Under 200 lines
 
-Longer usually means two bad things at once: worse adherence and more context spent. If your `CLAUDE.md` keeps growing, split it into `.claude/rules/` or use imports.
+Longer usually means two problems at once: worse adherence and more context spent on the file itself. If it keeps growing, split it into `.claude/rules/` or use imports.
 
 ### No contradictions
 
-If two rules conflict — Claude will pick one arbitrarily. Review the file periodically for conflicts.
+If two rules conflict, Claude picks one. It won't tell you which. Review the file periodically.
 
-### Markdown structure
+### Use headings and bullets
 
-Use headings and bullets — not walls of text. Claude scans structure the same way a person does.
+Claude scans structure the same way a person does. Walls of text get treated like walls of text.
 
 ---
 
@@ -134,6 +140,8 @@ This is where most files go wrong. People put in everything they know about the 
 - General best practices (Claude already knows them)
 - Details that change frequently
 - Personal preferences (those go in `~/.claude/CLAUDE.md`)
+
+The hardest thing to stop including: general best practices you'd write in any onboarding doc. Claude doesn't need to be told "write clean code" or "handle errors properly". It needs to know this project uses Bun, not Node — because that's the thing it actually gets wrong without context.
 
 ---
 
@@ -240,6 +248,8 @@ Glob patterns:
 
 Auto memory is useful when it stays small and boring. Think "index of things worth remembering", not "journal of everything that happened".
 
+I keep auto memory mostly off for shared projects and on for personal ones. The notes Claude writes tend to be useful for solo work — build quirks, preferences it inferred, things you mentioned once. In shared setups it can get weird: memory files accumulate noise from different contexts and you end up with a "memory" that's half-outdated.
+
 Stored in:
 
 ```
@@ -269,7 +279,7 @@ If you don't have a `CLAUDE.md` yet, don't overthink version one.
 /init    # Claude will analyze the codebase and generate CLAUDE.md
 ```
 
-After `/init`, edit aggressively: cut the fluff, keep the commands, add the non-obvious rules Claude could not infer from the repo.
+After `/init`, edit aggressively: cut the fluff, keep the commands, add the non-obvious rules Claude could not infer from the repo. The generated file is a starting point, not a destination — treat it like a draft from a new teammate who just read the README. Useful but unfiltered.
 
 ---
 
