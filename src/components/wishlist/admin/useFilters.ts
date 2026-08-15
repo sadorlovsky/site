@@ -106,7 +106,9 @@ export function useFilters({
     // is the owner's working order. Both comparators are shared with the pages
     // that render them, so this preview cannot drift from the real thing.
     result = [...result].sort(
-      sortMode === "public" ? comparePublic : compareAdmin(reservations)
+      sortMode === "public"
+        ? comparePublic(reservations)
+        : compareAdmin(reservations)
     );
 
     return result;

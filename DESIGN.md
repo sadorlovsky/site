@@ -7,6 +7,7 @@ colors:
   accent-ink: "rgb(64, 20, 42)"
   accent-deep-start: "rgb(199, 62, 114)"
   accent-deep-end: "rgb(207, 63, 0)"
+  ambient-indigo: "rgb(119, 97, 244)"
   light-bg: "#f8f8ff"
   dark-bg: "#191919"
   ink-strong-light: "#111111"
@@ -284,6 +285,22 @@ stands alone; moving only the end separates the stops further than that did
   bright twin's hue and chroma and drops in lightness until it clears, at
   4.56:1 — so the deep pair can never drift into a different colour than the
   gradient it stands in for.
+- **Ambient Indigo** (`rgb(119, 97, 244)`) — the cool source the Overview names,
+  and the one colour here that is never a surface, never text and never a
+  state. It exists at 10–15% opacity inside a single radial gradient, so it is
+  only ever the *light* the glass is catching from the other side of the room;
+  the warm blob opposite it is `--accent-start` doing the same job. Written
+  down late, and the delay is the point: the north star has described "two
+  enormous blurred blobs of rose and indigo" from the beginning while the
+  indigo itself lived as a bare `rgb()` in one stylesheet, which is exactly how
+  a colour that belongs to the system reads as drift to anything checking.
+
+  It answers to no contrast bar, because nothing is ever read against it. It is
+  also, today, on `/wishlist` alone: the home page and the 404 give both of
+  their blobs an accent gradient, so the warm-and-cool pair the Overview
+  promises is currently true of one room. Either the other rooms take the cool
+  source too, or the Overview is describing the wishlist rather than the site —
+  that is a decision, not a bug, and it has not been made.
 
 Four gradient tokens make the choice once instead of at forty call sites:
 `--accent-gradient` (a surface — decoration, or a ground under `--accent-ink`),

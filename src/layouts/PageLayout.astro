@@ -71,7 +71,6 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
       media="(prefers-color-scheme: dark)"
     />
     {cdnDomain && <link rel="preconnect" href={`https://${cdnDomain}`} />}
-    <link rel="dns-prefetch" href="https://static.cloudflareinsights.com" />
     <Font cssVariable="--font-inter" preload />
     {/* Neither of these is preloaded: the page's first paint is upright Latin
         text, and both of these are for something further down it — a code
@@ -89,18 +88,25 @@ const ogImage = image ?? "https://orlovsky.dev/og-image.png";
         means passing through a control that answers arrow keys by panning.
 
         Visible only when focused, and it is the first thing in the tab order,
-        so the first Tab on any page offers the way past. It is deliberately
-        not translated at runtime like the rest of the chrome: the swap happens
-        in a script after paint, and this link has to be usable by someone who
-        pressed Tab before that ran. It carries the language the document was
-        served in, which is what <html lang> already claims. */}
+        so the first Tab on any page offers the way past.
+
+        Both languages ship in the markup and CSS picks one, rather than a
+        script swapping the text after paint — this link has to be usable by
+        someone who pressed Tab before any script ran. `:lang(ru)` is what
+        chooses, and it is the only selector that answers for both kinds of
+        page this site has: a post is *served* as `<html lang="ru">`, and every
+        client-switched page has LangInit set `documentElement.lang`
+        synchronously, before the first paint.
+
+        It used to render one string from the `lang` prop, and only a post ever
+        passes one. So /wishlist, /travel and /blog — the pages that actually
+        change language in the browser, and where about half the readers read
+        Russian — served "Skip to content" to everybody, permanently. The
+        hidden half is `display: none`, so this is still one tab stop. */}
     <a class="skip-link" href="#main">
-      {lang === "ru" ? "Перейти к содержимому" : "Skip to content"}
+      <span class="skip-link__en">Skip to content</span>
+      <span class="skip-link__ru">Перейти к содержимому</span>
     </a>
     <slot />
-    <script
-      defer
-      src="https://static.cloudflareinsights.com/beacon.min.js"
-      data-cf-beacon='{"token": "3af10005546641a0882b81846b2f6d3b"}'></script>
   </body>
 </html>

@@ -204,7 +204,13 @@ if (!isDevMode) {
     inset: 0;
     border-radius: inherit;
     background: var(--accent-gradient);
-    box-shadow: 0 8px 32px rgba(236, 100, 70, 0.35);
+    /* --accent-end, spelled the way the other five accent glows on this site
+       spell it. This one said rgba(236, 100, 70) — a third version of a colour
+       that has exactly one value, close enough that nothing would ever look
+       wrong and far enough that nothing would ever match. The offset and alpha
+       stay its own: this button is larger than the pills, and its glow is
+       sized for it. */
+    box-shadow: 0 8px 32px rgba(237, 91, 42, 0.35);
     opacity: 0;
     transform: scale(calc(1 - 0.1 * var(--lift)));
     transition:
