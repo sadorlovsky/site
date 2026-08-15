@@ -11,15 +11,11 @@ lang: en
 
 ---
 
-A few weeks ago I spent two hours debugging an auth issue in a session that had already touched three unrelated features. By the end, Claude was making suggestions that contradicted what it had told me an hour earlier. The context was full of irrelevant junk and I was too stubborn to clear it.
-
-Eventually cleared it. Fixed the bug in 20 minutes.
+Claude Code never tells you the context is the problem. It just gets quietly worse — vaguer answers, decisions it agreed to an hour ago and no longer remembers, suggestions that contradict its own earlier ones. I spent months reading that as the model having a bad day.
 
 ## The main principle
 
-**The context window is your most important resource.**
-
-The easiest way to make Claude Code feel worse is to keep piling things into one session and hope it somehow stays sharp. Everything counts: every message, every file read, every command result, every answer back from Claude. As the window fills up, quality usually drops before you notice it.
+The context window is your most important resource, and the easiest way to make Claude Code feel worse is to keep piling things into one session and hope it somehow stays sharp. Everything counts: every message, every file read, every command result, every answer back from Claude. As the window fills up, quality drops before you notice it.
 
 Context size depends on the model you’re running. Some models have extended context (including 1M-token variants), but the only number that matters is the one in *your* session: check `/context`.
 
@@ -29,15 +25,15 @@ Context size depends on the model you’re running. Some models have extended co
 
 Before you type anything, some of the window is already spoken for:
 
-| What |
-|---|
-| System prompt + built-in tools |
-| Your `CLAUDE.md` + any imported files |
-| Auto memory (if enabled) |
-| Skill list metadata |
-| MCP server tool definitions (if enabled) |
+- System prompt and built-in tools
+- Your `CLAUDE.md` and any imported files
+- Auto memory, if enabled
+- Skill list metadata
+- MCP server tool definitions, if enabled
 
-That is why two sessions with the same prompt can still behave differently. Different MCP servers, different memory files, different imported rules. If you want the real breakdown, run `/context`. If you want to know which memory files loaded, run `/memory`.
+That's why two sessions with the same prompt can still behave differently — different MCP servers, different memory files, different imported rules. Run `/context` to see the real breakdown. Run `/memory` to see which files actually loaded.
+
+{/* 📊 PLACEHOLDER: diagram — context window at startup shown as horizontal stacked bars: system prompt / CLAUDE.md / MCP tools / auto memory / your conversation. Each bar labeled with approximate token range. Point: "you haven't typed anything yet and it's already this full" */}
 
 ---
 
@@ -56,35 +52,33 @@ The status line at the bottom shows fill % in real time.
 
 ## Context management commands
 
-### `/clear`
-Full reset. Start from scratch. CLAUDE.md reloads, conversation history disappears.
+{/* 🎬 PLACEHOLDER: terminal GIF — running /context in a real session midway through a task. Show the breakdown output: how much each category is consuming, the fill percentage. Ideally a session that's 60-70% full so the numbers are interesting. */}
 
-**When:** switching to a different task, too much irrelevant context accumulated.
+### `/clear`
+Full reset. CLAUDE.md reloads, history disappears. Use it when switching to a different task, or when a session has clearly gone sideways and you'd rather start fresh than fight the accumulated mess.
 
 ### `/compact [instruction]`
-Claude summarizes the conversation, replaces history with a brief summary. You can specify what to keep:
+Claude summarizes the conversation and replaces the history with a brief summary. You can tell it what to keep:
 
 ```
 /compact focus on the authentication changes we made
 /compact keep the list of modified files and test commands
 ```
 
-**When:** context is filling up but the task isn't done.
+Reach for this when context is filling up but you're not done yet — `/compact` keeps you in the session without losing the thread. If I could keep only one command on this page, it would be this one. Summarizing without starting over has saved more sessions than anything else here.
 
 ### `/btw question`
-Quick side question without adding it to the main conversation.
+A quick side question that doesn't go into the main conversation:
 
 ```
 /btw what type does this function return?
 /btw is there a built-in for this in Python?
 ```
 
-**When:** you need a quick clarification without polluting the main thread.
+Useful for quick clarifications that you don't want clogging up the main thread.
 
 ### `/rewind` (or double Esc)
-Opens a restore menu to a previous checkpoint. You can restore: conversation, code, or both.
-
-**When:** Claude went the wrong way, you want to roll back and try differently.
+Opens a restore menu. You can roll back the conversation, the code, or both. Use this when Claude went the wrong direction and you want to try a different approach from a clean state.
 
 ---
 
@@ -103,37 +97,36 @@ If you want it to happen earlier, Claude Code documents this env var:
 
 That sets the threshold as a percentage of available context. Default behavior is roughly 95%. Lower values compact earlier. The setting applies to both the main conversation and subagents.
 
+I don't set it. In practice I reach for `/compact` by hand long before autocompact would fire — waiting for 95% is waiting until you're out of gas to start looking for a station. The override is there if you'd rather not think about it at all.
+
 If you're using an extended-context model and want compaction math based on a smaller effective window, Claude Code also documents `CLAUDE_CODE_AUTO_COMPACT_WINDOW`.
 
----
-What survives `/compact`: Claude re-reads `CLAUDE.md` from disk, but ad-hoc instructions that existed only in the conversation can be lost. If something matters, move it into `CLAUDE.md`.
+Either way, know what survives it: Claude re-reads `CLAUDE.md` from disk, but ad-hoc instructions that existed only in the conversation can be lost. If something matters, move it into `CLAUDE.md` before you compact.
 
 ---
 
 ## What eats the most context
 
 ### 1. MCP tool definitions
-Every connected MCP server adds descriptions of all its tools at startup.
-- 1 tool ~ 550-1400 tokens
-- An MCP server with dozens of tools -> tens of thousands of tokens immediately
+Every connected MCP server dumps descriptions of all its tools into context at startup. One tool is 550–1,400 tokens. An MCP server with fifty tools is 30k+ tokens before you've typed anything.
 
-**Mitigation:** only connect the servers you need, disable the rest via `/mcp`.
+Fix: only connect servers you actually need. `/mcp` lets you disable the rest — that's what it's for.
 
 ### 2. Reading large files
-Every file Claude reads — fully in context.
+Every file Claude reads lands fully in context. No excerpts, no summaries.
 
-**Mitigation:** use subagents for exploration, and reference the exact file you care about instead of vaguely saying "look around the auth system."
+Fix: use subagents for open-ended exploration, and give Claude the exact file path instead of "look around the auth system." Vague requests → Claude reads everything.
 
 ### 3. Long conversations
-Accumulated message history.
+Just accumulated history.
 
-**Mitigation:** `/clear` between tasks, `/compact` within a task.
+Fix: `/clear` between tasks, `/compact` within a task.
 
 ---
 
-## Best practices
+## Habits that keep context small
 
-Most context problems are workflow problems in disguise.
+Most context problems are workflow problems in disguise. None of what follows is about the context window directly — it's about not generating the mess in the first place.
 
 ### Give Claude a way to verify the result
 
@@ -165,6 +158,8 @@ claude --permission-mode plan
 # or Shift+Tab inside a session
 ```
 
+Plan mode is the thing I resisted longest and now use most, for an unglamorous reason: approving a plan is much cheaper than reviewing a diff.
+
 ### Specific prompts save context
 
 The more specific the prompt — the fewer iterations and less context spent:
@@ -192,7 +187,7 @@ Codebase exploration reads many files — all of it pollutes the main context:
 token refresh and whether we have OAuth utilities to reuse"
 ```
 
-The subagent returns a brief summary — the main context stays clean.
+The subagent returns a brief summary — the main context stays clean. Be honest about the trade: that summary is worse than what you'd have gotten reading the files yourself. You're buying a cleaner main context with a thinner understanding of what's in it.
 
 ### `/clear` between unrelated tasks
 
@@ -205,7 +200,7 @@ The subagent returns a brief summary — the main context stays clean.
 
 ### After two failed corrections — reset and start over
 
-If you've corrected Claude twice and it still gets it wrong — the context is polluted with failed approaches. `/clear` and write a better initial prompt with what you've learned.
+Two is the count that works for me. The third correction almost never lands, and the fourth definitely doesn't. `/clear`, then write the prompt you should have written first, using everything the failed attempts just taught you.
 
 ### Use `@` to reference files
 
@@ -254,21 +249,19 @@ This is the simplest mental model I know:
 
 ---
 
-## Anti-patterns
+## When it's already going wrong
 
-**"Kitchen sink" session** — started with one thing, then asked something unrelated, then came back. Context is full of irrelevant stuff.
--> Fix: `/clear` between unrelated tasks.
+Every habit above is cheap if you apply it early, which is exactly the problem — the signals all arrive late. Three I've learned to catch.
 
-**Endless corrections** — Claude does it wrong, you correct, still wrong. Context is polluted with failed approaches.
--> Fix: after two corrections -> `/clear` and a better prompt.
+**The session drifted.** I started with one thing and I'm now three things deep. It begins as "fix the login bug" and two hours later I'm asking about CSS in a context that has read 40 TypeScript files. The bug is fixed, but Claude has opinions about the auth layer and the button spacing.
 
-**Endless exploration** — asked "investigate X" without boundaries, Claude reads hundreds of files.
--> Fix: narrow the scope or use subagents.
+**I'm arguing.** Same mistake corrected twice and still wrong on the third try — because the context is carrying every broken approach we've been through, and each new correction has to fight all of them at once.
 
-**Trust but don't verify** — Claude produced something plausible, you shipped to prod.
--> Fix: always give Claude a way to verify (tests, screenshots, scripts).
+**I stopped checking.** Claude produced something that looked right and I shipped it without ever giving it a way to prove it worked.
 
-If a session starts feeling muddy, it usually is. Reset earlier than your instincts tell you to.
+{/* 🐕 PLACEHOLDER: meme — "This is fine" (dog in burning room). Caption: "me, after letting Claude write an auth middleware I didn't test" */}
+
+If a session starts feeling muddy, it usually is. Reset earlier than your instincts say to.
 
 ---
 
@@ -318,7 +311,7 @@ done
 
 ---
 
-## Quick command cheatsheet
+## Command cheatsheet
 
 | Command | When |
 |---|---|

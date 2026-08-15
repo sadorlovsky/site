@@ -11,18 +11,24 @@ lang: en
 
 ---
 
-## What are Skills
+I run a small self-hosted Mastodon instance. Upgrading it is the same twenty minutes every time: read the release notes, back up the database, bump three image tags, restart, verify, prune the old images. None of it is hard and all of it is forgettable, which is the worst combination — the step you skip on a patch release is the backup, and patch releases are exactly when you find out you needed it.
+
+It's the only procedure I've bothered to write down as a skill. It's also the one I'd point at to explain what skills are for.
+
+{/* 🎬 PLACEHOLDER: terminal GIF — creating the explain-code skill (mkdir, create SKILL.md with content), then invoking it in a session with “/explain-code”. Show Claude picking it up and using the instructions. Full flow under 30 seconds. */}
+
+## Playbooks, not standing rules
 
 Skills are how I “teach” Claude Code repeatable workflows without bloating `CLAUDE.md`.
 
-A skill is a directory with a `SKILL.md` file (YAML frontmatter + Markdown instructions). Claude can load it automatically when it’s relevant, or you can run it directly as a `/slash-command`.
+A skill is a directory with a `SKILL.md` file — frontmatter for metadata, Markdown for the instructions. Claude can load it automatically when the context fits, or you run it directly as a slash command.
 
-The practical reason to use them is simple: `CLAUDE.md` should contain the rules of the road, while skills should contain reusable moves.
+The way I think about it: `CLAUDE.md` is the standing rules (always loaded, always applies), skills are the playbooks (loaded on demand, for specific actions or workflows).
 
-The key differences:
-- **CLAUDE.md / rules** are “always-on” project memory. Great for stable constraints (commands, conventions, architecture).
-- **Skills** are “on-demand” playbooks. Great for actions and workflows (deploy, commit, review) or optional reference material.
-- **`.claude/commands/`** still works, but custom commands were merged into skills. A `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` both create `/deploy`. Skills win on flexibility because they can include supporting files.
+Where people get confused:
+- **CLAUDE.md / rules** — always on. Right for stable constraints: commands, conventions, architecture decisions.
+- **Skills** — on demand. Right for actions you do repeatedly: deploy, review, commit. Or reference material that’s only relevant sometimes.
+- **`.claude/commands/`** — the old format. Still works, but skills replaced it. Both `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` create `/deploy`. Skills are more flexible because you can bundle supporting files alongside the instructions.
 
 ---
 
@@ -42,7 +48,7 @@ If you're working alone, start with personal skills. If a workflow clearly belon
 
 ## Minimal skill
 
-This is the smallest useful example I know. It does one thing, has a clear trigger, and is easy to test.
+Deliberately trivial, so the only thing being tested is the mechanism: does Claude find it, and does it follow it.
 
 ```
 mkdir -p ~/.claude/skills/explain-code
@@ -68,26 +74,13 @@ Test it two ways:
 - Let Claude pick it up automatically: “How does this code work?”
 - Invoke explicitly: `/explain-code src/auth/login.ts`
 
----
-
-## SKILL.md structure
-
-```markdown
----
-name: skill-name            # becomes /skill-name
-description: What it does and when to use. Claude reads this to decide auto-invocation.
----
-
-# Content
-
-Instructions for Claude on what to do when the skill is activated.
-```
+That's the whole structure: `name` becomes the slash command, `description` is what Claude reads to decide whether to load it on its own, and everything under the frontmatter is the instructions.
 
 ---
 
 ## All frontmatter fields
 
-You do not need most of these most of the time. For many real skills, `name` + `description` + instructions is enough.
+You do not need most of these most of the time. The Mastodon skill from the opener is 156 lines and uses exactly two fields — `name` and `description` — and I've never wanted a third.
 
 | Field | Description |
 |---|---|
@@ -98,7 +91,7 @@ You do not need most of these most of the time. For many real skills, `name` + `
 | `user-invocable` | `false` to hide it from the `/` menu (Claude can still use it). |
 | `allowed-tools` | Tools Claude can use without asking permission while the skill is active. Accepts a space-separated string or a YAML list. |
 | `model` | Override the model when the skill is active. |
-| `effort` | Override effort level while the skill is active (`low`/`medium`/`high`/`max`, where `max` is Opus 4.6 only). |
+| `effort` | Override effort level while the skill is active: `low`, `medium`, `high`, `xhigh`, `max`. The top tiers depend on the model you're running. |
 | `context` | `fork` to run the skill in a forked subagent context. |
 | `agent` | Which subagent type to use when `context: fork` is set. |
 | `hooks` | Hooks scoped to this skill’s lifecycle. |
@@ -108,6 +101,8 @@ You do not need most of these most of the time. For many real skills, `name` + `
 ---
 
 ## Three types of content
+
+{/* 📊 PLACEHOLDER: diagram — three columns/cards showing the skill types: Reference (brain icon, "always loaded inline"), Task (play button icon, "you invoke it"), Context (eye-slash icon, "path-based, invisible to you"). Each with a one-line example use case. */}
 
 I think about skills in three buckets:
 
@@ -166,6 +161,8 @@ This system was written in 2015 and uses...
 Never touch legacy-core.js directly...
 ```
 
+Context skills are the most underrated type. A skill that silently loads background knowledge about a gnarly part of your codebase — no slash command needed, just relevant file paths in `paths:` — quietly makes Claude better every time you touch that code. No one ever notices it's there. That's the point.
+
 ---
 
 ## Arguments
@@ -191,7 +188,7 @@ Fix GitHub issue #$ARGUMENTS:
 
 Invocation: `/fix-issue 123`
 
-**Positional arguments:**
+`$ARGUMENTS` is everything after the command name. If you want the parts separately, they're positional:
 
 ```markdown
 ---
@@ -202,8 +199,6 @@ Migrate the $0 component from $1 to $2.
 # /migrate-component SearchBar React Vue
 # $0 = SearchBar, $1 = React, $2 = Vue
 ```
-
-**All arguments:** `$ARGUMENTS` — everything after the command name.
 
 ---
 
@@ -256,7 +251,7 @@ When writing React components:
 
 ## Running in a subagent (context: fork)
 
-This is one of the highest-leverage features. The skill executes in an isolated context, so the main conversation stays cleaner:
+The skill executes in an isolated context, so the main conversation stays cleaner:
 
 ```markdown
 ---
@@ -306,11 +301,13 @@ After deployment run: !`./scripts/health-check.sh`
 
 Keep SKILL.md under 500 lines. Details go in separate files.
 
+I've never hit that ceiling. The Mastodon one is the longest thing I've written and it's a third of it — which makes me think the 500-line skill is usually two skills that haven't been separated yet.
+
 ---
 
 ## Invocation control
 
-This is the part worth getting right early, because it changes how "pushy" the skill feels in everyday use.
+Worth getting right early, because it decides how "pushy" the skill feels in everyday use.
 
 | Frontmatter | You invoke | Claude invokes | In context |
 |---|---|---|---|
@@ -318,27 +315,71 @@ This is the part worth getting right early, because it changes how "pushy" the s
 | `disable-model-invocation: true` | yes | no | Not loaded automatically |
 | `user-invocable: false` | no | yes | Description in context, hidden from menu |
 
-**When to use what:**
-- `/deploy`, `/commit`, `/send-message` → `disable-model-invocation: true` (you control when)
-- Background knowledge about a legacy system → `user-invocable: false` (Claude decides when needed)
+The rule I use: anything with a side effect outside the session — `/deploy`, `/commit`, `/send-message` — gets `disable-model-invocation: true`, because I want to be the one who decides when it runs. Background knowledge that only makes Claude better-informed gets `user-invocable: false` and stays out of my way.
 
 ---
 
-## Built-in skills (included out of the box)
+## Built-in skills
+
+The set moves between releases and depends on which plugins you have enabled, so treat any list in a blog post as a snapshot — `/help` shows what's actually loaded in your setup. The ones I reach for:
 
 | Skill | What it does |
 |---|---|
-| `/batch <instruction>` | Parallel refactoring — splits into tasks, runs agents in worktrees |
-| `/simplify [focus]` | Code review + fixes — 3 agents in parallel |
-| `/debug [description]` | Enables debug logging and analyzes the problem |
+| `/code-review` | Reviews the current diff, a branch, or a PR |
+| `/simplify [focus]` | Reviews changed code for reuse and simplification, then applies the fixes |
 | `/loop [interval] <prompt>` | Runs a prompt on a schedule |
-| `/claude-api` | Loads Claude API reference |
+| `/run` | Launches the project's app to check a change in the real thing |
+| `/claude-api` | Loads the Claude API reference |
 
 ---
 
-## Practical examples
+## What a real one looks like
 
-The best skills are usually boring operational tools you reach for repeatedly, not clever demos.
+Everything above is a template. This is the Mastodon skill from the opener, with the parts specific to my server taken out — 156 lines, two frontmatter fields, no clever features at all.
+
+```markdown
+---
+name: mastodon-upgrade
+description: Upgrade the self-hosted Mastodon instance (DigitalOcean droplet,
+  Docker Compose) to a newer release. Use when asked to update/upgrade Mastodon,
+  check whether the instance is behind upstream, or roll back a bad upgrade.
+  Also covers post-upgrade verification and disk cleanup of stale images.
+---
+
+# Mastodon upgrade
+
+Read the target release's notes **before** touching the server — patch releases
+are usually a tag bump, but minor and major ones carry migrations and `.env`
+changes that this procedure does not cover blindly.
+
+## The environment
+[table: which host, which compose project, which services, where backups go,
+what else runs on the box and must not be touched]
+
+## Before you start
+1. Read the release notes for every version between current and target
+2. Check free disk — a pull needs ~1.2 GB
+3. If the jump crosses a minor version, stop and read properly
+
+## Procedure
+### 1. Back up the database
+### 2. Bump the tags
+### 3. Pull and restart
+### 4. Verify
+### 5. Clean up old images
+```
+
+Two things make it work, and neither one is a feature from the table above.
+
+The `description` lists the phrases I actually type — "update Mastodon", "is it behind upstream", "roll back" — instead of describing the capability in the abstract. That's the difference between a skill that loads itself and one that sits there.
+
+And the body is specific to the point of being useless to anyone else: which three tags, in what order, what a healthy backup looks like, which services on that box are somebody else's. That specificity is the entire value. A skill that says "deploy carefully" is worth nothing — Claude already knows to be careful, it just doesn't know that the backup script lives where it lives.
+
+---
+
+## Starting points
+
+These are templates rather than skills I run — the shape is right, the details are yours to fill in.
 
 ### Commit helper
 
@@ -409,7 +450,11 @@ $ARGUMENTS
 
 ## Troubleshooting
 
-When a skill feels flaky, the problem is usually one of three things: vague description, wrong invocation mode, or too much stuffed into one file.
+When a skill feels flaky, it's usually one of three things: vague description, wrong invocation mode, or too much crammed into one file.
+
+The first is the one that gets me. I once spent fifteen minutes on a skill that wouldn't auto-trigger — checked the path, the name, the frontmatter syntax, all fine. The `description` said "creates a summary" and I kept asking Claude to "write a session log". Zero overlap between those two phrases, so it never loaded. That's the lesson behind writing descriptions in the words you actually type: you are not writing documentation, you are writing the search query your future self will accidentally use.
+
+{/* 😅 PLACEHOLDER: meme — "It's not the code, it's the config" or "senior dev debugging for an hour" discovering it was a typo/description mismatch. Keep it relatable. */}
 
 **Skill doesn't trigger automatically:**
 - Check that `description` contains keywords you use
