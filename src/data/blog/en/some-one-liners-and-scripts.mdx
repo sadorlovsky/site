@@ -150,6 +150,49 @@ For example, to kill whatever's running on port 3000:
 lsof -ti :3000 | xargs kill -9
 ```
 
+### Keep the Mac awake
+
+`caffeinate` ships with macOS. No menu bar app, no `brew install`.
+
+Run it bare and it holds off idle sleep until you Ctrl-C:
+
+```bash
+caffeinate
+```
+
+The flags stack:
+
+```bash
+caffeinate -d   # display stays on
+caffeinate -i   # no idle sleep (this is the default)
+caffeinate -m   # disk stays spun up
+caffeinate -s   # no sleep at all — AC power only
+caffeinate -u   # pretend the user just did something, wakes the display
+```
+
+Two ways to bound it. A timeout in seconds:
+
+```bash
+caffeinate -i -t 3600
+```
+
+Or hand it a command — the assertion lives exactly as long as the process does:
+
+```bash
+caffeinate -i make
+caffeinate -i bun run build
+```
+
+That second form is the one worth remembering. Nothing to turn off afterwards. `-w PID` does the same for something that's already running.
+
+What I actually use it for: leaving Claude Code sessions working on the laptop at home while I'm out, then connecting to them from my phone over Remote Control. A sleeping laptop finishes nothing and drops the connection.
+
+```bash
+caffeinate -is
+```
+
+**Keep it plugged in.** `-s` only counts on AC power, and a closed lid on battery sleeps regardless of what you're holding.
+
 ### Fix Colima after crash
 
 Classic scenario: laptop dies from low battery, you plug it in, and Colima refuses to start. The network socket is stuck in a broken state.
