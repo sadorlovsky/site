@@ -23,7 +23,7 @@
 
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { buildPrompt, NEGATIVE_PROMPT } from "./style.mjs";
+import { buildPrompt, buildNegativePrompt } from "./style.mjs";
 import { describe } from "./classify.mjs";
 import { loadEnv, loadItems } from "./db.mjs";
 import { generate } from "./fal.mjs";
@@ -176,8 +176,8 @@ async function main() {
       console.log(`category: ${item.category} · form factor: ${item.formFactor} · units: ${item.units}`);
       console.log("=".repeat(78));
       console.log(buildPrompt(item));
+      console.log(`\nNegative prompt: ${buildNegativePrompt(item)}`);
     }
-    console.log(`\n${"=".repeat(78)}\nNegative prompt: ${NEGATIVE_PROMPT}`);
     return;
   }
 
@@ -196,7 +196,7 @@ async function main() {
           model: args.model,
           prompt,
           imageUrl: source,
-          negativePrompt: NEGATIVE_PROMPT,
+          negativePrompt: buildNegativePrompt(item),
           variants: args.variants,
         });
 
