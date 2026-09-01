@@ -178,6 +178,23 @@ export const NEGATIVE_PROMPT = [
 ].join(", ");
 
 /**
+ * The negative prompt for one item.
+ *
+ * "extra product" and "duplicated product" exist to stop the model inventing a
+ * companion object the reference never had — the usual failure on a lone shoe or a
+ * single bottle. An item whose override sets `multiUnit` is asking for repetition
+ * on purpose, and leaving those two terms in makes the model fight the pose block
+ * it was just given. Everything else in the list still applies.
+ */
+export function buildNegativePrompt(item = {}) {
+  if (!ITEM_OVERRIDES[item.id]?.multiUnit) return NEGATIVE_PROMPT;
+
+  return NEGATIVE_PROMPT.split(", ")
+    .filter((term) => term !== "extra product" && term !== "duplicated product")
+    .join(", ");
+}
+
+/**
  * Second-pass prompt: relight an approved light-theme render for dark theme.
  *
  * This runs on the *chosen* light image, not the original product photo, so the
@@ -274,6 +291,39 @@ const ITEM_OVERRIDES = {
       "desk plane, centred on the mat. Mild perspective only — the whole printed " +
       "surface must stay readable. No wide-angle distortion.",
     scale: "58%",
+  },
+  // Jordan Club Hat x10 — a set of ten, not one cap. The units block in buildPrompt
+  // tops out at three (classify.mjs caps unitCount deliberately: past three, loose
+  // units read as clutter), and ten loose caps on a shelf would be exactly that. So
+  // the count is carried by a stack instead, which is also how ten caps actually
+  // arrive. `multiUnit` drops the duplication terms from the negative prompt — they
+  // are there to stop the model inventing a second product, and here the second
+  // product is the point.
+  21: {
+    multiUnit: true,
+    pose:
+      "Show TEN identical caps of this one design scattered casually across the " +
+      "shelf, as if they had been tossed down rather than arranged — no stack, " +
+      "no rows, no grid, no symmetry. Vary them: some standing upright holding " +
+      "the shape they have when worn, some tipped over on their side, some " +
+      "resting crown-down with the brim up, some turned away showing the back " +
+      "and strap, brims pointing in different directions. Spread them over the " +
+      "whole width of the shelf at uneven spacings, some nearer the front edge " +
+      "and some further back. Every cap must be SEPARATE and fully visible — " +
+      "they may sit close together but none may be stacked inside another, " +
+      "buried under another or hidden behind another, so that all ten can be " +
+      "counted one by one. At least three of them face camera with the front " +
+      "embroidery clearly readable. Every cap is the same colour, fabric and " +
+      "design as the reference — no size, colour or logo variation. Treat the " +
+      "ten together as one subject, spread roughly evenly about the centre of " +
+      "the frame. They rest directly on the same continuous shelf: no box, " +
+      "block, pedestal, riser or tray under any of them.",
+    // Scattered, and above all unstacked. Nesting was what defeated six earlier
+    // rounds: a stack is a continuous concertina in which one cap's crown and
+    // the next one's brim merge, so neither the model nor a reader of the card
+    // could count it. Caps lying apart stay countable however untidily they
+    // fall, which is what a card claiming a set of ten needs.
+    scale: "40%",
   },
 };
 

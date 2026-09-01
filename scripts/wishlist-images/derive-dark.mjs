@@ -20,7 +20,7 @@
 
 import { readFile, writeFile, access } from "node:fs/promises";
 import path from "node:path";
-import { buildDarkenPrompt, NEGATIVE_PROMPT } from "./style.mjs";
+import { buildDarkenPrompt, buildNegativePrompt } from "./style.mjs";
 import { describe } from "./classify.mjs";
 import { loadEnv, loadItems } from "./db.mjs";
 import { generate } from "./fal.mjs";
@@ -110,7 +110,7 @@ async function main() {
           model: args.model,
           prompt: buildDarkenPrompt(itemById.get(id)),
           imageUrl: dataUri,
-          negativePrompt: NEGATIVE_PROMPT,
+          negativePrompt: buildNegativePrompt(itemById.get(id)),
           variants: 1,
         });
 
