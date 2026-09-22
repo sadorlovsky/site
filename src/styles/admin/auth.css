@@ -20,6 +20,20 @@
   background-clip: text;
 }
 
+/* Forced colours force `color` and leave `-webkit-text-fill-color` alone, so a
+   gradient heading keeps its transparent fill and simply disappears. global.css
+   repaints the headings it can name, but its bare `h1` weighs 0,0,1 against
+   this rule's 0,1,1 and loses — and matching the selector there would tie and
+   still lose, because admin.css is imported after global.css. It goes here,
+   below its own rule, where nothing can outrank it. */
+@media (forced-colors: active) {
+  .auth-container h1 {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: LinkText;
+  }
+}
+
 .auth-container p {
   color: var(--ink-muted);
   margin-bottom: 2rem;

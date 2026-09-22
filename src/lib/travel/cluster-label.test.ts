@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { plural, formatClusterLabel } from "./cluster-label";
+import { plural } from "@lib/i18n";
+import { formatClusterLabel } from "./cluster-label";
 
 test("picks the Russian singular for counts ending in one", () => {
   expect(plural(1, "город", "города", "городов")).toBe("город");

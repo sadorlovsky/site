@@ -41,6 +41,67 @@
   }
 }
 
+/* What reserving actually does, said once under the subtitle.
+
+   Body-compact rather than body, and muted rather than ink: it sits below the
+   subtitle and must not compete with it, but it is the only place on the page
+   that explains the feature, so it is a paragraph and not a footnote. The cap
+   is in rem with border-box, per the measure rule — at 0.9375rem it carries a
+   readable line in both languages, and Russian runs about a line longer, which
+   the flow absorbs.
+
+   0.35rem above: closer to the subtitle than the subtitle is to the title,
+   because the two are one thought. The container's own 1.25rem gap keeps it
+   off the filter row below. */
+.wishlist-note {
+  max-width: 34rem;
+  box-sizing: border-box;
+  margin: 0.35rem 0 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+/* How long the list is and how much of it is still going, plus the name of the
+   filter in words. The label step in muted ink: it is a caption on the grid,
+   not a heading over it — the Landmark Rule is about group headings, and this
+   names no group. Sitting between the filter row and the first card, it also
+   gives the eye somewhere to land after a filter changes. */
+.wishlist-count {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* An emptied category. Quiet and short: there is nothing here, and the page
+   should say so in one line rather than stage a scene about it. The link is
+   the only thing to do next, so it is the only thing offered. */
+.wishlist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 3rem 0 4rem;
+}
+
+.wishlist-empty__line {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ink-body);
+  text-wrap: pretty;
+}
+
+/* The page's ordinary prose link, which is what this is — global.css already
+   sets the colour, the underline and both hovers. Only the weight is stated,
+   because it stands alone rather than inside a sentence. */
+.wishlist-empty__link {
+  font-weight: 600;
+}
+
 /* Filters */
 .filters {
   display: flex;
@@ -766,6 +827,27 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
   cursor: default;
 }
 
+/* The second number, standing beside the first instead of hiding behind a
+   pointer. The label step in muted ink: on the footer that is a plain drop
+   from the price's strong ink at 700, and inside an option row — where the
+   number it follows is already muted — the tilde and the dot are what tell the
+   two apart. Full opacity, because --ink-muted clears 4.5:1 with nothing to
+   spare and has none left to give. */
+.price-alt {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A separator, not a word. It keeps two figures from reading as one long
+   number, which is the entire job — "£25 ~$32" with only a space between them
+   is a price and a typo. */
+.price-alt::before {
+  content: "·";
+  margin: 0 0.35em;
+}
+
 /* =============================================================================
    Reserve button — the chrome's liquid-glass capsule.
 
@@ -791,7 +873,14 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
   backdrop-filter: var(--glass-filter);
   color: var(--ink-muted);
   border: var(--glass-border);
-  padding: 0.55rem 1.15rem;
+  /* 38px is the ladder's third step, and 0.8rem is the label size that step
+     carries — the pair DESIGN.md says every control of this height wears. It
+     used to derive its height from padding alone and land on 34.1px, which is
+     no step at all; the padding is inline-only now and the height is stated.
+     The extra four pixels are also four more for a thumb, on the one control
+     this page exists for. */
+  height: 38px;
+  padding: 0 1.15rem;
   font-size: 0.8rem;
   font-weight: 600;
   border-radius: 999px;
@@ -854,13 +943,34 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
 
 /* Own reservation ("Cancel") — a pressed neutral glass state. No accent
    indicator: cancelling isn't the accented action. */
+/* Body ink, not muted. This state lightens its own ground to say "pressed",
+   and --ink-muted on that ground measures 3.53:1 in the dark scheme against
+   the 4.5 a 12.8px label owes — the ink was chosen to clear the bar on the
+   *card*, and nothing said it had to survive a surface moving underneath it.
+   The Muted-Ink Rule has no headroom to spend, so the label moves instead:
+   body ink reads 7.48:1 here and 9.84:1 on paper. It is also the one control
+   that undoes a commitment, which is not a thing to whisper. */
+/* A state must not be reached through a transition.
+ *
+ * This one was, and it silently did not arrive. `wishlist.ts` adds the class
+ * during load, while the card is still inside `content-visibility: auto` with
+ * its rendering skipped; the transition never advances there, and the computed
+ * style stays on the *starting* value. Measured on a claimed card below the
+ * fold: background `--glass-bg` and label `--ink-muted` — which is to say the
+ * holder's own "Cancel" looked exactly like every "Reserve" around it, on
+ * every card the reader had not already scrolled past. Scrolling it into view
+ * afterwards did not settle it.
+ *
+ * So the resting state lands instantly and the transition is declared on
+ * hover and focus, where it belongs: those are interactions, they happen to a
+ * card that is on screen by definition, and they are the only moments here
+ * anything was ever meant to fade.
+ */
 .reserve-btn.own-reservation {
   background-color: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.14));
   background-image: none;
-  color: var(--ink-muted);
-  transition:
-    color 0.3s ease,
-    background-color 0.3s ease;
+  color: var(--ink-body);
+  transition: none;
 }
 
 .reserve-btn.own-reservation::before {
@@ -870,7 +980,17 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
 .reserve-btn.own-reservation:hover,
 .reserve-btn.own-reservation:focus-visible {
   background-color: light-dark(rgba(0, 0, 0, 0.18), rgba(255, 255, 255, 0.22));
-  color: var(--ink-body);
+  /* One step further than the resting body ink, so the hover still moves now
+     that the resting state has taken the step body ink used to be. 7.24:1 on
+     the lightened dark ground. */
+  color: var(--ink-strong);
+  /* Declared on the interaction rather than at rest — see above. The arrival
+     fades; the return is instant, which is the ordinary trade for putting a
+     transition on the hovered state and cheaper than a resting state that
+     never arrives at all. */
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .reserve-btn.own-reservation:hover::after,
@@ -903,6 +1023,71 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
 .reserve-btn:disabled::before {
   opacity: 0;
   transform: scale(calc(1 - 0.1 * var(--lift)));
+}
+
+/* =============================================================================
+   Someone else's — a statement where the control used to be.
+
+   This pill replaces nothing: it stands exactly where the live one stands, so
+   a footer always has the same three-part shape. What it gives up is every
+   signal that says "press me" — the accent indicator, the hover, the lift, the
+   float. The ground is the page's own ink thinned, the secondary button's
+   wash, so no colour enters the palette to say "inert"; the shadow goes,
+   because a thing not offering itself has no business floating off the card.
+
+   Written after `.reserve-btn:disabled` deliberately: both selectors weigh the
+   same, and the cursor has to come from here. `not-allowed` is an answer to an
+   attempt, and nobody attempted anything — the card is simply telling them.
+   ============================================================================= */
+.reserve-btn.reserve-btn--taken {
+  /* The kit's ghost recipe — no fill, a hairline ring — rather than a filled
+     pill. Two reasons, and the second is the one that decided it.
+
+     Legibility: a wash under this label lightens the ground it has to clear.
+     At 10% white the muted ink measured 4.05:1 against the 4.5 a 12.8px/600
+     label owes, and --ink-muted has no headroom to spend. With no fill the
+     label sits on the card itself, where it reads 5.53:1 in the dark scheme
+     and 5.03:1 on paper.
+
+     Meaning: an outline with nothing in it is already the shape of a thing
+     that is not offering itself. A filled capsule beside a filled capsule
+     asks to be compared; an empty one states.
+
+     No transition, deliberately — see the note below. */
+  background-color: transparent;
+  background-image: none;
+  backdrop-filter: none;
+  border-color: transparent;
+  box-shadow: inset 0 0 0 2px var(--hairline);
+  color: var(--ink-muted);
+  cursor: default;
+  transition: none;
+}
+
+.reserve-btn.reserve-btn--taken::before {
+  display: none;
+}
+
+.reserve-btn.reserve-btn--taken::after {
+  box-shadow: none;
+}
+
+/* A claimed card recedes without going out: the photograph loses some of its
+   colour, enough to read as spoken-for while scrolling past at roughly a card
+   a screen, and far short of the 40% grayscale that says "gone" on a received
+   one. The filter is on the photograph alone rather than the card — the badge
+   sitting over it carries the accent dot that tells "someone's" from "yours",
+   and desaturating that would take away the very distinction it is here to
+   make. The text is untouched, because a reader who wants to know what was
+   taken still has to be able to read it.
+
+   No transition. See the note under .own-reservation: a state this page puts
+   on at load, inside a card carrying `content-visibility: auto`, must not be
+   reached through one. Measured here first — the photograph sat at
+   `saturate(1)`, the opening frame of a `none` → `saturate(.55)` interpolation
+   that never ran, on every claimed card below the fold. */
+.wishlist-item.item-taken .wishlist-img {
+  filter: saturate(0.55);
 }
 
 .reserve-btn--loading {
@@ -969,8 +1154,11 @@ html.lang-ru:not(.prices-ready) [data-price-original] {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  /* The pill's height, so the footer's row is one height rather than two. An
+     icon-only control is an exact square at its step — DESIGN.md's rule — and
+     at 38px this one finally is one. */
+  width: 38px;
+  height: 38px;
   padding: 0;
   border-radius: 50%;
   cursor: pointer;
@@ -1415,10 +1603,23 @@ textarea.message-popover-input {
   outline-offset: 2px;
 }
 
-.wishlist-item:focus-within {
-  outline: 2px solid var(--accent-start);
-  outline-offset: 2px;
-}
+/* The card itself no longer rings.
+
+   `.wishlist-item:focus-within` drew a second 2px accent outline around the
+   whole ~400px card whenever anything inside it took focus — on top of the
+   ring the focused control had already drawn for itself. Two rings at once,
+   and the card-sized one is the louder of the two, so it reads as "this card
+   is selected" rather than "this control has focus": the reader is told the
+   wrong thing about which element the next keystroke reaches.
+
+   It fired on a mouse click as well, since `:focus-within` answers focus of
+   any origin rather than `:focus-visible`'s keyboard heuristic.
+
+   Nothing is lost by its going. Every focusable thing on a card — the shop
+   links, the message bead, the reserve pill — carries the documented ring
+   already, and the ring is the whole vocabulary: 2px of Sunset Rose at 2px
+   offset, or --focus-ring-on-fill where focus lands on a fill. There is no
+   third, and a card is not a control. */
 
 /* Accessibility - Increased contrast */
 @media (prefers-contrast: more) {

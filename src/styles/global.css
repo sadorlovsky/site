@@ -523,6 +523,26 @@ body {
   outline-offset: 2px;
 }
 
+/* Which of the two strings the link shows. Both are in the markup so no script
+   has to run before the first Tab works — see the note in PageLayout — and
+   `:lang(ru)` is the one selector that answers for both kinds of page here: a
+   post served as `<html lang="ru">`, and a client-switched page where LangInit
+   writes `documentElement.lang` synchronously, ahead of the first paint.
+
+   `display: none` rather than a visual hide, so the language nobody is reading
+   is not in the accessibility tree and the link stays a single tab stop. */
+.skip-link__ru {
+  display: none;
+}
+
+html:lang(ru) .skip-link__en {
+  display: none;
+}
+
+html:lang(ru) .skip-link__ru {
+  display: inline;
+}
+
 /* No --lift here on purpose: this transform is not decoration, it is the
    difference between a focused link being on screen and being off it. Under
    reduced motion it should still arrive — instantly. */
@@ -1405,6 +1425,18 @@ a.btn-danger:active {
    background is a smear, and the border it depends on to read as an edge has
    already been replaced by a solid system colour. */
 @media (forced-colors: active) {
+  /* The bare `h1` here is a floor, not a catch-all, and the distinction is
+     load-bearing: it weighs 0,0,1, so any gradient heading reached by a
+     descendant selector out-specifies it and keeps its transparent fill into
+     forced colours — where it then disappears, since the mode forces `color`
+     and not `-webkit-text-fill-color`.
+
+     Raising the selector here does not help either. `src/styles/admin.css` is
+     imported after this file, so a matching 0,1,1 selector added to this block
+     would tie with the admin sheet's own and lose on order — a media query
+     adds no specificity. A gradient heading outside this list therefore
+     repaints itself, in its own stylesheet, below its own rule. The admin
+     login title and the admin modal title both do now. */
   .page-title,
   .crumb-current,
   .condensed-title__text,

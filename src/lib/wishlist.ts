@@ -255,7 +255,10 @@ export async function getWishlistItems(
     });
   }
 
-  items.sort(comparePublic);
+  // Built from the same rows the cards' `isReserved` came from, so the order
+  // and the badges can never disagree about which items are claimed.
+  const reservedIds = new Set(reservations.map((r) => r.itemId));
+  items.sort(comparePublic(reservedIds));
 
   return items;
 }

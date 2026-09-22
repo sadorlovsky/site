@@ -57,23 +57,47 @@ const imageSizes = WISHLIST_IMAGE_SIZES;
 // make; with one row the price belongs in the footer and nowhere else.
 const showOptionPrices = item.options.length > 1;
 
+/**
+ * The second number a price carries: what it comes to in the reader's own
+ * currency, or — where the reader is already being shown a conversion — what
+ * the shop actually charges.
+ *
+ * It used to be a `data-tooltip`, which meant a pointer. Most of the people
+ * this page is for arrive on a phone, and half of them read prices in roubles;
+ * a conversion only a mouse can reach is a conversion most of the audience
+ * does not have. Comparing a £25 record against a $45 shaver is the main thing
+ * anybody does on this page, and it was the one thing they had to leave the
+ * page to do.
+ *
+ * The tilde is the rule: it marks whichever of the two numbers this site
+ * computed rather than quoted. In English the shop's own price leads and the
+ * dollar figure is the approximation; in Russian the rouble figure leads —
+ * that is what a rouble reader wants first — and it is the approximate one, so
+ * the tilde moves with it and the shop's real price becomes the second number.
+ * That also answers the quieter half of the complaint: roubles used to appear
+ * silently, a computed figure with nothing to say it had been computed.
+ */
+function altPriceEn(price: string, usdLabel: string | null): string {
+  return !price.startsWith("$") && usdLabel ? `~${usdLabel}` : "";
+}
+
 const options = item.options
   .map((option) => {
     const host = option.url ? formatHostLabel(option.url) : "";
+    // `!== null`: null is "no price we can read", 0 is a price that rounds to
+    // nothing, and only the first of those should leave the label off.
+    const priceUsdLabel =
+      option.priceUsd !== null ? `$${(option.priceUsd / 100).toFixed(0)}` : null;
     return {
       ...option,
       labelEn: option.label || host,
       labelRu: option.labelRu || option.label || host,
-      // `!== null`: null is "no price we can read", 0 is a price that rounds to
-      // nothing, and only the first of those should leave the label off.
-      priceUsdLabel:
-        option.priceUsd !== null
-          ? `$${(option.priceUsd / 100).toFixed(0)}`
-          : null,
+      priceUsdLabel,
       priceRubLabel:
         option.priceRub !== null
           ? `₽${(option.priceRub / 100).toFixed(0)}`
           : null,
+      altEn: altPriceEn(option.price, priceUsdLabel),
     };
   })
   // A row with no label and no price of its own would be an empty line: that
@@ -81,9 +105,43 @@ const options = item.options
   // already in the footer.
   .filter((option) => option.labelEn || showOptionPrices);
 
+/**
+ * A note on the Russian accessible names below, because the shape of them is
+ * deliberate and looks like clumsiness.
+ *
+ * Russian inflects, and an item's title cannot be inflected: it is arbitrary
+ * text, often a common noun followed by a quoted name — «Книга "Надзирать и
+ * наказывать"». Every construction that makes the title a grammatical object
+ * therefore demands a case the string cannot supply. "для" wants the genitive
+ * and got the nominative ("для Книга"); "о" wants the prepositional;
+ * "Зарезервировать" and "Отменить резервацию" both want the accusative and the
+ * genitive respectively. All four were wrong, on every card, read aloud on
+ * every one of them.
+ *
+ * So the title is never an object. It follows a colon, in apposition, where
+ * the nominative is what belongs — "Зарезервировать: Книга «…»" — and the
+ * sentence stays correct whatever the owner types into the title field.
+ *
+ * English needs none of this and gets none of it: the names there read as
+ * ordinary English rather than as a translation of this workaround.
+ */
+
+// The footer's own price, in the same three parts each option row carries.
+const footerUsdLabel =
+  item.priceUsd !== null ? `$${(item.priceUsd / 100).toFixed(0)}` : null;
+const footerRubLabel =
+  item.priceRub !== null ? `₽${(item.priceRub / 100).toFixed(0)}` : null;
+const footerAltEn = altPriceEn(item.price, footerUsdLabel);
+
 ---
 
+{/* An explicit listitem to the grid's explicit list. Both roles are spelled
+    out rather than left to the elements, because `display: grid` on a
+    container drops list semantics in WebKit and Blink — and the grid was a
+    roleless <div> before this, so its aria-label was being discarded along
+    with it and the whole collection announced as nothing. */}
 <article
+  role="listitem"
   class={`wishlist-item ${item.received ? "item-received" : ""}`}
   data-item-id={item.id}
   data-category={item.category}
@@ -175,9 +233,9 @@ const options = item.options
                   target="_blank"
                   rel="noopener noreferrer"
                   class="item-url"
-                  aria-label={`Open ${option.labelEn} for ${item.title} (opens in new tab)`}
-                  data-aria-label-en={`Open ${option.labelEn} for ${item.title} (opens in new tab)`}
-                  data-aria-label-ru={`Открыть ${option.labelRu} для ${item.titleRu || item.title} (откроется в новой вкладке)`}
+                  aria-label={`Open ${item.title} on ${option.labelEn} (opens in new tab)`}
+                  data-aria-label-en={`Open ${item.title} on ${option.labelEn} (opens in new tab)`}
+                  data-aria-label-ru={`Открыть на ${option.labelRu}: ${item.titleRu || item.title} (в новой вкладке)`}
                 >
                   <span
                     class="item-url__label"
@@ -216,8 +274,14 @@ const options = item.options
                   data-original-is-usd={
                     option.price.startsWith("$") ? "true" : null
                   }
+                  data-original-is-rub={
+                    option.price.startsWith("₽") ? "true" : null
+                  }
                 >
-                  {option.price}
+                  <span class="price-value">{option.price}</span>
+                  <span class="price-alt" hidden={!option.altEn}>
+                    {option.altEn}
+                  </span>
                 </span>
               )}
             </li>
@@ -242,17 +306,20 @@ const options = item.options
       <span
         class="item-price"
         data-price-original={item.price}
-        data-price-usd={item.priceUsd !== null
-          ? `$${(item.priceUsd / 100).toFixed(0)}`
-          : null}
-        data-price-rub={item.priceRub !== null
-          ? `₽${(item.priceRub / 100).toFixed(0)}`
-          : null}
+        data-price-usd={footerUsdLabel}
+        data-price-rub={footerRubLabel}
         data-original-is-usd={item.price.startsWith("$") ? "true" : null}
+        data-original-is-rub={item.price.startsWith("₽") ? "true" : null}
         data-price-prefix-en={showOptionPrices ? "from" : null}
         data-price-prefix-ru={showOptionPrices ? "от" : null}
       >
-        {showOptionPrices ? `from ${item.price}` : item.price}
+        {/* Two nodes, because both scripts that rewrite a price assign to
+            textContent and that replaces every child. The host keeps the data
+            attributes and the scripts write to these. */}
+        <span class="price-value">
+          {showOptionPrices ? `from ${item.price}` : item.price}
+        </span>
+        <span class="price-alt" hidden={!footerAltEn}>{footerAltEn}</span>
       </span>
 
       {
@@ -266,7 +333,7 @@ const options = item.options
               aria-controls="reservation-message"
               aria-label={`Leave a message about ${item.title}`}
               data-aria-label-en={`Leave a message about ${item.title}`}
-              data-aria-label-ru={`Оставить сообщение о ${item.titleRu || item.title}`}
+              data-aria-label-ru={`Оставить сообщение: ${item.titleRu || item.title}`}
               data-tooltip="Leave a message"
               data-tooltip-en="Leave a message"
               data-tooltip-ru="Оставить сообщение"
@@ -298,9 +365,9 @@ const options = item.options
                   : `Reserve ${item.title}`
               }
               data-aria-label-en-reserve={`Reserve ${item.title}`}
-              data-aria-label-ru-reserve={`Зарезервировать ${item.titleRu || item.title}`}
+              data-aria-label-ru-reserve={`Зарезервировать: ${item.titleRu || item.title}`}
               data-aria-label-en-cancel={`Cancel reservation for ${item.title}`}
-              data-aria-label-ru-cancel={`Отменить резервацию ${item.titleRu || item.title}`}
+              data-aria-label-ru-cancel={`Отменить резервацию: ${item.titleRu || item.title}`}
               data-aria-label-en-reserved={`Reserved: ${item.title}`}
               data-aria-label-ru-reserved={`Зарезервировано: ${item.titleRu || item.title}`}
             >

@@ -12,6 +12,9 @@ function item(fields: Partial<SortableItem> & { id: number }): SortableItem {
 
 const ids = (items: SortableItem[]) => items.map((i) => i.id);
 
+/** The public order with nothing reserved — what most of these tests want. */
+const publicOrder = comparePublic(new Set<number>());
+
 test("puts heavier items first", () => {
   const items = [
     item({ id: 1, weight: 1 }),
@@ -19,7 +22,7 @@ test("puts heavier items first", () => {
     item({ id: 3, weight: 3 }),
   ];
 
-  expect(ids([...items].sort(comparePublic))).toEqual([2, 3, 1]);
+  expect(ids([...items].sort(publicOrder))).toEqual([2, 3, 1]);
 });
 
 test("sinks received items regardless of weight", () => {
@@ -28,7 +31,7 @@ test("sinks received items regardless of weight", () => {
     item({ id: 2, weight: 1 }),
   ];
 
-  expect(ids([...items].sort(comparePublic))).toEqual([2, 1]);
+  expect(ids([...items].sort(publicOrder))).toEqual([2, 1]);
 });
 
 test("breaks a weight tie with the newer item", () => {
@@ -37,7 +40,7 @@ test("breaks a weight tie with the newer item", () => {
     item({ id: 2, weight: 2, createdAt: new Date("2026-06-01") }),
   ];
 
-  expect(ids([...items].sort(comparePublic))).toEqual([2, 1]);
+  expect(ids([...items].sort(publicOrder))).toEqual([2, 1]);
 });
 
 test("orders received items among themselves too", () => {
@@ -46,7 +49,48 @@ test("orders received items among themselves too", () => {
     item({ id: 2, weight: 7, received: true }),
   ];
 
-  expect(ids([...items].sort(comparePublic))).toEqual([2, 1]);
+  expect(ids([...items].sort(publicOrder))).toEqual([2, 1]);
+});
+
+test("sinks reserved items below the ones still going", () => {
+  const items = [
+    item({ id: 1, weight: 99 }),
+    item({ id: 2, weight: 50 }),
+    item({ id: 3, weight: 1 }),
+  ];
+
+  expect(ids([...items].sort(comparePublic(new Set([1]))))).toEqual([2, 3, 1]);
+});
+
+test("keeps the owner's order inside the reserved tier", () => {
+  const items = [
+    item({ id: 1, weight: 1 }),
+    item({ id: 2, weight: 7 }),
+    item({ id: 3, weight: 4 }),
+  ];
+
+  expect(ids([...items].sort(comparePublic(new Set([1, 2]))))).toEqual([
+    3, 2, 1,
+  ]);
+});
+
+test("keeps reserved items above received ones", () => {
+  const items = [
+    item({ id: 1, weight: 99, received: true }),
+    item({ id: 2, weight: 1 }),
+    item({ id: 3, weight: 50 }),
+  ];
+
+  expect(ids([...items].sort(comparePublic(new Set([3]))))).toEqual([2, 3, 1]);
+});
+
+test("a reservation left on a received item does not reorder the tail", () => {
+  const items = [
+    item({ id: 1, weight: 1, received: true }),
+    item({ id: 2, weight: 7, received: true }),
+  ];
+
+  expect(ids([...items].sort(comparePublic(new Set([2]))))).toEqual([2, 1]);
 });
 
 test("floats reserved items to the top of the admin's list", () => {
