@@ -294,9 +294,10 @@ const ITEM_OVERRIDES = {
   },
   // Jordan Club Hat x10 — a set of ten, not one cap. The units block in buildPrompt
   // tops out at three (classify.mjs caps unitCount deliberately: past three, loose
-  // units read as clutter), and ten loose caps on a shelf would be exactly that. So
-  // the count is carried by a stack instead, which is also how ten caps actually
-  // arrive. `multiUnit` drops the duplication terms from the negative prompt — they
+  // units read as clutter), so the ten are staged by hand here, and staged loose on
+  // purpose: a card claiming ten has to show ten a reader can count, and clutter is
+  // the lesser cost (see the note under `scale` for why not a stack). `multiUnit`
+  // drops the duplication terms from the negative prompt — they
   // are there to stop the model inventing a second product, and here the second
   // product is the point.
   21: {
