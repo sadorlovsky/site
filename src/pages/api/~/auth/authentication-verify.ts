@@ -11,7 +11,7 @@ import {
   AUTH_RATE_LIMIT,
   createErrorResponse,
 } from "@lib/admin/config";
-import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/server";
 
 export const prerender = false;
 

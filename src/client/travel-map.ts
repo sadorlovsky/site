@@ -7,6 +7,10 @@ import type {
   Map as MapLibre,
 } from "maplibre-gl";
 import mapStylesheetUrl from "maplibre-gl/dist/maplibre-gl.css?url";
+// Only a URL, like the stylesheet's. MapLibre 6 finds its worker through
+// import.meta.url, which inside a bundle points at the bundle rather than at
+// the worker file — so the map comes up blank unless it is told where to look.
+import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { Feature, Point } from "geojson";
 import { countries, cities, cityCoordinates } from "@lib/travel";
 import { getCityName } from "@lib/travel/cities-i18n";
@@ -331,10 +335,11 @@ async function initMap(): Promise<void> {
   // requests, never the bytes. Now it saves those too: /travel's own script
   // drops from 1 076 086 to 48 741 bytes, and maplibre becomes a chunk that is
   // fetched when the map is actually about to exist.
-  const [{ Map: MapLibreMap }] = await Promise.all([
+  const [{ Map: MapLibreMap, setWorkerUrl }] = await Promise.all([
     import("maplibre-gl"),
     loadMapStylesheet(),
   ]);
+  setWorkerUrl(mapWorkerUrl);
 
   const map = new MapLibreMap({
     container: "map",
@@ -1131,8 +1136,8 @@ async function initMap(): Promise<void> {
    */
   function setMarkerPaint(
     layer: string,
-    property: string,
-    value: unknown,
+    property: Parameters<MapLibre["setPaintProperty"]>[1],
+    value: Parameters<MapLibre["setPaintProperty"]>[2],
   ): void {
     if (!map.getLayer(layer)) return;
     map.setPaintProperty(layer, property, value);
@@ -1197,7 +1202,11 @@ async function initMap(): Promise<void> {
   );
 
   function applyCityTransparency(reduced: boolean): void {
-    const opacities: [string, string, CircleNumberValue][] = [
+    const opacities: [
+      string,
+      "circle-opacity" | "circle-stroke-opacity",
+      CircleNumberValue,
+    ][] = [
       [
         "visited-cities",
         "circle-opacity",
