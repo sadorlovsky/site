@@ -7,8 +7,7 @@ import {
 import type {
   RegistrationResponseJSON,
   AuthenticationResponseJSON,
-  AuthenticatorTransportFuture,
-} from "@simplewebauthn/types";
+} from "@simplewebauthn/server";
 import { db, AdminCredential, eq } from "@lib/db";
 import { ADMIN_RP_ID, ADMIN_RP_NAME } from "astro:env/server";
 
@@ -130,7 +129,7 @@ export async function getAuthenticationOptions() {
       id: cred.id,
       type: "public-key" as const,
       transports: cred.transports
-        ? (JSON.parse(cred.transports) as AuthenticatorTransportFuture[])
+        ? (JSON.parse(cred.transports) as string[])
         : undefined,
     })),
   });
@@ -180,9 +179,7 @@ export async function verifyAuthentication(
         publicKey: publicKeyBytes,
         counter: credential.counter,
         transports: credential.transports
-          ? (JSON.parse(
-              credential.transports,
-            ) as AuthenticatorTransportFuture[])
+          ? (JSON.parse(credential.transports) as string[])
           : undefined,
       },
     });

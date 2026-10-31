@@ -17,7 +17,7 @@ import {
   createErrorResponse,
 } from "@lib/admin/config";
 import { ADMIN_SETUP_SECRET } from "astro:env/server";
-import type { RegistrationResponseJSON } from "@simplewebauthn/types";
+import type { RegistrationResponseJSON } from "@simplewebauthn/server";
 
 export const prerender = false;
 
